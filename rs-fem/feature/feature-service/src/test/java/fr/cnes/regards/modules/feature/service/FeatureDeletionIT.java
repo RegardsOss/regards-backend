@@ -103,6 +103,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
      */
     @Test
     public void test_feature_deletion_request_without_files() throws InterruptedException {
+        Mockito.clearInvocations(publisher);
         // Given : mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
         long featureNumberInDatabase;
@@ -146,6 +147,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
      */
     @Test
     public void test_feature_deletion_request_with_files() throws InterruptedException {
+        Mockito.clearInvocations(publisher);
         // Given
         int nbFeature = properties.getMaxBulkSize();
 

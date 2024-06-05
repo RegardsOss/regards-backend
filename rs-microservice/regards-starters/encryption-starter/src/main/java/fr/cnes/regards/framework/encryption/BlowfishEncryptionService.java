@@ -3,6 +3,7 @@ package fr.cnes.regards.framework.encryption;
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import jakarta.xml.bind.DatatypeConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,9 +13,9 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -90,7 +91,7 @@ public class BlowfishEncryptionService implements IEncryptionService {
      */
     public void init(CipherProperties properties)
         throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        String key = Files.readAllLines(properties.getKeyLocation()).get(0);
+        String key = Files.readAllLines(Path.of(properties.getKeyLocation())).get(0);
         secretKey = new SecretKeySpec(key.getBytes(), BLOWFISH_NAME);
         ivParamSpec = new IvParameterSpec(properties.getIv().getBytes());
         //to check that the secret key is valid , lets init a cipher with "12345678" as IV

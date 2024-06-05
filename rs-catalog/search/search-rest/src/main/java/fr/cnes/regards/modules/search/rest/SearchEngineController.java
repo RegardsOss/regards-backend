@@ -42,6 +42,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -55,10 +56,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -365,12 +363,11 @@ public class SearchEngineController implements IEntityLinkBuilder {
     public ResponseEntity<?> searchAllDataobjects(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
                                                   @RequestHeader HttpHeaders headers,
                                                   @RequestParam MultiValueMap<String, String> queryParams,
-                                                  Pageable pageable) throws ModuleException {
+                                                  @SpringQueryMap Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all dataobjects delegated to engine \"{}\"", engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS,
                                                               engineType,
-                                                              headers,
-                                                              queryParams,
+                                                              headers, queryParams,
                                                               pageable), this);
     }
 

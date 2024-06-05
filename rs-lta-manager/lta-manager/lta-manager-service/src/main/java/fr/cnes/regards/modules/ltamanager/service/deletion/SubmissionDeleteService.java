@@ -34,13 +34,8 @@ import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequest
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -133,32 +128,8 @@ public class SubmissionDeleteService {
         }
     }
 
-    public void deleteAllByBatch(Specification<SubmissionRequest> requestSpecification) {
-        Assert.isTrue(batchSize > 0, "batch size must be greater than 0");
-        Pageable pageRequest = PageRequest.of(0, batchSize);
-        // delete the first page (page 0) until there is no page left
-        int pageRemaining;
-        do {
-            pageRemaining = findAndDeletePage(requestSpecification, pageRequest);
-        } while (pageRemaining > 0);
+    public void deleteAll(Specification<SubmissionRequest> requestSpecification) {
+        submissionRequestRepository.delete(requestSpecification);
     }
 
-    /**
-     * Delete in a transaction a specific page of submission request
-     *
-     * @return the number total of page remaining
-     */
-    private int findAndDeletePage(Specification<SubmissionRequest> requestSpecification, Pageable pageRequest) {
-        // I haven't found any better solution to delete by specification.
-        // currently, delete method don't support specification,
-        // and find by specification cannot return just id (with projection)
-        Page<SubmissionRequest> page = submissionRequestRepository.findAll(requestSpecification, pageRequest);
-        deletePageOfSubmissionRequest(page);
-        return page.getTotalPages() - 1;
-    }
-
-    @Transactional
-    private void deletePageOfSubmissionRequest(Page<SubmissionRequest> pageOfSubmissionRequests) {
-        submissionRequestRepository.deleteAllInBatch(pageOfSubmissionRequests);
-    }
 }

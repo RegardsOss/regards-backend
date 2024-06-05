@@ -22,13 +22,15 @@ import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMatchMode;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
+import fr.cnes.regards.framework.jpa.utils.function.NewStringArraySQLFunction;
+import fr.cnes.regards.framework.jpa.utils.function.contributor.CustomFunctionsContributor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.Nullable;
-import javax.persistence.criteria.*;
-import javax.validation.constraints.NotNull;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.criteria.*;
+import jakarta.validation.constraints.NotNull;
 import java.security.InvalidParameterException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -125,8 +127,10 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
             return (root, query, criteriaBuilder) -> criteriaBuilder.like((Expression<String>) getPath(root,
                                                                                                        pathToField),
                                                                           "%"
-                                                                          + replacePostgresSpecialCharacters(value)
-                                                                          + "%");
+                                                                          + replacePostgresSpecialCharacters(value,
+                                                                                                             '\\')
+                                                                          + "%",
+                                                                          '\\');
         }
     }
 
@@ -137,7 +141,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         } else {
             return (root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.upper((Expression<String>) getPath(
                 root,
-                pathToField)), ("%" + replacePostgresSpecialCharacters(value) + "%").toUpperCase());
+                pathToField)), ("%" + replacePostgresSpecialCharacters(value, '\\') + "%").toUpperCase(), '\\');
         }
     }
 
@@ -318,7 +322,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         if (matchMode == ValuesRestrictionMatchMode.STRICT) {
             return cb.equal(expr, lValue);
         } else {
-            return cb.like(expr, lValue.toString());
+            return cb.like(expr, lValue.toString(), '\\');
         }
     }
 
@@ -337,13 +341,13 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         String ignoreCaseValue = ignoreCase ? value.toLowerCase() : value;
         switch (matchMode) {
             case CONTAINS -> {
-                return ("%" + replacePostgresSpecialCharacters(ignoreCaseValue) + "%");
+                return ("%" + replacePostgresSpecialCharacters(ignoreCaseValue, '\\') + "%");
             }
             case STARTS_WITH -> {
-                return (replacePostgresSpecialCharacters(ignoreCaseValue) + "%");
+                return (replacePostgresSpecialCharacters(ignoreCaseValue, '\\') + "%");
             }
             case ENDS_WITH -> {
-                return ("%" + replacePostgresSpecialCharacters(ignoreCaseValue));
+                return ("%" + replacePostgresSpecialCharacters(ignoreCaseValue, '\\'));
             }
             default -> {
                 return ignoreCaseValue;
@@ -409,19 +413,19 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
         return (root, query, criteriaBuilder) -> {
             Path<Object> attributeRequested = root.get(path);
-            Expression<List> allowedValuesConstraint = criteriaBuilder.function(CustomPostgresDialect.EMPTY_STRING_ARRAY,
-                                                                                List.class);
+            Expression<String[]> allowedValuesConstraint = criteriaBuilder.function(NewStringArraySQLFunction.NAME,
+                                                                                    String[].class);
             for (String text : valuesRestriction.getValues()) {
                 // Append to that array every text researched
                 allowedValuesConstraint = criteriaBuilder.function("array_append",
-                                                                   List.class,
+                                                                   String[].class,
                                                                    allowedValuesConstraint,
-                                                                   criteriaBuilder.function(CustomPostgresDialect.STRING_LITERAL,
+                                                                   criteriaBuilder.function(CustomFunctionsContributor.STRING_LITERAL,
                                                                                             String.class,
                                                                                             criteriaBuilder.literal(text)));
             }
             // Check the entity have every text researched
-            return criteriaBuilder.isTrue(criteriaBuilder.function(CustomPostgresDialect.JSONB_EXISTS_ANY,
+            return criteriaBuilder.isTrue(criteriaBuilder.function(CustomFunctionsContributor.JSONB_EXISTS_ANY,
                                                                    Boolean.class,
                                                                    attributeRequested,
                                                                    allowedValuesConstraint));
@@ -453,8 +457,8 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     /**
      * Utility method to escape all postgres special characters for a like expression search.
      */
-    public static String replacePostgresSpecialCharacters(String value) {
-        return value.replace("_", "\\_");
+    public static String replacePostgresSpecialCharacters(String value, char escapeChar) {
+        return value.replace("_", escapeChar + "_");
     }
 
     private static void assertNotEmpty(@NotNull Collection<?> values) {

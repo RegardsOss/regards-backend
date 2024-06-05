@@ -90,7 +90,7 @@ import java.util.stream.IntStream;
                                    "eureka.client.enabled=false",
                                    "regards.ingest.aips.dissemination.bulk=100" },
                     locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "nojobs", "noscheduler" }, inheritProfiles = false)
+@ActiveProfiles(value = { "test", "nojobs", "noscheduler" }, inheritProfiles = false)
 @ContextConfiguration(classes = { JobTestUtils.class })
 public class AipDisseminationIT extends IngestMultitenantServiceIT {
 

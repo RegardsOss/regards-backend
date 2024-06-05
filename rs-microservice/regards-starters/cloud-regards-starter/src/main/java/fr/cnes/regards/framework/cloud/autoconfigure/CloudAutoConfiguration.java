@@ -20,16 +20,14 @@ package fr.cnes.regards.framework.cloud.autoconfigure;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
+@AutoConfiguration(before = EurekaClientAutoConfiguration.class)
 @ConditionalOnProperty(prefix = "regards.cloud", name = "enabled", matchIfMissing = true)
 @EnableDiscoveryClient
-@AutoConfigureBefore(EurekaClientAutoConfiguration.class)
 public class CloudAutoConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudAutoConfiguration.class);

@@ -43,7 +43,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
@@ -75,8 +74,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
         BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
-        blowfishEncryptionService.init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"),
-                                                            "12345678"));
+        blowfishEncryptionService.init(new CipherProperties("src/test/resources/testKey", "12345678"));
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
                                                 Mockito.mock(IPublisher.class),
                                                 runtimeTenantResolver,

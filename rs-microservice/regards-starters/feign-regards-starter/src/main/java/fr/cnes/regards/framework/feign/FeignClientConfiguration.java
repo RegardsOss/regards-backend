@@ -19,10 +19,7 @@
 package fr.cnes.regards.framework.feign;
 
 import com.google.gson.Gson;
-import feign.Contract;
-import feign.Feign;
-import feign.Logger;
-import feign.Request;
+import feign.*;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.gson.GsonDecoder;
@@ -37,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
+import org.springframework.cloud.openfeign.support.PageableSpringQueryMapEncoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,7 +56,6 @@ public class FeignClientConfiguration {
 
     /**
      * Basic log
-     *
      * @return loggin level
      */
     @Bean
@@ -68,8 +65,6 @@ public class FeignClientConfiguration {
 
     /**
      * Specific error analyzer for feign client error responses.
-     *
-     * @return ClientErrorDecoder
      */
     @Bean
     public ClientErrorDecoder errorDecoder() {
@@ -78,34 +73,37 @@ public class FeignClientConfiguration {
 
     /**
      * Every REGARDS clients should use a Gson decoder/encoder.
-     *
-     * @return Decoder
      */
     @Bean
-    public Decoder getDecoder(@Autowired(required = false) Gson pGson) {
-        if (pGson != null) {
-            return new ResponseEntityDecoder(new GsonDecoder(pGson));
+    public Decoder getDecoder(@Autowired(required = false) Gson gson) {
+        if (gson != null) {
+            return new ResponseEntityDecoder(new GsonDecoder(gson));
         }
         return new ResponseEntityDecoder(new GsonDecoder());
     }
 
     /**
      * Every REGARDS clients should use a Gson decoder/encoder.
-     *
-     * @return Encoder
      */
     @Bean
-    public Encoder getEncoder(@Autowired(required = false) Gson pGson) {
-        if (pGson != null) {
-            return new PageableSpringEncoder(new GsonEncoder(pGson));
+    public Encoder getEncoder(@Autowired(required = false) Gson gson) {
+        if (gson != null) {
+            return new PageableSpringEncoder(new GsonEncoder(gson));
         }
         return new PageableSpringEncoder(new GsonEncoder());
     }
 
     /**
+     * To use @SpringQueryMap annotation on a method parameter (further decoded as both MultiValueMap and Pageable
+     * arguments into REST method)
+     */
+    @Bean
+    public QueryMapEncoder queryMapEncoder() {
+        return new PageableSpringQueryMapEncoder();
+    }
+
+    /**
      * Enable Spring MVC contract concept
-     *
-     * @return {@link Contract}
      */
     @Bean
     public Contract feignContract() {
@@ -113,9 +111,7 @@ public class FeignClientConfiguration {
     }
 
     /**
-     * Allow 404 response to be process not like errors.
-     *
-     * @return Feign Builder
+     * Allow 404 response to be processed as empty response insetad of error.
      */
     @Bean
     public Feign.Builder builder(@Value("${regards.enable.feign.bulkhead:true}") boolean bulkhead,
@@ -142,7 +138,7 @@ public class FeignClientConfiguration {
 
         // return custom feign builder and allow 404 responses to be processed without errors
         Resilience4jFeign.Builder builder = Resilience4jFeign.builder(feignDecoratorBuilder.build());
-        builder.decode404();
+        builder.dismiss404();
         builder.options(new Request.Options(5000, TimeUnit.MILLISECONDS, readTimeout, TimeUnit.MILLISECONDS, false));
         return builder;
     }

@@ -183,9 +183,7 @@ public class GZipCompression extends AbstractRunnableCompression {
     private File compressOneFile(File pFileToCompress, File pCompressedFile, CompressManager pCompressManager)
         throws CompressionException {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Add " + pFileToCompress.getName() + " to GZIP file.");
-        }
+        logger.debug("Add " + pFileToCompress.getName() + " to GZIP file.");
 
         long totalSize = pFileToCompress.length();
         long percentage = 0;

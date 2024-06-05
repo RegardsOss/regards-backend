@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.toponyms.domain;
 
-import com.sun.istack.NotNull;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.geolatte.geom.Geometry;
 import org.geolatte.geom.Position;
-
-import javax.persistence.*;
 
 /**
  * POJO for Toponym object
@@ -43,34 +42,51 @@ public class Toponym {
     @Id
     @NotNull
     @Column(name = "bid", nullable = false)
-    String businessId;
+    private String businessId;
 
     /**
      * English label
      */
     @NotNull
     @Column(name = "label", nullable = false)
-    String label;
+    private String label;
 
     @NotNull
     @Column(name = "label_fr", nullable = false)
-    String labelFr;
+    private String labelFr;
 
     @Column(name = "geom")
     private Geometry<Position> geometry;
 
-    @NotNull
     @Column(name = "copyright")
-    String copyright;
+    private String copyright;
 
     @Column(name = "description")
-    String description;
+    private String description;
 
     @Column(name = "visible")
-    boolean visible;
+    private boolean visible;
 
     @Embedded
-    ToponymMetadata toponymMetadata;
+    private ToponymMetadata toponymMetadata;
+
+    public Toponym(String businessId,
+                   String label,
+                   String labelFr,
+                   Geometry<Position> geometry,
+                   String copyright,
+                   String description,
+                   boolean visible,
+                   ToponymMetadata toponymMetadata) {
+        this.businessId = businessId;
+        this.label = label;
+        this.labelFr = labelFr;
+        this.geometry = geometry;
+        this.copyright = copyright;
+        this.description = description;
+        this.visible = visible;
+        this.toponymMetadata = toponymMetadata;
+    }
 
     public String getDescription() {
         return description;
@@ -133,24 +149,6 @@ public class Toponym {
     }
 
     public Toponym() {
-    }
-
-    public Toponym(String businessId,
-                   String label,
-                   String labelFr,
-                   Geometry<Position> geometry,
-                   String copyright,
-                   String description,
-                   boolean visible,
-                   ToponymMetadata toponymMetadata) {
-        this.businessId = businessId;
-        this.label = label;
-        this.labelFr = labelFr;
-        this.geometry = geometry;
-        this.copyright = copyright;
-        this.description = description;
-        this.visible = visible;
-        this.toponymMetadata = toponymMetadata;
     }
 
     public ToponymMetadata getToponymMetadata() {

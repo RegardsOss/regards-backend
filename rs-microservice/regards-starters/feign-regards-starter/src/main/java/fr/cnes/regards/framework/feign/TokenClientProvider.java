@@ -54,15 +54,14 @@ public class TokenClientProvider<T> implements Target<T> {
         this.feignSecurityManager = pFeignSecurityManager;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public Request apply(final RequestTemplate pTemplate) {
-        if (pTemplate.url().indexOf("http") != 0) {
-            pTemplate.insert(0, url);
+    public Request apply(RequestTemplate template) {
+        if (template.url().indexOf("http") != 0) {
+            template.target(url);
         }
         // Apply security
-        pTemplate.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + feignSecurityManager.getToken());
-        return pTemplate.request();
+        template.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + feignSecurityManager.getToken());
+        return template.request();
     }
 
     @Override

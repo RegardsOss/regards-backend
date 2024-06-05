@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
 /**
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Component;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
+@ConditionalOnMissingBean(IWorkspaceNotifier.class)
 public class DefaultWorkspaceNotifier implements IWorkspaceNotifier {
 
     @Autowired

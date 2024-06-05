@@ -43,7 +43,10 @@ public class GatewayDiscoveryConfiguration {
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        return http.csrf().disable().headers().disable().authorizeExchange().anyExchange().permitAll().and().build();
+        return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+                   .headers(ServerHttpSecurity.HeaderSpec::disable)
+                   .authorizeExchange(customizer2 -> customizer2.anyExchange().permitAll())
+                   .build();
     }
 
     @Bean

@@ -33,6 +33,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -159,8 +160,10 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, CREATE_REQUESTS);
                 lockingTaskExecutors.executeWithLock(createTask,
-                                                     new LockConfiguration(CREATE_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           CREATE_REQUEST_LOCK,
+                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(CREATE_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {
@@ -177,8 +180,10 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, UPDATE_REQUESTS);
                 lockingTaskExecutors.executeWithLock(updateTask,
-                                                     new LockConfiguration(UPDATE_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           UPDATE_REQUEST_LOCK,
+                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(UPDATE_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {
@@ -195,8 +200,10 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, DELETE_REQUESTS);
                 lockingTaskExecutors.executeWithLock(deleteTask,
-                                                     new LockConfiguration(DELETE_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           DELETE_REQUEST_LOCK,
+                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(DELETE_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {
@@ -213,8 +220,10 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, COPY_REQUESTS);
                 lockingTaskExecutors.executeWithLock(copyTask,
-                                                     new LockConfiguration(COPY_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           COPY_REQUEST_LOCK,
+                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(COPY_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {
@@ -233,8 +242,10 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, NOTIFICATION_REQUESTS);
                 lockingTaskExecutors.executeWithLock(notificationRequestHandlingTask,
-                                                     new LockConfiguration(NOTIFICATION_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           NOTIFICATION_REQUEST_LOCK,
+                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(NOTIFICATION_REQUESTS, NOTIFICATION_TITLE, e);
             } finally {

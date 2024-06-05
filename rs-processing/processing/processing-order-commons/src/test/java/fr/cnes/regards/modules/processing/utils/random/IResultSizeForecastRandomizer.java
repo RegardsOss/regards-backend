@@ -22,14 +22,12 @@
  */
 package fr.cnes.regards.modules.processing.utils.random;
 
-import com.google.auto.service.AutoService;
 import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
 import fr.cnes.regards.modules.processing.forecast.AbsoluteResultSizeForecast;
 import fr.cnes.regards.modules.processing.forecast.MultiplierResultSizeForecast;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.api.Randomizer;
 
-@AutoService(TypedRandomizer.class)
 public class IResultSizeForecastRandomizer implements TypedRandomizer<IResultSizeForecast> {
 
     @Override

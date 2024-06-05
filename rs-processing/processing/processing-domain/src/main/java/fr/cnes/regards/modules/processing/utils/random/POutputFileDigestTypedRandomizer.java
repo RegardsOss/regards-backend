@@ -17,7 +17,6 @@
  */
 package fr.cnes.regards.modules.processing.utils.random;
 
-import com.google.auto.service.AutoService;
 import com.google.common.hash.Hashing;
 import com.google.common.io.ByteSource;
 import fr.cnes.regards.modules.processing.domain.POutputFile;
@@ -31,7 +30,6 @@ import org.slf4j.LoggerFactory;
  *
  * @author gandrieu
  */
-@AutoService(TypedRandomizer.class)
 public class POutputFileDigestTypedRandomizer implements TypedRandomizer<POutputFile.Digest> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(POutputFileDigestTypedRandomizer.class);

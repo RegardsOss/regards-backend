@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
@@ -36,18 +36,19 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * GSON support auto configuration
  *
  * @author Marc Sordi
  */
-@Configuration
+@AutoConfiguration(before = { org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration.class,
+                              HttpMessageConvertersAutoConfiguration.class })
 @EnableConfigurationProperties(GsonProperties.class)
-@AutoConfigureBefore({ HttpMessageConvertersAutoConfiguration.class })
 public class GsonAutoConfiguration implements ApplicationContextAware {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GsonAutoConfiguration.class);
@@ -70,15 +71,17 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
      *
      * @return {@link GsonBuilder}
      */
-    @Bean
+    @Bean("specificGsonBuilder")
     @ConditionalOnClass(name = SPRINGFOX_GSON_FACTORY)
     public GsonBuilder configureWithSwagger(GsonBuilderFactory gsonBuilderFactory) {
         LOGGER.info("GSON auto configuration enabled with SpringFox support");
         GsonBuilder builder = gsonBuilderFactory.newBuilder();
         try {
             builder.registerTypeAdapterFactory((TypeAdapterFactory) Class.forName(SPRINGFOX_GSON_FACTORY)
+                                                                         .getDeclaredConstructor()
                                                                          .newInstance());
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | NoSuchMethodException |
+                 InvocationTargetException e) {
             final String errorMessage = "Cannot init SpringFox GSON factory";
             LOGGER.error(errorMessage, e);
             throw new UnsupportedOperationException(errorMessage);
@@ -86,7 +89,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
         return builder;
     }
 
-    @Bean
+    @Bean("specificGsonBuilder")
     @ConditionalOnMissingClass(SPRINGFOX_GSON_FACTORY)
     public GsonBuilder configure(GsonBuilderFactory gsonBuilderFactory) {
         LOGGER.info("GSON auto configuration enabled");
@@ -96,12 +99,12 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
     @Bean("gson")
     @Primary
     @ConditionalOnMissingBean
-    public Gson gson(GsonBuilder builder) {
+    public Gson gson(@Qualifier("specificGsonBuilder") GsonBuilder builder) {
         return builder.create();
     }
 
     @Bean("prettyGson")
-    public Gson prettyGson(GsonBuilder builder) {
+    public Gson prettyGson(@Qualifier("specificGsonBuilder") GsonBuilder builder) {
         return builder.create().newBuilder().setPrettyPrinting().create();
     }
 

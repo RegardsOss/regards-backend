@@ -264,7 +264,7 @@ class FakeExceptions {
                                          new HashMap<>(),
                                          Request.Body.empty(),
                                          new RequestTemplate());
-        return new RetryableException(1, "", Request.HttpMethod.POST, null, request);
+        return new RetryableException(1, "", Request.HttpMethod.POST, (Long) null, request);
     }
 
     public static TemplateException aTemplateException() {

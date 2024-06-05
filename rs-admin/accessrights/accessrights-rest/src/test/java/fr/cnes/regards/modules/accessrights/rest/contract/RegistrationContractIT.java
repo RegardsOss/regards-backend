@@ -54,7 +54,7 @@ public class RegistrationContractIT extends AbstractRegardsTransactionalIT {
         // lets mock the feign clients responses
         Account account = new Account("sebastien.binda@c-s.fr", "seb", "seb", "seb");
 
-        Mockito.when(accountsClient.retrieveAccounByEmail("sebastien.binda@c-s.fr"))
+        Mockito.when(accountsClient.retrieveAccountByEmail("sebastien.binda@c-s.fr"))
                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
                            new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
 

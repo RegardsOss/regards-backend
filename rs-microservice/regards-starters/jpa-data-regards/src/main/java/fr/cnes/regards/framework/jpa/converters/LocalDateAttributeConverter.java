@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.framework.jpa.converters;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+
 import java.sql.Date;
 import java.time.LocalDate;
 
@@ -32,12 +33,12 @@ import java.time.LocalDate;
 public class LocalDateAttributeConverter implements AttributeConverter<LocalDate, Date> {
 
     @Override
-    public Date convertToDatabaseColumn(LocalDate pLocDate) {
-        return pLocDate == null ? null : Date.valueOf(pLocDate);
+    public Date convertToDatabaseColumn(LocalDate localDate) {
+        return localDate == null ? null : Date.valueOf(localDate);
     }
 
     @Override
-    public LocalDate convertToEntityAttribute(Date pSqlDate) {
-        return pSqlDate == null ? null : pSqlDate.toLocalDate();
+    public LocalDate convertToEntityAttribute(Date sqlDate) {
+        return sqlDate == null ? null : sqlDate.toLocalDate();
     }
 }

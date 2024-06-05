@@ -25,9 +25,6 @@ package fr.cnes.regards.framework.security.domain;
  * @author Sébastien Binda
  */
 public class SecurityException extends Exception {
-
-    private static final long serialVersionUID = -3031544861738056012L;
-
     public SecurityException(final String message, final Throwable cause) {
         super(message, cause);
     }

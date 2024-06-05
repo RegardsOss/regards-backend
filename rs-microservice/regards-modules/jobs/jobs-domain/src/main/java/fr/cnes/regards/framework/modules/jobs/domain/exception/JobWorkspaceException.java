@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  * @author oroussel
  */
-@SuppressWarnings("serial")
+
 public class JobWorkspaceException extends ModuleException {
 
     public JobWorkspaceException(Throwable cause) {

@@ -25,10 +25,11 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 import fr.cnes.regards.modules.search.dto.ComplexSearchRequest;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * Complex search client. Handle complex searches on catalog with :
@@ -53,17 +54,15 @@ public interface IComplexSearchClient {
      * {@link DataType})
      */
     @PostMapping(path = ROOT_TYPE_MAPPING + SUMMARY_MAPPING,
-                 produces = MediaType.APPLICATION_JSON_VALUE,
-                 consumes = MediaType.APPLICATION_JSON_VALUE)
+                 produces = APPLICATION_JSON_VALUE,
+                 consumes = APPLICATION_JSON_VALUE)
     ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestBody ComplexSearchRequest complexSearchRequest);
 
     /**
      * Compute a complex search
      * {@link DataType})
      */
-    @PostMapping(path = ROOT_TYPE_MAPPING,
-                 produces = MediaType.APPLICATION_JSON_VALUE,
-                 consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_TYPE_MAPPING, produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
     ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataObjects(
         @RequestBody ComplexSearchRequest complexSearchRequest);
 

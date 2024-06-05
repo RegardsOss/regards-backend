@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.Random;
@@ -25,8 +24,7 @@ public class BlowfishEncryptionTests {
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         blowfishEncryptionService = new BlowfishEncryptionService();
-        blowfishEncryptionService.init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"),
-                                                            "12345678"));
+        blowfishEncryptionService.init(new CipherProperties("src/test/resources/testKey", "12345678"));
     }
 
     @Test

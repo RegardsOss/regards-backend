@@ -44,11 +44,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
-import org.springframework.data.r2dbc.connectionfactory.R2dbcTransactionManager;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
+import org.springframework.r2dbc.connection.R2dbcTransactionManager;
 
 import java.time.Duration;
-import java.util.Collections;
 
 import static io.r2dbc.pool.PoolingConnectionFactoryProvider.*;
 import static io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider.SCHEMA;
@@ -143,7 +142,7 @@ public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration 
 
         public void migrate() {
             LOGGER.info("Starting R2DBC migration");
-            R2dbcMigrate.migrate(connectionFactory, properties, new SpringResourceReader(), null).block();
+            R2dbcMigrate.migrate(connectionFactory, properties, new SpringResourceReader(), null, null).block();
             LOGGER.info("End of R2DBC migration");
         }
 
@@ -153,7 +152,7 @@ public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration 
     public R2dbcMigrateProperties r2dbcMigrateProperties() {
         R2dbcMigrateProperties props = new R2dbcMigrateProperties();
         props.setDialect(Dialect.POSTGRESQL);
-        props.setResourcesPaths(Collections.singletonList("classpath:/db/migrations/*.sql"));
+        props.setResourcesPath("classpath:/db/migrations/*.sql");
         return props;
     }
 

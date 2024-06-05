@@ -1,11 +1,9 @@
 package fr.cnes.regards.framework.encryption.configuration;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.nio.file.Path;
 
 /**
  * Properties class for ciphers in regards
@@ -17,10 +15,13 @@ import java.nio.file.Path;
 public class CipherProperties {
 
     /**
-     * Cipher key location
+     * Cipher key location.<br/>
+     * A String is used instead of Path because strange behaviour has alrady appended at microservice startup with Path:
+     * Resource class is used checking that Path exists somewhere into file system or loaded jar and there seems a bug
+     * exist into Jetty (to be confirmed but using a String is no big deal so...)
      */
     @NotNull
-    private Path keyLocation;
+    private String keyLocation;
 
     /**
      * Initialization vector
@@ -31,16 +32,16 @@ public class CipherProperties {
     public CipherProperties() {
     }
 
-    public CipherProperties(Path keyLocation, String iv) {
+    public CipherProperties(String keyLocation, String iv) {
         this.keyLocation = keyLocation;
         this.iv = iv;
     }
 
-    public Path getKeyLocation() {
+    public String getKeyLocation() {
         return keyLocation;
     }
 
-    public void setKeyLocation(Path keyLocation) {
+    public void setKeyLocation(String keyLocation) {
         this.keyLocation = keyLocation;
     }
 

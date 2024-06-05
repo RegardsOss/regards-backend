@@ -84,6 +84,10 @@
             <artifactId>exception-utils</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>spring-utils</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-test-reporting</artifactId>
         </dependency>
@@ -94,6 +98,10 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>microservice-logger</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
         </dependency>
     </dependencies>
 </project>

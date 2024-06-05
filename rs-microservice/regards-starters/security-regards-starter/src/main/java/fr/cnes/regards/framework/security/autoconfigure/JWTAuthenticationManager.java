@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.security.autoconfigure;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
@@ -48,6 +49,6 @@ public class JWTAuthenticationManager implements AuthenticationManager {
                 throw new InsufficientAuthenticationException(e.getMessage(), e);
             }
         }
-        return null;
+        throw new RsRuntimeException("JWTAuthenticationManager can only manage JWTAuthentication");
     }
 }

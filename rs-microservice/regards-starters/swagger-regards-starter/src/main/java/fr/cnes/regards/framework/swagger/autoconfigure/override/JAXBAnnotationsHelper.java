@@ -2,12 +2,16 @@ package fr.cnes.regards.framework.swagger.autoconfigure.override;
 
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import io.swagger.v3.core.util.AnnotationsUtils;
-import io.swagger.v3.oas.models.media.*;
+import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.MapSchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.XML;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementWrapper;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import java.lang.annotation.Annotation;
 
 /**
@@ -58,7 +62,7 @@ class JAXBAnnotationsHelper {
     /**
      * Puts definitions for XML wrapper.
      *
-     * @param wrapper  XmlElementWrapper
+     * @param wrapper   XmlElementWrapper
      * @param property property instance to be updated
      */
     private static void applyElement(XmlElementWrapper wrapper, Schema property) {
@@ -66,8 +70,7 @@ class JAXBAnnotationsHelper {
             final XML xml = getXml(property);
             xml.setWrapped(true);
             // No need to set the xml name if the name provided by xmlelementwrapper annotation is ##default or equal to the property name | https://github.com/swagger-api/swagger-core/pull/2050
-            if (!JAXB_DEFAULT.equals(wrapper.name()) && !wrapper.name().isEmpty() && !wrapper.name()
-                                                                                             .equals(property.getName())) {
+            if (!JAXB_DEFAULT.equals(wrapper.name()) && !wrapper.name().isEmpty() && !wrapper.name().equals(property.getName())) {
                 xml.setName(wrapper.name());
             }
         }
@@ -76,7 +79,7 @@ class JAXBAnnotationsHelper {
     /**
      * Puts definitions for XML element.
      *
-     * @param element  XmlElement
+     * @param element   XmlElement
      * @param property property instance to be updated
      */
     private static void applyElement(XmlElement element, Schema property) {
@@ -88,8 +91,8 @@ class JAXBAnnotationsHelper {
     /**
      * Puts definitions for XML attribute.
      *
-     * @param attribute XmlAttribute
-     * @param property  property instance to be updated
+     * @param attribute   XmlAttribute
+     * @param property property instance to be updated
      */
     private static void applyAttribute(XmlAttribute attribute, Schema property) {
         if (attribute != null) {
@@ -150,7 +153,7 @@ class JAXBAnnotationsHelper {
      * node attribute
      */
     private static boolean isAttributeAllowed(Schema property) {
-        for (Class<?> item : new Class<?>[] { ArraySchema.class, MapSchema.class, ObjectSchema.class }) {
+        for (Class<?> item : new Class<?>[]{ArraySchema.class, MapSchema.class, ObjectSchema.class}) {
             if (item.isInstance(property)) {
                 return false;
             }

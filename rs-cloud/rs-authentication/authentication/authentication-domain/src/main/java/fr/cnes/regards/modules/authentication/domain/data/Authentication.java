@@ -24,14 +24,20 @@ import java.time.OffsetDateTime;
 import java.util.Objects;
 
 /**
- * Mimic Spring Authentication object after OAuth2 converter/enhancer shenanigans.
+ * Mimic Spring Authentication object
  */
 public class Authentication {
 
-    private static final String TOKEN_TYPE = "bearer";
+    /**
+     * It's a constant but the aim is to be serialized in json => final with a getter
+     */
+    @SerializedName("token_type")
+    private final String tokenType = "bearer";
 
-    private static final String JTI = "bearer";
-
+    /**
+     * project, tenant and scope is same thing
+     */
+    @SerializedName("tenant")
     private String project;
 
     private String scope;
@@ -39,9 +45,11 @@ public class Authentication {
     private String role;
 
     /**
-     * subject
+     * sub(ject) and email is same thing
      */
     private String sub;
+
+    private String email;
 
     @SerializedName("service_provider_name")
     private String serviceProviderName;
@@ -65,6 +73,7 @@ public class Authentication {
         this.scope = tenant;
         this.role = role;
         this.sub = email;
+        this.email = email;
         this.serviceProviderName = serviceProviderName;
         this.accessToken = token;
         this.expiresIn = expirationDate.toEpochSecond() - OffsetDateTime.now().toEpochSecond();
@@ -95,15 +104,11 @@ public class Authentication {
     }
 
     public String getTokenType() {
-        return TOKEN_TYPE;
+        return tokenType;
     }
 
     public Long getExpiresIn() {
         return expiresIn;
-    }
-
-    public String getJti() {
-        return JTI;
     }
 
     public String getTenant() {
@@ -134,6 +139,6 @@ public class Authentication {
 
     @Override
     public int hashCode() {
-        return Objects.hash(project, scope, role, sub, serviceProviderName, accessToken, TOKEN_TYPE, expiresIn, JTI);
+        return Objects.hash(project, scope, role, sub, serviceProviderName, accessToken, tokenType, expiresIn);
     }
 }

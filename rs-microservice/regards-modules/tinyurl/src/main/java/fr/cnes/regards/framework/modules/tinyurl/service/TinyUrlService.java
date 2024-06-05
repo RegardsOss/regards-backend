@@ -56,7 +56,7 @@ public class TinyUrlService {
      * @param lifetime       lifetime in hour
      * @return a new {@link TinyUrl}
      */
-    private TinyUrl create(JsonElement context, Class<?> classOfContext, long lifetime) {
+    private TinyUrl create(String context, Class<?> classOfContext, long lifetime) {
         // Create tinyurl
         TinyUrl tinyUrl = new TinyUrl();
         tinyUrl.setUuid(UUID.randomUUID().toString());
@@ -76,9 +76,9 @@ public class TinyUrlService {
      */
     public TinyUrl create(Object context, long lifetime) {
         if (JsonElement.class.isAssignableFrom(context.getClass())) {
-            return create((JsonElement) context, JsonElement.class, lifetime);
+            return create(((JsonElement) context).getAsString(), JsonElement.class, lifetime);
         }
-        return create(gson.toJsonTree(context), context.getClass(), lifetime);
+        return create(gson.toJsonTree(context).toString(), context.getClass(), lifetime);
     }
 
     /**

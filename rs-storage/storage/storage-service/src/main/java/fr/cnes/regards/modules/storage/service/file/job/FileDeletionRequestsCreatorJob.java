@@ -37,6 +37,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
@@ -132,8 +133,10 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
     public void run() {
         try {
             lockingTaskExecutors.executeWithLock(publishFilesDeletionEventsTask,
-                                                 new LockConfiguration(FilesDeletionEvent.DELETION_LOCK,
-                                                                       Instant.now().plusSeconds(300)));
+                                                 new LockConfiguration(Instant.now(),
+                                                                       FilesDeletionEvent.DELETION_LOCK,
+                                                                       Duration.ofSeconds(300),
+                                                                       Duration.ZERO));
         } catch (Throwable e) {
             logger.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
             logger.error(e.getMessage(), e);

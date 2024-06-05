@@ -39,31 +39,41 @@
  */
 package fr.cnes.regards.framework.jpa.json;
 
-import org.hibernate.type.AbstractSingleColumnStandardBasicType;
-import org.hibernate.usertype.DynamicParameterizedType;
-
 import java.util.Properties;
 
+import io.hypersistence.utils.hibernate.type.MutableDynamicParameterizedType;
+import io.hypersistence.utils.hibernate.type.json.internal.JsonBinaryJdbcTypeDescriptor;
+
 /**
- * Descriptor for a Json type.
+ * In order to use mapped object in Jsonb using Gson instead of Jackson, it is necessary to define our specific JsonBinaryType based on Vlad Mihalcea
+ * one (from io.hypersistence.hypersistence-utils-hibernate-62, 62 for Hibernate 6.2).
+ * This is a UserType inheriting MutableDynamicParameterizedType so it can be used for relatively complex mapping such as parameterized set or list.
+ * Hibernate mapping example :
+ * <pre><code>
+ *     @Column(columnDefinition = "jsonb")
+ *     @Type(value = JsonBinaryType.class,
+ *           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+ *                                     value = "fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam") })
+ *     private Set<IPluginParam> parameters = Sets.newHashSet();
+ * </code></pre>
  *
  * @author Vlad MIhalcea
  */
-@SuppressWarnings("serial")
-public class JsonBinaryType extends AbstractSingleColumnStandardBasicType<Object> implements DynamicParameterizedType {
+public class JsonBinaryType
+    extends MutableDynamicParameterizedType<Object, JsonBinaryJdbcTypeDescriptor, JsonTypeDescriptor> {
 
     public JsonBinaryType() {
-        super(JsonBinarySqlTypeDescriptor.INSTANCE, new JsonTypeDescriptor());
+        super(Object.class, JsonBinaryJdbcTypeDescriptor.INSTANCE, new JsonTypeDescriptor());
+
     }
 
-    @Override
     public String getName() {
         return "jsonb";
     }
 
     @Override
     public void setParameterValues(Properties parameters) {
-        ((JsonTypeDescriptor) getJavaTypeDescriptor()).setParameterValues(parameters);
+        getJavaTypeDescriptor().setParameterValues(parameters);
     }
 
 }

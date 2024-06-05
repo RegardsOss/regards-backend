@@ -52,7 +52,7 @@ public class RestrictionTest {
 
         JsonSchemaRestriction restriction = new JsonSchemaRestriction();
         InputStream in = Files.newInputStream(Paths.get("src", "test", "resources", "schema.json"));
-        String schema = IOUtils.toString(in, StandardCharsets.UTF_8.name());
+        String schema = IOUtils.toString(in, StandardCharsets.UTF_8);
 
         InputStream inTest = Files.newInputStream(Paths.get("src", "test", "resources", "valid.json"));
         JsonObject json = (new GsonBuilder()).create()
@@ -72,7 +72,7 @@ public class RestrictionTest {
 
         JsonSchemaRestriction restriction = new JsonSchemaRestriction();
         InputStream in = Files.newInputStream(Paths.get("src", "test", "resources", "schema.json"));
-        String schema = IOUtils.toString(in, StandardCharsets.UTF_8.name());
+        String schema = IOUtils.toString(in, StandardCharsets.UTF_8);
 
         InputStream inTest = Files.newInputStream(Paths.get("src", "test", "resources", "invalid.json"));
         JsonObject json = (new GsonBuilder()).create()

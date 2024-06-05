@@ -81,7 +81,7 @@ public abstract class AbstractJsonSchemaValidator extends AbstractValidator {
                 errors.reject(ERROR_VALUE_NOT_CONFORM_TO_JSON_SCHEMA,
                               String.format("Attribute %s.%s not valid with jsonSchema. Cause : %s",
                                             attributeKey,
-                                            e.getPath(),
+                                            e.getEvaluationPath(),
                                             e.getMessage()));
             });
         } catch (JsonSchemaException e) {

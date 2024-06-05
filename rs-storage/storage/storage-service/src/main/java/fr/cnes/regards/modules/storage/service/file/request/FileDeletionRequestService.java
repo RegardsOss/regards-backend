@@ -70,6 +70,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -256,10 +257,11 @@ public class FileDeletionRequestService {
                                                                                                                jobList,
                                                                                                                fileDeletionRequestRepo,
                                                                                                                self),
-                                                                                          new LockConfiguration(
-                                                                                              FilesDeletionEvent.DELETION_LOCK,
-                                                                                              Instant.now()
-                                                                                                     .plusSeconds(30)));
+                                                                                          new LockConfiguration(Instant.now(),
+                                                                                                                FilesDeletionEvent.DELETION_LOCK,
+                                                                                                                Duration.ofSeconds(
+                                                                                                                    30),
+                                                                                                                Duration.ZERO));
             if (result.wasExecuted() && (result.getResult() != null)) {
                 jobList = result.getResult();
             } else if (!result.wasExecuted()) {

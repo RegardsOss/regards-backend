@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PProcess;
 import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
@@ -30,14 +29,12 @@ import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
-import fr.cnes.regards.modules.processing.testutils.AbstractProcessingIT;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingIT;
 import org.junit.After;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
@@ -45,9 +42,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@EnableFeignClients(basePackageClasses = { IRolesClient.class, IStorageRestClient.class })
 public class ProcessRepositoryImplIT extends AbstractProcessingIT {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessRepositoryImplIT.class);
 
     @Autowired

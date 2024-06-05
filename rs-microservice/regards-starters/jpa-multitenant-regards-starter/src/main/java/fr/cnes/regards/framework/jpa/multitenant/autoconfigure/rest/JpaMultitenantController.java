@@ -48,7 +48,7 @@ import java.util.Map;
  */
 @RestController
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
-@RequestMapping(value = "/regards/{tenant}/datasource", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/regards/{tenant}/datasource", produces = MediaType.APPLICATION_JSON_VALUE)
 public class JpaMultitenantController {
 
     /**

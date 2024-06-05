@@ -113,7 +113,7 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
                                           gson,
                                           requestTemplate -> requestTemplate.header("Content-Type",
                                                                                     MediaType.APPLICATION_JSON_VALUE));
-        if (!storageLocationConfService.search(ONLINE_CONF).isPresent()) {
+        if (storageLocationConfService.search(ONLINE_CONF).isEmpty()) {
             initDataStoragePluginConfiguration();
         }
         runtimeTenantResolver.forceTenant(getDefaultTenant());

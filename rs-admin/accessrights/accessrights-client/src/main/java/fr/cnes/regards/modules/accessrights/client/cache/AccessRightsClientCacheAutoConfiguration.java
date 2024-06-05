@@ -22,6 +22,8 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
@@ -37,7 +39,7 @@ import org.springframework.context.annotation.Profile;
  * @author Sébastien Binda
  */
 @Profile({ "!test", "accessrightclientcache" })
-@Configuration
+@AutoConfiguration
 @EnableCaching
 public class AccessRightsClientCacheAutoConfiguration {
 

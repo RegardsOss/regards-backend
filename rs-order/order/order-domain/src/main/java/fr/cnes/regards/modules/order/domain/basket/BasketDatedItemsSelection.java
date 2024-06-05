@@ -23,27 +23,14 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.order.dto.dto.BasketDatedItemsSelectionDto;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.Valid;
+import org.hibernate.annotations.Type;
+
 import java.time.OffsetDateTime;
 import java.util.Optional;
-
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Type;
-import org.hibernate.type.SqlTypes;
-
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Embeddable;
-import jakarta.validation.Valid;
 
 /**
  * Dated items selection

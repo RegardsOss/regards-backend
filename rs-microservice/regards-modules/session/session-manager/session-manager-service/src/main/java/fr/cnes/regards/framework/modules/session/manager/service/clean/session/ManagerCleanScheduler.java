@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -103,9 +104,10 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
                 boolean isSnapshotJobsFinished = waitUntilManagerSnapshotJobEnd(startTime);
                 if (isSnapshotJobsFinished) {
                     lockingTaskExecutors.executeWithLock(cleanProcessTask,
-                                                         new LockConfiguration(microserviceName + "_clean-session",
-                                                                               Instant.now()
-                                                                                      .plusSeconds(MAX_TASK_DELAY)));
+                                                         new LockConfiguration(Instant.now(),
+                                                                               microserviceName + "_clean-session",
+                                                                               Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                               Duration.ZERO));
                 } else {
                     LOGGER.warn("[MANAGER CLEAN SESSION SCHEDULER] - {} could not be executed because "
                                 + "AgentSnapshotJobs did not finished on time. Waited for {}ms.",

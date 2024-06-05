@@ -52,22 +52,6 @@
         </developer>
     </developers>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Libraries -->
-            <dependency>
-                <groupId>io.vavr</groupId>
-                <artifactId>vavr</artifactId>
-                <version>${vavr.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.ben-manes.caffeine</groupId>
-                <artifactId>caffeine</artifactId>
-                <version>${caffeine.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <modules>
         <module>storage-domain</module>
         <module>storage-client</module>

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.indexer.dao.builder;
 
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
@@ -42,22 +41,29 @@ import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * @author oroussel
  */
+@RunWith(SpringRunner.class)
+@TestPropertySource("classpath:test.properties")
+@ActiveProfiles("test")
 public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
 
     private static final String INDEX = "test_geo";
@@ -76,72 +82,82 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
         }
     }
 
-    @BeforeClass
-    public static void setUp() throws Exception {
-        Map<String, String> propMap = Maps.newHashMap();
-        // By now, repository try to connect localhost:9200 for ElasticSearch
-        boolean repositoryOK = true;
-        try {
-            gson = new GsonBuilder().registerTypeAdapterFactory(new ItemAdapterFactory())
-                                    .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe())
-                                    .create();
-            repository = new EsRepository(gson,
-                                          new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
-                                          new AggregationBuilderFacetTypeVisitor(100, 5),
-                                          new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE),
-                                          new SingleRuntimeTenantResolver("test"),
-                                          Collections.emptyList(),
-                                          "localhost",
-                                          9200,
-                                          "http",
-                                          null,
-                                          null,
-                                          0,
-                                          15000,
-                                          1200000);
+    private static boolean INIT_DONE = false;
 
-            // This test is not intended to be executed on integration serveur but better locally to test
-            // functionnalities during development phase
-            //            repository = new EsRepository(gson, null, propMap.get("regards.elasticsearch.host"),
-            //                    Integer.parseInt(propMap.get("regards.elasticsearch.http.port")), new AggregationBuilderFacetTypeVisitor(100, 5));
-        } catch (NoNodeAvailableException e) {
-            repositoryOK = false;
-        }
-        // Do not launch tests is Elasticsearch is not available
-        Assume.assumeTrue(repositoryOK);
+    @Value("${regards.elasticsearch.host}")
+    private String elasticHost;
 
-        GsonUtil.setGson(gson);
+    @Value("${regards.elasticsearch.http.port}")
+    private int elasticPort;
 
-        if (repository.indexExists(INDEX)) {
-            repository.deleteIndex(INDEX);
-        }
-        repository.createIndex(INDEX);
+    @Value("${regards.elasticsearch.http.protocol:http}")
+    private String elasticProtocol;
 
-        PointItem northPole = new PointItem("NORTH_POLE", 0.0, 90.0);
-        PointItem southPole = new PointItem("SOUTH_POLE", 0.0, -90.0);
-        PointItem eastPole = new PointItem("EAST_POLE", 180.0, 0.0);
-        PointItem westPole = new PointItem("WEST_POLE", -180.0, 0.0);
-        PointItem point_180_20 = new PointItem("P1", 180.0, 20.0);
-        PointItem point_90_20 = new PointItem("P2", 90.0, 20.0);
-        PointItem point_0_0 = new PointItem("0_0", 0.0, 0.0);
-
-        repository.saveBulk(INDEX, northPole, southPole, point_180_20, point_90_20, eastPole, westPole, point_0_0);
-        repository.refresh(INDEX);
-
-        searchKey = new SimpleSearchKey<PointItem>(TYPE, PointItem.class);
-        searchKey.setSearchIndex(INDEX);
-
-        SpringContext springContext = SpringContext.class.newInstance();
-        ApplicationContext appContext = Mockito.mock(ApplicationContext.class);
-        ProjectGeoSettings settings = new ProjectGeoSettings() {
-
-            @Override
-            public Boolean getShouldManagePolesOnGeometries() {
-                return true;
+    @Before
+    public void setUp() throws Exception {
+        // Permit to setUp() as it is static but with the benefit of all Spring annotations (like @Value)
+        if (!INIT_DONE) {
+            boolean repositoryOK = true;
+            try {
+                gson = new GsonBuilder().registerTypeAdapterFactory(new ItemAdapterFactory())
+                                        .registerTypeAdapter(OffsetDateTime.class,
+                                                             new OffsetDateTimeAdapter().nullSafe())
+                                        .create();
+                repository = new EsRepository(gson,
+                                              new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
+                                              new AggregationBuilderFacetTypeVisitor(100, 5),
+                                              new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE),
+                                              new SingleRuntimeTenantResolver("test"),
+                                              Collections.emptyList(),
+                                              elasticHost,
+                                              elasticPort,
+                                              elasticProtocol,
+                                              null,
+                                              null,
+                                              0,
+                                              15000,
+                                              1200000);
+            } catch (NoNodeAvailableException e) {
+                repositoryOK = false;
             }
-        };
-        Mockito.when(appContext.getBean(ArgumentMatchers.eq(ProjectGeoSettings.class))).thenReturn(settings);
-        springContext.setApplicationContext(appContext);
+            // Do not launch tests if Elasticsearch is not available
+            Assume.assumeTrue(repositoryOK);
+
+            GsonUtil.setGson(gson);
+
+            if (repository.indexExists(INDEX)) {
+                repository.deleteIndex(INDEX);
+            }
+            repository.createIndex(INDEX);
+
+            PointItem northPole = new PointItem("NORTH_POLE", 0.0, 90.0);
+            PointItem southPole = new PointItem("SOUTH_POLE", 0.0, -90.0);
+            PointItem eastPole = new PointItem("EAST_POLE", 180.0, 0.0);
+            PointItem westPole = new PointItem("WEST_POLE", -180.0, 0.0);
+            PointItem point_180_20 = new PointItem("P1", 180.0, 20.0);
+            PointItem point_90_20 = new PointItem("P2", 90.0, 20.0);
+            PointItem point_0_0 = new PointItem("0_0", 0.0, 0.0);
+
+            repository.saveBulk(INDEX, northPole, southPole, point_180_20, point_90_20, eastPole, westPole, point_0_0);
+            repository.refresh(INDEX);
+
+            searchKey = new SimpleSearchKey<PointItem>(TYPE, PointItem.class);
+            searchKey.setSearchIndex(INDEX);
+
+            SpringContext springContext = SpringContext.class.getDeclaredConstructor().newInstance();
+            ApplicationContext appContext = Mockito.mock(ApplicationContext.class);
+            // Activate "pole geometries management"
+            ProjectGeoSettings settings = new ProjectGeoSettings() {
+
+                @Override
+                public Boolean getShouldManagePolesOnGeometries() {
+                    return true;
+                }
+            };
+            Mockito.when(appContext.getBean(ArgumentMatchers.eq(ProjectGeoSettings.class))).thenReturn(settings);
+            springContext.setApplicationContext(appContext);
+            INIT_DONE = true;
+        }
     }
 
     @Test

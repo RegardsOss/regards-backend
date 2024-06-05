@@ -89,15 +89,6 @@ public class BorrowRoleService {
                                                 expirationDate,
                                                 jwtService.generateClaims(tenant, targetRoleName, name, email));
 
-        //        DefaultOAuth2AccessToken newToken = new DefaultOAuth2AccessToken(jwtService.generateToken(tenant,
-        //                                                                                                  name,
-        //                                                                                                  email,
-        //                                                                                                  targetRoleName));
-        //        newToken.setAdditionalInformation(jwtService.generateClaims(tenant, targetRoleName, name, email));
-        //        newToken.setExpiration(Date.from(jwtService.getExpirationDate(OffsetDateTime.now()).toInstant()));
-        //FIXME: refreshToken(jti) is not set here to avoid not analysed behaviour,
-        //FIXME: should be fixed by making JWTService the only token source of the application.
-        //FIXME: That means overriding DefaultTokenServices.
         return new Authentication(tenant, email, targetRoleName, null, token, expirationDate);
 
     }

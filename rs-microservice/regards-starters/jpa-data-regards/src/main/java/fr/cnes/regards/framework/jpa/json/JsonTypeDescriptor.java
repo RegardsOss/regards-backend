@@ -34,8 +34,9 @@
 package fr.cnes.regards.framework.jpa.json;
 
 import fr.cnes.regards.framework.gson.utils.ParameterizedTypeImpl;
+
 import org.hibernate.type.descriptor.WrapperOptions;
-import org.hibernate.type.descriptor.java.AbstractTypeDescriptor;
+import org.hibernate.type.descriptor.java.AbstractJavaType;
 import org.hibernate.usertype.DynamicParameterizedType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +45,12 @@ import java.lang.reflect.Type;
 import java.util.Properties;
 
 /**
+ * JsonTypeDescriptor equivalent to Vlad Mihalcea one (from io.hypersistence.hypersistence-utils-hibernate-62, 62 for Hibernate 6.2) that use Gson
+ * instead of Jackson
+ *
  * @author Vlad Mihalcea
  */
-@SuppressWarnings("serial")
-public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implements DynamicParameterizedType {
+public class JsonTypeDescriptor extends AbstractJavaType<Object> implements DynamicParameterizedType {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonTypeDescriptor.class);
 
@@ -86,11 +89,9 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
     @Override
     public void setParameterValues(Properties parameters) {
         // Manage parameterized type
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Managing json type for entity {} and property {}",
-                         parameters.get(ENTITY),
-                         parameters.get(PROPERTY));
-        }
+        LOGGER.debug("Managing json type for entity {} and property {}",
+                     parameters.get(ENTITY),
+                     parameters.get(PROPERTY));
 
         // Get raw type
         Type rawType = ((ParameterType) parameters.get(PARAMETER_TYPE)).getReturnedClass();
@@ -158,8 +159,8 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
     }
 
     @Override
-    public Object fromString(String string) {
-        return GsonUtil.fromString(string, type);
+    public Object fromString(CharSequence string) {
+        return GsonUtil.fromString(string.toString(), type);
     }
 
     @SuppressWarnings({ "unchecked" })

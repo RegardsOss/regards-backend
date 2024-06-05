@@ -21,7 +21,6 @@ import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
 import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
@@ -29,16 +28,14 @@ import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.domain.service.IBatchService;
 import fr.cnes.regards.modules.processing.domain.service.IProcessService;
-import fr.cnes.regards.modules.processing.testutils.AbstractProcessingIT;
-import fr.cnes.regards.modules.processing.testutils.TestSpringConfiguration;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingIT;
+import fr.cnes.regards.modules.processing.testutils.servlet.TestSpringConfiguration;
 import io.vavr.collection.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
@@ -54,6 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ContextConfiguration(classes = { TestSpringConfiguration.class, ProcessingRestClientIT.Config.class })
 public class ProcessingRestClientIT extends AbstractProcessingIT {
 
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingRestClientIT.class);
 
     private IProcessingRestClient client;
@@ -61,16 +59,9 @@ public class ProcessingRestClientIT extends AbstractProcessingIT {
     @Test
     public void download() {
         List<PProcessDTO> ps = client.listAll().getBody();
-
         ps.forEach(p -> LOGGER.info("Found process: {}", p));
-
         assertThat(ps).isEqualTo(Values.processes);
     }
-
-    //==================================================================================================================
-    //==================================================================================================================
-    //==================================================================================================================
-    //==================================================================================================================
 
     @Before
     public void init() throws IOException, ModuleException {
@@ -88,7 +79,6 @@ public class ProcessingRestClientIT extends AbstractProcessingIT {
     }
 
     @Configuration
-    @EnableFeignClients(basePackageClasses = { IRolesClient.class, IStorageRestClient.class })
     static class Config {
 
         @Bean

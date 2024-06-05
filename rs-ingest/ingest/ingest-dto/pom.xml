@@ -35,6 +35,10 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>oais-dto</artifactId>
         </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

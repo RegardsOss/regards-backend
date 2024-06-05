@@ -6,6 +6,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static java.lang.ClassLoader.getSystemResourceAsStream;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,9 +22,9 @@ public class JsonMergerTest {
     @Test
     public void test_merge() throws IOException {
         // GIVEN
-        String merge1 = IOUtils.toString(getSystemResourceAsStream(MERGE1_JSON_PATH), "UTF-8").trim();
-        String merge2 = IOUtils.toString(getSystemResourceAsStream(MERGE2_JSON_PATH), "UTF-8").trim();
-        String expected = IOUtils.toString(getSystemResourceAsStream(MERGED_JSON_PATH), "UTF-8").trim();
+        String merge1 = IOUtils.toString(getSystemResourceAsStream(MERGE1_JSON_PATH), StandardCharsets.UTF_8).trim();
+        String merge2 = IOUtils.toString(getSystemResourceAsStream(MERGE2_JSON_PATH), StandardCharsets.UTF_8).trim();
+        String expected = IOUtils.toString(getSystemResourceAsStream(MERGED_JSON_PATH), StandardCharsets.UTF_8).trim();
 
         JsonObject jsonMerge1 = new JsonParser().parse(merge1).getAsJsonObject();
         JsonObject jsonMerge2 = new JsonParser().parse(merge2).getAsJsonObject();

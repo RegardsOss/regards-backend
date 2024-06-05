@@ -18,6 +18,16 @@
  */
 package fr.cnes.regards.modules.workermanager.service.flow;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import com.google.common.collect.Lists;
 import fr.cnes.regards.modules.workercommon.dto.WorkerResponseStatus;
 import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerResponseEvent;
@@ -26,10 +36,7 @@ import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
+import fr.cnes.regards.modules.workermanager.service.sessions.SessionHelper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;

@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -109,10 +110,11 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
                                                           JobStatus.PENDING,
                                                           JobStatus.RUNNING) == 0) {
                     lockingTaskExecutors.executeWithLock(snapshotProcessTask,
-                                                         new LockConfiguration(microserviceName
+                                                         new LockConfiguration(Instant.now(),
+                                                                               microserviceName
                                                                                + "_session-manager-snapshot",
-                                                                               Instant.now()
-                                                                                      .plusSeconds(MAX_TASK_DELAY)));
+                                                                               Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                               Duration.ZERO));
                 } else {
                     LOGGER.warn("{} could not be executed because a ManagerCleanJob is currently running",
                                 MANAGER_SNAPSHOT_PROCESS_TITLE);

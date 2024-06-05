@@ -43,16 +43,16 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -65,14 +65,13 @@ import org.springframework.web.client.RestTemplate;
  *
  * @author svissier
  */
-@Configuration
+@AutoConfiguration(after = { GsonAutoConfiguration.class })
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties({ RabbitProperties.class,
                                  AmqpManagementProperties.class,
                                  AmqpMicroserviceProperties.class,
                                  NotifierEventsProperties.class,
                                  RetryProperties.class })
-@AutoConfigureAfter(name = { "fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration" })
 @EnableTransactionManagement
 public class AmqpAutoConfiguration {
 
@@ -189,8 +188,9 @@ public class AmqpAutoConfiguration {
     }
 
     @Bean
-    public RabbitTemplate transactionalRabbitTemplate(MessageConverter jsonMessageConverters) {
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(simpleRoutingConnectionFactory());
+    public RabbitTemplate transactionalRabbitTemplate(MessageConverter jsonMessageConverters,
+                                                      MultitenantSimpleRoutingConnectionFactory simpleRoutingConnectionFactory) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(simpleRoutingConnectionFactory);
         // Enable transaction management : if action is executed in a transaction and transaction fails,
         // message is return to the broker.
         rabbitTemplate.setChannelTransacted(true);
@@ -370,9 +370,10 @@ public class AmqpAutoConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "regards.amqp", name = "internal.transaction", matchIfMissing = false)
     public PlatformTransactionManager rabbitTransactionManager(IRuntimeTenantResolver threadTenantResolver,
-                                                               IRabbitVirtualHostAdmin rabbitVirtualHostAdmin) {
+                                                               IRabbitVirtualHostAdmin rabbitVirtualHostAdmin,
+                                                               MultitenantSimpleRoutingConnectionFactory simpleRoutingConnectionFactory) {
         return new MultitenantRabbitTransactionManager(amqpManagmentProperties.getMode(),
-                                                       simpleRoutingConnectionFactory(),
+                                                       simpleRoutingConnectionFactory,
                                                        threadTenantResolver,
                                                        rabbitVirtualHostAdmin);
     }

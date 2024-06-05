@@ -31,7 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.Optional;
@@ -84,8 +83,7 @@ public class SettingEncryptionServiceTest {
         GsonUtil.setGson(GsonCustomizer.gsonBuilder(Optional.empty(), Optional.empty()).create());
         // init encryption service
         AESEncryptionService aesEncryptionService = new AESEncryptionService();
-        aesEncryptionService.init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"),
-                                                       "1234567812345678"));
+        aesEncryptionService.init(new CipherProperties("src/test/resources/testKey", "1234567812345678"));
         this.dynamicSettingsEncryptionService = new DynamicSettingsEncryptionService(aesEncryptionService,
                                                                                      new StringSensitiveAnnotationEncryptionService(
                                                                                          aesEncryptionService));

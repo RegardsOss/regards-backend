@@ -24,13 +24,13 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.ingest.dto.ISipState;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.LockModeType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -166,19 +166,19 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     /**
      * Count number of generation job that is actually running
      *
-     * @param processingChain {@link AcquisitionProcessingChain}
-     * @param productSipState {@link ISipState}s as string
+     * @param processingChainId {@link AcquisitionProcessingChain} id
+     * @param productSipState   {@link ISipState}s as string
      * @return long
      */
-    @Query(value = "select count(distinct p.sip_gen_job_info_id) from  {h-schema}t_acquisition_product p where p.processing_chain_id=?1 and p.sip_state=?2",
+    @Query(value = "SELECT count(DISTINCT p.sip_gen_job_info_id) FROM {h-schema}t_acquisition_product p WHERE p.processing_chain_id=?1 AND p.sip_state=?2",
            nativeQuery = true)
-    long countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(AcquisitionProcessingChain processingChain,
+    long countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(Long processingChainId,
                                                                            String productSipState);
 
     boolean existsByProcessingChainAndSipState(AcquisitionProcessingChain processingChain, ISipState productSipState);
 
-    @Query(value = "select distinct p.lastSIPGenerationJobInfo from  Product p where p.processingChain=?1 and p.sipState=?2")
-    Set<JobInfo> findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
+    @Query(value = "SELECT DISTINCT p.lastSIPGenerationJobInfo FROM Product p WHERE p.processingChain.id=?1 AND p.sipState=?2")
+    Set<JobInfo> findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(Long processingChainId,
                                                                                     ISipState productSipState);
 
     /**
@@ -190,11 +190,11 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     long countByProcessingChain(AcquisitionProcessingChain chain);
 
     @Modifying
-    @Query(value = "UPDATE Product p set p.sipState = ?2 where p.processingChain = ?3 and p.sipState = ?1")
+    @Query(value = "UPDATE Product p SET p.sipState = ?2 WHERE p.processingChain = ?3 AND p.sipState = ?1")
     void updateSipStates(ISipState fromStatus, ISipState toStatus, AcquisitionProcessingChain processingChain);
 
     @Modifying
-    @Query(value = "UPDATE Product p set p.sipState = ?1 where p.productName in (?2)")
+    @Query(value = "UPDATE Product p SET p.sipState = ?1 WHERE p.productName IN (?2)")
     void updateSipStatesByProductNameIn(ISipState state, Collection<String> productNames);
 
     /**

@@ -98,7 +98,7 @@ public class LicenseService implements ILicenseService {
         FeignSecurityManager.asSystem();
         ResponseEntity<EntityModel<Project>> response = projectsClient.retrieveProject(pProjectName);
         FeignSecurityManager.reset();
-        if (!HttpUtils.isSuccess(response.getStatusCode())) {
+        if (!response.getStatusCode().is2xxSuccessful()) {
             LOG.info("Response from the project Client is : " + response.getStatusCode().value());
             throw new EntityNotFoundException(pProjectName, Project.class);
         }

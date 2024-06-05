@@ -27,16 +27,16 @@ import fr.cnes.regards.modules.fileaccess.dto.StorageLocationDto;
 import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import jakarta.validation.Valid;
 import org.assertj.core.util.Lists;
-import org.eclipse.jetty.http.HttpHeader;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.validation.Valid;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -64,8 +64,8 @@ public class StorageClientMock implements IStorageRestClient {
                 File testFile = new File("src/test/resources/files/file1.txt");
                 InputStream stream = new FileInputStream(testFile);
                 Map<String, Collection<String>> headers = Maps.newHashMap();
-                headers.put(HttpHeader.CONTENT_TYPE.toString(), Lists.newArrayList(TEST_MEDIA_TYPE.toString()));
-                headers.put(HttpHeader.CONTENT_LENGTH.toString(), Lists.newArrayList(testFile.length() + ""));
+                headers.put(HttpHeaders.CONTENT_TYPE, Lists.newArrayList(TEST_MEDIA_TYPE.toString()));
+                headers.put(HttpHeaders.CONTENT_LENGTH, Lists.newArrayList(testFile.length() + ""));
                 return Response.builder()
                                .status(HttpStatus.OK.value())
                                .body(stream, (int) testFile.length())

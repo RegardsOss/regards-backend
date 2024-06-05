@@ -18,9 +18,11 @@
  */
 package fr.cnes.regards.modules.workermanager.dao;
 
-import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
-import fr.cnes.regards.modules.workermanager.domain.request.Request;
-import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,10 +33,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
+import fr.cnes.regards.modules.workermanager.domain.request.Request;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 
 /**
  * Repository to access {@link Request}
@@ -61,7 +62,14 @@ public interface IRequestRepository extends JpaRepository<Request, Long>, JpaSpe
         return requests.map(LightRequest::new);
     }
 
-    Optional<LightRequest> findLightByRequestId(String requestId);
+    /**
+     * Hibernate/Jpa does not permit anymore to return an Optional&lt;LightRequest> if LightRequest isn't an Entity
+     */
+    default Optional<LightRequest> findLightByRequestId(String requestId) {
+        Optional<Request> requestOpt = findOneByRequestId(requestId);
+        return requestOpt.map(LightRequest::new);
+    }
+
 
     long countByStepWorkerTypeAndStatus(String workerType, RequestStatus requestStatus);
 

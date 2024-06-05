@@ -42,6 +42,8 @@ import fr.cnes.regards.modules.search.service.LicenseAccessorService;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.DataAccessRightService;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import jakarta.annotation.Nullable;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,13 +56,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -288,7 +287,8 @@ public class CatalogDownloadController {
                                              HttpServletResponse response) throws ModuleException, IOException {
         CatalogDownloadController thisClass = methodOn(CatalogDownloadController.class);
         ResponseEntity<Download> thisDownload = thisClass.downloadFile(aipId, file, isContentInline, true, response);
-        return linkTo(thisDownload).withRel("accept").toUri().toString();
+        // Method linkTo URL encodes, previous version of Regards doesn't so URL decodes here to remain compatible
+        return URLDecoder.decode(linkTo(thisDownload).withRel("accept").toUri().toString(), Charset.defaultCharset());
     }
 
     private ResponseEntity<Download> doDownloadFile(String checksum,

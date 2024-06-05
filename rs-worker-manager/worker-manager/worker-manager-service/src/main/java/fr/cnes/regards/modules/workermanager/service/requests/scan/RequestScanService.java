@@ -18,6 +18,25 @@
  */
 package fr.cnes.regards.modules.workermanager.service.requests.scan;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
@@ -39,23 +58,6 @@ import fr.cnes.regards.modules.workermanager.service.requests.job.DispatchReques
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionsRequestsInfo;
 import net.javacrumbs.shedlock.core.LockConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * This service scans requests and changes their status {@link RequestStatus} as fast as possible
@@ -136,8 +138,10 @@ public class RequestScanService {
     public void scanUsingFilters(SearchRequestParameters filters, RequestStatus newStatus, Long lockAtMostUntilSec)
         throws Throwable {
         lockingTaskExecutors.executeWithLock(new RequestScanTask(this, filters, newStatus, lockingTaskExecutors),
-                                             new LockConfiguration(RequestScanService.REQUEST_SCAN_LOCK,
-                                                                   Instant.now().plusSeconds(lockAtMostUntilSec)));
+                                             new LockConfiguration(Instant.now(),
+                                                                   RequestScanService.REQUEST_SCAN_LOCK,
+                                                                   Duration.ofSeconds(lockAtMostUntilSec),
+                                                                   Duration.ZERO));
     }
 
     /**

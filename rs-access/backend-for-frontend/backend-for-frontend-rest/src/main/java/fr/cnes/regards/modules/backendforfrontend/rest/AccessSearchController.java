@@ -107,8 +107,7 @@ public class AccessSearchController {
                         "Perform an OpenSearch request on all indexed data, regardless of the type. The return "
                         + "objects can be any mix of collection, dataset, dataobject and document. Injects applicable "
                         + "UI Services and Catalog Services.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<JsonObject> searchAll(
-        @RequestParam(required = false) final MultiValueMap<String, String> allParams)
+    public ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
@@ -131,7 +130,7 @@ public class AccessSearchController {
     @ResourceAccess(description =
                         "Perform an OpenSearch request on collections. Injects applicable UI Services and Catalog "
                         + "Services.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<JsonObject> searchCollections(@RequestParam final MultiValueMap<String, String> allParams)
+    public ResponseEntity<JsonObject> searchCollections(@RequestParam MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
@@ -153,7 +152,7 @@ public class AccessSearchController {
     @ResourceAccess(description =
                         "Perform an OpenSearch request on datasets. Injects applicable UI Services and Catalog "
                         + "Services.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<JsonObject> searchDatasets(@RequestParam final MultiValueMap<String, String> allParams)
+    public ResponseEntity<JsonObject> searchDatasets(@RequestParam MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
@@ -203,7 +202,7 @@ public class AccessSearchController {
                         + " but will return the associated datasets. Injects applicable UI Services and Catalog Services.",
                     role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(
-        @RequestParam final MultiValueMap<String, String> allParams)
+        @RequestParam MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
@@ -216,11 +215,11 @@ public class AccessSearchController {
     /**
      * Inject applicable Ui Services and Catalog Services into given entities
      *
-     * @param pEntities The list of entities, represented as a {@link JsonObject} wrapped in a {@link ResponseEntity}
+     * @param entities The list of entities, represented as a {@link JsonObject} wrapped in a {@link ResponseEntity}
      */
-    private void injectApplicableServices(JsonObject pEntities) {
-        if (pEntities != null) {
-            try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM.apply(pEntities.get("content").getAsJsonArray())) {
+    private void injectApplicableServices(JsonObject entities) {
+        if (entities != null) {
+            try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM.apply(entities.get("content").getAsJsonArray())) {
                 elements.map(JsonElement::getAsJsonObject)
                         .map(element -> element.get("content"))
                         .map(JsonElement::getAsJsonObject)

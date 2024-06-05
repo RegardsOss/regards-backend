@@ -33,6 +33,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.*;
@@ -81,8 +82,10 @@ public class AipDisseminationJobScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, AIP_DISSEMINATION_REQUEST);
                 lockingTaskExecutors.executeWithLock(aipDisseminationTask,
-                                                     new LockConfiguration(AIP_DISSEMINATION_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           AIP_DISSEMINATION_REQUEST_LOCK,
+                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(AIP_DISSEMINATION_REQUEST, AIP_DELETION_TITLE, e);
             } finally {

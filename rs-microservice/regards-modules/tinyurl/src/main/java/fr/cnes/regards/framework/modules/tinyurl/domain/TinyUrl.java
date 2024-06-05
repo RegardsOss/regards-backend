@@ -18,13 +18,8 @@
  */
 package fr.cnes.regards.framework.modules.tinyurl.domain;
 
-import com.google.gson.JsonElement;
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 
 /**
@@ -34,7 +29,7 @@ import java.time.OffsetDateTime;
  */
 
 @Entity
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 @Table(name = "t_tinyurl",
        indexes = { @Index(name = "idx_tinyurl_uuid", columnList = "uuid") },
        uniqueConstraints = { @UniqueConstraint(name = "uk_tinyurl_uuid", columnNames = { "uuid" }) })
@@ -48,9 +43,8 @@ public class TinyUrl {
     @Column(length = 36, nullable = false, updatable = false)
     private String uuid;
 
-    @Column(columnDefinition = "jsonb", nullable = false)
-    @Type(type = "jsonb")
-    private JsonElement context;
+    @Column(columnDefinition = "text", nullable = false)
+    private String context;
 
     @Column(nullable = false, name = "class")
     private String classOfContext;
@@ -76,11 +70,11 @@ public class TinyUrl {
         return this;
     }
 
-    public JsonElement getContext() {
+    public String getContext() {
         return context;
     }
 
-    public TinyUrl setContext(JsonElement context) {
+    public TinyUrl setContext(String context) {
         this.context = context;
         return this;
     }

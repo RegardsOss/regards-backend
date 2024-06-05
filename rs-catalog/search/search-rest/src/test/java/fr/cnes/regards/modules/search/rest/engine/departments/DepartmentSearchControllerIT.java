@@ -78,7 +78,9 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DepartmentSearchControllerIT.class);
 
-    private static final String ENGINE_TYPE = "opensearch";
+    private static final String ENGINE_TYPE = "legacy";
+
+    private static final String ENGINE_TYPE_OS = "opensearch";
 
     @Autowired
     private Gson gson;
@@ -247,16 +249,50 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
                           + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA,
                           customizer,
                           "open search description error",
-                          ENGINE_TYPE,
+                          ENGINE_TYPE_OS,
                           france.getIpId().toString(),
                           OpenSearchEngine.EXTRA_DESCRIPTION);
         logDuration(startTime);
     }
 
     @Test
-    public void searchDataobjects() {
+    public void searchDataobjectsOpenSearch() {
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        long startTime = System.currentTimeMillis();
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer,
+                          "Search all error",
+                          ENGINE_TYPE_OS);
+        logDuration(startTime);
+    }
+
+    @Test
+    public void searchDataobjectsWithGeoNoResultsLegacy() {
+
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expectValue("$.metadata.totalElements", 0);
+        customizer.addParameter("g",
+                                "POLYGON((-108.68924151121034 32.770680754846744,"
+                                + "-104.13188991385269 32.770680754846744,"
+                                + "-104.13188991385269 36.007417200112116,"
+                                + "-108.68924151121034 36.007417200112116,"
+                                + "-108.68924151121034 32.770680754846744))");
+        long startTime = System.currentTimeMillis();
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer,
+                          "Search all error",
+                          ENGINE_TYPE);
+        logDuration(startTime);
+    }
+
+    @Test
+    public void searchDataobjectsWithGeoResultsLegacy() {
+
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expectValue("$.metadata.totalElements", 96);
+        customizer.addParameter("g",
+                                "POLYGON((-5.565058057478931 41.520305300520754,9.089908302518287 41.520305300520754,9.089908302518287 50.78516425044905,-5.565058057478931 50.78516425044905,-5.565058057478931 41.520305300520754))");
         long startTime = System.currentTimeMillis();
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,

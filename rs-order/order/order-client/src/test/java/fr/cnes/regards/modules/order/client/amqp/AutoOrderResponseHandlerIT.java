@@ -73,6 +73,7 @@ public class AutoOrderResponseHandlerIT extends AbstractMultitenantServiceIT {
 
     @Test
     public void givenResponses_whenPublished_thenReceiveEvents() throws InterruptedException {
+        Mockito.clearInvocations(publisher);
         // GIVEN
         Map<OrderRequestStatus, Integer> expectedNbEventsByStatus = Map.of(GRANTED,
                                                                            1,
@@ -89,9 +90,10 @@ public class AutoOrderResponseHandlerIT extends AbstractMultitenantServiceIT {
         publisher.publish(simulateResponses(expectedNbEventsByStatus));
         // THEN
         // check events were successfully received
-        Mockito.verify(handler, timeout(5000)).handleBatch(Mockito.any());
-        // Wait for batch method hanle responses.
-        Thread.sleep(500L);
+        Mockito.verify(handler, timeout(2000)).handleBatch(Mockito.any());
+        // Beware : Assertions.assertThat is executed into thread "not.a.Spring.bean-1" whereas current method is executed into thread "main" :
+        // This isn't well managed at all times. Adding a sleep(1000) should delay every clean processes
+        Thread.sleep(1_000);
         // check events were handled correctly according to their status
         Assertions.assertThat(clientMock.countEventsByStatus())
                   .containsExactlyInAnyOrderEntriesOf(expectedNbEventsByStatus);

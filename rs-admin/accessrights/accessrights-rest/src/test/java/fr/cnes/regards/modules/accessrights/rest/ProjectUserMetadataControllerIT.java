@@ -1,5 +1,15 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -8,19 +18,11 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IMetaDataRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
+import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.TestPropertySource;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -61,8 +63,8 @@ public class ProjectUserMetadataControllerIT extends AbstractRegardsTransactiona
     @Purpose("Check that the system allows to update a user's metadata.")
     public void updateUserMetaData() {
         final List<MetaData> newPermissionList = new ArrayList<>();
-        newPermissionList.add(metaDataRepository.save(new MetaData()));
-        newPermissionList.add(metaDataRepository.save(new MetaData()));
+        newPermissionList.add(metaDataRepository.save(new MetaData("key1", "value1", UserVisibility.READABLE)));
+        newPermissionList.add(metaDataRepository.save(new MetaData("key2", "value2", UserVisibility.HIDDEN)));
 
         performDefaultPut(ProjectUserMetadataController.REQUEST_MAPPING_ROOT,
                           newPermissionList,

@@ -18,30 +18,22 @@
  */
 package fr.cnes.regards.modules.order.domain.basket;
 
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.order.dto.dto.BasketDatasetSelectionDto;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDTO;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Type;
 import org.hibernate.annotations.SortNatural;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDTO;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
-import fr.cnes.regards.modules.order.dto.dto.BasketDatasetSelectionDto;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.jpa.IIdentifiable;
+import org.hibernate.annotations.Type;
+
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.SortNatural;
-import org.hibernate.annotations.Type;
-import org.hibernate.type.SqlTypes;
-
-import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
-import jakarta.persistence.*;
 
 /**
  * A grouped items by dataset selection from a basket

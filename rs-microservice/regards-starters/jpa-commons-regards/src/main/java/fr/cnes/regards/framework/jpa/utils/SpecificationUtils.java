@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
+import fr.cnes.regards.framework.jpa.utils.function.NewStringArraySQLFunction;
+import fr.cnes.regards.framework.jpa.utils.function.contributor.CustomFunctionsContributor;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,19 +51,20 @@ public class SpecificationUtils {
                                                                          List<String> textSearched,
                                                                          CriteriaBuilder cb) {
         // Create an empty array
-        @SuppressWarnings("rawtypes")
-        Expression<List> allowedValuesConstraint = cb.function(CustomPostgresDialect.EMPTY_STRING_ARRAY, List.class);
+        @SuppressWarnings("rawtypes") Expression<String[]> allowedValuesConstraint = cb.function(
+            NewStringArraySQLFunction.NAME,
+            String[].class);
         for (String category : textSearched) {
             // Append to that array every text researched
             allowedValuesConstraint = cb.function("array_append",
-                                                  List.class,
+                                                  String[].class,
                                                   allowedValuesConstraint,
-                                                  cb.function(CustomPostgresDialect.STRING_LITERAL,
+                                                  cb.function(CustomFunctionsContributor.STRING_LITERAL,
                                                               String.class,
                                                               cb.literal(category)));
         }
         // Check the entity have every text researched
-        return cb.isTrue(cb.function(CustomPostgresDialect.JSONB_EXISTS_ALL,
+        return cb.isTrue(cb.function(CustomFunctionsContributor.JSONB_EXISTS_ALL,
                                      Boolean.class,
                                      attributeRequested,
                                      allowedValuesConstraint));
@@ -79,19 +82,18 @@ public class SpecificationUtils {
                                                                              List<String> textSearched,
                                                                              CriteriaBuilder cb) {
         // Create an empty array
-        @SuppressWarnings("rawtypes")
-        Expression<List> allowedValuesConstraint = cb.function(CustomPostgresDialect.EMPTY_STRING_ARRAY, List.class);
+        Expression<String[]> allowedValuesConstraint = cb.function(NewStringArraySQLFunction.NAME, String[].class);
         for (String category : textSearched) {
-            // Append to that array every text researched
+            // Use "array_append" function
             allowedValuesConstraint = cb.function("array_append",
-                                                  List.class,
+                                                  String[].class,
                                                   allowedValuesConstraint,
-                                                  cb.function(CustomPostgresDialect.STRING_LITERAL,
+                                                  cb.function(CustomFunctionsContributor.STRING_LITERAL,
                                                               String.class,
                                                               cb.literal(category)));
         }
         // Check the entity have every text researched
-        return cb.isTrue(cb.function(CustomPostgresDialect.JSONB_EXISTS_ANY,
+        return cb.isTrue(cb.function(CustomFunctionsContributor.JSONB_EXISTS_ANY,
                                      Boolean.class,
                                      attributeRequested,
                                      allowedValuesConstraint));

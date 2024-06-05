@@ -22,7 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import org.springframework.boot.actuate.web.mappings.MappingsEndpoint.ApplicationMappings;
+import org.springframework.boot.actuate.web.mappings.MappingsEndpoint;
 
 import java.lang.reflect.Type;
 
@@ -31,10 +31,12 @@ import java.lang.reflect.Type;
  *
  * @author Marc SORDI
  */
-public class ApplicationMappingsAdapter implements JsonSerializer<ApplicationMappings> {
+public class ApplicationMappingsAdapter implements JsonSerializer<MappingsEndpoint.ApplicationMappingsDescriptor> {
 
     @Override
-    public JsonElement serialize(ApplicationMappings mappings, Type typeOfSrc, JsonSerializationContext context) {
+    public JsonElement serialize(MappingsEndpoint.ApplicationMappingsDescriptor mappings,
+                                 Type typeOfSrc,
+                                 JsonSerializationContext context) {
         JsonObject o = new JsonObject();
         o.add("contexts", context.serialize(mappings.getContexts()));
         return o;

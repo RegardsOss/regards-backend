@@ -60,6 +60,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -77,7 +79,7 @@ public class Oauth2AuthenticationService {
 
     private static final String CHECK_USER_INFO_ERROR_MSG = "An error occurred while trying to check user status";
 
-    private static final Logger LOG = LoggerFactory.getLogger(Oauth2AuthenticationService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Oauth2AuthenticationService.class);
 
     /**
      * Default authentication plugin to use if none is configured
@@ -139,6 +141,15 @@ public class Oauth2AuthenticationService {
      * @return Authentication token
      */
     public Authentication doAuthentication(String login, String password, String scope) {
+        if ((login == null) || (password == null)) {
+            throw new BadCredentialsException("User login / password cannot be empty");
+        }
+        if (scope == null) {
+            String message = "Attribute scope is missing";
+            LOGGER.error(message);
+            throw new BadCredentialsException(message);
+        }
+
         AuthenticationPluginResponse response = new AuthenticationPluginResponse(false, null);
         // If the given is a valid project, then check for project authentication plugins
         if (checkScopeValidity(scope)) {
@@ -175,7 +186,7 @@ public class Oauth2AuthenticationService {
             throw new AuthenticationException(message, AuthenticationStatus.ACCOUNT_UNKNOWN);
         }
 
-        LOG.info("The user <{}> is authenticated for the project {}", response.getEmail(), scope);
+        LOGGER.info("The user <{}> is authenticated for the project {}", response.getEmail(), scope);
 
         AbstractAuthenticationToken abstractAuthenticationToken = generateAuthenticationUser(scope,
                                                                                              login,
@@ -224,14 +235,14 @@ public class Oauth2AuthenticationService {
                                                                 scope);
                         pluginResponse.setServiceProviderName(pluginConfiguration.getBusinessId());
                     } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-                        LOG.info(e.getMessage(), e);
+                        LOGGER.info(e.getMessage(), e);
                     }
                 }
             }
             return pluginResponse;
         } catch (BeansException e) {
             String message = "Context not initialized, Authentication plugins cannot be retrieve";
-            LOG.error(message, e);
+            LOGGER.error(message, e);
             throw new BadCredentialsException(message);
         }
     }
@@ -248,9 +259,12 @@ public class Oauth2AuthenticationService {
             FeignSecurityManager.asSystem();
             ResponseEntity<EntityModel<Project>> response = projectsClient.retrieveProject(scope);
             return response.getStatusCode().equals(HttpStatus.OK);
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
+            LOGGER.error("Error while retrieving project {}", scope, e);
+            return false;
         } catch (BeansException e) {
             String message = "Context not initialized, Projects client not available";
-            LOG.error(message, e);
+            LOGGER.error(message, e);
             throw new BadCredentialsException(message);
         } finally {
             FeignSecurityManager.reset();
@@ -293,6 +307,9 @@ public class Oauth2AuthenticationService {
                         case PENDING -> AuthenticationStatus.ACCOUNT_PENDING;
                     };
                 }
+            } catch (HttpServerErrorException | HttpClientErrorException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw new RsRuntimeException(String.format("Cannot retrieve account with email %s", userEmail), e);
             } finally {
                 FeignSecurityManager.reset();
             }
@@ -323,6 +340,10 @@ public class Oauth2AuthenticationService {
                             default -> AuthenticationStatus.USER_UNKNOWN;
                         };
                     }
+                } catch (HttpServerErrorException | HttpClientErrorException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    throw new RsRuntimeException(String.format("Cannot retrieve poroject user with email %s",
+                                                               userEmail), e);
                 } finally {
                     FeignSecurityManager.reset();
                 }
@@ -330,7 +351,7 @@ public class Oauth2AuthenticationService {
             return status;
         } catch (BeansException e) {
             String message = "Context not initialized, Accounts client is not available";
-            LOG.error(message, e);
+            LOGGER.error(message, e);
             throw new BadCredentialsException(message);
         } catch (ModuleException e) {
             throw new RsRuntimeException(e);
@@ -421,17 +442,17 @@ public class Oauth2AuthenticationService {
                 } else {
                     String message = String.format("Remote administration request error. Returned code %s",
                                                    response.getStatusCode());
-                    LOG.error(message);
+                    LOGGER.error(message);
                     throw new EntityNotFoundException(email, ProjectUser.class);
                 }
             } finally {
                 FeignSecurityManager.reset();
             }
         } catch (EntityNotFoundException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         } catch (BeansException e) {
             String message = "Context not initialized, Administration users client is not available";
-            LOG.error(message, e);
+            LOGGER.error(message, e);
             throw new BadCredentialsException(message);
         } catch (ModuleException e) {
             throw new RsRuntimeException(e);

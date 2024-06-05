@@ -70,7 +70,12 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>swagger-regards-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
 
+        <!-- Tests -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-test</artifactId>

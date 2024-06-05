@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
-import fr.cnes.regards.framework.jpa.utils.CustomPostgresDialect;
+import fr.cnes.regards.framework.jpa.utils.function.contributor.CustomFunctionsContributor;
 import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
@@ -120,7 +120,7 @@ public class AIPQueryGenerator {
     private static NativeSelectQuery getDisjunctionPredicate(String propertyName,
                                                              NativeSelectQuery query,
                                                              Collection<String> tags) {
-        query.andListPredicate("(" + CustomPostgresDialect.JSONB_EXISTS_ANY + "(" + propertyName + ", array[",
+        query.andListPredicate("(" + CustomFunctionsContributor.JSONB_EXISTS_ANY + "(" + propertyName + ", array[",
                                "]))",
                                propertyName,
                                tags);

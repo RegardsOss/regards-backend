@@ -36,13 +36,13 @@ import fr.cnes.regards.modules.model.service.RestrictionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -136,12 +136,13 @@ public class AttributeModelController implements IResourceController<AttributeMo
         @RequestParam(name = "noLink", required = false) Boolean noLink) {
 
         List<AttributeModel> attributes = null;
-        Sort sort = Sort.by(Sort.Direction.ASC, "name");
 
         if (modelNames != null && !modelNames.isEmpty()) {
+            Sort sort = Sort.by(Sort.Direction.ASC, "model.name");
             attributes = modelAttrAssocService.getAttributeModels(modelNames, PageRequest.of(0, 1000, sort))
                                               .getContent();
         } else {
+            Sort sort = Sort.by(Sort.Direction.ASC, "name");
             attributes = attributeService.getAttributes(type, fragmentName, modelNames, sort);
         }
         noLink = noLink == null ? Boolean.FALSE : noLink;

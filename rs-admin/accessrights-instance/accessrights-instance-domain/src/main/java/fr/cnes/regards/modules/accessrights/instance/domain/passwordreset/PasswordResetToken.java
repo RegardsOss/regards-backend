@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.accessrights.instance.domain.passwordreset;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import jakarta.persistence.*;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 
 /**
@@ -35,6 +35,7 @@ import java.time.LocalDateTime;
 @Table(name = "t_password_reset_token",
        uniqueConstraints = @UniqueConstraint(name = "uk_password_reset_token_account_id",
                                              columnNames = { "account_id" }))
+@SequenceGenerator(name = "passwordresetseq", initialValue = 1, sequenceName = "hibernate_sequence")
 public class PasswordResetToken {
 
     /**
@@ -46,7 +47,7 @@ public class PasswordResetToken {
      * Id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "passwordresetseq")
     private Long id;
 
     /**

@@ -23,7 +23,7 @@ package fr.cnes.regards.modules.configuration.service.exception;
  *
  * @author Xavier-Alexandre Brochard
  */
-@SuppressWarnings("serial")
+
 public class MissingResourceException extends RuntimeException {
 
     /**

@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.jpa.utils;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
+import jakarta.persistence.*;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -115,30 +115,39 @@ public final class DaoUtils {
      * Find all the class who extends {@link CrudRepository}
      * Find all the class who extends {@link JpaRepository}
      *
-     * @param pRootPackage the base package
+     * @param rootPackage the base package
      * @return the {@link Set} of package
      */
     @SuppressWarnings("rawtypes")
-    public static Set<String> findPackagesForJpa(String pRootPackage) {
+    public static Set<String> findPackagesForJpa(String rootPackage) {
         Set<String> packagesToScan = new HashSet<>();
-        final Reflections reflections = new Reflections(pRootPackage);
+        final Reflections reflections = new Reflections(rootPackage);
 
         // Add the packages that contains a class annotated with org.springframework.stereotype.Repository
         final Set<Class<?>> annotatedRepository = reflections.getTypesAnnotatedWith(Repository.class);
-        for (Class<?> aClass : annotatedRepository) {
-            packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
+        for (Class<?> clazz : annotatedRepository) {
+            String packageToScan = getPackageToScan(clazz.getCanonicalName());
+            if (packageToScan != null) {
+                packagesToScan.add(packageToScan);
+            }
         }
 
         // Add the packages that contains a class implementing with org.springframework.data.jpa.repository.JpaRepository
         final Set<Class<? extends JpaRepository>> subTypeJpaRepository = reflections.getSubTypesOf(JpaRepository.class);
-        for (Class<?> aClass : subTypeJpaRepository) {
-            packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
+        for (Class<?> clazz : subTypeJpaRepository) {
+            String packageToScan = getPackageToScan(clazz.getCanonicalName());
+            if (packageToScan != null) {
+                packagesToScan.add(packageToScan);
+            }
         }
 
         // Add the packages that contains a class implementing with org.springframework.data.repository.CrudRepository
         final Set<Class<? extends CrudRepository>> subTypeRepository = reflections.getSubTypesOf(CrudRepository.class);
-        for (Class<?> aClass : subTypeRepository) {
-            packagesToScan.add(getPackageToScan(aClass.getCanonicalName()));
+        for (Class<?> clazz : subTypeRepository) {
+            String packageToScan = getPackageToScan(clazz.getCanonicalName());
+            if (packageToScan != null) {
+                packagesToScan.add(packageToScan);
+            }
         }
 
         return packagesToScan;
@@ -147,27 +156,20 @@ public final class DaoUtils {
     /**
      * package name has format : fr.cnes.regards.modules.(name)....
      * or fr.cnes.regards.framework.modules.(name)...
-     * <p>
-     * We must only take fr.cnes.regards[.framework].modules.(name)
+     * We must only take fr.cnes.regards[.framework].modules.(name) so return true in case package is out of REGARDS scope
      */
-    public static String getPackageToScan(String pPackageName) {
-        if (pPackageName.startsWith(DaoUtils.FRAMEWORK_PACKAGE)) {
-            String packageEnd = pPackageName.substring(DaoUtils.FRAMEWORK_PACKAGE.length() + 1);
+    public static String getPackageToScan(String packageName) {
+        if (packageName.startsWith(DaoUtils.FRAMEWORK_PACKAGE)) {
+            String packageEnd = packageName.substring(DaoUtils.FRAMEWORK_PACKAGE.length() + 1);
             return DaoUtils.FRAMEWORK_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
-        } else if (pPackageName.startsWith(DaoUtils.MODULES_PACKAGE)) {
-            String packageEnd = pPackageName.substring(DaoUtils.MODULES_PACKAGE.length() + 1);
+        } else if (packageName.startsWith(DaoUtils.MODULES_PACKAGE)) {
+            String packageEnd = packageName.substring(DaoUtils.MODULES_PACKAGE.length() + 1);
             return DaoUtils.MODULES_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
-        } else if (pPackageName.startsWith(DaoUtils.TEST_PACKAGE)) {
-            String packageEnd = pPackageName.substring(DaoUtils.TEST_PACKAGE.length() + 1);
+        } else if (packageName.startsWith(DaoUtils.TEST_PACKAGE)) {
+            String packageEnd = packageName.substring(DaoUtils.TEST_PACKAGE.length() + 1);
             return DaoUtils.TEST_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
-        } else {
-            throw new Error(String.format(
-                "Package %s is not valid. REGARDS only handle classes on package with prefixes : %s, %s and %s",
-                pPackageName,
-                DaoUtils.FRAMEWORK_PACKAGE,
-                DaoUtils.MODULES_PACKAGE,
-                DaoUtils.TEST_PACKAGE)); // NOSONAR
         }
+        return null;
     }
 
     public static List<Class<?>> scanPackagesForJpa(Class<? extends Annotation> pIncludeAnnotation,
@@ -243,10 +245,10 @@ public final class DaoUtils {
                 // Manage relations into relations (ie. PluginConfiguration -> PluginParameter)
                 if (!inRelationClasses.isEmpty()) {
                     for (Class<?> inRelationClass : inRelationClasses) {
-                        scanPackageForJpa(getPackageToScan(inRelationClass.getCanonicalName()),
-                                          pIncludeAnnotation,
-                                          pExcludeAnnotation,
-                                          classes);
+                        String packageToScan = getPackageToScan(inRelationClass.getCanonicalName());
+                        if (packageToScan != null) {
+                            scanPackageForJpa(packageToScan, pIncludeAnnotation, pExcludeAnnotation, classes);
+                        }
                     }
                 }
                 classes.add(clazz);

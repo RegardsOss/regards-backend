@@ -427,15 +427,15 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.addParameter("orderToken", token);
         // request parameters
-        customizer.document(RequestDocumentation.relaxedRequestParameters(RequestDocumentation.parameterWithName(
-                                                                                                  "orderToken")
-                                                                                              .optional()
-                                                                                              .description(
-                                                                                                  "token generated at order creation and sent by email to user.")
-                                                                                              .attributes(Attributes.key(
-                                                                                                                        RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                    .value(
-                                                                                                                        "String"))));
+        customizer.document(RequestDocumentation.relaxedQueryParameters(RequestDocumentation.parameterWithName(
+                                                                                                "orderToken")
+                                                                                            .optional()
+                                                                                            .description(
+                                                                                                "token generated at order creation and sent by email to user.")
+                                                                                            .attributes(Attributes.key(
+                                                                                                                      RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                  .value(
+                                                                                                                      "String"))));
 
         // Try downloading file as if, with token given into public file url
         performDefaultGet(OrderController.PUBLIC_METALINK_DOWNLOAD_PATH, customizer, "Should return result");
@@ -531,21 +531,21 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         customizer.addParameter("page", "0");
         customizer.addParameter("size", "20");
         // request parameters
-        customizer.document(RequestDocumentation.relaxedRequestParameters(RequestDocumentation.parameterWithName("page")
-                                                                                              .optional()
-                                                                                              .description(
-                                                                                                  "page number (from 0)")
-                                                                                              .attributes(Attributes.key(
-                                                                                                                        RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                    .value(
-                                                                                                                        "Integer")),
-                                                                          RequestDocumentation.parameterWithName("size")
-                                                                                              .optional()
-                                                                                              .description("page size")
-                                                                                              .attributes(Attributes.key(
-                                                                                                                        RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                    .value(
-                                                                                                                        "Integer"))));
+        customizer.document(RequestDocumentation.relaxedQueryParameters(RequestDocumentation.parameterWithName("page")
+                                                                                            .optional()
+                                                                                            .description(
+                                                                                                "page number (from 0)")
+                                                                                            .attributes(Attributes.key(
+                                                                                                                      RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                  .value(
+                                                                                                                      "Integer")),
+                                                                        RequestDocumentation.parameterWithName("size")
+                                                                                            .optional()
+                                                                                            .description("page size")
+                                                                                            .attributes(Attributes.key(
+                                                                                                                      RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                  .value(
+                                                                                                                      "Integer"))));
         customizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName("datasetId")
                                                                                     .description(
                                                                                         "dataset task id (from order)")
@@ -669,15 +669,15 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
             }
             RequestBuilderCustomizer customizer = customizer().expectStatusOk().addParameter("orderToken", token);
 
-            customizer.document(RequestDocumentation.relaxedRequestParameters(RequestDocumentation.parameterWithName(
-                                                                                                      "orderToken")
-                                                                                                  .optional()
-                                                                                                  .description(
-                                                                                                      "token generated at order creation and sent by email to user.")
-                                                                                                  .attributes(Attributes.key(
-                                                                                                                            RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                        .value(
-                                                                                                                            "String"))));
+            customizer.document(RequestDocumentation.relaxedQueryParameters(RequestDocumentation.parameterWithName(
+                                                                                                    "orderToken")
+                                                                                                .optional()
+                                                                                                .description(
+                                                                                                    "token generated at order creation and sent by email to user.")
+                                                                                                .attributes(Attributes.key(
+                                                                                                                          RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                      .value(
+                                                                                                                          "String"))));
 
             customizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName("aipId")
                                                                                         .description(
@@ -816,64 +816,64 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
 
         // All specific user orders
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
-        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(RequestDocumentation.parameterWithName(
-                                                                                                         "user")
-                                                                                                     .optional()
-                                                                                                     .description(
-                                                                                                         "Optional - user email whom orders are requested, if not provided all users orders are retrieved")
-                                                                                                     .attributes(
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value(
-                                                                                                                       "String")),
-                                                                                 RequestDocumentation.parameterWithName(
-                                                                                                         "statuses")
-                                                                                                     .optional()
-                                                                                                     .description(
-                                                                                                         "Option - list of status whom orders are requested, if not provided all orders are retrieved")
-                                                                                                     .attributes(
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value(
-                                                                                                                       JSON_ARRAY_TYPE),
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                                                                                                   .value(
-                                                                                                                       "Values must be strings")),
-                                                                                 RequestDocumentation.parameterWithName(
-                                                                                                         "creationDate")
-                                                                                                     .optional()
-                                                                                                     .description(
-                                                                                                         "Option - creation date whom orders are requested, if not provided all orders are retrieved")
-                                                                                                     .attributes(
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value(
-                                                                                                                       JSON_OBJECT_TYPE),
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                                                                                                   .value(
-                                                                                                                       "Values must be 2 ISO-8601 Dates")),
-                                                                                 RequestDocumentation.parameterWithName(
-                                                                                                         "page")
-                                                                                                     .optional()
-                                                                                                     .description(
-                                                                                                         "page number (from 0)")
-                                                                                                     .attributes(
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value(
-                                                                                                                       "Integer")),
-                                                                                 RequestDocumentation.parameterWithName(
-                                                                                                         "size")
-                                                                                                     .optional()
-                                                                                                     .description(
-                                                                                                         "page size")
-                                                                                                     .attributes(
-                                                                                                         Attributes.key(
-                                                                                                                       RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                   .value(
-                                                                                                                       "Integer"))));
+        requestBuilderCustomizer.document(RequestDocumentation.queryParameters(RequestDocumentation.parameterWithName(
+                                                                                                       "user")
+                                                                                                   .optional()
+                                                                                                   .description(
+                                                                                                       "Optional - user email whom orders are requested, if not provided all users orders are retrieved")
+                                                                                                   .attributes(
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                 .value(
+                                                                                                                     "String")),
+                                                                               RequestDocumentation.parameterWithName(
+                                                                                                       "statuses")
+                                                                                                   .optional()
+                                                                                                   .description(
+                                                                                                       "Option - list of status whom orders are requested, if not provided all orders are retrieved")
+                                                                                                   .attributes(
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                 .value(
+                                                                                                                     JSON_ARRAY_TYPE),
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                                                 .value(
+                                                                                                                     "Values must be strings")),
+                                                                               RequestDocumentation.parameterWithName(
+                                                                                                       "creationDate")
+                                                                                                   .optional()
+                                                                                                   .description(
+                                                                                                       "Option - creation date whom orders are requested, if not provided all orders are retrieved")
+                                                                                                   .attributes(
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                 .value(
+                                                                                                                     JSON_OBJECT_TYPE),
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                                                 .value(
+                                                                                                                     "Values must be 2 ISO-8601 Dates")),
+                                                                               RequestDocumentation.parameterWithName(
+                                                                                                       "page")
+                                                                                                   .optional()
+                                                                                                   .description(
+                                                                                                       "page number (from 0)")
+                                                                                                   .attributes(
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                 .value(
+                                                                                                                     "Integer")),
+                                                                               RequestDocumentation.parameterWithName(
+                                                                                                       "size")
+                                                                                                   .optional()
+                                                                                                   .description(
+                                                                                                       "page size")
+                                                                                                   .attributes(
+                                                                                                       Attributes.key(
+                                                                                                                     RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                 .value(
+                                                                                                                     "Integer"))));
         requestBuilderCustomizer.expectStatusOk();
         requestBuilderCustomizer.expectIsArray(JSON_PATH_CONTENT);
         requestBuilderCustomizer.expectToHaveSize(JSON_PATH_CONTENT, 1);
@@ -896,21 +896,21 @@ public class OrderControllerIT extends AbstractOrderControllerIT {
         customizer.addParameter("page", "0");
         customizer.addParameter("size", "20");
         // request parameters
-        customizer.document(RequestDocumentation.relaxedRequestParameters(RequestDocumentation.parameterWithName("page")
-                                                                                              .optional()
-                                                                                              .description(
-                                                                                                  "page number (from 0)")
-                                                                                              .attributes(Attributes.key(
-                                                                                                                        RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                    .value(
-                                                                                                                        "Integer")),
-                                                                          RequestDocumentation.parameterWithName("size")
-                                                                                              .optional()
-                                                                                              .description("page size")
-                                                                                              .attributes(Attributes.key(
-                                                                                                                        RequestBuilderCustomizer.PARAM_TYPE)
-                                                                                                                    .value(
-                                                                                                                        "Integer"))));
+        customizer.document(RequestDocumentation.relaxedQueryParameters(RequestDocumentation.parameterWithName("page")
+                                                                                            .optional()
+                                                                                            .description(
+                                                                                                "page number (from 0)")
+                                                                                            .attributes(Attributes.key(
+                                                                                                                      RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                  .value(
+                                                                                                                      "Integer")),
+                                                                        RequestDocumentation.parameterWithName("size")
+                                                                                            .optional()
+                                                                                            .description("page size")
+                                                                                            .attributes(Attributes.key(
+                                                                                                                      RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                  .value(
+                                                                                                                      "Integer"))));
         // response body
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderDto.class);
         List<FieldDescriptor> fields = new ArrayList<>();

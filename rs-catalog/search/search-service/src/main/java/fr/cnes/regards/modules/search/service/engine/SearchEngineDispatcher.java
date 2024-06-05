@@ -91,38 +91,36 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
         }
 
         // Debugging
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Handling request for engine : {}", context.getEngineType());
-            LOGGER.debug("Search type : {}", context.getSearchType());
-            if (context.getDatasetUrn().isPresent()) {
-                LOGGER.debug("Searching data objects on dataset : {}", context.getDatasetUrn().get().toString());
-            }
-            if (context.getExtra().isPresent()) {
-                LOGGER.debug("Handling request extra path : {}", context.getExtra().get());
-            }
-            if (context.getUrn().isPresent()) {
-                LOGGER.debug("Getting entity with URN : {}", context.getUrn().get().toString());
-            }
-            if (!context.getPropertyNames().isEmpty()) {
-                LOGGER.debug("Search values for properties : {}",
-                             context.getPropertyNames().stream().reduce("", (result, name) -> result + "," + name));
-            }
-            if (context.getMaxCount().isPresent()) {
-                LOGGER.debug("Maximum result count for property values : {}", context.getMaxCount().get());
-            }
-            if (context.getBoundCalculation()) {
-                LOGGER.debug("Search for properties bounds");
-            }
-            if (context.getDateTypes().isPresent()) {
-                context.getDateTypes().get().forEach(dataType -> LOGGER.debug("Summary data type : {}", dataType));
-            }
-            context.getHeaders().forEach((key, values) -> LOGGER.debug("Header : {} -> {}", key, values.toString()));
-            if (context.getQueryParams() != null) {
-                context.getQueryParams()
-                       .forEach((key, values) -> LOGGER.debug("Query param : {} -> {}", key, values.toString()));
-            }
-            LOGGER.debug(context.getPageable() == null ? "No pagination" : context.getPageable().toString());
+        LOGGER.debug("Handling request for engine : {}", context.getEngineType());
+        LOGGER.debug("Search type : {}", context.getSearchType());
+        if (context.getDatasetUrn().isPresent()) {
+            LOGGER.debug("Searching data objects on dataset : {}", context.getDatasetUrn().get().toString());
         }
+        if (context.getExtra().isPresent()) {
+            LOGGER.debug("Handling request extra path : {}", context.getExtra().get());
+        }
+        if (context.getUrn().isPresent()) {
+            LOGGER.debug("Getting entity with URN : {}", context.getUrn().get().toString());
+        }
+        if (!context.getPropertyNames().isEmpty()) {
+            LOGGER.debug("Search values for properties : {}",
+                         context.getPropertyNames().stream().reduce("", (result, name) -> result + "," + name));
+        }
+        if (context.getMaxCount().isPresent()) {
+            LOGGER.debug("Maximum result count for property values : {}", context.getMaxCount().get());
+        }
+        if (context.getBoundCalculation()) {
+            LOGGER.debug("Search for properties bounds");
+        }
+        if (context.getDateTypes().isPresent()) {
+            context.getDateTypes().get().forEach(dataType -> LOGGER.debug("Summary data type : {}", dataType));
+        }
+        context.getHeaders().forEach((key, values) -> LOGGER.debug("Header : {} -> {}", key, values.toString()));
+        if (context.getQueryParams() != null) {
+            context.getQueryParams()
+                   .forEach((key, values) -> LOGGER.debug("Query param : {} -> {}", key, values.toString()));
+        }
+        LOGGER.debug(context.getPageable() == null ? "No pagination" : context.getPageable().toString());
 
         // Retrieve search engine plugin from search context
         ISearchEngine<?, ?, ?, ?> searchEngine = getSearchEngine(context.getDatasetUrn(), context.getEngineType());

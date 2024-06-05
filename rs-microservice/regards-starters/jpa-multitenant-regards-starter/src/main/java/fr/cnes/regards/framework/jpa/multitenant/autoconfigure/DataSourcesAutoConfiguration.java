@@ -21,7 +21,7 @@ package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
-import fr.cnes.regards.framework.encryption.configuration.CipherAutoConf;
+import fr.cnes.regards.framework.encryption.configuration.CipherAutoConfiguration;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.JpaException;
@@ -40,13 +40,13 @@ import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
 import fr.cnes.regards.framework.jpa.utils.*;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
-import org.hibernate.cfg.Environment;
+import org.hibernate.cfg.AvailableSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
@@ -55,10 +55,9 @@ import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import javax.persistence.Entity;
+import jakarta.persistence.Entity;
 import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -74,9 +73,8 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author Sébastien Binda
  */
-@Configuration
+@AutoConfiguration(after = { AmqpAutoConfiguration.class, CipherAutoConfiguration.class })
 @EnableConfigurationProperties(MultitenantDaoProperties.class)
-@AutoConfigureAfter(value = { AmqpAutoConfiguration.class, CipherAutoConf.class })
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class DataSourcesAutoConfiguration {
 
@@ -273,7 +271,7 @@ public class DataSourcesAutoConfiguration {
             if (!existingDataSources.containsKey(tenant)) {
                 try {
                     // Retrieve schema name
-                    String schemaIdentifier = jpaProperties.getProperties().get(Environment.DEFAULT_SCHEMA);
+                    String schemaIdentifier = jpaProperties.getProperties().get(AvailableSettings.DEFAULT_SCHEMA);
                     // Init data source
                     TenantDataSourceHelper.verifyBatchParameter(jpaProperties, tenantConnection);
                     DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties,
@@ -338,25 +336,22 @@ public class DataSourcesAutoConfiguration {
         Map<String, Object> dbProperties = new HashMap<>(hb8Properties.determineHibernateProperties(jpaProperties.getProperties(),
                                                                                                     new HibernateSettings()));
         // Remove hbm2ddl as schema update is done programmatically
-        dbProperties.remove(Environment.HBM2DDL_AUTO);
+        dbProperties.remove(AvailableSettings.HBM2DDL_AUTO);
 
         // Dialect
         String dialect = daoProperties.getDialect();
         if (daoProperties.getEmbedded()) {
-            // Force dialect for embedded database
-            dialect = DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
+            dialect = DataSourceHelper.EMBEDDED_H2_HIBERNATE_DIALECT;
         }
-        dbProperties.put(Environment.DIALECT, dialect);
-
-        dbProperties.put(Environment.USE_NEW_ID_GENERATOR_MAPPINGS, true);
+        dbProperties.put(AvailableSettings.DIALECT, dialect);
 
         try {
             PhysicalNamingStrategy hibernatePhysicalNamingStrategy = (PhysicalNamingStrategy) Class.forName(
                 physicalNamingStrategyName).newInstance();
-            dbProperties.put(Environment.PHYSICAL_NAMING_STRATEGY, hibernatePhysicalNamingStrategy);
+            dbProperties.put(AvailableSettings.PHYSICAL_NAMING_STRATEGY, hibernatePhysicalNamingStrategy);
             final ImplicitNamingStrategy hibernateImplicitNamingStrategy = (ImplicitNamingStrategy) Class.forName(
                 implicitNamingStrategyName).newInstance();
-            dbProperties.put(Environment.IMPLICIT_NAMING_STRATEGY, hibernateImplicitNamingStrategy);
+            dbProperties.put(AvailableSettings.IMPLICIT_NAMING_STRATEGY, hibernateImplicitNamingStrategy);
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             LOGGER.error("Error occurs with naming strategy", e);
             throw new JpaException(e);

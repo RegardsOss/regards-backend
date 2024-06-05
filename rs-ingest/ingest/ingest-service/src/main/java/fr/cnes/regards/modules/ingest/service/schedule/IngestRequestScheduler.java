@@ -18,15 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.service.schedule;
 
-import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
-import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor;
+import java.time.Duration;
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,9 +29,18 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
+import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
+import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
 
 import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.*;
+
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 
 /**
  * Scheduler for IngestRequest
@@ -100,9 +103,10 @@ public class IngestRequestScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, INGEST_REQUEST_CREATE);
                 lockingTaskExecutors.executeWithLock(createIngestRequestTask,
-                                                     new LockConfiguration(INGEST_REQUEST_CREATE_LOCK,
-                                                                           Instant.now()
-                                                                                  .plusSeconds(schedlockTimoutSeconds)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           INGEST_REQUEST_CREATE_LOCK,
+                                                                           Duration.ofSeconds(schedlockTimoutSeconds),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(INGEST_REQUEST_CREATE, INGEST_REQUEST_CREATE_LOCK, e);
             } finally {

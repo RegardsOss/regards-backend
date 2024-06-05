@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.notification.service;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +32,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -104,12 +106,12 @@ public class CronIT {
         // Prepare a start instant
         final Calendar startCalendar = Calendar.getInstance();
         startCalendar.set(TWO_THOUSAND_AND_SIXTEEN, Calendar.OCTOBER, TWENTY_SIX, ELEVEN, 0, 0);
-        final Date startDate = startCalendar.getTime();
+        final Instant startDate = startCalendar.toInstant();
 
         // Prepare next execution
-        final Date actualDate = getNextExecutionTime(trigger, startDate);
+        final Instant actualDate = getNextExecutionTime(trigger, startDate);
         final Calendar actualCalendar = Calendar.getInstance();
-        actualCalendar.setTime(actualDate);
+        actualCalendar.setTimeInMillis(actualDate.toEpochMilli());
 
         // Check that the next execution happened SAME day
         Assert.assertEquals(startCalendar.get(Calendar.DATE), actualCalendar.get(Calendar.DATE));
@@ -130,12 +132,12 @@ public class CronIT {
         // Prepare a start instant
         final Calendar startCalendar = Calendar.getInstance();
         startCalendar.set(TWO_THOUSAND_AND_SIXTEEN, Calendar.OCTOBER, TWENTY_SIX, TWELVE, 0, 0);
-        final Date startDate = startCalendar.getTime();
+        final Instant startDate = startCalendar.toInstant();
 
         // Prepare next execution
-        final Date actualDate = getNextExecutionTime(trigger, startDate);
+        final Instant actualDate = getNextExecutionTime(trigger, startDate);
         final Calendar actualCalendar = Calendar.getInstance();
-        actualCalendar.setTime(actualDate);
+        actualCalendar.setTimeInMillis(actualDate.toEpochMilli());
 
         // Check that the next execution happened NEXT day
         Assert.assertEquals(startCalendar.get(Calendar.DATE) + 1, actualCalendar.get(Calendar.DATE));
@@ -156,12 +158,12 @@ public class CronIT {
         // Prepare a start instant
         final Calendar startCalendar = Calendar.getInstance();
         startCalendar.set(TWO_THOUSAND_AND_SIXTEEN, Calendar.OCTOBER, TWENTY_SIX, SEVENTEEN, 0, 0);
-        final Date startDate = startCalendar.getTime();
+        final Instant startDate = startCalendar.toInstant();
 
         // Prepare next execution
-        final Date actualDate = getNextExecutionTime(trigger, startDate);
+        final Instant actualDate = getNextExecutionTime(trigger, startDate);
         final Calendar actualCalendar = Calendar.getInstance();
-        actualCalendar.setTime(actualDate);
+        actualCalendar.setTimeInMillis(actualDate.toEpochMilli());
 
         // Check that the next execution happened NEXT day
         Assert.assertEquals(startCalendar.get(Calendar.DATE) + 1, actualCalendar.get(Calendar.DATE));
@@ -183,12 +185,12 @@ public class CronIT {
         // Prepare a randomly chosen start instant (the 26th is a Wednesday)
         final Calendar startCalendar = Calendar.getInstance();
         startCalendar.set(TWO_THOUSAND_AND_SIXTEEN, Calendar.OCTOBER, TWENTY_SIX, TWELVE, 0, 0);
-        final Date startDate = startCalendar.getTime();
+        final Instant startDate = startCalendar.toInstant();
 
         // Prepare next execution
-        final Date actualDate = getNextExecutionTime(trigger, startDate);
+        final Instant actualDate = getNextExecutionTime(trigger, startDate);
         final Calendar actualCalendar = Calendar.getInstance();
-        actualCalendar.setTime(actualDate);
+        actualCalendar.setTimeInMillis(actualDate.toEpochMilli());
 
         // Check the next execution happened the next week
         Assert.assertEquals(actualCalendar.get(Calendar.WEEK_OF_YEAR), startCalendar.get(Calendar.WEEK_OF_YEAR) + 1);
@@ -212,12 +214,12 @@ public class CronIT {
         // Prepare a randomly chosen start instant
         final Calendar startCalendar = Calendar.getInstance();
         startCalendar.set(TWO_THOUSAND_AND_SIXTEEN, Calendar.OCTOBER, TWENTY_SIX, TWELVE, 0, 0);
-        final Date startDate = startCalendar.getTime();
+        final Instant startDate = startCalendar.toInstant();
 
         // Prepare next execution
-        final Date actualDate = getNextExecutionTime(trigger, startDate);
+        final Instant actualDate = getNextExecutionTime(trigger, startDate);
         final Calendar actualCalendar = Calendar.getInstance();
-        actualCalendar.setTime(actualDate);
+        actualCalendar.setTimeInMillis(actualDate.toEpochMilli());
 
         // Check the next execution happened the next month
         Assert.assertEquals(actualCalendar.get(Calendar.MONTH), startCalendar.get(Calendar.MONTH) + 1);
@@ -233,26 +235,26 @@ public class CronIT {
     /**
      * Get next execution time of passed {@link CronTrigger} with passed start time
      *
-     * @param pTrigger               The cron trigger
-     * @param pPreviousExecutionTime The start date
+     * @param cronTrigger           The cron trigger
+     * @param previousExecutionTime The start date
      * @return The next execution time
      */
-    private Date getNextExecutionTime(final CronTrigger pTrigger, final Date pPreviousExecutionTime) {
-        return pTrigger.nextExecutionTime(new TriggerContext() {
+    private Instant getNextExecutionTime(final CronTrigger cronTrigger, final Instant previousExecutionTime) {
+        return cronTrigger.nextExecution(new TriggerContext() {
 
             @Override
-            public Date lastScheduledExecutionTime() {
-                return pPreviousExecutionTime;
+            public Instant lastScheduledExecution() {
+                return previousExecutionTime;
             }
 
             @Override
-            public Date lastActualExecutionTime() {
-                return pPreviousExecutionTime;
+            public Instant lastActualExecution() {
+                return previousExecutionTime;
             }
 
             @Override
-            public Date lastCompletionTime() {
-                return pPreviousExecutionTime;
+            public Instant lastCompletion() {
+                return previousExecutionTime;
             }
         });
     }

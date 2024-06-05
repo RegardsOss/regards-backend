@@ -45,6 +45,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Ingest management service
@@ -254,12 +256,8 @@ public class IngestService implements IIngestService {
         validator.validate(dto, errors);
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
-            if (LOGGER.isDebugEnabled()) {
-                StringJoiner joiner = new StringJoiner(", ");
-                errs.forEach(err -> joiner.add(err));
-                LOGGER.debug("SIP collection submission rejected due to invalid ingest metadata : {}",
-                             joiner.toString());
-            }
+            LOGGER.debug("SIP collection submission rejected due to invalid ingest metadata : {}",
+                         String.join(",", errs));
             // Throw invalid exception
             throw new EntityInvalidException(new ArrayList<>(errs));
         }

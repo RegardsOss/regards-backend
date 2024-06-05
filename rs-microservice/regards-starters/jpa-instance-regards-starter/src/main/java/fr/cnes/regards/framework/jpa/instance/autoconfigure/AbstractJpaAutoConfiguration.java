@@ -24,9 +24,9 @@ import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.jpa.utils.*;
-import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -183,9 +183,8 @@ public abstract class AbstractJpaAutoConfiguration {
         // Init with common properties
         final Map<String, Object> hibernateProps = getHibernateProperties();
 
-        hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.NONE);
-        hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, null);
-        hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, null);
+        hibernateProps.put(AvailableSettings.MULTI_TENANT_CONNECTION_PROVIDER, null);
+        hibernateProps.put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, null);
 
         final Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
         List<Class<?>> packages;
@@ -205,7 +204,7 @@ public abstract class AbstractJpaAutoConfiguration {
      * the database
      */
     @Bean
-    public Void setGsonIntoGsonUtil(final Gson pGson) {
+    public Void setGsonIntoGsonUtil(@Qualifier("gson") Gson pGson) {
         GsonUtil.setGson(pGson);
         return null;
     }
@@ -228,17 +227,14 @@ public abstract class AbstractJpaAutoConfiguration {
         Map<String, Object> dbProperties = new HashMap<>(hb8Properties.determineHibernateProperties(jpaProperties.getProperties(),
                                                                                                     new HibernateSettings()));
         // Remove hbm2ddl as schema update is done programmatically
-        dbProperties.remove(Environment.HBM2DDL_AUTO);
+        dbProperties.remove(AvailableSettings.HBM2DDL_AUTO);
 
         // Dialect
         String dialect = daoProperties.getDialect();
         if (daoProperties.getEmbedded()) {
-            // Force dialect for embedded database
-            dialect = DataSourceHelper.EMBEDDED_HSQLDB_HIBERNATE_DIALECT;
+            dialect = DataSourceHelper.EMBEDDED_H2_HIBERNATE_DIALECT;
         }
-        dbProperties.put(Environment.DIALECT, dialect);
-
-        dbProperties.put(Environment.USE_NEW_ID_GENERATOR_MAPPINGS, true);
+        dbProperties.put(AvailableSettings.DIALECT, dialect);
 
         try {
             PhysicalNamingStrategy hibernatePhysicalNamingStrategy = (PhysicalNamingStrategy) Class.forName(

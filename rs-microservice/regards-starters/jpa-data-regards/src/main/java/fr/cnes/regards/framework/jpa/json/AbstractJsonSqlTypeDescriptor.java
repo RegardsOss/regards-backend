@@ -33,11 +33,12 @@
  */
 package fr.cnes.regards.framework.jpa.json;
 
+import org.hibernate.type.SqlTypes;
 import org.hibernate.type.descriptor.ValueExtractor;
 import org.hibernate.type.descriptor.WrapperOptions;
-import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
-import org.hibernate.type.descriptor.sql.BasicExtractor;
-import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
+import org.hibernate.type.descriptor.java.JavaType;
+import org.hibernate.type.descriptor.jdbc.BasicExtractor;
+import org.hibernate.type.descriptor.jdbc.JdbcType;
 
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
@@ -47,26 +48,22 @@ import java.sql.Types;
 /**
  * @author Vlad Mihalcea
  */
-@SuppressWarnings("serial")
-public abstract class AbstractJsonSqlTypeDescriptor implements SqlTypeDescriptor {
+public abstract class AbstractJsonSqlTypeDescriptor implements JdbcType {
+
 
     @Override
-    public int getSqlType() {
-        return Types.OTHER;
+    public int getJdbcTypeCode() {
+        return SqlTypes.OTHER;
     }
 
-    @Override
-    public boolean canBeRemapped() {
-        return true;
-    }
 
     @Override
-    public <X> ValueExtractor<X> getExtractor(final JavaTypeDescriptor<X> javaTypeDescriptor) {
+    public <X> ValueExtractor<X> getExtractor(final JavaType<X> javaTypeDescriptor) {
         return new BasicExtractor<X>(javaTypeDescriptor, this) {
 
             @Override
-            protected X doExtract(ResultSet rs, String name, WrapperOptions options) throws SQLException {
-                return javaTypeDescriptor.wrap(rs.getObject(name), options);
+            protected X doExtract(ResultSet rs, int paramIdx, WrapperOptions options) throws SQLException {
+                return javaTypeDescriptor.wrap(rs.getObject(paramIdx), options);
             }
 
             @Override

@@ -18,6 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip.scheduler;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -26,15 +37,6 @@ import fr.cnes.regards.modules.ingest.service.job.SIPBodyDeletionJob;
 import fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
-import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Scheduler to handle created {@link SIPBodyDeletionRequestScheduler}s.<br/>
@@ -85,9 +87,10 @@ public class SipBodyDeletetionScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, SchedulerConstant.SIP_BODY_DELETION_REQUESTS);
                 lockingTaskExecutors.executeWithLock(sipDeletionTask,
-                                                     new LockConfiguration(SchedulerConstant.SIP_BODY_DELETION_REQUEST_LOCK,
-                                                                           Instant.now()
-                                                                                  .plusSeconds(SchedulerConstant.MAX_TASK_DELAY)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           SchedulerConstant.SIP_BODY_DELETION_REQUEST_LOCK,
+                                                                           Duration.ofSeconds(SchedulerConstant.MAX_TASK_DELAY),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(SchedulerConstant.SIP_BODY_DELETION_REQUESTS,
                                       SchedulerConstant.SIP_BODY_DELETION_TITLE,

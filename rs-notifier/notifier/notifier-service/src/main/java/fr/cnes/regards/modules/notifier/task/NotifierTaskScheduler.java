@@ -36,6 +36,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -171,7 +172,11 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, type);
-                lockingTaskExecutors.executeWithLock(task, new LockConfiguration(lock, Instant.now().plusSeconds(300)));
+                lockingTaskExecutors.executeWithLock(task,
+                                                     new LockConfiguration(Instant.now(),
+                                                                           lock,
+                                                                           Duration.ofSeconds(300),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(type, NOTIFICATION_TITLE, e);
             } finally {

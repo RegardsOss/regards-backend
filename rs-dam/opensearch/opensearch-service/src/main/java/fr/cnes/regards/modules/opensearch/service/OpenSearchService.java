@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.search.schema.UrlType;
 import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,13 +69,14 @@ public class OpenSearchService implements IOpenSearchService {
     // Thread safe parsers holder
     private static ThreadLocal<List<IParser>> parsersHolder;
 
-    @Autowired
-    private HttpClient httpClient;
+    /**
+     * Default HttpClient if none is found
+     */
+    private HttpClient httpClient = HttpClientBuilder.create().build();
 
-    @Autowired
-    private IToponymsClient toponymClient;
-
-    public OpenSearchService(IAttributeFinder finder) {
+    public OpenSearchService(IAttributeFinder finder,
+                             @Autowired(required = false) HttpClient httpClient,
+                             IToponymsClient toponymClient) {
         OpenSearchService.parsersHolder = ThreadLocal.withInitial(() -> Lists.newArrayList(new QueryParser(finder),
                                                                                            new GeometryParser(),
                                                                                            new CircleParser(),
@@ -82,6 +84,9 @@ public class OpenSearchService implements IOpenSearchService {
                                                                                            new ImageOnlyParser(),
                                                                                            new ToponymParser(
                                                                                                toponymClient)));
+        if (this.httpClient != null) {
+            this.httpClient = httpClient;
+        }
     }
 
     @Override
@@ -129,7 +134,7 @@ public class OpenSearchService implements IOpenSearchService {
             Iterator<OpenSearchParameter> it = url.getParameter().iterator();
             while (it.hasNext()) {
                 OpenSearchParameter param = it.next();
-                if (uniqParameters.stream().filter(p -> p.getName().equals(param.getName())).findAny().isPresent()) {
+                if (uniqParameters.stream().anyMatch(p -> p.getName().equals(param.getName()))) {
                     it.remove();
                     LOGGER.warn("Removing duplicated attribute {} from opensearch descriptor", param.getName());
                 } else {

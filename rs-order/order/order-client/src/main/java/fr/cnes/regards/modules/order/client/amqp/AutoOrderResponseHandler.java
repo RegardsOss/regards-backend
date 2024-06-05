@@ -98,7 +98,6 @@ public class AutoOrderResponseHandler
 
     @Override
     public void handleBatch(List<OrderResponseDtoEvent> events) {
-        assert listener != null;
         LOGGER.debug("[ORDER RESPONSES HANDLER] Handling {} order response events", events.size());
         long start = System.currentTimeMillis();
 

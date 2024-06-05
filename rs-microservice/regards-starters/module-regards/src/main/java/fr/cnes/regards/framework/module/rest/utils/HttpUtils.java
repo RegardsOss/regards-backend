@@ -19,9 +19,8 @@
 package fr.cnes.regards.framework.module.rest.utils;
 
 import com.google.common.net.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import jakarta.servlet.http.HttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,24 +32,12 @@ import java.net.URL;
 public final class HttpUtils {
 
     /**
-     * Http code class multiplier
-     */
-    private static final int HTTP_CODE_CLASS_MULTIPLIER = 100;
-
-    /**
      * Not standard HTTP usual code
      */
     public static final int UNKNOWN_ERROR = 520;
 
     private HttpUtils() {
         // private constructor of a util class
-    }
-
-    /**
-     * check {https://tools.ietf.org/html/rfc7231#section-6} for information
-     */
-    public static boolean isSuccess(HttpStatus pHttpStatus) {
-        return (pHttpStatus.value() / HTTP_CODE_CLASS_MULTIPLIER) == 2;
     }
 
     /**

@@ -38,6 +38,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -137,8 +138,10 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, STORAGE_ACTIONS);
                 lockingTaskExecutors.executeWithLock(handleRequestsTask,
-                                                     new LockConfiguration(STORAGE_LOCK,
-                                                                           Instant.now().plusSeconds(1200)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           STORAGE_LOCK,
+                                                                           Duration.ofSeconds(1200),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(STORAGE_ACTIONS, STORAGE_TITLE, e);
             } finally {

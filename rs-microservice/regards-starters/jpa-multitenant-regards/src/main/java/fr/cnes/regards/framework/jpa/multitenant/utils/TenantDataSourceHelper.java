@@ -47,35 +47,35 @@ public final class TenantDataSourceHelper {
     /**
      * Init a tenant data source
      *
-     * @param pDaoProperties    {@link MultitenantDaoProperties}
-     * @param pTenantConnection tenant connection to create
+     * @param daoProperties    {@link MultitenantDaoProperties}
+     * @param tenantConnection tenant connection to create
      * @return a {@link DataSource}
      * @throws PropertyVetoException if parameter not supported
      * @throws SQLException          if connection fails
      */
-    public static DataSource initDataSource(MultitenantDaoProperties pDaoProperties,
-                                            TenantConnection pTenantConnection,
+    public static DataSource initDataSource(MultitenantDaoProperties daoProperties,
+                                            TenantConnection tenantConnection,
                                             String schemaIdentifier)
         throws PropertyVetoException, SQLException, IOException {
         DataSource dataSource;
         // Bypass configuration if embedded enabled
-        if (pDaoProperties.getEmbedded()) {
+        if (daoProperties.getEmbedded()) {
             // Create an embedded data source
-            dataSource = DataSourceHelper.createEmbeddedDataSource(pTenantConnection.getTenant(),
-                                                                   pDaoProperties.getEmbeddedPath());
+            dataSource = DataSourceHelper.createEmbeddedDataSource(tenantConnection.getTenant(),
+                                                                   daoProperties.getEmbeddedPath());
         } else {
-            addApplicationName(pTenantConnection, schemaIdentifier);
+            addApplicationName(tenantConnection, schemaIdentifier);
             // Create a pooled data source
-            dataSource = DataSourceHelper.createHikariDataSource(pTenantConnection.getTenant(),
-                                                                 pTenantConnection.getUrl(),
-                                                                 pTenantConnection.getDriverClassName(),
-                                                                 pTenantConnection.getUserName(),
-                                                                 pTenantConnection.getPassword(),
-                                                                 pDaoProperties.getMinPoolSize(),
-                                                                 pDaoProperties.getMaxPoolSize(),
-                                                                 pDaoProperties.getPreferredTestQuery(),
+            dataSource = DataSourceHelper.createHikariDataSource(tenantConnection.getTenant(),
+                                                                 tenantConnection.getUrl(),
+                                                                 tenantConnection.getDriverClassName(),
+                                                                 tenantConnection.getUserName(),
+                                                                 tenantConnection.getPassword(),
+                                                                 daoProperties.getMinPoolSize(),
+                                                                 daoProperties.getMaxPoolSize(),
+                                                                 daoProperties.getPreferredTestQuery(),
                                                                  schemaIdentifier,
-                                                                 pDaoProperties.getConnectionAcquisitionThresholdLoggerLimit());
+                                                                 daoProperties.getConnectionAcquisitionThresholdLoggerLimit());
 
             // Test connection for pooled datasource
             DataSourceHelper.testConnection(dataSource, true);

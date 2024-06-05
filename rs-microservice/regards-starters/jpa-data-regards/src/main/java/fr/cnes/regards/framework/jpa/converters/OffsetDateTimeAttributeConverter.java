@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.framework.jpa.converters;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
+
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -45,11 +46,11 @@ public class OffsetDateTimeAttributeConverter implements AttributeConverter<Offs
     }
 
     @Override
-    public OffsetDateTime convertToEntityAttribute(Timestamp pSqlTimestamp) {
-        return (pSqlTimestamp == null) ? null :
-            // Read Timestamp, transform to Local Date as it is an UTC data (which is the case in DB) and transform
+    public OffsetDateTime convertToEntityAttribute(Timestamp timestamp) {
+        return (timestamp == null) ? null :
+            // Read Timestamp, transform to Local Date as it is an UTC date (which is the case in DB) and transform
             // to OffsetDateTime, keeping it as UTC (ouch !)
-            OffsetDateTime.ofInstant(pSqlTimestamp.toLocalDateTime().toInstant(ZoneOffset.UTC), ZoneOffset.UTC)
+            OffsetDateTime.ofInstant(timestamp.toLocalDateTime().toInstant(ZoneOffset.UTC), ZoneOffset.UTC)
                           .withOffsetSameInstant(ZoneOffset.UTC);
     }
 }

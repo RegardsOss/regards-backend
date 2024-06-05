@@ -22,10 +22,9 @@ package fr.cnes.regards.framework.modules.tenant.settings.domain;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import org.hibernate.annotations.Type;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 @Entity
@@ -43,18 +42,15 @@ public class DynamicTenantSetting {
     @Column(unique = true)
     private String name;
 
-    @Column
-    @Type(type = "text")
+    @Column(columnDefinition = "text")
     private String description;
 
     @NotNull
-    @Type(type = "text")
-    @Column
+    @Column(columnDefinition = "text")
     private String value;
 
     @NotNull
-    @Type(type = "text")
-    @Column(name = "default_value")
+    @Column(name = "default_value", columnDefinition = "text")
     private String defaultValue;
 
     @NotNull
@@ -100,7 +96,7 @@ public class DynamicTenantSetting {
         }
     }
 
-    public final <T> DynamicTenantSetting setDefaultValue(T defaultValue) {
+    public <T> DynamicTenantSetting setDefaultValue(T defaultValue) {
         if (defaultValue != null) {
             this.className = defaultValue.getClass().getName();
         }
@@ -120,7 +116,7 @@ public class DynamicTenantSetting {
         }
     }
 
-    public final <T> DynamicTenantSetting setValue(T value) {
+    public <T> DynamicTenantSetting setValue(T value) {
         if (value != null && className == null) {
             this.className = value.getClass().getName();
         }

@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.authentication.rest;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -8,6 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.swagger.autoconfigure.PageableQueryParam;
 import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.dto.ServiceProviderDto;
@@ -15,7 +34,14 @@ import fr.cnes.regards.modules.authentication.domain.exception.serviceprovider.S
 import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationParams;
 import fr.cnes.regards.modules.authentication.domain.service.IServiceProviderAuthenticationService;
 import fr.cnes.regards.modules.authentication.domain.service.IServiceProviderCrudService;
+import fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.OpenIdAuthenticationParams;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +56,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
 
@@ -62,10 +87,16 @@ public class ServiceProviderController implements IResourceController<ServicePro
     @Autowired
     private IResourceService resourceService;
 
+    @Operation(summary = "Retrieves the list of service providers.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Successful response."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         useReturnTypeSchema = true,
+                                         content = { @Content(mediaType = "application/html") }) })
     @GetMapping(value = PATH_SERVICE_PROVIDERS)
     @ResourceAccess(description = "Retrieves the list of service providers.", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<ServiceProviderDto>>> getServiceProviders(
-        @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
+        @PageableQueryParam @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<ServiceProviderDto> assembler) throws ModuleException {
         return serviceProviderCrud.findAll(pageable)
                                   .map(page -> page.map(ServiceProviderDto::new))
@@ -73,11 +104,18 @@ public class ServiceProviderController implements IResourceController<ServicePro
                                   .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 
+    @Operation(summary = "Creates a new service provider.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Service provider successfully created."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         useReturnTypeSchema = true,
+                                         content = { @Content(mediaType = "application/html") }) })
     @PostMapping(path = PATH_SERVICE_PROVIDERS)
-    @ResourceAccess(description = "Save service provider.", role = DefaultRole.PROJECT_ADMIN)
-    @SuppressWarnings("rawtypes")
-    public ResponseEntity<EntityModel<ServiceProviderDto>> saveServiceProvider(@Valid @RequestBody
-                                                                               ServiceProviderDto serviceProvider) {
+    @ResourceAccess(description = "Creates a new service provider.", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<EntityModel<ServiceProviderDto>> saveServiceProvider(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "New service provider to create.",
+                                                              content = @Content(schema = @Schema(implementation = ServiceProviderDto.class)))
+        @Valid @RequestBody ServiceProviderDto serviceProvider) {
         //noinspection unchecked
         return serviceProviderCrud.save(serviceProvider.toDomain())
                                   .map(ServiceProviderDto::new)
@@ -86,10 +124,22 @@ public class ServiceProviderController implements IResourceController<ServicePro
                                   .get();
     }
 
+    @Operation(summary = "Updates an existing service provider.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Service provider successfully updated."),
+                            @ApiResponse(responseCode = "404", description = "Service provider does not exists."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         useReturnTypeSchema = true,
+                                         content = { @Content(mediaType = "application/html") }) })
     @PutMapping(path = PATH_SERVICE_PROVIDER_BY_NAME)
     @ResourceAccess(description = "Update service provider.", role = DefaultRole.PROJECT_ADMIN)
-    @SuppressWarnings("rawtypes")
     public ResponseEntity<EntityModel<ServiceProviderDto>> updateServiceProvider(@PathVariable("name") String name,
+                                                                                 @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                                                     description = "New service "
+                                                                                                   + "provider to "
+                                                                                                   + "update.",
+                                                                                     content = @Content(schema = @Schema(
+                                                                                         implementation = ServiceProviderDto.class)))
                                                                                  @Valid @RequestBody
                                                                                  ServiceProviderDto serviceProvider) {
         //noinspection unchecked
@@ -100,6 +150,14 @@ public class ServiceProviderController implements IResourceController<ServicePro
                                   .get();
     }
 
+    @Operation(summary = "Retrieves an existing service provider.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "201",
+                                         description = "Service provider successfully retrieved."),
+                            @ApiResponse(responseCode = "404", description = "Service provider does not exists."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         useReturnTypeSchema = true,
+                                         content = { @Content(mediaType = "application/html") }) })
     @GetMapping(value = PATH_SERVICE_PROVIDER_BY_NAME)
     @ResourceAccess(description = "Retrieve the service provider.", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<EntityModel<ServiceProviderDto>> getServiceProvider(@PathVariable("name") String name) {
@@ -113,6 +171,13 @@ public class ServiceProviderController implements IResourceController<ServicePro
                                   .get();
     }
 
+    @Operation(summary = "Deletes an existing service provider.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "204", description = "Service provider successfully deleted."),
+                            @ApiResponse(responseCode = "404", description = "Service provider does not exists."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         useReturnTypeSchema = true,
+                                         content = { @Content(mediaType = "application/html") }) })
     @DeleteMapping(value = PATH_SERVICE_PROVIDER_BY_NAME)
     @ResourceAccess(description = "Delete the service provider.", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> deleteServiceProvider(@PathVariable("name") String name) throws ModuleException {
@@ -121,9 +186,21 @@ public class ServiceProviderController implements IResourceController<ServicePro
                                   .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 
+    @Operation(summary = "Authenticate with the given service provider.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Authentication success."),
+                            @ApiResponse(responseCode = "401", description = "Authentication unauthorized."),
+                            @ApiResponse(responseCode = "404", description = "Service provider does not exists."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         useReturnTypeSchema = true,
+                                         content = { @Content(mediaType = "application/html") }) })
     @PostMapping(value = PATH_AUTHENTICATE)
     @ResourceAccess(description = "Authenticate with the given service provider.", role = DefaultRole.PUBLIC)
     public ResponseEntity<Authentication> authenticate(@PathVariable("name") String name,
+                                                       @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication credentials.",
+                                                                                                             content = @Content(
+                                                                                                                 schema = @Schema(
+                                                                                                                     implementation = OpenIdAuthenticationParams.class)))
                                                        @RequestBody ServiceProviderAuthenticationParams params)
         throws ModuleException {
         return serviceProviderAuthentication.authenticate(name, params)
@@ -137,6 +214,13 @@ public class ServiceProviderController implements IResourceController<ServicePro
                                             .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 
+    @Operation(summary = "Logout with the given service provider.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Logout success."),
+                            @ApiResponse(responseCode = "404", description = "Service provider does not exists."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         useReturnTypeSchema = true,
+                                         content = { @Content(mediaType = "application/html") }) })
     @PostMapping(value = PATH_DEAUTHENTICATE)
     @ResourceAccess(description = "Deauthenticate from the given service provider.", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> deauthenticate(@PathVariable("name") String name) throws ModuleException {
@@ -145,11 +229,20 @@ public class ServiceProviderController implements IResourceController<ServicePro
                                             .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 
+    @Operation(summary = "Verify and authenticate token through service providers.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Logout success."),
+                            @ApiResponse(responseCode = "401", description = "Authentication unauthorized."),
+                            @ApiResponse(responseCode = "404", description = "Service provider does not exists."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         useReturnTypeSchema = true,
+                                         content = { @Content(mediaType = "application/html") }) })
     @GetMapping(value = PATH_VERIFY_AUTHENTICATION)
     @ResourceAccess(description = "Verify and authenticate token through service providers.",
                     role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Authentication> verifyAndAuthenticate(@RequestParam String externalToken)
-        throws ModuleException {
+    public ResponseEntity<Authentication> verifyAndAuthenticate(
+        @Parameter(description = "External token from service provider to authenticate with.") @RequestParam
+        String externalToken) throws ModuleException {
         return serviceProviderAuthentication.verifyAndAuthenticate(externalToken)
                                             .map(ResponseEntity::ok)
                                             .recover(ServiceProviderPluginIllegalParameterException.class,

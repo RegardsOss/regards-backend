@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.access.services.domain.ui;
 
-import org.hibernate.annotations.Type;
-
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Class PluginConfiguration
@@ -66,8 +64,7 @@ public class UIPluginConfiguration {
     /**
      * Plugin configuration (JSON Object)
      */
-    @Column(nullable = false)
-    @Type(type = "text")
+    @Column(nullable = false, columnDefinition = "text")
     private String conf;
 
     public Long getId() {

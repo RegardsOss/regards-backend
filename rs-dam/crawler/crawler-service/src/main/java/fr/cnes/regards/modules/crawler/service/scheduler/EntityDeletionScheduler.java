@@ -35,6 +35,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -114,9 +115,10 @@ public class EntityDeletionScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, ACTION);
                 lockingTaskExecutors.executeWithLock(handleRequestsTask,
-                                                     new LockConfiguration(LOCK,
-                                                                           Instant.now()
-                                                                                  .plusSeconds(MAX_TASK_DELAY_IN_S)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           LOCK,
+                                                                           Duration.ofSeconds(MAX_TASK_DELAY_IN_S),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(ACTION, TITLE, e);
             } finally {

@@ -82,7 +82,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
@@ -157,7 +156,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     @Autowired
     private IPluginConfigurationRepository pluginRepo;
 
-    @SpyBean
+    @Autowired
     private IPublisher publisher;
 
     @Autowired

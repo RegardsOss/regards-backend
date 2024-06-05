@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import org.hibernate.dialect.PostgreSQL10Dialect;
-import org.hibernate.dialect.function.SQLFunctionTemplate;
-import org.hibernate.type.StandardBasicTypes;
+import fr.cnes.regards.framework.jpa.utils.function.NewStringArraySQLFunction;
+import fr.cnes.regards.framework.jpa.utils.function.contributor.CustomFunctionsContributor;
 
 /**
  * Current dialect in use in REGARDS
  * This class add some custom Postgres functions and expressions you can use in Specification classes,
  * allowing us to query the database using custom SQL, mostly to use JSONB operators
  * <p>
- * Keep in mind that every operators containing question mark cannot be written here
+ * Keep in mind that every operator containing question mark cannot be written here
  * as JDBC would interpret the question mark as a prepared value not provided,
  * so we've created some pre-defined function to make an alias to the operator, in order to fix this issue
  * <p>
@@ -35,50 +34,64 @@ import org.hibernate.type.StandardBasicTypes;
  * SELECT oprname, oprcode  FROM pg_operator WHERE oprname = '&!'
  *
  * @author Léo Mieulet
+ * @deprecated No more custom dialects should be created from Hibernate 6. Please, look at {@link fr.cnes.regards.framework.jpa.utils.function.contributor.CustomFunctionsContributor}
  */
-public class CustomPostgresDialect extends PostgreSQL10Dialect {
+@Deprecated
+public class CustomPostgresDialect {
 
     /**
-     * Create an new empty array
+     * Create a new empty array (instead of using Array[]::text[]
+     *
+     * @deprecated please use {@link NewStringArraySQLFunction#NAME}
      */
-    public static final String EMPTY_STRING_ARRAY = "new_string_array";
+    @Deprecated
+    public static final String EMPTY_STRING_ARRAY = NewStringArraySQLFunction.NAME;
 
     /**
      * Create a literal casted as string
+     *
+     * @deprecated please use {@link CustomFunctionsContributor#STRING_LITERAL}
      */
-    public static final String STRING_LITERAL = "string_literal";
+    @Deprecated
+    public static final String STRING_LITERAL = CustomFunctionsContributor.STRING_LITERAL;
 
     /**
      * Create a literal casted as jsonb
+     *
+     * @deprecated please use {@link CustomFunctionsContributor#JSONB_LITERAL}
      */
+    @Deprecated
     public static final String JSONB_LITERAL = "jsonb_literal";
 
     /**
      * Create an expression with the @> operator
+     *
+     * @deprecated please use {@link CustomFunctionsContributor#JSONB_CONTAINS}
      */
+    @Deprecated
     public static final String JSONB_CONTAINS = "jsonb_contains";
 
     /**
      * Alias to the operator ?&; ensure indexes are used if possible
+     *
+     * @deprecated please use {@link CustomFunctionsContributor#JSONB_EXISTS_ALL}
      */
+    @Deprecated
     public static final String JSONB_EXISTS_ALL = "rs_jsonb_exists_all";
 
     /**
      * Alias to the operator ?; ensure indexes are used if possible
+     *
+     * @deprecated please use {@link CustomFunctionsContributor#JSONB_EXISTS}
      */
+    @Deprecated
     public static final String JSONB_EXISTS = "rs_jsonb_exists";
 
     /**
      * Alias to the operator ?|; ensure indexes are used if possible
+     *
+     * @deprecated please use {@link CustomFunctionsContributor#JSONB_EXISTS_ANY}
      */
+    @Deprecated
     public static final String JSONB_EXISTS_ANY = "rs_jsonb_exists_any";
-
-    public CustomPostgresDialect() {
-        super();
-        super.registerFunction(EMPTY_STRING_ARRAY,
-                               new SQLFunctionTemplate(StandardBasicTypes.BOOLEAN, "ARRAY[]::text[]"));
-        super.registerFunction(STRING_LITERAL, new SQLFunctionTemplate(StandardBasicTypes.STRING, "?1::text"));
-        super.registerFunction(JSONB_LITERAL, new SQLFunctionTemplate(StandardBasicTypes.STRING, "?1::jsonb"));
-        super.registerFunction(JSONB_CONTAINS, new SQLFunctionTemplate(StandardBasicTypes.BOOLEAN, "?1 @> ?2"));
-    }
 }

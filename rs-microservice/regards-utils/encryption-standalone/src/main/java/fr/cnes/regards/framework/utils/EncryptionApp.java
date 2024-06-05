@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 
@@ -46,7 +45,7 @@ public class EncryptionApp {
             System.exit(1);
         }
         AESEncryptionService aesEncryptionService = new AESEncryptionService();
-        aesEncryptionService.init(new CipherProperties(Paths.get(keyLocation), iv));
+        aesEncryptionService.init(new CipherProperties(keyLocation, iv));
         LOG.info("Encrypted value: {}", aesEncryptionService.encrypt(value));
         System.exit(0);
     }

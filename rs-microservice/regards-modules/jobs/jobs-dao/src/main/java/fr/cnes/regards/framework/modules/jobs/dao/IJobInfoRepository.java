@@ -21,6 +21,8 @@ package fr.cnes.regards.framework.modules.jobs.dao;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,8 +30,6 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
-import javax.persistence.LockModeType;
-import javax.persistence.QueryHint;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -57,7 +57,7 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
 
     // Do not use entity graph it makes max computation into memory
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = UPGRADE_SKIPLOCKED) })
+    @QueryHints({ @QueryHint(name = "jakarta.persistence.lock.timeout", value = UPGRADE_SKIPLOCKED) })
     JobInfo findFirstByStatusStatusOrderByPriorityDesc(JobStatus status);
 
     default JobInfo findHighestPriorityQueued() {

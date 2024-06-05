@@ -72,6 +72,21 @@
               ]
             }
           }
+        },
+        {
+          "key": "fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration",
+          "value": {
+            "label": "REGARDS search protocol",
+            "configuration": {
+              "pluginId": "legacy",
+              "label": "search-engine-legacy",
+              "businessId": "search-engine-legacy",
+              "version": "1.0.0",
+              "priorityOrder": 0,
+              "active": true,
+              "parameters": []
+            }
+          }
         }
       ]
     }

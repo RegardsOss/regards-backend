@@ -21,12 +21,14 @@ package fr.cnes.regards.modules.authentication.rest;
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
+import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
+import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,10 +38,35 @@ import java.util.List;
 /**
  * @author Sylvain Vissiere-Guerinet
  */
-@ComponentScan(basePackages = { "fr.cnes.regards.framework.authentication.role" })
+//@ComponentScan(basePackages = { "fr.cnes.regards.framework.authentication.role" })
 @EnableAutoConfiguration
 @Configuration
 public class BorrowRoleITConfiguration {
+
+//    @Bean
+//    public IProjectsClient projectsClient() {
+//        return Mockito.mock(IProjectsClient.class);
+//    }
+
+    @Bean
+    public IProjectUsersClient projectUsersClient() {
+        return Mockito.mock(IProjectUsersClient.class);
+    }
+
+//    @Bean
+//    public IAccountsClient accountsClient() {
+//        return Mockito.mock(IAccountsClient.class);
+//    }
+
+    @Bean
+    public IAccessRightSettingClient accessSettingsClient() {
+        return Mockito.mock(IAccessRightSettingClient.class);
+    }
+
+    @Bean
+    public IRegistrationClient registrationClient() {
+        return Mockito.mock(IRegistrationClient.class);
+    }
 
     @Bean
     public IRolesClient rolesClient() {

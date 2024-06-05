@@ -24,6 +24,10 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import fr.cnes.regards.modules.authentication.service.role.BorrowRoleService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -58,6 +62,12 @@ public class BorrowRoleController {
      *
      * @return information to switch role
      */
+    @Operation(summary = "Switch current user role.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Role switched successfully."),
+                            @ApiResponse(responseCode = "403",
+                                         description = "The endpoint is not accessible for the user.",
+                                         useReturnTypeSchema = true,
+                                         content = { @Content(mediaType = "application/html") }) })
     @ResponseBody
     @ResourceAccess(role = DefaultRole.PUBLIC, description = "endpoint allowing to switch role")
     @RequestMapping(method = RequestMethod.GET, path = PATH_BORROW_ROLE_TARGET)

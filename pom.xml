@@ -54,7 +54,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-deploy.skip>true</maven-deploy.skip>
 <!--        <regards.version>1.16.0-SNAPSHOT</regards.version>-->
-        <regards.version>featureupgrade-all-java-deps-SNAPSHOT</regards.version>
+        <regards.version>1.16.0-SNAPSHOT</regards.version>
         <revision>${regards.version}</revision>
 
         <!-- COTS dependencies needed by vulnerabilities (should be removed when dependency is resolved with safe
@@ -76,10 +76,10 @@
         <snakeyaml.version>2.2</snakeyaml.version>
 
         <!-- spring -->
-        <spring-cloud-dependencies.version>2023.0.1</spring-cloud-dependencies.version>
+        <spring-cloud-dependencies.version>2023.0.2</spring-cloud-dependencies.version>
         <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
         <com.icegreen.greenmail-spring.version>2.0.1</com.icegreen.greenmail-spring.version>
-        <spring.boot.version>3.2.5</spring.boot.version>
+        <spring.boot.version>3.2.6</spring.boot.version>
         <!-- spring relies on junit5 for testing. add junit vintage to ensure retro-compatibility for older versions of junit -->
         <!-- FIXME : phrase ci-dessus à vérifier, version 5.10.1 dispo -->
         <junit-vintage-engine.version>5.8.2</junit-vintage-engine.version>

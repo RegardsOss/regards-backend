@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -39,7 +40,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)
-@EnableAutoConfiguration
+@EnableAutoConfiguration(exclude = GsonAutoConfiguration.class) // Spring-boot one, not ours !!
 @TestPropertySource(properties = { "regards.amqp.management.mode=SINGLE",
                                    "regards.tenants=PROJECT, PROJECT1",
                                    "regards.tenant=PROJECT",

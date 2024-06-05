@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.test.integration;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Mock to test API endpoints at module level
@@ -28,6 +29,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 // CHECKSTYLE:OFF
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices" })
+@ActiveProfiles("test")
 public class TestApplication {
 
     public static void main(final String[] pArgs) {

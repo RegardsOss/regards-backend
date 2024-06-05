@@ -18,12 +18,8 @@
 package fr.cnes.regards.modules.processing.testutils.servlet;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
-import fr.cnes.regards.framework.authentication.autoconfigure.Oauth2AutoConfiguration;
 import fr.cnes.regards.framework.feign.FeignClientConfiguration;
-import fr.cnes.regards.framework.gson.GsonBuilderFactory;
-import fr.cnes.regards.framework.gson.GsonCustomizer;
 import fr.cnes.regards.framework.gson.GsonProperties;
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.gson.autoconfigure.GsonHttpMessageConverterCustom;
@@ -41,11 +37,13 @@ import fr.cnes.regards.framework.test.integration.DefaultTestFeignConfiguration;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.processing.domain.service.IRoleCheckerService;
-import fr.cnes.regards.modules.processing.utils.gson.TypedGsonTypeAdapter;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import io.r2dbc.pool.PoolingConnectionFactoryProvider;
+import io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
-import io.vavr.gson.VavrGson;
+import io.r2dbc.spi.ConnectionFactoryOptions;
+import jakarta.persistence.EntityManagerFactory;
 import name.nkonev.r2dbc.migrate.autoconfigure.R2dbcMigrateAutoConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,16 +51,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -74,13 +73,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
-import java.util.ServiceLoader;
 
 import static fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingIT.TENANT_PROJECTA;
-import static io.r2dbc.pool.PoolingConnectionFactoryProvider.ACQUIRE_RETRY;
-import static io.r2dbc.pool.PoolingConnectionFactoryProvider.MAX_ACQUIRE_TIME;
-import static io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider.SCHEMA;
 import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 
 /**
@@ -89,21 +83,21 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
  * @author gandrieu
  */
 @Configuration
-@EnableAutoConfiguration(exclude = { R2dbcMigrateAutoConfiguration.class, Oauth2AutoConfiguration.class, })
+@EnableAutoConfiguration(exclude = { R2dbcMigrateAutoConfiguration.class })
 @EnableWebMvc
 @EnableJpaRepositories
 @EnableFeignClients(basePackageClasses = { IAccountsClient.class, IRolesClient.class, IStorageRestClient.class })
 @ContextConfiguration(classes = { DefaultTestFeignConfiguration.class,
                                   AppDaoTestConfiguration.class,
                                   AmqpTestConfiguration.class })
-@Import({ MultitenantAutoConfiguration.class,
-          MicroserviceAutoConfiguration.class,
-          AmqpAutoConfiguration.class,
-          DataSourcesAutoConfiguration.class,
-          MultitenantJpaAutoConfiguration.class,
-          JacksonAutoConfiguration.class,
-          FeignClientConfiguration.class,
-          GsonAutoConfiguration.class, })
+@ImportAutoConfiguration({ MultitenantAutoConfiguration.class,
+                           MicroserviceAutoConfiguration.class,
+                           AmqpAutoConfiguration.class,
+                           DataSourcesAutoConfiguration.class,
+                           MultitenantJpaAutoConfiguration.class,
+                           JacksonAutoConfiguration.class,
+                           FeignClientConfiguration.class,
+                           GsonAutoConfiguration.class, })
 public class TestSpringConfiguration implements WebMvcConfigurer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestSpringConfiguration.class);
@@ -132,19 +126,37 @@ public class TestSpringConfiguration implements WebMvcConfigurer {
     @Autowired
     private ApplicationContext applicationContext;
 
+    /**
+     * A bean needs an EntityManagerFactory....We only have multitenantsEntityManagerFactory which isn't an
+     * EntityManagerFactory so this method permits to get first one from second one.
+     * Then...MultitenantJpaAutoConfiguration complains because there are 2 EntityManagerFactory instead of one...This
+     * is why @Primary is set too
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    @Primary
+    public EntityManagerFactory entityManagerFactory(@Qualifier("multitenantsEntityManagerFactory")
+                                                     LocalContainerEntityManagerFactoryBean localContainerEntityManagerFactoryBean) {
+        return localContainerEntityManagerFactoryBean.getObject();
+    }
+
     @Bean
     @ConditionalOnMissingBean
     public ConnectionFactory connectionFactory() {
-        Builder builder = builder().option(DRIVER, "pool")
-                                   .option(ACQUIRE_RETRY, 5)
-                                   .option(MAX_ACQUIRE_TIME, Duration.ofSeconds(5))
-                                   .option(PROTOCOL, "postgresql")
-                                   .option(HOST, r2dbcHost)
-                                   .option(PORT, r2dbcPort)
-                                   .option(DATABASE, r2dbcDbname)
-                                   .option(SCHEMA, r2dbcSchema)
-                                   .option(USER, r2dbcUsername)
-                                   .option(PASSWORD, r2dbcPassword);
+        ConnectionFactoryOptions.Builder builder = ConnectionFactoryOptions.builder()
+                                                                           .option(DRIVER, "pool")
+                                                                           .option(PoolingConnectionFactoryProvider.ACQUIRE_RETRY,
+                                                                                   5)
+                                                                           .option(PoolingConnectionFactoryProvider.MAX_ACQUIRE_TIME,
+                                                                                   Duration.ofSeconds(5))
+                                                                           .option(PROTOCOL, "postgresql")
+                                                                           .option(HOST, r2dbcHost)
+                                                                           .option(PORT, r2dbcPort)
+                                                                           .option(DATABASE, r2dbcDbname)
+                                                                           .option(PostgresqlConnectionFactoryProvider.SCHEMA,
+                                                                                   r2dbcSchema)
+                                                                           .option(USER, r2dbcUsername)
+                                                                           .option(PASSWORD, r2dbcPassword);
         return ConnectionFactories.get(builder.build());
     }
 
@@ -159,25 +171,6 @@ public class TestSpringConfiguration implements WebMvcConfigurer {
         }
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public GsonBuilderFactory gsonBuilderFactory() {
-        return new GsonBuilderFactory(properties, applicationContext) {
-
-            @Override
-            public GsonBuilder newBuilder() {
-                GsonBuilder builder = GsonCustomizer.gsonBuilder(Optional.ofNullable(properties),
-                                                                 Optional.ofNullable(applicationContext));
-                ServiceLoader<TypedGsonTypeAdapter> loader = ServiceLoader.load(TypedGsonTypeAdapter.class);
-                loader.iterator().forEachRemaining(tr -> {
-                    builder.registerTypeAdapter(tr.type(), tr.serializer());
-                    builder.registerTypeAdapter(tr.type(), tr.deserializer());
-                });
-                VavrGson.registerAll(builder);
-                return builder.setPrettyPrinting();
-            }
-        };
-    }
 
     /**
      *

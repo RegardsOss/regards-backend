@@ -47,7 +47,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.ArrayList;
@@ -88,8 +87,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
         BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
-        blowfishEncryptionService.init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"),
-                                                            "12345678"));
+        blowfishEncryptionService.init(new CipherProperties("src/test/resources/testKey", "12345678"));
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
                                                 publisherMocked,
                                                 runtimeTenantResolver,
@@ -189,20 +187,20 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Purpose("Delete a plugin configuration identified by an identifier")
     public void deleteAPluginConfiguration() {
         try {
-            final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
-            aPluginConfiguration.setId(AN_ID);
+            final PluginConfiguration pluginConf = getPluginConfigurationWithParameters();
+            pluginConf.setId(AN_ID);
             //need to directly call PluginUtils.getPlugins.get(pluginId) to set metadata because of mockito
-            aPluginConfiguration.setMetaDataAndPluginId(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
-            Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
-                   .thenReturn(aPluginConfiguration);
-            pluginServiceMocked.deletePluginConfiguration(aPluginConfiguration.getBusinessId());
-            Mockito.verify(pluginConfRepositoryMocked).deleteById(aPluginConfiguration.getId());
+            pluginConf.setMetaDataAndPluginId(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
+            Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(pluginConf.getBusinessId()))
+                   .thenReturn(pluginConf);
+            pluginServiceMocked.deletePluginConfiguration(pluginConf.getBusinessId());
+            Mockito.verify(pluginConfRepositoryMocked).deleteById(pluginConf.getId());
             Mockito.verify(publisherMocked)
-                   .publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
-                                                         aPluginConfiguration.getBusinessId(),
-                                                         aPluginConfiguration.getLabel(),
+                   .publish(new BroadcastPluginConfEvent(pluginConf.getId(),
+                                                         pluginConf.getBusinessId(),
+                                                         pluginConf.getLabel(),
                                                          PluginServiceAction.DELETE,
-                                                         aPluginConfiguration.getInterfaceNames()));
+                                                         pluginConf.getInterfaceNames()));
 
         } catch (final ModuleException e) {
             Assert.fail();

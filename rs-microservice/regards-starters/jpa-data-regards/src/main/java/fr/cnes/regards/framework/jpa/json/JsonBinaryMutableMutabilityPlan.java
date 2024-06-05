@@ -25,7 +25,6 @@ import java.lang.reflect.Type;
 /**
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
 public class JsonBinaryMutableMutabilityPlan extends MutableMutabilityPlan<Object> {
 
     /**
@@ -37,12 +36,9 @@ public class JsonBinaryMutableMutabilityPlan extends MutableMutabilityPlan<Objec
         super();
     }
 
-    /* (non-Javadoc)
-     * @see org.hibernate.type.descriptor.java.MutableMutabilityPlan#deepCopyNotNull(java.lang.Object)
-     */
     @Override
     protected Object deepCopyNotNull(Object value) {
-        Type currentType = type == null ? value.getClass() : type;
+        Type currentType = (type == null) ? value.getClass() : type;
         return GsonUtil.clone(value, currentType);
     }
 

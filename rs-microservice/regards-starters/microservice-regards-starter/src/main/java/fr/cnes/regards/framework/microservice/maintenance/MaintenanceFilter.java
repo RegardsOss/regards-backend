@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.framework.microservice.maintenance;
 
-import java.io.IOException;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
-import org.springframework.util.AntPathMatcher;
-import org.springframework.web.filter.OncePerRequestFilter;
-
 import com.google.common.net.HttpHeaders;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.microservice.rest.MaintenanceController;
@@ -35,6 +26,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.Set;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -61,8 +60,8 @@ public class MaintenanceFilter extends OncePerRequestFilter {
 
     private final AntPathMatcher staticPathMatcher = new AntPathMatcher();
 
-    public MaintenanceFilter(final IRuntimeTenantResolver pResolver, Set<String> noSecurityRoutes) {
-        resolver = pResolver;
+    public MaintenanceFilter(final IRuntimeTenantResolver resolver, Set<String> noSecurityRoutes) {
+        this.resolver = resolver;
         this.noSecurityRoutes = noSecurityRoutes;
     }
 

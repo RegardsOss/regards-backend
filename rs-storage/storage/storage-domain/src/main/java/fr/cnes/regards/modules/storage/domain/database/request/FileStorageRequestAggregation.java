@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -153,7 +153,6 @@ public class FileStorageRequestAggregation {
         Assert.notNull(storage, "File storage request need a destination location !");
         Assert.notNull(metaInfos, "File storage request need file meta information !");
         Assert.notNull(metaInfos.getChecksum(), "File storage request need file checkusm !");
-        Assert.notNull(storageSubDirectory);
         Assert.notNull(groupId, "GroupId is mandatory");
 
         this.owners.addAll(owners);

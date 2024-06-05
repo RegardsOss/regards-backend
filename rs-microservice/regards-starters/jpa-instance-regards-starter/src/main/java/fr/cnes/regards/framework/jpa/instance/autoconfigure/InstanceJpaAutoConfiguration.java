@@ -23,14 +23,12 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -45,7 +43,7 @@ import java.lang.annotation.Annotation;
  *
  * @author Sébastien Binda
  */
-@Configuration
+@AutoConfiguration(before = FlywayAutoConfiguration.class, after = GsonAutoConfiguration.class)
 @Conditional(value = EnableInstanceCondition.class)
 @EnableJpaRepositories(includeFilters = { @ComponentScan.Filter(value = InstanceEntity.class,
                                                                 type = FilterType.ANNOTATION) },
@@ -55,8 +53,6 @@ import java.lang.annotation.Annotation;
 @EnableTransactionManagement
 @EnableConfigurationProperties(InstanceDaoProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "instance.enabled", matchIfMissing = true)
-@AutoConfigureAfter(value = { GsonAutoConfiguration.class })
-@AutoConfigureBefore({ FlywayAutoConfiguration.class })
 public class InstanceJpaAutoConfiguration extends AbstractJpaAutoConfiguration {
 
     public InstanceJpaAutoConfiguration() throws MultiDataBasesException {

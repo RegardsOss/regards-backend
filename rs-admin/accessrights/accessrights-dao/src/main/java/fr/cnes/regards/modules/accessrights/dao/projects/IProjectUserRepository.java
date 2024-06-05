@@ -29,7 +29,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
-import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -152,8 +151,7 @@ public interface IProjectUserRepository
 
     default Map<String, Long> getUserCountByAccessGroup() {
         return getCountByAccessGroup().stream()
-                                      .collect(Collectors.toMap(count -> (String) count[0],
-                                                                count -> ((BigInteger) count[1]).longValue()));
+                                      .collect(Collectors.toMap(count -> (String) count[0], count -> (Long) count[1]));
     }
 
 }

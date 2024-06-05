@@ -26,16 +26,18 @@ import fr.cnes.regards.framework.gson.adapters.actuator.BeanDescriptorAdapter;
 import fr.cnes.regards.framework.gson.adapters.actuator.HealthAdapter;
 import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
 import io.vavr.gson.VavrGson;
+import org.reflections.Reflections;
 import org.springframework.boot.actuate.beans.BeansEndpoint;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.web.mappings.MappingsEndpoint;
 import org.springframework.util.MimeType;
 import org.springframework.util.MultiValueMap;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.ServiceLoader;
 
 /**
  * Gson builder with type adapters.
@@ -57,6 +59,7 @@ public class ProcessingGsonUtils {
         return builder.create();
     }
 
+    @SuppressWarnings("rawtypes")
     public static GsonBuilder gsonBuilder() {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeHierarchyAdapter(Path.class, new PathAdapter().nullSafe());
@@ -69,14 +72,29 @@ public class ProcessingGsonUtils {
         builder.addSerializationExclusionStrategy(new GsonIgnoreExclusionStrategy());
         builder.registerTypeAdapter(Health.class, new HealthAdapter());
         builder.registerTypeAdapter(BeansEndpoint.BeanDescriptor.class, new BeanDescriptorAdapter());
-        builder.registerTypeAdapter(MappingsEndpoint.ApplicationMappings.class, new ApplicationMappingsAdapter());
+        builder.registerTypeAdapter(MappingsEndpoint.ApplicationMappingsDescriptor.class,
+                                    new ApplicationMappingsAdapter());
         VavrGson.registerAll(builder);
 
-        ServiceLoader<TypedGsonTypeAdapter> loader = ServiceLoader.load(TypedGsonTypeAdapter.class);
-        loader.iterator().forEachRemaining(tr -> {
-            builder.registerTypeAdapter(tr.type(), tr.serializer());
-            builder.registerTypeAdapter(tr.type(), tr.deserializer());
-        });
+        // Register gson type adapters implementing TypedGsonTypeAdapter. This is usualy done into GsonCustomizer but
+        // here, there isn't Spring so do it manually.
+        Reflections reflections = new Reflections("fr.cnes.regards");
+        // Search for all classes implementing TypedGsonTypeAdapter
+        for (Class<? extends TypedGsonTypeAdapter> clazz : reflections.getSubTypesOf(TypedGsonTypeAdapter.class)) {
+            try {
+                // build an instance (constructor without parameter wanted please)
+                TypedGsonTypeAdapter<?> typedGsonTypeAdapter = clazz.getConstructor().newInstance();
+                // Retrieve adapted type (i.e. class parameter, assuming only one interface is implemented)
+                Type actualTypeArgument =
+                    ((ParameterizedType) clazz.getGenericInterfaces()[0]).getActualTypeArguments()[0];
+                // Register both JsonSerializer and JsonDeserializer
+                builder.registerTypeAdapter(actualTypeArgument, typedGsonTypeAdapter.serializer());
+                builder.registerTypeAdapter(actualTypeArgument, typedGsonTypeAdapter.deserializer());
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
+
+        }
 
         return builder;
     }

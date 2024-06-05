@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.beans.BeansEndpoint.BeanDescriptor;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.SystemHealth;
-import org.springframework.boot.actuate.web.mappings.MappingsEndpoint.ApplicationMappings;
+import org.springframework.boot.actuate.web.mappings.MappingsEndpoint;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.MimeType;
 import org.springframework.util.MultiValueMap;
@@ -89,7 +89,8 @@ public final class GsonCustomizer {
         builder.registerTypeAdapter(Health.class, new HealthAdapter());
         builder.registerTypeAdapter(SystemHealth.class, new SystemHealthAdapter());
         builder.registerTypeAdapter(BeanDescriptor.class, new BeanDescriptorAdapter());
-        builder.registerTypeAdapter(ApplicationMappings.class, new ApplicationMappingsAdapter());
+        builder.registerTypeAdapter(MappingsEndpoint.ApplicationMappingsDescriptor.class,
+                                    new ApplicationMappingsAdapter());
 
         // Custom adapters for java collections
         builder.registerTypeAdapterFactory(ListAdapter.FACTORY);
@@ -126,40 +127,52 @@ public final class GsonCustomizer {
         if (applicationContext.isPresent()) {
             Map<String, TypeAdapterFactory> beanFactories = applicationContext.get()
                                                                               .getBeansOfType(TypeAdapterFactory.class);
-            if (beanFactories != null) {
-                for (Map.Entry<String, TypeAdapterFactory> beanFactory : beanFactories.entrySet()) {
-                    builder.registerTypeAdapterFactory(beanFactory.getValue());
-                }
+            for (Map.Entry<String, TypeAdapterFactory> beanFactory : beanFactories.entrySet()) {
+                builder.registerTypeAdapterFactory(beanFactory.getValue());
             }
         }
     }
 
     /**
-     * Add {@link TypeAdapter} annotated with {@link GsonTypeAdapterBean} to GSON
-     *
+     * Add {@link TypeAdapter}  and {@link TypedGsonTypeAdapter} annotated with {@link GsonTypeAdapterBean} to GSON
      * @param builder            GSON builder to customize
-     * @param applicationContext optional application context
+     * @param applicationContextOpt optional application context
      */
-    private static void addBeanAdapters(GsonBuilder builder, Optional<ApplicationContext> applicationContext) {
-
-        if (applicationContext.isPresent()) {
-            @SuppressWarnings("rawtypes") Map<String, TypeAdapter> beanFactories = applicationContext.get()
-                                                                                                     .getBeansOfType(
-                                                                                                         TypeAdapter.class);
-            if (beanFactories != null) {
-                for (@SuppressWarnings("rawtypes")
-                Map.Entry<String, TypeAdapter> beanFactory : beanFactories.entrySet()) {
-                    TypeAdapter<?> current = beanFactory.getValue();
-                    // Retrieve custom annotation
-                    GsonTypeAdapterBean annot = current.getClass().getAnnotation(GsonTypeAdapterBean.class);
-                    if (annot != null) {
-                        builder.registerTypeAdapter(annot.adapted(), beanFactory.getValue());
-                    } else {
-                        LOGGER.debug("No annotation found on type adapter bean {}, skipping registration",
-                                     beanFactory.getKey());
-                    }
+    @SuppressWarnings("rawtypes")
+    private static void addBeanAdapters(GsonBuilder builder, Optional<ApplicationContext> applicationContextOpt) {
+        if (applicationContextOpt.isPresent()) {
+            ApplicationContext applicationContext = applicationContextOpt.get();
+            // Search all classes inheriting TypeAdapter
+            Map<String, TypeAdapter> typeAdapterMap = applicationContext.getBeansOfType(TypeAdapter.class);
+            for (Map.Entry<String, TypeAdapter> entry : typeAdapterMap.entrySet()) {
+                TypeAdapter<?> current = entry.getValue();
+                // Retrieve custom annotation
+                GsonTypeAdapterBean annot = current.getClass().getAnnotation(GsonTypeAdapterBean.class);
+                if (annot != null) {
+                    builder.registerTypeAdapter(annot.adapted(), current);
+                } else {
+                    LOGGER.debug("No annotation GsonTypeAdapterBean found on type adapter bean {}, skipping "
+                                 + "registration", entry.getKey());
                 }
             }
+
+            // Search all classes implementing TypedGsonTypeAdapter
+
+            Map<String, TypedGsonTypeAdapter> typedGsonTypeAdapterMap = applicationContext.getBeansOfType(
+                TypedGsonTypeAdapter.class);
+            for (Map.Entry<String, TypedGsonTypeAdapter> entry : typedGsonTypeAdapterMap.entrySet()) {
+                TypedGsonTypeAdapter<?> current = entry.getValue();
+                // Retrieve custom annotation
+                GsonTypeAdapterBean annot = current.getClass().getAnnotation(GsonTypeAdapterBean.class);
+                if (annot != null) {
+                    builder.registerTypeAdapter(annot.adapted(), current.serializer());
+                    builder.registerTypeAdapter(annot.adapted(), current.deserializer());
+                } else {
+                    LOGGER.debug("No annotation GsonTypeAdapterBean found on type adapter bean {}, skipping "
+                                 + "registration", entry.getKey());
+                }
+            }
+
         }
     }
 }

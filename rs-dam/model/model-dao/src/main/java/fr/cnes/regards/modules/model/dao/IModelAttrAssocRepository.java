@@ -66,7 +66,7 @@ public interface IModelAttrAssocRepository extends JpaRepository<ModelAttrAssoc,
         return new PageImpl<>(modelAttrAssocs, idPage.getPageable(), idPage.getTotalElements());
     }
 
-    @Query("select id from ModelAttrAssoc where model.name in :modelNames")
+    @Query("SELECT assoc.id FROM ModelAttrAssoc assoc WHERE assoc.model.name IN :modelNames")
     Page<Long> findIdPageByModelNameIn(@Param("modelNames") Collection<String> modelNames, Pageable pageable);
 
     @Override

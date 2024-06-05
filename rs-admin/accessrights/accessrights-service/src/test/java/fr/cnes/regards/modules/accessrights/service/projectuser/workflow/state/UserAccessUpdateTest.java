@@ -100,7 +100,7 @@ public class UserAccessUpdateTest {
     }
 
     protected ApplicationEvent publishedEvent() {
-        ArgumentCaptor<ApplicationEvent> eventCaptor = ArgumentCaptor.forClass(OnInactiveEvent.class);
+        ArgumentCaptor<ApplicationEvent> eventCaptor = ArgumentCaptor.forClass(ApplicationEvent.class);
         verify(platformPublisher).publishEvent(eventCaptor.capture());
         return eventCaptor.getValue();
     }

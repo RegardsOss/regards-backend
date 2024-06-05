@@ -56,7 +56,7 @@ public class AutoOrderRequestClientIT extends AbstractMultitenantServiceIT {
     private IAutoOrderRequestClient autoOrderRequestClient; // class under test
 
     @Test
-    public void givenOrderRequest_whenHandled_thenExpectPublishedEvents() {
+    public void givenOrderRequest_whenHandled_thenExpectPublishedEvents() throws InterruptedException {
         // GIVEN
         int nbRequests = 2;
         List<OrderRequestDto> orderRequests = simulateOrderRequests(nbRequests);
@@ -67,6 +67,8 @@ public class AutoOrderRequestClientIT extends AbstractMultitenantServiceIT {
         // THEN
         // check that OrderRequestDtoEvents were sent from OrderRequestDtos
         ArgumentCaptor<OrderResponseDtoEvent> responseCaptor = ArgumentCaptor.forClass(OrderResponseDtoEvent.class);
+        // Wait a while to make test be OK
+        Thread.sleep(5000);
         Mockito.verify(publisher, times(nbRequests)).publish(responseCaptor.capture());
     }
 

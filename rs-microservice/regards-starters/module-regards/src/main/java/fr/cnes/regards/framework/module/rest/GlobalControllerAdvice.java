@@ -20,11 +20,13 @@ package fr.cnes.regards.framework.module.rest;
 
 import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
+import jakarta.validation.ValidationException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -36,7 +38,6 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.util.WebUtils;
 
-import javax.validation.ValidationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,7 +111,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex,
                                                              Object body,
                                                              HttpHeaders headers,
-                                                             HttpStatus status,
+                                                             HttpStatusCode status,
                                                              WebRequest request) {
 
         // Create REGARDS body
@@ -286,7 +287,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ServerErrorResponse> handleResponseStatusException(ResponseStatusException exception) {
-        return ResponseEntity.status(exception.getStatus())
+        return ResponseEntity.status(exception.getStatusCode())
                              .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
@@ -296,7 +297,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                   HttpHeaders headers,
-                                                                  HttpStatus status,
+                                                                  HttpStatusCode status,
                                                                   WebRequest request) {
 
         List<String> messages = new ArrayList<>();

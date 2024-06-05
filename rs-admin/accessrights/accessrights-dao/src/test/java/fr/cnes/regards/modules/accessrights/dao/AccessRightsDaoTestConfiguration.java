@@ -37,7 +37,8 @@ import org.springframework.context.annotation.PropertySource;
  */
 @Configuration
 @EnableAutoConfiguration
-@PropertySource("classpath:tests-embedded.properties")
+// Cannot use tests-embedded.properties because of grammar pb with H2
+@PropertySource("classpath:tests-postgresql.properties")
 public class AccessRightsDaoTestConfiguration {
 
     /**

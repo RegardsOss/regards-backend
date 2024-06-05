@@ -772,7 +772,7 @@ public class ProductService implements IProductService {
     @Override
     public long countSIPGenerationJobInfoByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
                                                                         ISipState productSipState) {
-        return productRepository.countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(processingChain,
+        return productRepository.countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(processingChain.getId(),
                                                                                                    productSipState.toString());
     }
 
@@ -810,7 +810,7 @@ public class ProductService implements IProductService {
 
         // Stop SIP generation jobs
         Set<JobInfo> jobInfos = productRepository.findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(
-            processingChain,
+            processingChain.getId(),
             ProductSIPState.SCHEDULED);
         jobInfos.forEach(j -> jobInfoService.stopJob(j.getId()));
     }

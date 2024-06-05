@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.order.domain;
 
-import jakarta.annotation.Nullable;
-import java.util.Comparator;
-import java.util.List;
-
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Type;
-import org.hibernate.type.SqlTypes;
-
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractReliantTask;
@@ -35,12 +27,14 @@ import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.dto.dto.DatasetTaskDto;
 import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
 import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-import org.springframework.beans.BeanUtils;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
+import org.hibernate.annotations.Type;
+import org.springframework.beans.BeanUtils;
+
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Dataset specific order task. This task is linked to optional processing task and to all sub-orders (files tasks) of

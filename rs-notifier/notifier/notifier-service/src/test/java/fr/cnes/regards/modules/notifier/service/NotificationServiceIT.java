@@ -1908,6 +1908,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
     @Test
     public void testCheckCompletedShouldSendProperEvents()
         throws EncryptionException, EntityInvalidException, EntityNotFoundException {
+        Mockito.clearInvocations(publisher);
 
         // Given
         PluginConfiguration recipient1 = pluginService.savePluginConfiguration(new PluginConfiguration("recipient1",

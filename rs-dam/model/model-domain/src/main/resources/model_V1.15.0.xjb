@@ -1,0 +1,10 @@
+<jaxb:bindings xmlns:xs="http://www.w3.org/2001/XMLSchema"
+               xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+               version="3.0">
+    <jaxb:bindings schemaLocation="model_V1.15.0.xsd" version="1.0">
+        <!-- Customise the package name -->
+        <jaxb:schemaBindings>
+            <jaxb:package name="fr.cnes.regards.modules.model.domain.schema"/>
+        </jaxb:schemaBindings>
+    </jaxb:bindings>
+</jaxb:bindings>

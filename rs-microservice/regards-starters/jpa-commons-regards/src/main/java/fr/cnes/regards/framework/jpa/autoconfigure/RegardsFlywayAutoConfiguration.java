@@ -21,19 +21,17 @@ package fr.cnes.regards.framework.jpa.autoconfigure;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.configuration.ClassicConfiguration;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 /**
- * Configuration to prevent Flyway auto configuration
+ * Configuration to prevent Flyway autoconfiguration
  * It also allows to override classic ({@link ClassicConfiguration}) Flyway configuration
  *
  * @author Olivier Rousselot
  */
-@Configuration
-@AutoConfigureBefore(FlywayAutoConfiguration.class)
+@AutoConfiguration(before = FlywayAutoConfiguration.class)
 public class RegardsFlywayAutoConfiguration {
 
     @Value("${spring.jpa.properties.hibernate.default_schema:#{null}}")
@@ -46,7 +44,7 @@ public class RegardsFlywayAutoConfiguration {
     private boolean outOfOrder;
 
     /**
-     * Prevent flyway auto configuration (Flyway is created by this configuration not by the FlywayAutoConfiguration)
+     * Prevent flyway autoconfiguration (Flyway is created by this configuration not by the FlywayAutoConfiguration)
      */
     @Bean
     public Flyway flyway() {

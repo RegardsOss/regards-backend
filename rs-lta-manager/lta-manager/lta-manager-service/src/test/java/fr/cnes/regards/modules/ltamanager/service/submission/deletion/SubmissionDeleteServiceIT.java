@@ -126,7 +126,7 @@ public class SubmissionDeleteServiceIT extends AbstractRegardsIT {
         Assert.assertEquals(0, after.getTotalElements());
         // 1 request remaining with another owner is remaining
         Assert.assertEquals(1, requestRepository.count());
-        Mockito.verify(requestRepository, Mockito.times(1)).deleteAllInBatch(Mockito.any());
+        Mockito.verify(requestRepository, Mockito.times(1)).delete(Mockito.any(Specification.class));
     }
 
     @Test
@@ -150,7 +150,7 @@ public class SubmissionDeleteServiceIT extends AbstractRegardsIT {
         Page<SubmissionRequest> after = requestRepository.findAll(spec, page);
         Assert.assertEquals(0, after.getTotalElements());
         // 4 pages (3 pages of 5 requests and 1 page of 2 request)
-        Mockito.verify(requestRepository, Mockito.times(4)).deleteAllInBatch(Mockito.any());
+        Mockito.verify(requestRepository, Mockito.times(1)).delete(Mockito.any(Specification.class));
     }
 
     @Test

@@ -22,15 +22,14 @@ import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import jakarta.persistence.Entity;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.persistence.Entity;
 import java.lang.annotation.Annotation;
 
 /**
@@ -40,7 +39,7 @@ import java.lang.annotation.Annotation;
  *
  * @author Sébastien Binda
  */
-@Configuration
+@AutoConfiguration(after = GsonAutoConfiguration.class)
 @Conditional(value = DisableInstanceCondition.class)
 @EnableJpaRepositories(basePackages = DaoUtils.ROOT_PACKAGE,
                        entityManagerFactoryRef = "instanceEntityManagerFactory",
@@ -48,7 +47,6 @@ import java.lang.annotation.Annotation;
 @EnableTransactionManagement
 @EnableConfigurationProperties(InstanceDaoProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "instance.enabled", matchIfMissing = true)
-@AutoConfigureAfter(value = { GsonAutoConfiguration.class })
 public class JpaAutoConfiguration extends AbstractJpaAutoConfiguration {
 
     public JpaAutoConfiguration() throws MultiDataBasesException {

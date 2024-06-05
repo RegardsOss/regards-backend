@@ -18,14 +18,17 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
@@ -36,18 +39,11 @@ import java.util.Set;
 @DiscriminatorValue(FeatureRequestTypeEnum.DELETION_DISCRIMINENT)
 public class FeatureDeletionRequest extends AbstractFeatureRequest {
 
-    @Id
-    @SequenceGenerator(name = "featureDeleteRequestSequence",
-                       initialValue = 1,
-                       sequenceName = "seq_feature_deletion_request")
-    @GeneratedValue(generator = "featureDeleteRequestSequence", strategy = GenerationType.SEQUENCE)
-    private Long id;
-
     /**
      * Should be null until it reaches {@link FeatureRequestStep#LOCAL_TO_BE_NOTIFIED}
      */
     @Column(columnDefinition = "jsonb", name = "to_notify", nullable = true)
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     private Feature toNotify;
 
     @Column(name = "sessionToNotify", length = 255)
@@ -82,16 +78,6 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
         request.setPriority(priority);
 
         return request;
-    }
-
-    @Override
-    public Long getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(Long id) {
-        this.id = id;
     }
 
     @Override

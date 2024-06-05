@@ -23,14 +23,15 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import fr.cnes.regards.framework.geojson.deserializers.GeometryDeserializerModule;
 import fr.cnes.regards.framework.geojson.serializers.GeometrySerializerModule;
 import fr.cnes.regards.framework.geojson.serializers.MimeTypeSerializerModule;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 /**
  * @author Thomas GUILLOU
  **/
-@Configuration
+@AutoConfiguration
 public class CustomJacksonAutoconfiguration {
 
     /**
@@ -38,6 +39,7 @@ public class CustomJacksonAutoconfiguration {
      * The default ObjectMapper configuration will be overridden
      */
     @Bean
+    @Primary
     public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {
         // Spring Boot actually uses this builder by default when building the ObjectMapper
         // it will also register automatically some modules because they are present on the classpath :

@@ -23,6 +23,8 @@ import fr.cnes.regards.framework.utils.eureka.EurekaWaitingUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 
@@ -34,9 +36,12 @@ import java.util.Arrays;
  * <p>
  * The RegardsRunListener blocks the microservice execution until the rs-registry and all the microservices
  * it depends on are running.
+ * <b>To avoid missing SpringApplication bean when testing, please set @ActiveProfiles("test") on class test</b>
  *
  * @author Thibaud Michaudel
  **/
+@Component
+@Profile("!test")
 public class RegardsRunListener implements SpringApplicationRunListener {
 
     public static final int DEFAULT_DELAY = 5;

@@ -57,7 +57,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.support.CronSequenceGenerator;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -402,7 +402,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         if ((processingChain.getPeriodicity() != null)
-            && !CronSequenceGenerator.isValidExpression(processingChain.getPeriodicity())) {
+            && !CronExpression.isValidExpression(processingChain.getPeriodicity())) {
             throw new EntityInvalidException("Cron expression is not valid for processing chain automatic trigger");
         }
     }

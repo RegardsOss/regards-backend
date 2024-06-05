@@ -473,7 +473,7 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
                        anyString(),
                        any(NotificationLevel.class),
                        any(MimeType.class),
-                       any(DefaultRole.class));
+                       any(DefaultRole[].class));
         messageCaptor.getAllValues().forEach(message -> assertTrue(message.contains(label)));
 
         // Cleanup

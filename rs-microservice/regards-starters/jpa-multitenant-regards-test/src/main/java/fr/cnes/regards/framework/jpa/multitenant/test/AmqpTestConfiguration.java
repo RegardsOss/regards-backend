@@ -18,19 +18,21 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.test;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import java.util.Optional;
+
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
-import java.util.Optional;
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.utils.spring.CglibHelper;
 
 /**
  * Provide during test either empty beans (when profile="!testAmqp") relative to AMQP
@@ -144,20 +146,28 @@ public class AmqpTestConfiguration {
 
     /**
      * Publisher mock
-     *
-     * @return {@link IPublisher}
      */
     @Bean
     @Primary
     @Profile("!testAmqp")
-    public IPublisher eventPublisher() {
+    public IPublisher eventPublisherMock() {
         return Mockito.mock(IPublisher.class);
     }
 
     /**
+     * Because a mock() is returned when no profile testAmqp, it is necessary to return a spy() of "true" publisher (to be consistent).
+     * This avoids using @SpyBean on IPublisher under tests (Mockito doesn't like spying a mock) for the benefit of @Autowired
+     */
+    @Bean
+    @Primary
+    @Profile("testAmqp")
+    public IPublisher eventPublisherSpy(IPublisher publisher) {
+        // Don't spy an autowired object, spy proxied object instead
+        return Mockito.spy(CglibHelper.getTargetObject(publisher));
+    }
+
+    /**
      * Instance publisher mock
-     *
-     * @return {@link IPublisher}
      */
     @Bean
     @Primary

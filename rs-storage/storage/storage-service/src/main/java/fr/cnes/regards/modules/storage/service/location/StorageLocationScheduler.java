@@ -33,6 +33,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -139,7 +140,10 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, actionLabel);
                 lockingTaskExecutors.executeWithLock(task,
-                                                     new LockConfiguration(lockId, Instant.now().plusSeconds(120)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           lockId,
+                                                                           Duration.ofSeconds(120),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(actionLabel, schedulerTitle, e);
             } finally {

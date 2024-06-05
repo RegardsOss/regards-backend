@@ -124,9 +124,8 @@ public class StorageClient implements IStorageClient {
         } else {
             // Else publish as many requests as needed.
             List<String> groupChecksums = Lists.newArrayList();
-            Iterator<String> it = checksums.iterator();
-            while (it.hasNext()) {
-                groupChecksums.add(it.next());
+            for (String checksum : checksums) {
+                groupChecksums.add(checksum);
                 if (groupChecksums.size() >= FilesRestorationRequestEvent.MAX_REQUEST_PER_GROUP) {
                     RequestInfo requestInfo = RequestInfo.build();
                     publisher.publish(new FilesRestorationRequestEvent(groupChecksums,

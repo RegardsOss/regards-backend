@@ -23,7 +23,7 @@ package fr.cnes.regards.framework.modules.jobs.domain.exception;
  *
  * @author Marc Sordi
  */
-@SuppressWarnings("serial")
+
 public class JobRuntimeException extends RuntimeException {
 
     public JobRuntimeException(String message) {

@@ -18,18 +18,19 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.springframework.util.CollectionUtils;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -49,7 +50,8 @@ public class JsonSchemaRestriction extends AbstractRestriction {
      * Jsonified list of Strings
      **/
     @Column(name = "indexable_fields", columnDefinition = "jsonb")
-    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    @Type(value = JsonBinaryType.class,
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> indexableFields;
 
     public JsonSchemaRestriction() {
@@ -57,8 +59,8 @@ public class JsonSchemaRestriction extends AbstractRestriction {
     }
 
     @Override
-    public Boolean supports(PropertyType pAttributeType) {
-        return pAttributeType == PropertyType.JSON;
+    public Boolean supports(PropertyType attributeType) {
+        return attributeType == PropertyType.JSON;
     }
 
     @Override
@@ -85,9 +87,9 @@ public class JsonSchemaRestriction extends AbstractRestriction {
     }
 
     @Override
-    public void fromXml(Restriction pXmlElement) {
-        jsonSchema = pXmlElement.getJsonSchema();
-        indexableFields = new HashSet<>(pXmlElement.getIndexableField());
+    public void fromXml(Restriction xmlElement) {
+        jsonSchema = xmlElement.getJsonSchema();
+        indexableFields = new HashSet<>(xmlElement.getIndexableField());
     }
 
     public String getJsonSchema() {

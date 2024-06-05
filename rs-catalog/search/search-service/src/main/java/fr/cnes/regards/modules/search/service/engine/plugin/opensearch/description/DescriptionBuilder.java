@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.utils.ResponseEntityUtils;
@@ -417,7 +416,7 @@ public class DescriptionBuilder {
 
             Collection<ModelAttrAssoc> body = ResponseEntityUtils.extractBodyOrThrow(assocsResponse,
                                                                                      "An error occurred while trying to get model attributes: body is null");
-            if (!HttpUtils.isSuccess(assocsResponse.getStatusCode())) {
+            if (!assocsResponse.getStatusCode().is2xxSuccessful()) {
                 LOGGER.error("Trying to contact microservice responsible for Model but couldn't contact it");
                 throw new ModuleException("Unable to contact model controller");
             } else {

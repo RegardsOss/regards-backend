@@ -33,7 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
@@ -62,20 +62,16 @@ import java.util.Random;
  * @author gandrieu
  */
 @RunWith(SpringRunner.class)
-
 @SpringBootTest(classes = TestServletApplication.class,
                 webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
                 properties = { "spring.main.web-application-type=servlet",
-                               "spring.http.converters.preferred-json-mapper=gson",
+                               "spring.mvc.converters.preferred-json-mapper=gson",
                                "regards.security.system.voter.enabled=false",
                                "regards.security.instance.voter.enabled=false",
                                "regards.security.project.admin.voter.enabled=false", })
-
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
-
 @ContextConfiguration(initializers = { AbstractProcessingIT.Initializer.class },
                       classes = { TestSpringConfiguration.class })
-
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class AbstractProcessingIT implements InitializingBean {
 
@@ -95,7 +91,8 @@ public abstract class AbstractProcessingIT implements InitializingBean {
 
     protected static final String PGSQL_URL = "jdbc:postgresql://rs-postgres:5432/postgres";
 
-    protected static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.5").withDatabaseName(
+    protected static PostgreSQLContainer<?> postgreSQLContainer =
+        new PostgreSQLContainer<>("postgres:11.5").withDatabaseName(
         "postgres").withUsername(PGSQL_USER).withPassword(PGSQL_SECRET);
 
     protected static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.6.5-management").withUser(
@@ -196,16 +193,13 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                         try {
                             LOGGER.info("################## Creating DB {}", dbName);
                             Statement statement = connection.createStatement();
-                            int resultA = statement.executeUpdate("DROP DATABASE IF EXISTS "
-                                                                  + dbName
-                                                                  + "; "
-                                                                  + "CREATE DATABASE "
-                                                                  + dbName
-                                                                  + ";");
+                            int resultA = statement.executeUpdate(String.format(
+                                "DROP DATABASE IF EXISTS %1$s; CREATE DATABASE %1$s;",
+                                dbName));
                             statement.close();
                             LOGGER.info("################## Created DB {}: {}", dbName, resultA);
                         } catch (Exception e) {
-                            LOGGER.error("################## Error creating DB {}: {}", dbName, e.getMessage());
+                            LOGGER.error("################## Error creating DB {}", dbName, e);
                         }
                     });
 

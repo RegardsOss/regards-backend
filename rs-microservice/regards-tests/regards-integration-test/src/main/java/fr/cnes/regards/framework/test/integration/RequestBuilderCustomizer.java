@@ -23,8 +23,8 @@ import org.springframework.restdocs.payload.RequestFieldsSnippet;
 import org.springframework.restdocs.payload.ResponseFieldsSnippet;
 import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.request.PathParametersSnippet;
+import org.springframework.restdocs.request.QueryParametersSnippet;
 import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.restdocs.request.RequestParametersSnippet;
 import org.springframework.restdocs.snippet.Snippet;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -77,7 +77,7 @@ public class RequestBuilderCustomizer {
     private static final HttpHeaders DEFAULT_HEADERS = new HttpHeaders();
 
     static {
-        // lets initiate the default headers!
+        // let's initiate the default headers!
         DEFAULT_HEADERS.add(HttpConstants.CONTENT_TYPE, "application/json");
         DEFAULT_HEADERS.add(HttpConstants.ACCEPT, "application/json");
     }
@@ -108,7 +108,7 @@ public class RequestBuilderCustomizer {
     private final GsonBuilder gsonBuilder;
 
     /**
-     * Should the doc be skip
+     * Should the doc be skipped
      */
     private boolean skipDocumentation = false;
 
@@ -496,14 +496,14 @@ public class RequestBuilderCustomizer {
 
     public RequestBuilderCustomizer documentRequestParameters(ParameterDescriptor... descriptors) {
         Optional<Snippet> optionalExistingSnippet = docSnippets.stream()
-                                                               .filter(docSnippet -> docSnippet instanceof RequestParametersSnippet)
+                                                               .filter(docSnippet -> docSnippet instanceof QueryParametersSnippet)
                                                                .findFirst();
         // Check if an existing request params exists
         if (optionalExistingSnippet.isPresent()) {
             throw new RuntimeException("You cannot call this method several time.");
         } else {
             // Create another
-            docSnippets.add(RequestDocumentation.requestParameters(descriptors));
+            docSnippets.add(RequestDocumentation.queryParameters(descriptors));
         }
         return this;
     }
@@ -653,16 +653,10 @@ public class RequestBuilderCustomizer {
      */
     protected void checkCustomizationCoherence(HttpMethod httpMethod) {
         // constraints are only on DELETE and PUT, for now, as they cannot have request parameters
-        switch (httpMethod) {
-            case DELETE:
-            case PUT:
-                if (!requestParamBuilder.getParameters().isEmpty()) {
-                    throw new IllegalStateException(String.format("Method %s cannot have request parameters",
-                                                                  httpMethod));
-                }
-                break;
-            default:
-                break;
+        if (httpMethod.equals(HttpMethod.DELETE) || httpMethod.equals(HttpMethod.PUT)) {
+            if (!requestParamBuilder.getParameters().isEmpty()) {
+                throw new IllegalStateException(String.format("Method %s cannot have request parameters", httpMethod));
+            }
         }
     }
 

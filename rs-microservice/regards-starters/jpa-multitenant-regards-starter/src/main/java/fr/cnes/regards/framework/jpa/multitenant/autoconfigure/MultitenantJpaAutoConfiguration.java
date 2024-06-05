@@ -18,20 +18,12 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
-import com.google.gson.Gson;
-import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
-import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
-import fr.cnes.regards.framework.jpa.json.GsonUtil;
-import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
-import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
-import fr.cnes.regards.framework.jpa.multitenant.resolver.CurrentTenantIdentifierResolverImpl;
-import fr.cnes.regards.framework.jpa.multitenant.resolver.DataSourceBasedMultiTenantConnectionProviderImpl;
-import fr.cnes.regards.framework.jpa.utils.DaoUtils;
-import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import org.hibernate.MultiTenancyStrategy;
+import javax.sql.DataSource;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Environment;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
@@ -39,6 +31,7 @@ import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
@@ -54,11 +47,20 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import javax.persistence.Entity;
-import javax.sql.DataSource;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
+import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
+import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
+import fr.cnes.regards.framework.jpa.multitenant.resolver.CurrentTenantIdentifierResolverImpl;
+import fr.cnes.regards.framework.jpa.multitenant.resolver.DataSourceBasedMultiTenantConnectionProviderImpl;
+import fr.cnes.regards.framework.jpa.utils.DaoUtils;
+import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import jakarta.persistence.Entity;
 
 /**
  * Configuration class to define hibernate/jpa multitenancy databases strategy
@@ -66,7 +68,7 @@ import java.util.Set;
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
  */
-@Configuration
+@AutoConfiguration(after = { GsonAutoConfiguration.class, AmqpAutoConfiguration.class })
 @EnableJpaRepositories(excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class,
                                                                 type = FilterType.ANNOTATION) },
                        basePackages = DaoUtils.ROOT_PACKAGE,
@@ -74,7 +76,6 @@ import java.util.Set;
                        transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
-@AutoConfigureAfter({ GsonAutoConfiguration.class, AmqpAutoConfiguration.class })
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class MultitenantJpaAutoConfiguration {
 
@@ -169,9 +170,8 @@ public class MultitenantJpaAutoConfiguration {
         final Map<String, Object> hibernateProps = datasourceSchemaHelper.getHibernateProperties();
 
         // Add multitenant properties
-        hibernateProps.put(Environment.MULTI_TENANT, MultiTenancyStrategy.DATABASE);
-        hibernateProps.put(Environment.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider);
-        hibernateProps.put(Environment.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver);
+        hibernateProps.put(AvailableSettings.MULTI_TENANT_CONNECTION_PROVIDER, multiTenantConnectionProvider);
+        hibernateProps.put(AvailableSettings.MULTI_TENANT_IDENTIFIER_RESOLVER, currentTenantIdentifierResolver);
 
         // Find classpath for each Entity and not NonStandardEntity
         final Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
@@ -190,7 +190,7 @@ public class MultitenantJpaAutoConfiguration {
      * the database
      */
     @Bean
-    public Void setGsonIntoGsonUtil(Gson pGson) {
+    public Void setGsonIntoGsonUtil(@Qualifier("gson") Gson pGson) {
         GsonUtil.setGson(pGson);
         return null;
     }

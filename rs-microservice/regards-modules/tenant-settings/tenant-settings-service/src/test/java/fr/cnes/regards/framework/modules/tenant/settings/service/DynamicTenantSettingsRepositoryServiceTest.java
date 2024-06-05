@@ -35,7 +35,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
@@ -58,9 +57,7 @@ public class DynamicTenantSettingsRepositoryServiceTest {
         GsonUtil.setGson(GsonCustomizer.gsonBuilder(Optional.empty(), Optional.empty()).create());
         // init encryption service
         AESEncryptionService aesEncryptionService = new AESEncryptionService();
-        aesEncryptionService.init(new CipherProperties(Paths.get("src",
-                                                                 "test", "resources", "testKey"),
-                                                       "1234567812345678"));
+        aesEncryptionService.init(new CipherProperties("src/test/resources/testKey", "1234567812345678"));
         DynamicSettingsEncryptionService dynamicSettingsEncryptionService = new DynamicSettingsEncryptionService(
             aesEncryptionService,
             new StringSensitiveAnnotationEncryptionService(aesEncryptionService));

@@ -62,23 +62,16 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <version>2.5.0</version>
+                <groupId>com.helger.maven</groupId>
+                <artifactId>jaxb40-maven-plugin</artifactId>
+                <version>0.16.1</version>
                 <executions>
                     <execution>
-                        <id>xjc</id>
                         <goals>
-                            <goal>xjc</goal>
+                            <goal>generate</goal>
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <packageName>fr.cnes.regards.modules.order.metalink.schema</packageName>
-                    <sources>
-                        <source>src/main/resources</source>
-                    </sources>
-                </configuration>
             </plugin>
         </plugins>
     </build>

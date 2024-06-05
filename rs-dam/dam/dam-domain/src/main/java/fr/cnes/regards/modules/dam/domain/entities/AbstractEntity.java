@@ -37,14 +37,12 @@ import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
 import io.vavr.control.Option;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,7 +57,7 @@ import java.util.Set;
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */
-@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+
 @Entity
 @Table(name = "t_entity",
        indexes = { @Index(name = "idx_entity_ipId", columnList = "ipId") },
@@ -142,7 +140,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
      * feature.geometry projection on WGS84 crs
      */
     @Valid
-    @Type(type = "jsonb")
+    @Type(value = JsonBinaryType.class)
     @Column(columnDefinition = "jsonb")
     protected IGeometry wgs84 = IGeometry.unlocated();
 
@@ -152,7 +150,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     @Valid
     @NotNull(message = "Feature is required")
     @Column(columnDefinition = "jsonb")
-    @Type(type = "jsonb")
+    @Type(JsonBinaryType.class)
     protected F feature;
 
     protected AbstractEntity(Model model, F feature) {

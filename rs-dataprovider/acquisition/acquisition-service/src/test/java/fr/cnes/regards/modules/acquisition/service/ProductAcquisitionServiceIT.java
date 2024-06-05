@@ -73,7 +73,7 @@ import java.util.*;
 public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
 
     @SpyBean
-    INotificationClient notificationClient;
+    private INotificationClient notificationClient;
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionServiceIT.class);
@@ -98,7 +98,7 @@ public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
     private IAcquisitionFileService fileService;
 
     @Autowired
-    IPluginConfigurationRepository pluginConfigurationRepository;
+    private IPluginConfigurationRepository pluginConfigurationRepository;
 
     @Autowired
     private ITemplateService templateService;
@@ -312,7 +312,7 @@ public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
             AcquisitionFileState.IN_PROGRESS,
             fileInfo,
             PageRequest.of(0, 1));
-        Assert.assertTrue(inProgressFiles.getTotalElements() == nbFiles);
+        Assert.assertEquals(nbFiles, inProgressFiles.getTotalElements());
 
         processingService.manageRegisteredFiles(processingChain, session);
 
@@ -322,37 +322,39 @@ public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
                                                                                               .iterator()
                                                                                               .next(),
                                                                                PageRequest.of(0, 1));
-        Assert.assertTrue(inProgressFiles.getTotalElements() == 0);
+        Assert.assertEquals(0, inProgressFiles.getTotalElements());
 
         Page<AcquisitionFile> validFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.VALID,
                                                                                                 fileInfo,
                                                                                                 PageRequest.of(0, 1));
-        Assert.assertTrue(validFiles.getTotalElements() == 0);
+        Assert.assertEquals(0, validFiles.getTotalElements());
 
         Page<AcquisitionFile> acquiredFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.ACQUIRED,
                                                                                                    fileInfo,
                                                                                                    PageRequest.of(0,
                                                                                                                   1));
-        Assert.assertTrue(acquiredFiles.getTotalElements() == nbFiles);
+        Assert.assertEquals(nbFiles, acquiredFiles.getTotalElements());
 
         // Find product to schedule
         long scheduled = productService.countByProcessingChainAndSipStateIn(processingChain,
                                                                             Arrays.asList(ProductSIPState.SCHEDULED));
-        Assert.assertTrue(scheduled == nbFiles);
+        Assert.assertEquals(nbFiles, scheduled);
 
-        Assert.assertTrue(fileService.countByChain(processingChain) == nbFiles);
-        Assert.assertTrue(fileService.countByChainAndStateIn(processingChain,
-                                                             Arrays.asList(AcquisitionFileState.ACQUIRED)) == nbFiles);
-        Assert.assertTrue(fileService.countByChainAndStateIn(processingChain, Arrays.asList(AcquisitionFileState.ERROR))
-                          == 0);
+        Assert.assertEquals(nbFiles, fileService.countByChain(processingChain));
+        Assert.assertEquals(nbFiles,
+                            fileService.countByChainAndStateIn(processingChain,
+                                                               Arrays.asList(AcquisitionFileState.ACQUIRED)));
+        Assert.assertEquals(0,
+                            fileService.countByChainAndStateIn(processingChain,
+                                                               Arrays.asList(AcquisitionFileState.ERROR)));
 
         Page<AcquisitionProcessingChainMonitor> monitor = processingService.buildAcquisitionProcessingChainSummaries(
             null,
             null,
             null,
             PageRequest.of(0, 10));
-        Assert.assertTrue(!monitor.getContent().isEmpty());
-        Assert.assertEquals(true, monitor.getContent().get(0).isActive());
+        Assert.assertFalse(monitor.getContent().isEmpty());
+        Assert.assertTrue(monitor.getContent().get(0).isActive());
 
         // Check product
         Assert.assertEquals(0,

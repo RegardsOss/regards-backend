@@ -83,7 +83,7 @@ public class SubmissionRequestDeletionJob extends AbstractJob<Void> {
         adaptCriterion(searchCriterionParam);
         Specification<SubmissionRequest> requestSpecification = new SubmissionRequestSpecificationBuilder().withParameters(
             searchCriterionParam).build();
-        submissionDeleteService.deleteAllByBatch(requestSpecification);
+        submissionDeleteService.deleteAll(requestSpecification);
 
         logger.debug("[{}] SubmissionRequestDeletionJob ended in {}ms.", jobInfoId, System.currentTimeMillis() - start);
     }

@@ -19,23 +19,19 @@ package fr.cnes.regards.modules.processing.repository;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
-import fr.cnes.regards.modules.processing.testutils.AbstractProcessingIT;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.processing.testutils.servlet.AbstractProcessingIT;
 import io.vavr.collection.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@EnableFeignClients(basePackageClasses = { IRolesClient.class, IStorageRestClient.class })
 public class IRightsPluginConfigurationRepositoryIT extends AbstractProcessingIT {
 
     @Autowired

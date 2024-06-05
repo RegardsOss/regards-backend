@@ -19,16 +19,14 @@
 package fr.cnes.regards.modules.order.configuration;
 
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 
 /**
  * Auto configuration for the Order services.
  *
  * @author Arnaud Bos
  */
-@Configuration
-@AutoConfigureBefore(GsonAutoConfiguration.class)
+@AutoConfiguration(before = GsonAutoConfiguration.class)
 public class OrderAutoConfiguration {
 
 }

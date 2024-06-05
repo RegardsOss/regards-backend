@@ -22,9 +22,8 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
+import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * @author tguillou

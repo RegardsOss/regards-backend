@@ -35,7 +35,6 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 /**
  * Class DataSourceHelper
- * <p>
  * Helper to manipulate JPA Regards Datasources
  *
  * @author CS
@@ -43,19 +42,19 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 public final class DataSourceHelper {
 
     /**
-     * Hibernate dialect for embedded HSQL Database
+     * Hibernate dialect for embedded H2 Database
      */
-    public static final String EMBEDDED_HSQLDB_HIBERNATE_DIALECT = "org.hibernate.dialect.HSQLDialect";
+    public static final String EMBEDDED_H2_HIBERNATE_DIALECT = "org.hibernate.dialect.H2Dialect";
 
     /**
-     * Hibernate driver class for embedded HSQL Database
+     * Hibernate driver class for embedded H2 Database
      */
-    public static final String EMBEDDED_HSQL_DRIVER_CLASS = "org.hsqldb.jdbcDriver";
+    public static final String EMBEDDED_H2_DRIVER_CLASS = "org.h2.Driver";
 
     /**
-     * Url prefix for embedded HSQL Database. Persistence into file.
+     * Url prefix for embedded H2 Database. Persistence into file.
      */
-    public static final String EMBEDDED_HSQL_URL = "jdbc:hsqldb:file:";
+    public static final String EMBEDDED_H2_URL = "jdbc:h2:file:./";
 
     /**
      * Data source URL separator
@@ -63,10 +62,9 @@ public final class DataSourceHelper {
     public static final String EMBEDDED_URL_SEPARATOR = "/";
 
     /**
-     * HSQL Embedded Data source base name. Property shutdown allow to close the embedded database when the last
-     * connection is close.
+     * H2 Embedded Data source base name.
      */
-    public static final String EMBEDDED_URL_BASE_NAME = "applicationdb;shutdown=true;";
+    public static final String EMBEDDED_URL_BASE_NAME = "applicationdb;";
 
     /**
      * Class logger
@@ -91,25 +89,25 @@ public final class DataSourceHelper {
      * Create an embedded data source. This method should not be used in production in favor of
      * {@link DataSourceHelper#createHikariDataSource(String, String, String, String, String, Integer, Integer, String, String)}
      *
-     * @param pTenant       Project name
-     * @param pEmbeddedPath path for database files.
+     * @param tenant       Project name
+     * @param embeddedPath path for database files.
      * @return an HSQLDB embedded data source
      */
-    public static DataSource createEmbeddedDataSource(final String pTenant, final String pEmbeddedPath) {
+    public static DataSource createEmbeddedDataSource(String tenant, String embeddedPath) {
 
         final DriverManagerDataSource dmDataSource = new DriverManagerDataSource();
-        dmDataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-        dmDataSource.setUrl(EMBEDDED_HSQL_URL
-                            + pEmbeddedPath
+        dmDataSource.setDriverClassName(EMBEDDED_H2_DRIVER_CLASS);
+        dmDataSource.setUrl(EMBEDDED_H2_URL
+                            + embeddedPath
                             + DataSourceHelper.EMBEDDED_URL_SEPARATOR
-                            + pTenant
+                            + tenant
                             + DataSourceHelper.EMBEDDED_URL_SEPARATOR
                             + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
 
         LOGGER.info("\n{}\nCreating an EMBEDDED datasource for tenant {} with path {}\n{}",
                     HR,
-                    pTenant,
-                    pEmbeddedPath,
+                    tenant,
+                    embeddedPath,
                     HR);
 
         return dmDataSource;

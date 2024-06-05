@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.Random;
@@ -25,8 +24,7 @@ public class AESEncryptionTests {
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         aesEncryptionService = new AESEncryptionService();
-        aesEncryptionService.init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"),
-                                                       "1234567812345678"));
+        aesEncryptionService.init(new CipherProperties("src/test/resources/testKey", "1234567812345678"));
     }
 
     @Test

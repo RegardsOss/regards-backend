@@ -19,12 +19,12 @@
 package fr.cnes.regards.framework.swagger.autoconfigure;
 
 import com.google.gson.JsonParser;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.*;
 
 /**
@@ -42,7 +42,7 @@ public class OpenApiFilter implements Filter {
         chain.doFilter(byteRequestWrapper, byteResponseWrapper);
         String jsonResponse = new String(byteResponseWrapper.getBytes(), response.getCharacterEncoding());
         response.getOutputStream()
-                .write((new JsonParser().parse(jsonResponse)).toString().getBytes(response.getCharacterEncoding()));
+                .write((JsonParser.parseString(jsonResponse)).toString().getBytes(response.getCharacterEncoding()));
     }
 
     static class OpenApiResponseWrapper extends HttpServletResponseWrapper {

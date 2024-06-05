@@ -52,7 +52,9 @@ public interface ReactorErrorTransformers {
 
     static <K, T, E extends ProcessingException> Function<Throwable, Mono<T>> errorWithContextMono(Class<K> key,
                                                                                                    BiFunction<K, Throwable, E> fn) {
-        return t -> Mono.subscriberContext().map(ctx -> ctx.get(key)).flatMap(k -> Mono.<T>error(fn.apply(k, t)));
+        return t -> Mono.deferContextual(Mono::just)
+                        .map(ctx -> ctx.get(key))
+                        .flatMap(k -> Mono.<T>error(fn.apply(k, t)));
     }
 
 }

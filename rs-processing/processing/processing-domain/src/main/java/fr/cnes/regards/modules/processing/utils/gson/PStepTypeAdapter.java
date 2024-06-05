@@ -17,9 +17,10 @@
  */
 package fr.cnes.regards.modules.processing.utils.gson;
 
-import com.google.auto.service.AutoService;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
+import fr.cnes.regards.framework.gson.adapters.TypedGsonTypeAdapter;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
 import fr.cnes.regards.modules.processing.domain.PStep;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.step.PStepFinal;
@@ -32,13 +33,8 @@ import java.time.OffsetDateTime;
  *
  * @author gandrieu
  */
-@AutoService(TypedGsonTypeAdapter.class)
+@GsonTypeAdapterBean(adapted = PStep.class)
 public class PStepTypeAdapter implements TypedGsonTypeAdapter<PStep> {
-
-    @Override
-    public Class<PStep> type() {
-        return PStep.class;
-    }
 
     @Override
     public JsonDeserializer<PStep> deserializer() {

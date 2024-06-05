@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnActiveEvent;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
+import org.springframework.context.ApplicationEvent;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,7 +48,8 @@ public class AccessActivationTest extends UserAccessUpdateTest {
     public void publish_user_access_update() throws Exception {
         ProjectUser givenUser = UserBuilder.aUser().inactive().build();
         userWorkflowManager.activeAccess(givenUser);
-        assertThat(publishedEvent()).isNotNull();
-        assertThat(publishedEvent()).isInstanceOf(OnActiveEvent.class);
+        ApplicationEvent event = publishedEvent();
+        assertThat(event).isNotNull();
+        assertThat(event).isInstanceOf(OnActiveEvent.class);
     }
 }

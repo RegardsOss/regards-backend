@@ -48,19 +48,12 @@
             <artifactId>module-regards</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>authentication-starter</artifactId>
-        </dependency>
-
-        <!-- Framework -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webflux</artifactId>
+            <groupId>fr.cnes.regards.modules.accessrights</groupId>
+            <artifactId>accessrights-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>name.nkonev.r2dbc-migrate</groupId>
-            <artifactId>r2dbc-migrate-spring-boot-starter</artifactId>
-            <version>${r2dbc.migrate.spring.boot.starter.version}</version>
+            <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
+            <artifactId>accessrights-instance-client</artifactId>
         </dependency>
 
         <!-- Libraries -->
@@ -118,7 +111,7 @@
             <artifactId>r2dbc-pool</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.r2dbc</groupId>
+            <groupId>org.postgresql</groupId>
             <artifactId>r2dbc-postgresql</artifactId>
         </dependency>
 

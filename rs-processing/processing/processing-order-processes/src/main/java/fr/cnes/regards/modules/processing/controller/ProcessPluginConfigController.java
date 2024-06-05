@@ -101,7 +101,7 @@ public class ProcessPluginConfigController implements IResourceController<Proces
                                                             .collect(Collectors.toList()));
     }
 
-    @PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE })
+    @PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
     @ResourceAccess(description = "Create a process configuration from a plugin", role = DefaultRole.ADMIN)
     public ResponseEntity<EntityModel<ProcessPluginConfigurationRightsDTO>> create(
         @RequestBody ProcessPluginConfigurationRightsDTO rightsDto) throws EntityNotFoundException {

@@ -33,7 +33,6 @@ import reactor.core.publisher.Mono;
  */
 @Component
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
-
 public class AuthenticationManager implements ReactiveAuthenticationManager {
 
     private final JWTService jwtService;
@@ -45,8 +44,8 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
-        if (JWTAuthentication.class.isInstance(authentication)) {
-            return Mono.fromCallable(() -> jwtService.parseToken((JWTAuthentication) authentication));
+        if (authentication instanceof JWTAuthentication jwtAuthentication) {
+            return Mono.fromCallable(() -> jwtService.parseToken(jwtAuthentication));
         } else {
             return Mono.empty();
         }

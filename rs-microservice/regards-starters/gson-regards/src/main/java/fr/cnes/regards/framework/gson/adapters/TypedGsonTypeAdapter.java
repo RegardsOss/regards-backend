@@ -15,22 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.processing.utils.gson;
+package fr.cnes.regards.framework.gson.adapters;
 
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
 
 /**
- * This interface is meant to be used as a target for ServiceLoader, so that
- * other components can independently declare new type adapters to be loaded
- * by ProcessingGsonUtils.
- *
- * @param <T> the generic type
+ * Gson Type adapter providing both a JsonSerializer and a JsonDeserializer.<br/>
+ * Classes implementing this interface should be annotated with {@link fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean}
+ * to be taken into account by {@link fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration}
+ * @param <T> adapted type
  * @author gandrieu
+ * @author Olivier Rousselot
  */
 public interface TypedGsonTypeAdapter<T> {
-
-    Class<T> type();
 
     JsonDeserializer<T> deserializer();
 

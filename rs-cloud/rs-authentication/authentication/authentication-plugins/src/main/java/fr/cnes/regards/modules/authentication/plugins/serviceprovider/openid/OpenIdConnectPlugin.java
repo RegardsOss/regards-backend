@@ -215,7 +215,7 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
                      .encoder(new FormEncoder())
                      .decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
                      .errorDecoder(new ClientErrorDecoder())
-                     .decode404()
+                     .dismiss404()
                      .contract(new FeignContractSupplier().get())
                      .build();
     }

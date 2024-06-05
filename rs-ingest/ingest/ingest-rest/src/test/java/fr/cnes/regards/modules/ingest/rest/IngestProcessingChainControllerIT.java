@@ -132,7 +132,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                                                             .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
                                                                                   .value("String"));
         // Add request parameters documentation
-        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramFile));
+        requestBuilderCustomizer.document(RequestDocumentation.queryParameters(paramFile));
     }
 
     @Test

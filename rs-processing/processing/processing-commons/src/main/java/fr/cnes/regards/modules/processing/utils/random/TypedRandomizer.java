@@ -21,12 +21,12 @@ import org.jeasy.random.EasyRandom;
 import org.jeasy.random.api.Randomizer;
 
 /**
- * This interface is meant to be used BY TESTS, and is a target for ServiceLoader, so that
- * other components can independently declare new randomizers to be loaded
- * by RandomUtils in the processing-test module. It is just easier to declare it here in
- * order to prevent circular dependencies in maven modules.
+ * This interface is meant to be used BY TESTS, and is a target for ServiceLoader, so that other components can
+ * independently declare new randomizers to be loaded by RandomUtils in the processing-test module. It is just easier to
+ * declare it here in order to prevent circular dependencies in maven modules.<br/>
+ * Classes implementing this interface must be declared into META-INF/services/fr.cnes.regards.modules.processing.utils.random.TypedRandomizer
  *
- * @param <T> the generic type
+ * @param <T> the randomized type
  * @author gandrieu
  */
 public interface TypedRandomizer<T> {

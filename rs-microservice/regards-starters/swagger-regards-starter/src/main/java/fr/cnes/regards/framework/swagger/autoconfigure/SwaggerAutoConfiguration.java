@@ -34,14 +34,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
 
 import java.util.Set;
 
@@ -50,12 +49,11 @@ import java.util.Set;
  *
  * @author msordi
  */
-@Configuration
+@AutoConfiguration(after = MultitenantAutoConfiguration.class)
 @ConditionalOnWebApplication
 @Conditional(ServerProperties.class)
 @EnableConfigurationProperties(SwaggerProperties.class)
 @ConditionalOnProperty(prefix = "regards.swagger", name = "enabled", matchIfMissing = true)
-@AutoConfigureAfter(value = MultitenantAutoConfiguration.class)
 public class SwaggerAutoConfiguration {
 
     @SuppressWarnings("unused")

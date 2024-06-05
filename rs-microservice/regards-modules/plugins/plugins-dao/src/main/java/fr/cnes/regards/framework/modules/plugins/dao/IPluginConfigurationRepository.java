@@ -70,6 +70,9 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
      */
     boolean existsByBusinessId(String businessId);
 
+    /**
+     * Using TRUNCATE to avoid problems of foreign key violations (this method is only used by tests)
+     */
     @Override
     @Modifying
     @Query(value = "TRUNCATE {h-schema}t_plugin_configuration CASCADE", nativeQuery = true)

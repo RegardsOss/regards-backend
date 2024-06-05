@@ -78,7 +78,7 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-loadbalancer</artifactId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
         </dependency>
         <dependency>
             <groupId>io.github.openfeign</groupId>
@@ -116,6 +116,10 @@
             <artifactId>resilience4j-feign</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-bulkhead</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
         </dependency>
@@ -127,12 +131,7 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>feign-regards-builder</artifactId>
         </dependency>
-
-        <!-- Spring boot config -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
+        <!-- Spring -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
@@ -154,6 +153,7 @@
             <artifactId>spring-boot-starter-jetty</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 </project>
 
