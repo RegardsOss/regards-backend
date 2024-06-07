@@ -30,6 +30,7 @@ import org.springframework.util.Assert;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -310,14 +311,6 @@ public class FileStorageRequestAggregation {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result) + ((id == null) ? 0 : id.hashCode());
-        return result;
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -334,6 +327,62 @@ public class FileStorageRequestAggregation {
         } else {
             return id.equals(other.id);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id,
+                            groupIds,
+                            owners,
+                            originUrl,
+                            storageSubDirectory,
+                            storage,
+                            metaInfo,
+                            status,
+                            errorCause,
+                            creationDate,
+                            jobId,
+                            sessionOwner,
+                            session);
+    }
+
+    @Override
+    public String toString() {
+        return "FileStorageRequestAggregation{"
+               + "id="
+               + id
+               + ", groupIds="
+               + groupIds
+               + ", owners="
+               + owners
+               + ", originUrl='"
+               + originUrl
+               + '\''
+               + ", storageSubDirectory='"
+               + storageSubDirectory
+               + '\''
+               + ", storage='"
+               + storage
+               + '\''
+               + ", metaInfo="
+               + metaInfo
+               + ", status="
+               + status
+               + ", errorCause='"
+               + errorCause
+               + '\''
+               + ", creationDate="
+               + creationDate
+               + ", jobId='"
+               + jobId
+               + '\''
+               + ", sessionOwner='"
+               + sessionOwner
+               + '\''
+               + ", session='"
+               + session
+               + '\''
+               + '}';
     }
 
     public FileStorageRequestAggregationDto toDto() {

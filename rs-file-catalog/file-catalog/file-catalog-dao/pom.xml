@@ -53,16 +53,15 @@
     </developers>
 
     <dependencies>
-        <!-- REGARDS starter -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>jpa-multitenant-regards-starter</artifactId>
-        </dependency>
         <!-- Module -->
         <dependency>
             <groupId>fr.cnes.regards.modules.filecatalog</groupId>
             <artifactId>file-catalog-domain</artifactId>
-            <version>${revision}</version>
+        </dependency>
+        <!-- REGARDS -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-multitenant-regards-starter</artifactId>
         </dependency>
         <!-- Tests -->
         <dependency>

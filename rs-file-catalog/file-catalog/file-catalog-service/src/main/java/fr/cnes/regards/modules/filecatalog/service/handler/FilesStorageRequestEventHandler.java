@@ -20,10 +20,15 @@ package fr.cnes.regards.modules.filecatalog.service.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.filecatalog.service.FileStorageRequestService;
+import fr.cnes.regards.modules.filecatalog.service.scheduler.FileStorageRequestCheckScheduler;
+import fr.cnes.regards.modules.filecatalog.service.scheduler.FileStorageRequestCompleteScheduler;
+import fr.cnes.regards.modules.filecatalog.service.scheduler.FileStorageRequestDispatchScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -34,7 +39,25 @@ import java.util.List;
 /**
  * Handler to handle {@link FilesStorageRequestEvent} AMQP messages.<br>
  * Those messages are sent to create new file reference.<br>
- * Each message is saved in a concurrent list to handle availability request by bulk.
+ * Each message is saved in a concurrent list to handle availability request by bulk. <br>
+ * <br>
+ * The storage request process is as follows :
+ *
+ * <ul>
+ * <li>The {@link FilesStorageRequestEventHandler} receive a storage request event and will save the storage request in
+ * {@link StorageRequestStatus#GRANTED GRANTED} status. </li>
+ * <li> The {@link FileStorageRequestCheckScheduler} will check if {@link StorageRequestStatus#GRANTED GRANTED} storage requests are to be processed or if
+ * the file already exists. If the file exists, the owner of the new request is added to  the file reference,
+ * otherwise the request is set to {@link StorageRequestStatus#TO_HANDLE TO_HANDLE} status.
+ * This scheduler will also delete requests in {@link StorageRequestStatus#TO_DELETE TO_DELETE} status. </li>
+ * <li> The {@link FileStorageRequestDispatchScheduler} will check if {@link StorageRequestStatus#TO_HANDLE TO_HANDLE} storage
+ * requests are already being handled. If not, it will create an event to send to file-access to ask for the physical
+ * storage of the file. In any case, the request will be set to {@link StorageRequestStatus#HANDLED HANDLED} status.
+ * </li>
+ * <li> The {@link FileStorageRequestCompleteScheduler} will check if {@link StorageRequestStatus#HANDLED HANDLED} storage
+ * requests are completed, meaning that a file reference on the request file already exists. If it exists, the
+ * request is set to {@link StorageRequestStatus#TO_DELETE TO_DELETE}. </li>
+ * </ul>
  *
  * @author Thibaud Michaudel
  */
@@ -47,6 +70,9 @@ public class FilesStorageRequestEventHandler
     private final ISubscriber subscriber;
 
     private final FileStorageRequestService fileStorageRequestService;
+
+    @Value("${regards.file.catalog.files.storage.request.bulk.size:100}")
+    private int bulkSize;
 
     public FilesStorageRequestEventHandler(ISubscriber subscriber,
                                            FileStorageRequestService fileStorageRequestService) {
@@ -71,8 +97,13 @@ public class FilesStorageRequestEventHandler
     }
 
     @Override
+    public int getBatchSize() {
+        return bulkSize;
+    }
+
+    @Override
     public Errors validate(FilesStorageRequestEvent message) {
         return null;
     }
-    
+
 }

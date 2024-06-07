@@ -41,7 +41,7 @@ import java.time.OffsetDateTime;
        uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_deletion_request_file_reference",
                                                columnNames = { "file_reference" }) })
 public class FileDeletionRequest {
-    
+
     @Id
     @SequenceGenerator(name = "fileDeletionSequence", initialValue = 1, sequenceName = "seq_file_deletion")
     @GeneratedValue(generator = "fileDeletionSequence", strategy = GenerationType.SEQUENCE)

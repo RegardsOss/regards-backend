@@ -18,20 +18,28 @@
  */
 package fr.cnes.regards.modules.filecatalog.dao;
 
-import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
-import fr.cnes.regards.modules.filecatalog.domain.request.FileDeletionRequest;
+import fr.cnes.regards.modules.filecatalog.domain.FileReference;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Set;
 
 /**
- * JPA Repository to handle access to {@link FileDeletionRequest} entities.
+ * JPA Repository to handle access to {@link FileReference} entities.
  *
  * @author Thibaud Michaudel
  */
-public interface IFileDeletionRequestRepository extends JpaRepository<FileDeletionRequest, Long> {
+public interface IFileReferenceRepository
+    extends JpaRepository<FileReference, Long>, JpaSpecificationExecutor<FileReference> {
 
-    boolean existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(String storage,
-                                                                       String checksum,
-                                                                       Set<StorageRequestStatus> runningStatus);
+    @Query(value = "INSERT INTO ta_file_reference_owner(file_ref_id,owner) VALUES(:id, :owner)", nativeQuery = true)
+    @Modifying
+    void addOwner(@Param("id") Long id, @Param("owner") String owner);
+
+    Set<FileReference> findByLocationStorageAndMetaInfoChecksumIn(String storage, List<String> checksums);
+
 }

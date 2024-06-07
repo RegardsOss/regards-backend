@@ -19,12 +19,14 @@
 package fr.cnes.regards.modules.filecatalog.service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
+import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
 import fr.cnes.regards.modules.filecatalog.dao.IFileDeletionRequestRepository;
 import fr.cnes.regards.modules.filecatalog.dao.IFileStorageRequestAggregationRepository;
 import fr.cnes.regards.modules.filecatalog.domain.request.FileStorageRequestAggregation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -34,10 +36,12 @@ import java.util.Set;
  * @author Thibaud Michaudel
  **/
 @Service
-@MultitenantTransactional
 public class RequestStatusService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestStatusService.class);
+
+    @Value("${regards.file.catalog.status.service.page.size:500}")
+    private int pageSize;
 
     private final IFileDeletionRequestRepository deletionReqRepo;
 
@@ -50,35 +54,53 @@ public class RequestStatusService {
     }
 
     /**
-     * Compute {@link FileRequestStatus} for new {@link FileStorageRequestAggregation}
+     * Compute {@link StorageRequestStatus} for new {@link FileStorageRequestAggregation}
      *
      * @param request  request to compute status for
      * @param oDefault default status or empty
-     * @return {@link FileRequestStatus}
+     * @return {@link StorageRequestStatus}
      */
-    public FileRequestStatus getNewStatus(FileStorageRequestAggregation request, Optional<FileRequestStatus> oDefault) {
-        FileRequestStatus status = oDefault.orElse(FileRequestStatus.TO_DO);
+    public StorageRequestStatus getNewStatus(FileStorageRequestAggregation request,
+                                             Optional<StorageRequestStatus> oDefault) {
+        StorageRequestStatus status = oDefault.orElse(StorageRequestStatus.TO_HANDLE);
         String storage = request.getStorage();
         String checksum = request.getMetaInfo().getChecksum();
-        Set<FileRequestStatus> toDelayStatusList = FileRequestStatus.RUNNING_STATUS;
-        if (request.getStatus() == FileRequestStatus.TO_DO) {
-            toDelayStatusList = FileRequestStatus.RUNNING_AND_DELAYED_STATUS;
+        Set<StorageRequestStatus> toDelayStatusList = StorageRequestStatus.RUNNING_STATUS;
+        if (request.getStatus() == StorageRequestStatus.TO_HANDLE) {
+            toDelayStatusList = StorageRequestStatus.RUNNING_AND_DELAYED_STATUS;
         }
-        // Delayed storage request if a deletion requests already exists
+        // Delayed storage request if a deletion requests already exists or another storage request is already running for the same file to store
         if (deletionReqRepo.existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(storage,
                                                                                        checksum,
-                                                                                       FileRequestStatus.RUNNING_STATUS)) {
-            status = FileRequestStatus.DELAYED;
-        }
-        // Delay storage request if an other storage request is already running for the same file to store
-        else if (fileStorageRequestAggregationRepository.existsByStorageAndMetaInfoChecksumAndStatusIn(storage,
-                                                                                                       checksum,
-                                                                                                       toDelayStatusList)) {
-            status = FileRequestStatus.DELAYED;
-        } else if (request.getStatus() == FileRequestStatus.DELAYED && status == FileRequestStatus.TO_DO) {
+                                                                                       StorageRequestStatus.RUNNING_STATUS)
+            || fileStorageRequestAggregationRepository.existsByStorageAndMetaInfoChecksumAndStatusIn(storage,
+                                                                                                     checksum,
+                                                                                                     toDelayStatusList)) {
+            status = StorageRequestStatus.DELAYED;
+        } else if (request.getStatus() == StorageRequestStatus.DELAYED && status == StorageRequestStatus.TO_HANDLE) {
             LOGGER.info("Request {}/{} undelayed", request.getMetaInfo().getChecksum(), request.getStorage());
         }
         return status;
+    }
+
+    /**
+     * Update delayed {@link FileStorageRequestAggregation}s that can be handled.
+     */
+    @MultitenantTransactional
+    public void checkDelayedStorageRequests() {
+        int nbUpdated = 0;
+        for (FileStorageRequestAggregation delayedRequest : fileStorageRequestAggregationRepository.findByStatus(
+            StorageRequestStatus.DELAYED,
+            PageRequest.of(0, pageSize))) {
+            // Check new status for the delayed request
+            if (getNewStatus(delayedRequest, Optional.empty()) == StorageRequestStatus.TO_HANDLE) {
+                delayedRequest.setStatus(StorageRequestStatus.TO_HANDLE);
+                nbUpdated++;
+            }
+        }
+        if (nbUpdated > 0) {
+            LOGGER.debug("[STORAGE REQUEST] {} delayed requests can be handle now.", nbUpdated);
+        }
     }
 
 }

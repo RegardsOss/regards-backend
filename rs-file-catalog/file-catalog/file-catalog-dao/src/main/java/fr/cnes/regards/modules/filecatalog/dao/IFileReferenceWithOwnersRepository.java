@@ -1,0 +1,51 @@
+/*
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.filecatalog.dao;
+
+import fr.cnes.regards.modules.filecatalog.domain.FileReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import java.util.Optional;
+
+/**
+ * JPA Repository to handle access to {@link FileReference} entities.
+ *
+ * @author Sébatien Binda
+ */
+public interface IFileReferenceWithOwnersRepository
+    extends JpaRepository<FileReference, Long>, JpaSpecificationExecutor<FileReference> {
+
+    @EntityGraph(value = "graph.filereference.owners", type = EntityGraph.EntityGraphType.LOAD)
+    Page<FileReference> findAllByLocationStorage(String storage, Pageable page);
+
+    @Override
+    @EntityGraph(value = "graph.filereference.owners", type = EntityGraph.EntityGraphType.LOAD)
+    Page<FileReference> findAll(Pageable page);
+
+    @EntityGraph(value = "graph.filereference.owners", type = EntityGraph.EntityGraphType.LOAD)
+    FileReference findOneById(Long id);
+
+    @EntityGraph(value = "graph.filereference.owners", type = EntityGraph.EntityGraphType.LOAD)
+    Optional<FileReference> findByLocationStorageAndMetaInfoChecksum(String storage, String checksum);
+
+}

@@ -16,22 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.filecatalog.dao;
+package fr.cnes.regards.modules.filecatalog.dao.result;
 
 import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
-import fr.cnes.regards.modules.filecatalog.domain.request.FileDeletionRequest;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.Set;
+import org.springframework.data.domain.Pageable;
 
 /**
- * JPA Repository to handle access to {@link FileDeletionRequest} entities.
+ * Result object for {@link fr.cnes.regards.modules.filecatalog.dao.IFileStorageRequestAggregationRepository#findRequestChecksumToHandle(String, Pageable)}
  *
  * @author Thibaud Michaudel
- */
-public interface IFileDeletionRequestRepository extends JpaRepository<FileDeletionRequest, Long> {
+ **/
+public record RequestAndMaxStatus(String requestChecksum,
+                                  StorageRequestStatus maxStatus) {
 
-    boolean existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(String storage,
-                                                                       String checksum,
-                                                                       Set<StorageRequestStatus> runningStatus);
 }
