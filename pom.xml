@@ -925,34 +925,34 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
-                <artifactId>postgresql-datasource</artifactId>
+                <artifactId>postgresql-datasource-plugin</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
-                <artifactId>postgresql-datasource</artifactId>
-                <version>${revision}</version>
-                <classifier>shaded</classifier>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
-                <artifactId>aip-datasource</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
-                <artifactId>aip-datasource</artifactId>
+                <artifactId>postgresql-datasource-plugin</artifactId>
                 <version>${revision}</version>
                 <classifier>shaded</classifier>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
-                <artifactId>feature-datasource</artifactId>
+                <artifactId>aip-datasource-plugin</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
-                <artifactId>feature-datasource</artifactId>
+                <artifactId>aip-datasource-plugin</artifactId>
+                <version>${revision}</version>
+                <classifier>shaded</classifier>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
+                <artifactId>feature-datasource-plugin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
+                <artifactId>feature-datasource-plugin</artifactId>
                 <version>${revision}</version>
                 <classifier>shaded</classifier>
             </dependency>
