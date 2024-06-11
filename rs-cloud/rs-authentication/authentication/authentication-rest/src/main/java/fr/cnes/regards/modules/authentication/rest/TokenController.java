@@ -50,7 +50,7 @@ public class TokenController {
 
     public static final String ROOT_PATH_OAUTH = "/oauth/";
 
-    public static final String PATH_TOKEN = "token/";
+    public static final String PATH_TOKEN = "token";
 
     private final Oauth2AuthenticationService oauth2AuthenticationService;
 

@@ -57,6 +57,10 @@
             <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
             <artifactId>plugins-domain</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
