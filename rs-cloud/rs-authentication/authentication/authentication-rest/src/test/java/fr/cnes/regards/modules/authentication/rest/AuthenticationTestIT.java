@@ -59,7 +59,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
     /**
      * Token endpoint
      */
-    private static final String TOKEN_ENDPOINT = "/oauth/token/";
+    private static final String TOKEN_ENDPOINT = "/oauth/token";
 
     /**
      * BAsic authentication string in HTTP header request
