@@ -78,7 +78,7 @@
         <spring-cloud-dependencies.version>2023.0.2</spring-cloud-dependencies.version>
         <springdoc-openapi.version>2.5.0</springdoc-openapi.version>
         <com.icegreen.greenmail-spring.version>2.0.1</com.icegreen.greenmail-spring.version>
-        <spring.boot.version>3.2.6</spring.boot.version>
+        <spring.boot.version>3.3.0</spring.boot.version>
         <!-- spring relies on junit5 for testing. add junit vintage to ensure retro-compatibility for older versions of junit -->
         <!-- FIXME : phrase ci-dessus à vérifier, version 5.10.1 dispo -->
         <junit-vintage-engine.version>5.8.2</junit-vintage-engine.version>
@@ -108,10 +108,6 @@
 
         <!-- Swagger -->
         <swagger.version>2.2.21</swagger.version>
-
-        <!-- H2 version from spring-boot-dependencies (2.1.214) has vulnerabilities. Best using H2 than HSQLDB because
-        of case-insensitive bullshits -->
-        <h2.version>2.2.224</h2.version>
 
         <!-- elastic search -->
         <!-- FIXME : 8.11.4 available -->
@@ -2046,11 +2042,6 @@
                 <version>${swagger.version}</version>
             </dependency>
             <!-- DATABASES -->
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>${h2.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>

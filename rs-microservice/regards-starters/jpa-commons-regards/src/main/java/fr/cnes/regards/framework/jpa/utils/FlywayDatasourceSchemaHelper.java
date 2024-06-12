@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.Location;
 import org.flywaydb.core.api.MigrationVersion;
+import org.flywaydb.core.api.configuration.Configuration;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.flywaydb.core.api.migration.JavaMigration;
 import org.flywaydb.core.api.resource.LoadableResource;
@@ -110,15 +111,15 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
         LOGGER.info("Migrating datasource {} with schema {}", dataSource, schema);
 
         // Use flyway scanner initialized with script dir (ie resources/scripts)
+        Configuration config = new FluentConfiguration().locations(new Location(SCRIPT_LOCATION_PATH))
+                                                        .encoding(Charset.defaultCharset())
+                                                        .detectEncoding(false)
+                                                        .failOnMissingLocations(false);
         Scanner<JavaMigration> scanner = new Scanner<>(JavaMigration.class,
-                                                       Collections.singleton(new Location(SCRIPT_LOCATION_PATH)),
-                                                       classLoader,
-                                                       Charset.defaultCharset(),
-                                                       false,
                                                        false,
                                                        new ResourceNameCache(),
                                                        new LocationScannerCache(),
-                                                       false);
+                                                       config);
 
         // Scan all sql scripts without considering modules (into resources/scripts, there are one dir per module)
         Collection<LoadableResource> sqlScripts = scanner.getResources("", SQL_MIGRATION_SUFFIX);
@@ -300,8 +301,7 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
                      // Associate datasource
                      .dataSource(dataSource)
                      // Specify working schema
-                     .schemas(schema).defaultSchema(schema)
-                     .baselineOnMigrate(true)
+                     .schemas(schema).defaultSchema(schema).baselineOnMigrate(true)
                      // When creating module metadata table, set beginning version to 0 in order to properly apply all init scripts
                      .baselineVersion(MigrationVersion.fromVersion("0"));
     }
