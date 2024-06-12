@@ -267,6 +267,8 @@ public class FileDownloadService {
                                                                    cachedFileToDownload.getFileSize(),
                                                                    cachedFileToDownload.getMimeType());
         FileLocation location = new FileLocation();
+        location.setUrl(cachedFileToDownload.getLocation().toString());
+        location.setPendingActionRemaining(false);
         metaInfo.setType(cachedFileToDownload.getType());
         fileReference.setMetaInfo(metaInfo);
         fileReference.setNearlineConfirmed(false);

@@ -105,7 +105,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
         }
 
         if (!storageLocationConfService.search(NEARLINE_CONF_LABEL).isPresent()) {
-            initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
+            initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL, false);
         }
         storagePlgConfHandler.refresh();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
