@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.fileaccess.dto.output.worker.StorageWorkerRequest
 import org.springframework.amqp.core.MessageProperties;
 
 import jakarta.validation.constraints.NotNull;
+
 import java.util.Objects;
 
 /**

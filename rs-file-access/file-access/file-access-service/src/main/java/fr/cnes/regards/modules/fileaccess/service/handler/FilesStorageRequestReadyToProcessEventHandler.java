@@ -131,7 +131,6 @@ public class FilesStorageRequestReadyToProcessEventHandler
     private StorageWorkerRequestEvent createEventToSend(FileStorageRequestReadyToProcessEvent message,
                                                         boolean needToComputeImageSize,
                                                         Optional<AbstractStoragePluginConfigurationDto> oConfiguration) {
-        //FIXME: fix activateSmallFilePackaging value according to the request origin
         StorageWorkerRequestEvent eventToSend = new StorageWorkerRequestEvent(message.getChecksum(),
                                                                               message.getAlgorithm(),
                                                                               message.getOriginUrl(),
@@ -139,7 +138,7 @@ public class FilesStorageRequestReadyToProcessEventHandler
                                                                                   message.getSubDirectory() :
                                                                                   null,
                                                                               needToComputeImageSize,
-                                                                              true,
+                                                                              message.isActivateSmallFilePackaging(),
                                                                               oConfiguration.get());
         // Headers
         eventToSend.setHeader(StorageWorkerRequestEvent.CONTENT_TYPE_HEADER, "store-" + message.getStorage());

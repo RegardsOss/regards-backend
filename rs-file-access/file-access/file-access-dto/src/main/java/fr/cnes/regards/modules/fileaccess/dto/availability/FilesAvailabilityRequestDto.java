@@ -27,7 +27,7 @@ import java.util.Set;
  * @author Thomas GUILLOU
  **/
 public class FilesAvailabilityRequestDto {
-    
+
     private final Set<String> checksums;
 
     public FilesAvailabilityRequestDto(Set<String> checksums) {

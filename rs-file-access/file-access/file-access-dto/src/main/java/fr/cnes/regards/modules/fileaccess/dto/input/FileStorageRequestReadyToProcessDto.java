@@ -44,6 +44,8 @@ public class FileStorageRequestReadyToProcessDto {
 
     private final String session;
 
+    private final boolean activateSmallFilePackaging;
+
     private final FileStorageMetaInfoDto metadata;
 
     public FileStorageRequestReadyToProcessDto(Long requestId,
@@ -54,6 +56,7 @@ public class FileStorageRequestReadyToProcessDto {
                                                String subDirectory,
                                                String owner,
                                                String session,
+                                               boolean activateSmallFilePackaging,
                                                FileStorageMetaInfoDto metadata) {
         this.requestId = requestId;
         this.checksum = checksum;
@@ -63,6 +66,7 @@ public class FileStorageRequestReadyToProcessDto {
         this.subDirectory = subDirectory;
         this.owner = owner;
         this.session = session;
+        this.activateSmallFilePackaging = activateSmallFilePackaging;
         this.metadata = metadata;
     }
 
@@ -102,6 +106,10 @@ public class FileStorageRequestReadyToProcessDto {
         return metadata;
     }
 
+    public boolean isActivateSmallFilePackaging() {
+        return activateSmallFilePackaging;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -111,20 +119,31 @@ public class FileStorageRequestReadyToProcessDto {
             return false;
         }
         FileStorageRequestReadyToProcessDto that = (FileStorageRequestReadyToProcessDto) o;
-        return Objects.equals(requestId, that.requestId)
+        return activateSmallFilePackaging == that.activateSmallFilePackaging
+               && Objects.equals(requestId,
+                                 that.requestId)
                && Objects.equals(checksum, that.checksum)
-               && Objects.equals(algorithm,
-                                 that.algorithm)
+               && Objects.equals(algorithm, that.algorithm)
                && Objects.equals(originUrl, that.originUrl)
                && Objects.equals(storage, that.storage)
                && Objects.equals(subDirectory, that.subDirectory)
                && Objects.equals(owner, that.owner)
-               && Objects.equals(session, that.session);
+               && Objects.equals(session, that.session)
+               && Objects.equals(metadata, that.metadata);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId, checksum, algorithm, originUrl, storage, subDirectory, owner, session);
+        return Objects.hash(requestId,
+                            checksum,
+                            algorithm,
+                            originUrl,
+                            storage,
+                            subDirectory,
+                            owner,
+                            session,
+                            activateSmallFilePackaging,
+                            metadata);
     }
 
     @Override
@@ -153,6 +172,10 @@ public class FileStorageRequestReadyToProcessDto {
                + ", session='"
                + session
                + '\''
+               + ", smallFileManaged="
+               + activateSmallFilePackaging
+               + ", metadata="
+               + metadata
                + '}';
     }
 }

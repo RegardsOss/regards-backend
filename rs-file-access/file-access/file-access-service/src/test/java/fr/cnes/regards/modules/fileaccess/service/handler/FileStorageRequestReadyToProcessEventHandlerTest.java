@@ -85,6 +85,7 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
                                                                                                  "/sub/dir",
                                                                                                  " owner1",
                                                                                                  "session1",
+                                                                                                 false,
                                                                                                  metaInfoDto);
         FileStorageRequestReadyToProcessEvent event2 = new FileStorageRequestReadyToProcessEvent(2L,
                                                                                                  "checksum2",
@@ -94,6 +95,7 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
                                                                                                  "/sub/dir",
                                                                                                  " owner1",
                                                                                                  "session1",
+                                                                                                 false,
                                                                                                  metaInfoDto);
         FileStorageRequestReadyToProcessEvent event3 = new FileStorageRequestReadyToProcessEvent(3L,
                                                                                                  "checksum3",
@@ -103,6 +105,7 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
                                                                                                  "/sub/dir",
                                                                                                  " owner1",
                                                                                                  "session1",
+                                                                                                 false,
                                                                                                  metaInfoDto);
         FileStorageRequestReadyToProcessEvent event4 = new FileStorageRequestReadyToProcessEvent(4L,
                                                                                                  "checksum4",
@@ -112,6 +115,7 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
                                                                                                  "/sub/dir",
                                                                                                  " owner1",
                                                                                                  "session1",
+                                                                                                 false,
                                                                                                  metaInfoDto);
 
         // When

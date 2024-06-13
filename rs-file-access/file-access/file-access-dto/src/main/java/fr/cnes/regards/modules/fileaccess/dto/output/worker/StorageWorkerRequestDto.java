@@ -40,6 +40,10 @@ public class StorageWorkerRequestDto {
 
     private final boolean computeImageSize;
 
+    /**
+     * Set to false if the file should never be regrouped in an archive with other files. (The value being true does
+     * not mean the file will be regrouped in an archive, as it will depend on the storage worker packaging rules).
+     */
     private final boolean activateSmallFilePackaging;
 
     private final AbstractStoragePluginConfigurationDto parameters;

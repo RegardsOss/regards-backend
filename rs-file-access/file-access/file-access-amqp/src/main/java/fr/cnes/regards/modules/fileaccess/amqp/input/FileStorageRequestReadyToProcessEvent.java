@@ -42,7 +42,17 @@ public class FileStorageRequestReadyToProcessEvent extends FileStorageRequestRea
                                                  String subDirectory,
                                                  String owner,
                                                  String session,
+                                                 boolean activateSmallFilePackaging,
                                                  FileStorageMetaInfoDto metadata) {
-        super(requestId, checksum, algorithm, originUrl, storage, subDirectory, owner, session, metadata);
+        super(requestId,
+              checksum,
+              algorithm,
+              originUrl,
+              storage,
+              subDirectory,
+              owner,
+              session,
+              activateSmallFilePackaging,
+              metadata);
     }
 }

@@ -336,6 +336,7 @@ public class FileStorageRequestService {
                                                          request.getStorageSubDirectory(),
                                                          request.getOwner(),
                                                          request.getSession(),
+                                                         false,
                                                          metaData);
     }
 }
