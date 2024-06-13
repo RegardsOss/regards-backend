@@ -18,7 +18,8 @@ import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_session_delete",
-                                   "regards.amqp.enabled=true" },
+                                   "regards.amqp.enabled=true",
+                                   "regards.session.step.merge-similar-event=false" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
                                   "classpath:metrics.properties" })

@@ -24,6 +24,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.*;
@@ -38,14 +40,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.util.Collection;
-import java.util.Set;
+import java.time.OffsetDateTime;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -61,10 +67,14 @@ import java.util.regex.Pattern;
         url = "https://regardsoss.github.io/")
 public class SimpleNearlineDataStorage implements INearlineStorageLocation {
 
+    private String id = UUID.randomUUID().toString();
+
     /**
      * Plugin parameter name of the storage base location as a string
      */
     public static final String BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME = "Storage_URL";
+
+    public static final String EXT_CACHE_PLUGIN_PARAM_NAME = "external_cache";
 
     public static final String HANDLE_STORAGE_ERROR_FILE_PATTERN = "error_file_pattern";
 
@@ -116,6 +126,16 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                      description = "Restoration Error file pattern",
                      label = "Delete Error file pattern")
     private String restoErrorFilePattern;
+
+    @PluginParameter(name = EXT_CACHE_PLUGIN_PARAM_NAME,
+                     description = "External cache",
+                     label = "External cache",
+                     defaultValue = "false")
+    private boolean externalCache = false;
+
+    private List<String> checksumsRestored = new ArrayList<>();
+
+    private List<String> checksumsAvailables = new ArrayList<>();
 
     /**
      * Plugin init method
@@ -249,7 +269,15 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                         }
                         LOGGER.info("Retrieve file with size {}", filePath.toFile().length());
                     }
-                    progressManager.restoreSucceededInternalCache(f, filePath);
+                    if (isInternalCache()) {
+                        progressManager.restoreSucceededInternalCache(f, filePath);
+                    } else {
+                        progressManager.restoreSucceededExternalCache(f,
+                                                                      filePath.toAbsolutePath().toFile().toURL(),
+                                                                      1024L,
+                                                                      OffsetDateTime.now().plusDays(10));
+                    }
+                    checksumsRestored.add(f.getChecksum());
                 } catch (IOException e) {
                     LOGGER.error(e.getMessage(), e);
                     progressManager.restoreFailed(f, e.getMessage());
@@ -284,7 +312,33 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     @Override
     public InputStream download(FileReferenceWithoutOwnersDto fileReference)
         throws NearlineFileNotAvailableException, NearlineDownloadException {
-        try (FileInputStream fileInputStream = new FileInputStream(fileReference.getLocation().getUrl())) {
+        LOGGER.info("Download for id {}", id);
+        if (fileReference.getLocation().getUrl() == null) {
+            throw new NearlineFileNotAvailableException(String.format(
+                "Unable to download file %s as url is not defined.",
+                fileReference.getMetaInfo().getFileName()));
+        }
+
+        if (!checksumsAvailables.contains(fileReference.getChecksum())
+            && !checksumsRestored.contains(fileReference.getChecksum())) {
+            throw new NearlineFileNotAvailableException(String.format("File %s is not available for download (not "
+                                                                      + "restored yet)", fileReference.getChecksum()));
+        }
+
+        URL urlToDownload;
+        try {
+            // Calculate url to download, if file is simulated as already exists creates it from local path
+            // If not, the restored URL is already a valid URL
+            if (checksumsAvailables.contains(fileReference.getChecksum())) {
+                urlToDownload = new URL("file:///" + Paths.get(fileReference.getLocation().getUrl()).toAbsolutePath());
+            } else {
+                urlToDownload = new URL(fileReference.getLocation().getUrl());
+            }
+        } catch (MalformedURLException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new RsRuntimeException("Invalid url");
+        }
+        try (InputStream fileInputStream = DownloadUtils.getInputStream(urlToDownload, new ArrayList<>())) {
             return fileInputStream;
         } catch (FileNotFoundException e) {
             LOGGER.warn(e.getMessage(), e);
@@ -297,5 +351,15 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                                                               fileReference.getMetaInfo().getFileName(),
                                                               e.getMessage()));
         }
+    }
+
+    @Override
+    public boolean isInternalCache() {
+        return !externalCache;
+    }
+
+    public void simulateAvailableFileForDownload(String checksum) {
+        LOGGER.info("Add for id {}", id);
+        checksumsAvailables.add(checksum);
     }
 }

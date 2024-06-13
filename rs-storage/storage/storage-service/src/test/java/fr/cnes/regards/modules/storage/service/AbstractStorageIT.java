@@ -94,6 +94,8 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
 
     protected static final String NEARLINE_CONF_LABEL = "NL_target";
 
+    protected static final String NEARLINE_EXT_CACHE_CONF_LABEL = "NL_target_with_external_cache";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStorageIT.class);
 
     private static final Long ALLOCATED_SIZE_IN_KO = 1_000_000L;
@@ -181,6 +183,8 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
 
     protected String originUrl = "file://in/this/directory/file.test";
 
+    protected PluginConfiguration nearLineConf;
+
     @Autowired
     protected StorageLocationService storageLocationService;
 
@@ -220,7 +224,8 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
         initDataStorageOLPluginConfiguration(OFFLINE_CONF_LABEL);
         initDataStoragePluginConfiguration(ONLINE_CONF_LABEL_WITHOUT_DELETE, false);
 
-        initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
+        nearLineConf = initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL, false).getPluginConfiguration();
+        initDataStorageNLPluginConfiguration(NEARLINE_EXT_CACHE_CONF_LABEL, true).getPluginConfiguration();
 
         storagePlgConfHandler.refresh();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -237,7 +242,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     }
 
     protected StorageLocationConfiguration initDataStoragePluginConfiguration(String label,
-                                                                              Boolean allowPhysicalDeletion)
+                                                                              boolean allowPhysicalDeletion)
         throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
@@ -263,7 +268,8 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
         }
     }
 
-    protected StorageLocationConfiguration initDataStorageNLPluginConfiguration(String label) throws ModuleException {
+    protected StorageLocationConfiguration initDataStorageNLPluginConfiguration(String label, boolean externalCache)
+        throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
 
@@ -277,7 +283,9 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                             IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN,
                                                                                "restoError.*"),
                                                             IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN,
-                                                                               "delErr.*"));
+                                                                               "delErr.*"),
+                                                            IPluginParam.build(SimpleNearlineDataStorage.EXT_CACHE_PLUGIN_PARAM_NAME,
+                                                                               externalCache));
             PluginConfiguration dataStorageConf = new PluginConfiguration(label,
                                                                           parameters,
                                                                           0,
@@ -317,17 +325,29 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                 "session1");
     }
 
+    protected FileReference generateRandomStoredNearlineFileReference(boolean externalCache)
+        throws InterruptedException, ExecutionException {
+        return generateRandomStoredNearlineFileReference("file.test", Optional.empty(), externalCache);
+    }
+
     protected FileReference generateRandomStoredNearlineFileReference()
         throws InterruptedException, ExecutionException {
-        return generateRandomStoredNearlineFileReference("file.test", Optional.empty());
+        return generateRandomStoredNearlineFileReference(false);
     }
 
     protected FileReference generateRandomStoredNearlineFileReference(String fileName, Optional<String> subDir)
         throws InterruptedException, ExecutionException {
+        return generateRandomStoredNearlineFileReference(fileName, subDir, false);
+    }
+
+    protected FileReference generateRandomStoredNearlineFileReference(String fileName,
+                                                                      Optional<String> subDir,
+                                                                      boolean externalCache)
+        throws InterruptedException, ExecutionException {
         return generateStoredFileReference(UUID.randomUUID().toString(),
                                            "someone",
                                            fileName,
-                                           NEARLINE_CONF_LABEL,
+                                           externalCache ? NEARLINE_EXT_CACHE_CONF_LABEL : NEARLINE_CONF_LABEL,
                                            subDir,
                                            Optional.empty(),
                                            "source1",

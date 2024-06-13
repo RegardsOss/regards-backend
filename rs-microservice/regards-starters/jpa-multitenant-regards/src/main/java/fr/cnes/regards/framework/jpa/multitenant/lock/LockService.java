@@ -39,7 +39,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * same time.
  * If the service attempt to run a task with a lock already in use, it will retry running the task until the lock is
  * free.
- * The lock has a maximum duration of {@link #lockTimeToLive} but the lock duration can be renewed using {@link #renewLock(String)}.
+ * The lock has a maximum duration of {@link #lockTimeToLiveInSeconds} but the lock duration can be renewed using {@link #renewLock(String)}.
  *
  * @author Thibaud Michaudel
  **/
@@ -50,11 +50,11 @@ public class LockService {
 
     public static final String LOCK_PREFIX = "SHARED_";
 
-    @Value("${regards.lock.time.to.live:60000000}")
-    private int lockTimeToLive;
+    @Value("${regards.lock.time.to.live.in.seconds:60000}")
+    private int lockTimeToLiveInSeconds;
 
-    @Value("${regards.lock.try.timeout:60000}")
-    private int lockTryTimeout;
+    @Value("${regards.lock.try.timeout.in.seconds:3600}")
+    private int lockTryTimeoutInSeconds;
 
     @Value("${regards.lock.cache.capacity:100000}")
     private int cacheCapacity;
@@ -74,7 +74,7 @@ public class LockService {
     public void registerLockRegistry(String tenant, DataSource dataSource) {
         DefaultLockRepository lockRepository = new DefaultLockRepository(dataSource);
         lockRepository.setPrefix(LOCK_PREFIX);
-        lockRepository.setTimeToLive(lockTimeToLive);
+        lockRepository.setTimeToLive(lockTimeToLiveInSeconds*1000);
         lockRepository.afterPropertiesSet();
         JdbcLockRegistry lockRegistry = new JdbcLockRegistry(lockRepository);
         lockRegistry.setCacheCapacity(cacheCapacity);
@@ -93,9 +93,10 @@ public class LockService {
      * The process will wait for the lock to be free to run the task.
      */
     public <T> LockServiceResponse<T> runWithLock(String lockName, LockServiceTask process)
-        throws InterruptedException {
-        return tryRunWithLock(lockName, process, lockTryTimeout, TimeUnit.SECONDS);
+            throws InterruptedException {
+        return tryRunWithLock(lockName, process, lockTryTimeoutInSeconds, TimeUnit.SECONDS);
     }
+
 
     /**
      * Try to run synchronously the given {@link LockServiceTask} with the given lock.
@@ -163,7 +164,7 @@ public class LockService {
     /**
      * Getter method for the lock TimeToLive parameter
      */
-    public int getTimeToLive() {
-        return lockTimeToLive;
+    public int getTimeToLiveInSeconds() {
+        return lockTimeToLiveInSeconds;
     }
 }

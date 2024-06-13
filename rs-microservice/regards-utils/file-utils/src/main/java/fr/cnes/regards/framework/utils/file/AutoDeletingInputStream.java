@@ -49,9 +49,9 @@ public class AutoDeletingInputStream extends FileInputStream {
             super.close();
         } finally {
             try {
-                Files.delete(file.toPath());
+                Files.deleteIfExists(file.toPath());
             } catch (IOException e) {
-                LOGGER.error("Error while deleting the file {}, the file will not be deleted", file.toPath());
+                LOGGER.error("Error while deleting the file {}, the file will not be deleted", file.toPath(), e);
             }
         }
     }

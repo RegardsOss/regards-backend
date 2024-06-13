@@ -29,7 +29,9 @@ import fr.cnes.regards.modules.ingest.dto.DisseminationStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -72,42 +74,66 @@ public class UpdateAIPDisseminationInfo implements IUpdateStep {
     public List<DisseminationInfo> mergeDisseminationInfoList(AIPEntity aip,
                                                               List<DisseminationInfo> providedDisseminationInfos) {
 
-        if (aip.getDisseminationInfos() == null) {
-            return providedDisseminationInfos;
-        } else {
-            //We add the dissemination infos not present in the aip
-            List<DisseminationInfo> mergedDisseminationInfos = computeNewDisseminationInfos(aip.getDisseminationInfos(),
-                                                                                            providedDisseminationInfos);
-
-            //If we find two disseminationInfo in the aip and in the provided with the same label, we merge it
-            for (DisseminationInfo oldDisseminationInfo : aip.getDisseminationInfos()) {
-
-                Optional<DisseminationInfo> optionalDisseminationInfo = providedDisseminationInfos.stream()
-                                                                                                  .filter(
-                                                                                                      newDisseminationInfo -> newDisseminationInfo.getLabel()
-                                                                                                                                                  .equals(
-                                                                                                                                                      oldDisseminationInfo.getLabel()))
-                                                                                                  .findFirst();
-
-                //If a dissemination info matches, we merge the old info and the new info
-                // else we keep the old info as it was
-                optionalDisseminationInfo.ifPresentOrElse(disseminationInfo -> mergedDisseminationInfos.add(
-                                                              mergeDisseminationInfo(oldDisseminationInfo, disseminationInfo)),
-                                                          () -> mergedDisseminationInfos.add(oldDisseminationInfo));
-            }
-
-            return mergedDisseminationInfos;
+        // Retrieve exising dissemination info from aip
+        List<DisseminationInfo> existingDisseminationInfos = new ArrayList<>();
+        if (aip.getDisseminationInfos() != null) {
+            existingDisseminationInfos = aip.getDisseminationInfos();
         }
+
+        // Retrieve new dissemination infos not present in the current aip
+        List<DisseminationInfo> mergedDisseminationInfos = computeNewDisseminationInfos(existingDisseminationInfos,
+                                                                                        providedDisseminationInfos);
+
+        // Merge new dissemination infos with existing one in the current aip
+        for (DisseminationInfo oldDisseminationInfo : existingDisseminationInfos) {
+            Optional<DisseminationInfo> optionalDisseminationInfo = providedDisseminationInfos.stream()
+                                                                                              .filter(
+                                                                                                  newDisseminationInfo -> newDisseminationInfo.getLabel()
+                                                                                                                                              .equals(
+                                                                                                                                                  oldDisseminationInfo.getLabel()))
+                                                                                              .findFirst();
+
+            // If a dissemination info matches, merge the old one and the new one
+            // Else keep the old info as it was
+            optionalDisseminationInfo.ifPresentOrElse(disseminationInfo -> mergedDisseminationInfos.add(
+                                                          mergeDisseminationInfo(oldDisseminationInfo, disseminationInfo)),
+                                                      () -> mergedDisseminationInfos.add(oldDisseminationInfo));
+        }
+
+        return mergedDisseminationInfos;
+
     }
 
     private DisseminationInfo mergeDisseminationInfo(DisseminationInfo aipDisseminationInfo,
                                                      DisseminationInfo newDisseminationInfo) {
-        //Merging two disseminationInfo is basically updating ackDate and date (ackDate can not be overwritten)
-        if (!aipDisseminationInfo.hasReceivedAck() && newDisseminationInfo.hasReceivedAck()) {
-            aipDisseminationInfo.setAckDate(newDisseminationInfo.getAckDate());
-        }
-        if (newDisseminationInfo.hasInitialDate()) {
+        // Merging two disseminationInfo is basically updating ackDate and date
+
+        // Update dissemination date, only if :
+        // - new dissemination date is not null
+        // - current date is null OR new date is after current one
+        if (newDisseminationInfo.getDate() != null && (aipDisseminationInfo.getDate() == null
+                                                       || newDisseminationInfo.getDate()
+                                                                              .isAfter(aipDisseminationInfo.getDate()))) {
             aipDisseminationInfo.setDate(newDisseminationInfo.getDate());
+            if (newDisseminationInfo.getDate().isAfter(aipDisseminationInfo.getDate())) {
+                // Reinit, ack date in case of new dissemination
+                aipDisseminationInfo.setAckDate(null);
+            }
+        }
+
+        // Update ack date, only if :
+        // - new ack date is not null
+        // - new ack date is after current dissemination date
+        if (newDisseminationInfo.hasReceivedAck()) {
+            // If ack is handled before initial dissemination date (async issue), then init the dissemination date to
+            // the ack date.
+            if (aipDisseminationInfo.getDate() == null) {
+                aipDisseminationInfo.setDate(newDisseminationInfo.getAckDate());
+            }
+            if (newDisseminationInfo.getAckDate().isAfter(aipDisseminationInfo.getDate())
+                || newDisseminationInfo.getAckDate().isEqual(aipDisseminationInfo.getDate())) {
+                aipDisseminationInfo.setAckDate(newDisseminationInfo.getAckDate());
+            }
         }
         return aipDisseminationInfo;
     }
@@ -122,6 +148,24 @@ public class UpdateAIPDisseminationInfo implements IUpdateStep {
 
         return providedDisseminationInfos.stream()
                                          .filter(disseminationInfo -> !labels.contains(disseminationInfo.getLabel()))
+                                         .map(this::initNewDisseminationInfo)
+                                         .filter(Objects::nonNull)
                                          .collect(Collectors.toList());
+    }
+
+    private DisseminationInfo initNewDisseminationInfo(DisseminationInfo disseminationInfo) {
+        if (disseminationInfo.getAckDate() == null && disseminationInfo.getDate() == null) {
+            return null;
+        }
+        DisseminationInfo newDisseminationInfo = new DisseminationInfo(disseminationInfo.getLabel(),
+                                                                       disseminationInfo.getDate(),
+                                                                       disseminationInfo.getAckDate());
+
+        // If dissemination info contains an ack date but no init date, set the init date to the ack date.
+        // This case is to handle async issue between init and ack update requests (ack is received before init)
+        if (newDisseminationInfo.getAckDate() != null && newDisseminationInfo.getDate() == null) {
+            newDisseminationInfo.setDate(newDisseminationInfo.getAckDate());
+        }
+        return newDisseminationInfo;
     }
 }

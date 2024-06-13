@@ -587,21 +587,19 @@ public class FileCacheRequestService {
      * Requests of external cache are ignored, so its requests can always be restored.
      */
     private List<FileCacheRequest> calculateRestorables(Collection<FileCacheRequest> requests) {
-        List<FileCacheRequest> restorablesInternalCacheRequest = new ArrayList<>();
+        List<FileCacheRequest> restorablesRequests = new ArrayList<>();
 
         // Calculate internal cache size available by adding internal cache file sizes sum and already queued requests
         Long availableCacheSize = cacheService.getFreeSpaceInBytes();
         Long pendingSize = fileCacheRequestRepository.getPendingFileSize();
         long availableSize = availableCacheSize - pendingSize;
 
-        Iterator<FileCacheRequest> iterator = findAllInternalCacheFileRequest(requests).iterator();
+        Collection<FileCacheRequest> internalCacheRequests = findAllInternalCacheFileRequest(requests);
         boolean internalCacheLimitReached = false;
         Long totalSize = 0L;
-        while (iterator.hasNext()) {
-            FileCacheRequest internalCacheRequest = iterator.next();
-
+        for (FileCacheRequest internalCacheRequest : internalCacheRequests) {
             if ((totalSize + internalCacheRequest.getFileSize()) <= availableSize) {
-                restorablesInternalCacheRequest.add(internalCacheRequest);
+                restorablesRequests.add(internalCacheRequest);
                 totalSize += internalCacheRequest.getFileSize();
             } else {
                 internalCacheLimitReached = true;
@@ -619,7 +617,9 @@ public class FileCacheRequestService {
         } else {
             globalCacheLimitReached = false;
         }
-        return restorablesInternalCacheRequest;
+        // Add external cache requests to restorable ones
+        requests.stream().filter(r -> !internalCacheRequests.contains(r)).forEach(restorablesRequests::add);
+        return restorablesRequests;
     }
 
     /**

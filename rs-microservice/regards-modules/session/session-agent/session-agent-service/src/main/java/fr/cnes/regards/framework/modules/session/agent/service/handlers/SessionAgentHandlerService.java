@@ -28,11 +28,14 @@ import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropert
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service for {@link SessionAgentEventHandler}. It handles new amqp events received and saves new
@@ -45,17 +48,20 @@ import java.util.Set;
 @Service
 public class SessionAgentHandlerService {
 
+    @Value("${regards.session.step.merge-similar-event:true}")
+    private boolean groupByStepPropertyUpdateRequestEvt;
+
     /**
      * Repository to save events received
      */
     @Autowired
-    private IStepPropertyUpdateRequestRepository stepPropertyRepo;
+    private IStepPropertyUpdateRequestRepository stepPropertyUpdateRequestRepository;
 
     /**
      * Repository to save snapshot processes
      */
     @Autowired
-    private ISnapshotProcessRepository snapshotRepo;
+    private ISnapshotProcessRepository snapshotProcessRepository;
 
     /**
      * Events handled by {@link SessionAgentEventHandler}
@@ -65,19 +71,19 @@ public class SessionAgentHandlerService {
      * @param events {@link StepPropertyUpdateRequestEvent}s
      */
     public Set<String> createStepRequests(List<StepPropertyUpdateRequestEvent> events) {
-        Set<StepPropertyUpdateRequest> stepPropertiesToSave = new HashSet<>();
+        List<StepPropertyUpdateRequest> stepPropertiesToSave = new ArrayList<>();
         Set<String> sourcesToBeUpdated = new HashSet<>();
-        // create stepPropertyUpdateRequest with all stepPropertyUpdateRequestEvent received
-        // create the list of sources impacted by these events and create snapshot processes if not existing
-        for (StepPropertyUpdateRequestEvent e : events) {
-            StepProperty step = e.getStepProperty();
+        // Create stepPropertyUpdateRequest with all stepPropertyUpdateRequestEvent received
+        // Create the list of sources impacted by these events and create snapshot processes if not existing
+        for (StepPropertyUpdateRequestEvent evt : events) {
+            StepProperty step = evt.getStepProperty();
             String source = step.getSource();
-            StepPropertyInfo stepInfo = e.getStepProperty().getStepPropertyInfo();
+            StepPropertyInfo stepInfo = evt.getStepProperty().getStepPropertyInfo();
             stepPropertiesToSave.add(new StepPropertyUpdateRequest(step.getStepId(),
                                                                    source,
                                                                    step.getSession(),
-                                                                   e.getDate(),
-                                                                   e.getType(),
+                                                                   evt.getDate(),
+                                                                   evt.getType(),
                                                                    new StepPropertyUpdateRequestInfo(stepInfo.getStepType(),
                                                                                                      stepInfo.getState(),
                                                                                                      stepInfo.getProperty(),
@@ -86,20 +92,66 @@ public class SessionAgentHandlerService {
                                                                                                      stepInfo.isOutputRelated())));
             sourcesToBeUpdated.add(source);
         }
-        this.stepPropertyRepo.saveAll(stepPropertiesToSave);
+        if (groupByStepPropertyUpdateRequestEvt) {
+            stepPropertyUpdateRequestRepository.saveAll(createNewListStepPropertyUpdateReqs(stepPropertiesToSave));
+        } else {
+            stepPropertyUpdateRequestRepository.saveAll(stepPropertiesToSave);
+        }
         return sourcesToBeUpdated;
     }
 
     public void createMissingSnapshotProcesses(Set<String> sources) {
-        Set<SnapshotProcess> snapshotProcessesRetrieved = snapshotRepo.findBySourceIn(sources);
+        Set<SnapshotProcess> snapshotProcessesRetrieved = snapshotProcessRepository.findBySourceIn(sources);
         Set<SnapshotProcess> snapshotProcessesToBeCreated = new HashSet<>();
-        // loop on every source impacted and create snapshot process if not existing
+        // Loop on every source impacted and create snapshot process if not existing
         for (String source : sources) {
             if (snapshotProcessesRetrieved.stream().noneMatch(s -> s.getSource().equals(source))) {
                 snapshotProcessesToBeCreated.add(new SnapshotProcess(source, null, null));
             }
         }
-        this.snapshotRepo.saveAll(snapshotProcessesToBeCreated);
+        this.snapshotProcessRepository.saveAll(snapshotProcessesToBeCreated);
+    }
+
+    /**
+     * Group the list of {@link StepPropertyUpdateRequest} by {@link StepPropertyUpdateRequest#getClassifier()} in order
+     * to compute the sum of their values {@link StepPropertyUpdateRequestInfo#value}
+     */
+    private List<StepPropertyUpdateRequest> createNewListStepPropertyUpdateReqs(List<StepPropertyUpdateRequest> stepPropertyUpdateReqs) {
+        return stepPropertyUpdateReqs.stream()
+                                     .collect(Collectors.groupingBy(StepPropertyUpdateRequest::getClassifier))
+                                     .entrySet()
+                                     .stream()
+                                     .map(e -> e.getValue()
+                                                .stream()
+                                                .reduce((s1, s2) -> createNewStepPropertyUpdateReq(s1, s2)))
+                                     .map(s -> s.get())
+                                     .toList();
+
+    }
+
+    /**
+     * Create the new {@link StepPropertyUpdateRequest} in order to sum the value {@link StepPropertyUpdateRequestInfo#value} of 2 identical
+     * {@link StepPropertyUpdateRequest}s.
+     */
+    private StepPropertyUpdateRequest createNewStepPropertyUpdateReq(StepPropertyUpdateRequest s1,
+                                                                     StepPropertyUpdateRequest s2) {
+        return new StepPropertyUpdateRequest(s1.getStepId(),
+                                             s1.getSource(),
+                                             s1.getSession(),
+                                             s1.getCreationDate(),
+                                             s1.getType(),
+                                             new StepPropertyUpdateRequestInfo(s1.getStepPropertyInfo().getStepType(),
+                                                                               s1.getStepPropertyInfo().getState(),
+                                                                               s1.getStepPropertyInfo().getProperty(),
+                                                                               // Sum values of 2 steps
+                                                                               Integer.toString(Integer.parseInt(s1.getStepPropertyInfo()
+                                                                                                                   .getValue())
+                                                                                                + Integer.parseInt(s2.getStepPropertyInfo()
+                                                                                                                     .getValue())),
+                                                                               s1.getStepPropertyInfo()
+                                                                                 .isInputRelated(),
+                                                                               s1.getStepPropertyInfo()
+                                                                                 .isOutputRelated()));
     }
 
 }

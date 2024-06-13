@@ -100,6 +100,9 @@ import static fr.cnes.regards.modules.delivery.service.order.zip.env.utils.Deliv
 public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
 
     @Autowired
+    protected DynamicTenantSettingService dynamicTenantSettingService;
+
+    @Autowired
     private IJobInfoRepository jobInfoRepository;
 
     @Autowired
@@ -107,9 +110,6 @@ public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
 
     @Autowired
     private IDeliveryAndJobRepository deliveryAndJobRepository;
-
-    @Autowired
-    protected DynamicTenantSettingService dynamicTenantSettingService;
 
     @Autowired
     private TestDeliveryServerProperties testS3;
@@ -216,15 +216,17 @@ public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
         String expectedZipPath = DELIVERY_CORRELATION_ID + "/" + String.format(MULTIPLE_FILES_ZIP_NAME_PATTERN,
                                                                                DELIVERY_CORRELATION_ID);
         StorageCommand.Check checkCmd = StorageCommand.check(storageConfig, cmdId, expectedZipPath);
-        StorageCommandResult.CheckResult checkResult = getS3Client().check(checkCmd).block();
-        assert checkResult != null;
-        checkResult.matchCheckResult(present -> true,
-                                     absent -> Assertions.fail(String.format("S3 zip was not uploaded to S3 location "
-                                                                             + "'%s'.", expectedZipPath)),
-                                     unreachableStorage -> {
-                                         throw new S3ClientException(unreachableStorage.getThrowable());
-                                     });
-
+        try (S3HighLevelReactiveClient s3Client = getS3Client()) {
+            StorageCommandResult.CheckResult checkResult = s3Client.check(checkCmd).block();
+            assert checkResult != null;
+            checkResult.matchCheckResult(present -> true,
+                                         absent -> Assertions.fail(String.format(
+                                             "S3 zip was not uploaded to S3 location '%s'.",
+                                             expectedZipPath)),
+                                         unreachableStorage -> {
+                                             throw new S3ClientException(unreachableStorage.getThrowable());
+                                         });
+        }
     }
 
     private StorageConfigDto getStorageConfig() throws MalformedURLException {

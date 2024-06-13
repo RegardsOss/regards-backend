@@ -21,9 +21,11 @@ package fr.cnes.regards.modules.notifier.service;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
+import fr.cnes.regards.modules.notifier.domain.plugin.IRuleMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -32,9 +34,12 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Cache for {@link Rule}
+ * Cache for available {@link Rule} by tenant
+ * As a rule contains an instance of {@link IRuleMatcher} plugin interface configuration, this cache lets you access
+ * the list of available rules that needs to be tested against incoming {@link NotificationRequestEvent}
  *
  * @author Kevin Marchois
+ * @author Léo Mieulet
  */
 @Component
 public class RuleCache {
@@ -44,14 +49,15 @@ public class RuleCache {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * Rule cache is used to avoid useless database request as models rarely change!<br/>
-     * tenant key -> attributes val
+     * Store the list of existing {@link Rule} by tenant
+     * It is used to avoid useless database request as {@link Rule} rarely change!<br/>
      */
     private final LoadingCache<String, Set<Rule>> ruleCachePerTenant;
 
-    public RuleCache(IRuntimeTenantResolver runtimeTenantResolver, IRuleRepository ruleRepo) {
+    public RuleCache(IRuntimeTenantResolver runtimeTenantResolver,
+                     IRuleRepository ruleRepo) {
         this.runtimeTenantResolver = runtimeTenantResolver;
-        ruleCachePerTenant = CacheBuilder.newBuilder().build(new CacheLoader<String, Set<Rule>>() {
+        ruleCachePerTenant = CacheBuilder.newBuilder().build(new CacheLoader<>() {
 
             @Override
             public Set<Rule> load(String tenant) {
@@ -61,8 +67,8 @@ public class RuleCache {
     }
 
     /**
-     * Get all enabled {@link Rule} for the current tenant if the cache is empty we will load it
-     * with data from database
+     * Get all enabled {@link Rule} for the current tenant
+     * When the cache is empty, load existing rules from database
      *
      * @return all enabled {@link Rule}
      * @throws ExecutionException if access to repository raises a checked exception
@@ -73,11 +79,11 @@ public class RuleCache {
     }
 
     /**
-     * Clean all {@link Rule} in cache for the current tenant
+     * Clean all {@link Rule} in cache for current tenant
      */
     public void clear() {
         String tenant = runtimeTenantResolver.getTenant();
+        LOGGER.info("Clear rule cache of tenant {}", tenant);
         ruleCachePerTenant.invalidate(tenant);
-        LOGGER.debug("Clear rule cache of tenant {}", tenant);
     }
 }

@@ -20,7 +20,9 @@ package fr.cnes.regards.modules.storage.service.file;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
@@ -29,19 +31,24 @@ import fr.cnes.regards.modules.storage.domain.database.DownloadToken;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
+import fr.cnes.regards.modules.storage.service.plugin.SimpleNearlineDataStorage;
 import io.vavr.control.Try;
 import org.apache.commons.compress.utils.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.*;
@@ -59,6 +66,9 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
     private static final String SESSION_OWNER = "SOURCE 1";
 
     private static final String SESSION = "SESSION 1";
+
+    @Autowired
+    private IPluginService pluginService;
 
     @Before
     @Override
@@ -112,13 +122,16 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
     }
 
     @Test
-    public void test_downloadFileReference_nearline() throws InterruptedException, ExecutionException, IOException {
+    public void test_downloadFileReference_nearline()
+        throws InterruptedException, ExecutionException, NotAvailablePluginConfigurationException, ModuleException {
         // Given
         FileReference fileReference = generateRandomStoredNearlineFileReference();
         // Update the real url of file(without the protocol) in order to download the file
         String url = fileReference.getLocation().getUrl();
         fileReference.getLocation().setUrl(url.substring(url.indexOf(":") + 1));
         fileRefService.store(fileReference);
+        SimpleNearlineDataStorage plugin = pluginService.getPlugin(nearLineConf.getBusinessId());
+        plugin.simulateAvailableFileForDownload(fileReference.getMetaInfo().getChecksum());
 
         // When
         Try<DownloadableFile> downloadableFile = Try.of(() -> fileDownloadService.downloadFile(fileReference.getMetaInfo()
@@ -134,10 +147,23 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
     }
 
     @Test
+    public void test() throws MalformedURLException {
+        String url = "https://datalake.com/bucket/2015/05/02/file";
+        URL uurl = new URL(url);
+        String endpoint = "https://datalake.com";
+        String bucket = "bucket";
+        System.out.println(uurl.toString());
+        System.out.println(uurl.toString()
+                               .replaceFirst(Pattern.quote(endpoint) + "(:[0-9]*)?/*", "")
+                               .replaceFirst(Pattern.quote(bucket), "")
+                               .substring(1));
+    }
+
+    @Test
     public void test_downloadFileReference_nearline_without_cache_then_with_cache()
         throws InterruptedException, ExecutionException, IOException {
         // Given
-        FileReference fileReference = generateRandomStoredNearlineFileReference();
+        FileReference fileReference = generateRandomStoredNearlineFileReference(true);
         assertFalse(fileReference.isNearlineConfirmed());
 
         // When
@@ -164,13 +190,14 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
                                                                                 .findFirst();
         Assert.assertTrue("FileCacheRequest should be created", fileCacheRequestOpt.isPresent());
         assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
-                     NEARLINE_CONF_LABEL,
+                     NEARLINE_EXT_CACHE_CONF_LABEL,
                      fileCacheRequestOpt.get().getStorage());
         assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
                      FileRequestStatus.TO_DO,
                      fileCacheRequestOpt.get().getStatus());
 
         Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
+        Assert.assertTrue(!jobs.isEmpty());
         runAndWaitJob(jobs);
 
         Optional<CacheFile> cacheFileOpt = cacheService.findByChecksum(fileReference.getMetaInfo().getChecksum());

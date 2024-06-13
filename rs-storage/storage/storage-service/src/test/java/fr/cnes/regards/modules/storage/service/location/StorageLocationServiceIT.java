@@ -228,7 +228,7 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         storageLocationService.monitorStorageLocations(false);
         Set<StorageLocationDto> locs = storageLocationService.getAllLocations();
         Assert.assertNotNull("Locations should be retrieved", locs);
-        Assert.assertEquals("There should be 6 locations", 6, locs.size());
+        Assert.assertEquals("There should be 7 locations", 7, locs.size());
         Assert.assertEquals("Location one is missing",
                             1L,
                             locs.stream().filter(l -> l.getName().equals(storage)).count());

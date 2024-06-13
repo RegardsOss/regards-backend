@@ -72,10 +72,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -559,14 +556,16 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         updateFeaturesFiles(5, 2, true, FeatureFileUpdateMode.REPLACE);
     }
 
-
     @Test
     @Purpose("Check update request on a feature with new files locations when storage error occurs")
     public void test_update_with_files_with_new_location() throws InterruptedException {
         updateFeaturesFiles(5, 2, false, null);
     }
 
-    private void updateFeaturesFiles(int nbSuccess, int nbErrors, boolean updateNewFile, FeatureFileUpdateMode fileUpdateMode) throws InterruptedException {
+    private void updateFeaturesFiles(int nbSuccess,
+                                     int nbErrors,
+                                     boolean updateNewFile,
+                                     FeatureFileUpdateMode fileUpdateMode) throws InterruptedException {
         int nbFeatures = nbSuccess + nbErrors;
         int timeout = 10_000 + (nbFeatures * 100);
         // Init a feature
@@ -578,6 +577,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         this.featureCreationService.registerRequests(events);
         this.featureCreationService.scheduleRequests();
         waitFeature(nbFeatures, null, timeout);
+
         mockStorageHelper.mockStorageResponses(featureCreationRequestRepo, nbFeatures, 0);
         mockNotificationSuccess();
         List<FeatureEntity> features = featureRepo.findAll();
@@ -588,7 +588,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // Now create an update request on this feature to add referenced files
         List<FeatureUpdateRequestEvent> updates = prepareUpdateRequests(features.stream().map(f -> f.getUrn())
 
-                                                                                .collect(Collectors.toList()), fileUpdateMode);
+                                                                                .collect(Collectors.toList()),
+                                                                        fileUpdateMode);
         String newStorage = "somewhere";
         String newUrl = "file:///dir/file.txt";
         FeatureFileLocation newLocations = FeatureFileLocation.build(newUrl, newStorage);
@@ -617,8 +618,26 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // storage is received.
         waitForStep(featureUpdateRequestRepo, FeatureRequestStep.REMOTE_STORAGE_REQUESTED, nbFeatures, timeout);
 
+        // Retrieve last feature update date.
+        List<FeatureEntity> allFeaturesBeforeStorageResponse = featureRepo.findAll();
+
         // Simulate response from storage
         mockStorageHelper.mockStorageResponses(featureUpdateRequestRepo, nbSuccess, nbErrors);
+
+        List<FeatureEntity> allFeaturesAfterStorageResponse = featureRepo.findAll();
+        // Find feature updated by checking the lastUpdate field
+        long nbFeatureUpdated = allFeaturesAfterStorageResponse.stream().filter(featureEntity -> {
+            FeatureEntity beforeUpdate = allFeaturesBeforeStorageResponse.stream()
+                                                                         .filter(f -> Objects.equals(f.getId(),
+                                                                                                     featureEntity.getId()))
+                                                                         .findFirst()
+                                                                         .get();
+            return featureEntity.getLastUpdate().isAfter(beforeUpdate.getLastUpdate());
+
+        }).count();
+        Assert.assertEquals("Wrong number of updated features. Field lastUpdate is not well updated",
+                            nbSuccess,
+                            nbFeatureUpdated);
 
         featureUpdateRequestRepo.findAll().stream().filter(r -> r.getState() == RequestState.ERROR).forEach(r -> {
             FeatureEntity feature = featureRepo.findByUrn(r.getUrn());

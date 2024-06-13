@@ -51,7 +51,8 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_job_service_it" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_job_service_it",
+                                   "regards.session.step.merge-similar-event=false" })
 @ActiveProfiles({ "testAmqp", "noscheduler" })
 public class AgentSnapshotJobServiceIT extends AbstractAgentServiceUtilsIT {
 

@@ -34,6 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -141,11 +143,17 @@ public class NearlineItUtils {
 
     public CacheFile buildExternalCachefile(String name) {
         String storageName = "Nearline";
+        URL url;
+        try {
+            url = new URL("file:///tmp/test.file");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
         return CacheFile.buildFileExternalCache(name,
                                                 10L,
                                                 name,
                                                 MimeType.valueOf("application/json"),
-                                                null,
+                                                url,
                                                 OffsetDateTime.now().plusHours(1),
                                                 Set.of("groupId"),
                                                 "type",

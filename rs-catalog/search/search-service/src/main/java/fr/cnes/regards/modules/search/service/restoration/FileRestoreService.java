@@ -88,8 +88,12 @@ public class FileRestoreService {
                                                  .filter(dataFile -> !dataFile.isOnline())
                                                  .map(DataFile::getChecksum)
                                                  .collect(Collectors.toSet());
-        LOGGER.debug("Asking to restore files of product with checksums {}", checksums);
-        storageClient.makeAvailable(checksums, availabilityHours);
+        if (!checksums.isEmpty()) {
+            LOGGER.debug("Asking to restore files of product with checksums {}", checksums);
+            storageClient.makeAvailable(checksums, availabilityHours);
+        } else {
+            LOGGER.warn("Restoration request ignored ! No offline files to restore");
+        }
     }
 
     public void restore(Set<String> productIds) throws ModuleException {
