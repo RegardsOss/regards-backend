@@ -284,7 +284,7 @@ public class FileAvailabilityService {
                     INearlineStorageLocation plugin = pluginService.getPlugin(storageLocationConfiguration.getPluginConfiguration()
                                                                                                           .getBusinessId());
                     result.put(storageLocationConfiguration.getName(), Optional.of(plugin));
-                } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+                } catch (ModuleException e) {
                     LOGGER.warn("Plugin {} not available", storageLocationConfiguration.getName(), e);
                     result.put(storageLocationConfiguration.getName(), Optional.empty());
                 }

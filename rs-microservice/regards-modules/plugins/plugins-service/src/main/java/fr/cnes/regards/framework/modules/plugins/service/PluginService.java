@@ -26,18 +26,15 @@ import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.*;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
+import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfClearCacheEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
-import fr.cnes.regards.framework.modules.plugins.dto.PluginConfigurationDto;
 import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.dto.PluginParamDescriptor;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.NestedPluginParam;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.PluginParamType;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.StringPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -52,13 +49,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * The implementation of {@link IPluginService}.
@@ -66,22 +60,17 @@ import java.util.concurrent.ConcurrentMap;
  * @author Christophe Mertz
  * @author Sébastien Binda
  * <p>
- * TODO V3 : with hot plugin loading, be careful to properly clean the plugin cache when plugin version change
  */
-@MultitenantTransactional
 @Service
 public class PluginService implements IPluginService, InitializingBean {
+
+    public static final String ERROR_WHILE_GETTING_THE_PLUGIN_CONFIGURATION = "Error while getting the plugin configuration {}.";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginService.class);
 
     private static final String PLUGIN_BUSINESS_ID_REQUIRED_MSG = "Plugin configuration business identifier is required";
 
-    public static final String ERROR_WHILE_GETTING_THE_PLUGIN_CONFIGURATION = "Error while getting the plugin configuration {}.";
-
-    /**
-     * {@link PluginConfiguration} JPA Repository
-     */
-    private final IPluginConfigurationRepository repos;
+    private final PluginConfigurationService pluginDaoService;
 
     /**
      * {@link IRuntimeTenantResolver}
@@ -89,13 +78,11 @@ public class PluginService implements IPluginService, InitializingBean {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * A {@link Map} with all the {@link Plugin} currently instantiate by tenant.</br>
-     * This Map is used because for a {@link PluginConfiguration}, one and only one {@link Plugin} should be
-     * instantiated.
-     * <b>Note: </b> PluginService is used in multi-thread environment (see IngesterService and CrawlerService) so
-     * ConcurrentHashMap is used instead of HashMap
+     * Plugin utils
      */
-    private final ConcurrentMap<String, ConcurrentMap<String, Object>> instantiatePluginMap = new ConcurrentHashMap<>();
+    private final PluginCache pluginCache;
+
+    private final PluginInstantiationService pluginInstanceService;
 
     /**
      * Amqp publisher
@@ -112,14 +99,18 @@ public class PluginService implements IPluginService, InitializingBean {
     @Value("${regards.plugins.packages-to-scan:#{null}}")
     private String[] packagesToScan;
 
-    public PluginService(IPluginConfigurationRepository pluginConfigurationRepository,
+    public PluginService(PluginConfigurationService pluginDaoService,
                          IPublisher publisher,
                          IRuntimeTenantResolver runtimeTenantResolver,
+                         PluginCache pluginCache,
+                         PluginInstantiationService pluginInstanceService,
                          IEncryptionService encryptionService,
                          Gson gson) {
-        this.repos = pluginConfigurationRepository;
+        this.pluginDaoService = pluginDaoService;
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.pluginCache = pluginCache;
+        this.pluginInstanceService = pluginInstanceService;
         this.encryptionService = encryptionService;
         this.gson = gson;
     }
@@ -165,7 +156,9 @@ public class PluginService implements IPluginService, InitializingBean {
     }
 
     @Override
-    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class })
+    @MultitenantTransactional(noRollbackFor = { EntityInvalidException.class,
+                                                EncryptionException.class,
+                                                EntityNotFoundException.class })
     public PluginConfiguration savePluginConfiguration(PluginConfiguration plgConf)
         throws EntityInvalidException, EncryptionException, EntityNotFoundException {
 
@@ -176,7 +169,7 @@ public class PluginService implements IPluginService, InitializingBean {
         }
 
         StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
-        PluginConfiguration pluginConfInDb = repos.findCompleteByBusinessId(plgConf.getBusinessId());
+        PluginConfiguration pluginConfInDb = pluginDaoService.findCompleteByBusinessId(plgConf.getBusinessId());
         if ((pluginConfInDb != null)
             && !Objects.equals(pluginConfInDb.getId(), plgConf.getId())
             && pluginConfInDb.getBusinessId().equals(plgConf.getBusinessId())) {
@@ -198,12 +191,12 @@ public class PluginService implements IPluginService, InitializingBean {
         // Now that generic concerns on PluginConfiguration are dealt with, lets encrypt sensitive plugin parameter
         // only way to know if a plugin parameter is sensitive is via the plugin metadata
         for (PluginParamDescriptor paramMeta : pluginMeta.getParameters()) {
-            if (Boolean.TRUE.equals(paramMeta.isSensible())) {
+            if (paramMeta.isSensible()) {
                 manageSensibleParameter(plgConf.getParameter(paramMeta.getName()));
             }
         }
 
-        PluginConfiguration newConf = repos.save(plgConf);
+        PluginConfiguration newConf = pluginDaoService.savePluginConfiguration(plgConf);
         if (shouldPublishCreation) {
             publisher.publish(new BroadcastPluginConfEvent(newConf.getId(),
                                                            newConf.getBusinessId(),
@@ -237,34 +230,17 @@ public class PluginService implements IPluginService, InitializingBean {
     }
 
     /**
-     * Set decrypted value for plugin instantiation.
-     */
-    private void decryptSensibleParameter(PluginMetaData pluginMetadata, PluginConfigurationDto conf)
-        throws EncryptionException {
-        for (PluginParamDescriptor paramType : pluginMetadata.getParameters()) {
-            // only decrypt STRING plugin parameter for now.
-            if (paramType.getType() == PluginParamType.STRING) {
-                StringPluginParam pluginParam = (StringPluginParam) conf.getParameter(paramType.getName());
-                if (Boolean.TRUE.equals((pluginParam != null) && paramType.isSensible()) && pluginParam.hasValue()) {
-                    conf.getParameters().remove(pluginParam);
-                    StringPluginParam decryptedParam = pluginParam.clone();
-                    decryptedParam.setValue(encryptionService.decrypt(decryptedParam.getValue()));
-                    conf.getParameters().add(decryptedParam);
-                }
-            }
-        }
-    }
-
-    /**
      * Method to ensure that the given configuration to save will be the only one active if his
      * {@link PluginInterface} is configured to allow only one active conf.
      *
      * @param plgConf {@link PluginConfiguration} to save
      */
-    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class })
+    @MultitenantTransactional(noRollbackFor = { EncryptionException.class,
+                                                EntityInvalidException.class,
+                                                EntityNotFoundException.class })
     public void ensureOnlyOneConfIsActive(PluginConfiguration plgConf)
         throws EncryptionException, EntityInvalidException, EntityNotFoundException {
-        if (Boolean.TRUE.equals(plgConf.isActive())) {
+        if (plgConf.isActive()) {
             List<String> uniqueActiveConfInterfaces = Lists.newArrayList();
             for (String interfaceName : plgConf.getInterfaceNames()) {
                 PluginInterface pi;
@@ -280,9 +256,10 @@ public class PluginService implements IPluginService, InitializingBean {
             }
             if (!uniqueActiveConfInterfaces.isEmpty()) {
                 // First disable all other active configurations
-                List<PluginConfiguration> confs = repos.findAll();
+                List<PluginConfiguration> confs = pluginDaoService.findAllPluginConfigurations();
                 for (PluginConfiguration conf : confs) {
-                    if (Boolean.TRUE.equals(!conf.getId().equals(plgConf.getId()) && conf.isActive())
+                    if (!conf.getId().equals(plgConf.getId())
+                        && conf.isActive()
                         && !Collections.disjoint(conf.getInterfaceNames(), uniqueActiveConfInterfaces)) {
                         conf.setIsActive(false);
                         LOGGER.info(
@@ -299,9 +276,9 @@ public class PluginService implements IPluginService, InitializingBean {
     }
 
     @Override
-    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class })
+    @MultitenantTransactional(noRollbackFor = { EntityNotFoundException.class })
     public PluginConfiguration getPluginConfiguration(String businessId) throws EntityNotFoundException {
-        PluginConfiguration plgConf = repos.findCompleteByBusinessId(businessId);
+        PluginConfiguration plgConf = pluginDaoService.findCompleteByBusinessId(businessId);
         if (plgConf == null) {
             LOGGER.error(ERROR_WHILE_GETTING_THE_PLUGIN_CONFIGURATION, businessId);
             throw new EntityNotFoundException(businessId, PluginConfiguration.class);
@@ -318,7 +295,7 @@ public class PluginService implements IPluginService, InitializingBean {
 
     @Override
     public PluginConfiguration loadPluginConfiguration(String businessId) {
-        return repos.findCompleteByBusinessId(businessId);
+        return pluginDaoService.findCompleteByBusinessId(businessId);
     }
 
     @Override
@@ -331,16 +308,18 @@ public class PluginService implements IPluginService, InitializingBean {
 
     @Override
     public boolean exists(String businessId) {
-        boolean exists = repos.existsByBusinessId(businessId);
+        boolean exists = pluginDaoService.existsByBusinessId(businessId);
         LOGGER.trace(exists ? "Plugin [businessId={}] exists" : "Plugin [businessId={}] does not exist", businessId);
         return exists;
     }
 
     @Override
-    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class })
+    @MultitenantTransactional(noRollbackFor = { EntityNotFoundException.class,
+                                                EntityInvalidException.class,
+                                                EncryptionException.class })
     public PluginConfiguration updatePluginConfiguration(PluginConfiguration pluginConf)
         throws EntityNotFoundException, EntityInvalidException, EncryptionException {
-        final PluginConfiguration oldConf = repos.findCompleteByBusinessId(pluginConf.getBusinessId());
+        final PluginConfiguration oldConf = pluginDaoService.findCompleteByBusinessId(pluginConf.getBusinessId());
         if (oldConf == null) {
             LOGGER.error("Error while updating the plugin configuration {}.", pluginConf.getId());
             throw new EntityNotFoundException(pluginConf.getLabel(), PluginConfiguration.class);
@@ -363,9 +342,8 @@ public class PluginService implements IPluginService, InitializingBean {
             IPluginParam oldParam = oldConf.getParameter(paramMeta.getName());
             if ((newParam != null) && newParam.hasValue()) {
                 // Check if parameter is sensitive and value changed. If it does, encrypt the new value
-                if (Boolean.TRUE.equals(paramMeta.isSensible()) && (oldParam == null
-                                                                    || !Objects.equals(newParam.getValue(),
-                                                                                       oldParam.getValue()))) {
+                if (paramMeta.isSensible() && (oldParam == null || !Objects.equals(newParam.getValue(),
+                                                                                   oldParam.getValue()))) {
                     manageSensibleParameter(newParam);
                 }
             }
@@ -373,50 +351,38 @@ public class PluginService implements IPluginService, InitializingBean {
 
         ensureOnlyOneConfIsActive(pluginConf);
 
-        PluginConfiguration newConf = repos.save(pluginConf);
+        PluginConfiguration newConf = pluginDaoService.savePluginConfiguration(pluginConf);
         newConf.setMetaDataAndPluginId(pluginMeta);
-
-        if (oldConfActive != Boolean.TRUE.equals(newConf.isActive())) {
-            // For CATALOG
-            publisher.publish(new BroadcastPluginConfEvent(pluginConf.getId(),
-                                                           newConf.getBusinessId(),
-                                                           newConf.getLabel(),
-                                                           Boolean.TRUE.equals(newConf.isActive()) ?
-                                                               PluginServiceAction.ACTIVATE :
-                                                               PluginServiceAction.DISABLE,
-                                                           pluginMeta.getInterfaceNames()));
-            // For DAM
+        if (oldConfActive != newConf.isActive()) {
+            // Publish an event indicating the plugin availability changed (now available or unavailable)
             publisher.publish(new PluginConfEvent(pluginConf.getId(),
                                                   newConf.getBusinessId(),
                                                   newConf.getLabel(),
-                                                  Boolean.TRUE.equals(newConf.isActive()) ?
+                                                  newConf.isActive() ?
                                                       PluginServiceAction.ACTIVATE :
                                                       PluginServiceAction.DISABLE,
                                                   pluginMeta.getInterfaceNames()));
-        } else {
-            publisher.publish(new PluginConfEvent(pluginConf.getId(),
-                                                  newConf.getBusinessId(),
-                                                  newConf.getLabel(),
-                                                  PluginServiceAction.UPDATE,
-                                                  pluginMeta.getInterfaceNames()));
         }
-        // Remove the plugin configuration from cache
-        cleanRecursively(pluginConf);
-
+        // Event sent to all current microservice instances to inform this plugin conf changed.
+        publisher.publish(new BroadcastPluginConfEvent(pluginConf.getId(),
+                                                       newConf.getBusinessId(),
+                                                       newConf.getLabel(),
+                                                       PluginServiceAction.UPDATE,
+                                                       pluginMeta.getInterfaceNames()));
         return newConf;
     }
 
     public PluginConfiguration updatePluginConfiguration(PluginConfiguration plugin,
                                                          Class<?> pluginType,
                                                          boolean onlyOneActiveByType) throws ModuleException {
-        if (onlyOneActiveByType && Boolean.TRUE.equals(plugin.isActive())) {
+        if (onlyOneActiveByType && plugin.isActive()) {
             // First disable all other active configurations
-            List<PluginConfiguration> confs = repos.findAll();
+            List<PluginConfiguration> confs = pluginDaoService.findAllPluginConfigurations();
             for (PluginConfiguration conf : confs) {
                 if ((conf.getId().longValue() != plugin.getId().longValue())
                     && conf.getInterfaceNames()
                            .contains(pluginType.getName())
-                    && Boolean.TRUE.equals(conf.isActive())) {
+                    && conf.isActive()) {
                     conf.setIsActive(false);
                     updatePluginConfiguration(conf);
                 }
@@ -426,28 +392,21 @@ public class PluginService implements IPluginService, InitializingBean {
         return updatePluginConfiguration(plugin);
     }
 
-    /**
-     * Clean from cache given plugin configuration and all those which use it (recursively)
-     */
-    private void cleanRecursively(PluginConfiguration pluginConf) {
-        // And don't forget to clean all PluginConfiguration that have this plugin as a parameter
-        Set<PluginConfiguration> parentPluginConfs = getDependentPlugins(pluginConf.getBusinessId());
-        parentPluginConfs.forEach(this::cleanRecursively);
-        cleanPluginCache(pluginConf.getBusinessId());
-    }
-
     @Override
-    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class })
-    public void deletePluginConfiguration(String businessId) throws ModuleException {
-        PluginConfiguration toDelete = repos.findCompleteByBusinessId(businessId);
+    @MultitenantTransactional(noRollbackFor = { EntityNotFoundException.class,
+                                                EntityOperationForbiddenException.class })
+    public void deletePluginConfiguration(String businessId)
+        throws EntityNotFoundException, EntityOperationForbiddenException {
+        PluginConfiguration toDelete = pluginDaoService.findCompleteByBusinessId(businessId);
         if (toDelete == null) {
             LOGGER.error("Error while deleting the plugin configuration {}.", businessId);
             throw new EntityNotFoundException(businessId, PluginConfiguration.class);
         }
-        if (!getDependentPlugins(businessId).isEmpty()) {
+        if (!pluginDaoService.getDependentPlugins(businessId).isEmpty()) {
             throw new EntityOperationForbiddenException("Operation cancelled: dependent plugin configurations exist.");
         }
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(toDelete.getPluginId());
+        // remove it from the plugin cache on all instances
         publisher.publish(new BroadcastPluginConfEvent(toDelete.getId(),
                                                        toDelete.getBusinessId(),
                                                        toDelete.getLabel(),
@@ -455,36 +414,14 @@ public class PluginService implements IPluginService, InitializingBean {
                                                        Option.of(pluginMeta)
                                                              .map(PluginMetaData::getInterfaceNames)
                                                              .getOrElse(new HashSet<>())));
-        repos.deleteById(toDelete.getId());
-
-        // Remove the PluginConfiguration from the map
-        PluginUtils.doDestroyPlugin(toDelete);
-        cleanPluginCache(toDelete.getBusinessId());
-    }
-
-    /**
-     * @return list of dependent plugin configuration
-     */
-    private Set<PluginConfiguration> getDependentPlugins(String businessId) {
-        Set<PluginConfiguration> dependents = new HashSet<>();
-        for (PluginConfiguration conf : repos.findAll()) {
-            for (IPluginParam param : conf.getParameters()) {
-                if (param.getType() == PluginParamType.PLUGIN) {
-                    NestedPluginParam nested = (NestedPluginParam) param;
-                    if (businessId.equals(nested.getValue())) {
-                        dependents.add(conf);
-                    }
-                }
-            }
-        }
-        return dependents;
+        pluginDaoService.deleteById(toDelete.getId());
     }
 
     @Override
     public List<PluginConfiguration> getPluginConfigurationsByType(Class<?> interfacePluginType) {
         List<PluginConfiguration> pluginConfigurations = new ArrayList<>();
 
-        for (PluginConfiguration pluginConfiguration : repos.findAll()) {
+        for (PluginConfiguration pluginConfiguration : pluginDaoService.findAllPluginConfigurations()) {
             PluginMetaData pluginMeta = PluginUtils.getPluginMetadata(pluginConfiguration.getPluginId());
             if (pluginMeta == null) {
                 LOGGER.error("The plugin {} is not provided", pluginConfiguration.getPluginId());
@@ -499,12 +436,12 @@ public class PluginService implements IPluginService, InitializingBean {
 
     @Override
     public List<PluginConfiguration> getPluginConfigurations(String pluginId) {
-        return repos.findByPluginIdOrderByPriorityOrderDesc(pluginId);
+        return pluginDaoService.findByPluginIdOrderByPriorityOrderDesc(pluginId);
     }
 
     @Override
     public List<PluginConfiguration> getActivePluginConfigurations(String pluginId) {
-        return repos.findByPluginIdAndActiveTrueOrderByPriorityOrderDesc(pluginId);
+        return pluginDaoService.findByPluginIdAndActiveTrueOrderByPriorityOrderDesc(pluginId);
     }
 
     @Override
@@ -514,7 +451,7 @@ public class PluginService implements IPluginService, InitializingBean {
 
     @Override
     public <T> T getFirstPluginByType(Class<?> interfacePluginType, IPluginParam... dynamicParameters)
-        throws ModuleException, NotAvailablePluginConfigurationException {
+        throws ModuleException {
 
         // Get pluginMap configuration for given type
         final List<PluginConfiguration> confs = getPluginConfigurationsByType(interfacePluginType);
@@ -545,7 +482,7 @@ public class PluginService implements IPluginService, InitializingBean {
      * @throws NotAvailablePluginConfigurationException as per {@link #getPlugin(String, IPluginParam...)}
      */
     @Override
-    public boolean canInstantiate(String businessId) throws ModuleException, NotAvailablePluginConfigurationException {
+    public boolean canInstantiate(String businessId) throws ModuleException {
         try {
             getPlugin(businessId);
             return true;
@@ -555,91 +492,17 @@ public class PluginService implements IPluginService, InitializingBean {
         }
     }
 
-    /**
-     * Retrieve a plugin for a given tenant by adding the new instanciated plugin in tenant cache map
-     * if it does not exist
-     *
-     * @param plgConf           plugin conf to instanciate
-     * @param pluginCacheTenant tenant
-     * @return new tenant plugin cache map
-     */
-    private ConcurrentMap<String, Object> getPluginForTenant(PluginConfiguration plgConf,
-                                                             ConcurrentMap<String, Object> pluginCacheTenant) {
-        ConcurrentMap<String, Object> newCacheForThisTenant = pluginCacheTenant == null ?
-            new ConcurrentHashMap<>() :
-            pluginCacheTenant;
-        instantiateInnerPlugins(plgConf, newCacheForThisTenant);
-        newCacheForThisTenant.computeIfAbsent(plgConf.getBusinessId(), bid -> {
-            try {
-                return instantiatePlugin(loadPluginConfiguration(plgConf.getBusinessId()), newCacheForThisTenant);
-            } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-                throw new RsRuntimeException(e);
-            }
-        });
-        return newCacheForThisTenant;
-    }
-
-    /**
-     * retreive Plugin type parameters from given plugin conf and instantiate the plugin if not already in cache.
-     *
-     * @param plgConf           {@link PluginConfiguration} to check and instantiate missing inner parameter plugins
-     * @param pluginCacheTenant Cache of already instantiated plugin conf for the current tenant
-     */
-    private void instantiateInnerPlugins(PluginConfiguration plgConf, ConcurrentMap<String, Object> pluginCacheTenant) {
-        Iterator<PluginConfiguration> it = getInnerPluginsConf(plgConf).descendingIterator();
-        while (it.hasNext()) {
-            PluginConfiguration innerConf = it.next();
-            pluginCacheTenant.computeIfAbsent(innerConf.getBusinessId(), bid -> {
-                try {
-                    return instantiatePlugin(innerConf, pluginCacheTenant);
-                } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-                    throw new RsRuntimeException(e);
-                }
-            });
-        }
-    }
-
-    /**
-     * Retrieve ordered list of {@link PluginConfiguration} matching all the given plugin inner plugin parameters.
-     *
-     * @param pluginConf {@link PluginConfiguration} to check
-     * @return Ordered list of inner plugin configuration of the fiven plugin configuration
-     */
-    private LinkedList<PluginConfiguration> getInnerPluginsConf(PluginConfiguration pluginConf) {
-        LinkedList<PluginConfiguration> innerConfList = new LinkedList<>();
-
-        for (PluginParamDescriptor paramType : getPluginMetadata(pluginConf.getPluginId()).getParameters()) {
-            if (paramType.getType() == PluginParamType.PLUGIN) {
-                NestedPluginParam pluginParam = (NestedPluginParam) pluginConf.getParameter(paramType.getName());
-                if ((pluginParam != null) && pluginParam.hasValue() && !pluginParam.getValue()
-                                                                                   .equals(pluginConf.getBusinessId())) {
-                    PluginConfiguration innerPluginConf = loadPluginConfiguration(pluginParam.getValue());
-                    // Add inner plugin to result list
-                    innerConfList.add(innerPluginConf);
-                    // Check if inner plugin contains other inner plugins and add them to result list
-                    innerConfList.addAll(getInnerPluginsConf(innerPluginConf));
-                }
-            }
-        }
-        LOGGER.debug("Found {} inner plugin(s) for : {}", innerConfList.size(), pluginConf.getBusinessId());
-        return innerConfList;
-    }
-
     @Override
-    @Transactional(noRollbackFor = { ModuleException.class, NotAvailablePluginConfigurationException.class })
+    @MultitenantTransactional(noRollbackFor = { ModuleException.class })
     @SuppressWarnings("unchecked")
-    public <T> T getPlugin(PluginConfiguration plgConf, IPluginParam... dynamicParameters)
-        throws ModuleException, NotAvailablePluginConfigurationException {
+    public <T> T getPlugin(PluginConfiguration plgConf, IPluginParam... dynamicParameters) throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
         Assert.notNull(tenant, "Tenant is required");
         Assert.notNull(plgConf, "Plugin conf can not be null");
 
         if (dynamicParameters.length == 0) {
             try {
-                return (T) instantiatePluginMap.compute(tenant,
-                                                        (t, cacheForThisTenant) -> getPluginForTenant(plgConf,
-                                                                                                      cacheForThisTenant))
-                                               .get(plgConf.getBusinessId());
+                return (T) pluginCache.getPluginForTenant(tenant, plgConf).get(plgConf.getBusinessId());
             } catch (RsRuntimeException e) {
                 if (e.getCause() instanceof ModuleException me) {
                     throw me;
@@ -650,16 +513,15 @@ public class PluginService implements IPluginService, InitializingBean {
                 throw new CannotInstanciatePluginException(e.getMessage());
             }
         } else {
-            instantiateInnerPlugins(plgConf, instantiatePluginMap.get(tenant));
-            return instantiatePlugin(plgConf, instantiatePluginMap.get(tenant), dynamicParameters);
+            ConcurrentHashMap<String, Object> instantiatePluginMap = pluginCache.getTenantCache(tenant);
+            pluginInstanceService.instantiateInnerPlugins(plgConf, instantiatePluginMap);
+            return pluginInstanceService.instantiatePlugin(plgConf, instantiatePluginMap, dynamicParameters);
         }
     }
 
     @Override
-    @Transactional(noRollbackFor = { ModuleException.class, NotAvailablePluginConfigurationException.class })
-    @SuppressWarnings("unchecked")
-    public <T> T getPlugin(String businessId, IPluginParam... dynamicParameters)
-        throws ModuleException, NotAvailablePluginConfigurationException {
+    @MultitenantTransactional(noRollbackFor = { ModuleException.class })
+    public <T> T getPlugin(String businessId, IPluginParam... dynamicParameters) throws ModuleException {
         PluginConfiguration plgConf = loadPluginConfiguration(businessId);
         if (plgConf == null) {
             LOGGER.error(
@@ -683,98 +545,9 @@ public class PluginService implements IPluginService, InitializingBean {
         return plugin;
     }
 
-    /**
-     * Retrieve plugin {@link PluginMetaData} or raise a {@link PluginMetadataNotFoundRuntimeException} if not found.
-     *
-     * @param pluginId Plugin identifier to load
-     * @return PluginMetaData
-     */
-    private PluginMetaData getPluginMetadata(String pluginId) {
-        PluginMetaData pluginMetadata = PluginUtils.getPluginMetadata(pluginId);
-        if (pluginMetadata == null) {
-            LOGGER.debug("No plugin metadata found for plugin configuration id {}", pluginId);
-            logPluginMetadataScanned();
-            throw new PluginMetadataNotFoundRuntimeException("Metadata not found for plugin configuration identifier "
-                                                             + pluginId);
-        }
-        return pluginMetadata;
-    }
-
-    /**
-     * Instantiate a plugin.
-     *
-     * @param pluginConf        {@link PluginConfiguration} plugin configuration
-     * @param tenantPluginCache plugin cache for this tenant
-     * @param dynamicParameters plugin parameters (including potential dynamic ones)
-     * @return plugin instance
-     */
-    @Transactional(noRollbackFor = { EntityNotFoundException.class,
-                                     EntityNotEmptyException.class,
-                                     PluginUtilsRuntimeException.class })
-    private <T> T instantiatePlugin(PluginConfiguration pluginConf,
-                                    ConcurrentMap<String, Object> tenantPluginCache,
-                                    IPluginParam... dynamicParameters)
-        throws ModuleException, NotAvailablePluginConfigurationException {
-        // Check if all parameters are really dynamic
-        for (IPluginParam dynamicParameter : dynamicParameters) {
-            if (!dynamicParameter.isDynamic()) {
-                String errorMessage = String.format(
-                    "The parameter \"%s\" is not identified as dynamic. Plugin instantiation is cancelled.",
-                    dynamicParameter.getName());
-                LOGGER.error(errorMessage);
-                throw new UnexpectedDynamicParameterException(errorMessage);
-            }
-        }
-
-        // Get the plugin implementation associated
-        PluginMetaData pluginMetadata = getPluginMetadata(pluginConf.getPluginId());
-
-        if (!Objects.equals(pluginMetadata.getVersion(), pluginConf.getVersion())) {
-            throw new CannotInstanciatePluginException(String.format(
-                "Plugin configuration version (%s) is different from plugin one (%s).",
-                pluginConf.getVersion(),
-                pluginMetadata.getVersion()));
-        }
-
-        PluginConfigurationDto pluginConfDto = pluginConf.toDto();
-        decryptSensibleParameter(pluginMetadata, pluginConfDto);
-
-        LOGGER.info("New plugin instantiation for {}configuration {} of plugin {}",
-                    dynamicParameters.length > 0 ? "dynamic " : "",
-                    pluginConf.getBusinessId(),
-                    pluginMetadata.getPluginId());
-
-        return PluginUtils.getPlugin(pluginConfDto, pluginMetadata, tenantPluginCache, dynamicParameters);
-    }
-
-    private void logPluginMetadataScanned() {
-        StringBuilder buf = new StringBuilder();
-        for (Entry<String, PluginMetaData> entry : PluginUtils.getPlugins().entrySet()) {
-
-            // Interfaces
-            Iterator<String> interfaceIt = entry.getValue().getInterfaceNames().iterator();
-            buf.delete(0, buf.length());
-            buf.append("[");
-            if (interfaceIt.hasNext()) {
-                buf.append(interfaceIt.next());
-                while (interfaceIt.hasNext()) {
-                    buf.append(",");
-                    buf.append(interfaceIt.next());
-                }
-            }
-            buf.append("]");
-
-            LOGGER.debug("Available pluginMap metadata : {} -> {} / {} / {}",
-                         entry.getKey(),
-                         entry.getValue().getPluginId(),
-                         entry.getValue().getPluginClassName(),
-                         buf);
-        }
-    }
-
     @Override
     public List<PluginConfiguration> getAllPluginConfigurations() {
-        return repos.findAll(Sort.by(Sort.Direction.ASC, "label"));
+        return pluginDaoService.findAllPluginConfigurationsSorted(Sort.by(Sort.Direction.ASC, "label"));
     }
 
     @Override
@@ -792,9 +565,9 @@ public class PluginService implements IPluginService, InitializingBean {
     }
 
     @Override
-    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class })
+    @MultitenantTransactional(noRollbackFor = { EntityNotFoundException.class })
     public PluginConfiguration getPluginConfigurationByLabel(String configurationLabel) throws EntityNotFoundException {
-        PluginConfiguration conf = repos.findOneByLabel(configurationLabel);
+        PluginConfiguration conf = pluginDaoService.findOneByLabel(configurationLabel);
         if (conf == null) {
             throw new EntityNotFoundException(configurationLabel, PluginConfiguration.class);
         }
@@ -803,38 +576,19 @@ public class PluginService implements IPluginService, InitializingBean {
 
     @Override
     public Optional<PluginConfiguration> findPluginConfigurationByLabel(String configurationLabel) {
-        return Optional.ofNullable(repos.findOneByLabel(configurationLabel));
+        return Optional.ofNullable(pluginDaoService.findOneByLabel(configurationLabel));
     }
 
     @Override
-    public void cleanPluginCache(String businessId) {
+    public void cleanLocalPluginCache(String businessId) {
         Assert.notNull(businessId, PLUGIN_BUSINESS_ID_REQUIRED_MSG);
-
         // Remove plugin from cache
-        String tenant = runtimeTenantResolver.getTenant();
-        instantiatePluginMap.computeIfPresent(tenant, (t, cacheForThisTenant) -> {
-            cacheForThisTenant.computeIfPresent(businessId, (bid, instantiatedPlugin) -> {
-                // Launch destroy method
-                PluginUtils.doDestroyPlugin(instantiatedPlugin);
-                return null;
-            });
-            return cacheForThisTenant;
-        });
+        pluginCache.cleanPluginRecursively(runtimeTenantResolver.getTenant(), businessId);
     }
 
     @Override
     public void cleanPluginCache() {
-        String tenant = runtimeTenantResolver.getTenant();
-        instantiatePluginMap.computeIfPresent(tenant, (t, cacheForThisTenant) -> {
-            for (String businessId : cacheForThisTenant.keySet()) {
-                cacheForThisTenant.computeIfPresent(businessId, (bis, instantiatedPlugin) -> {
-                    // Launch destroy method
-                    PluginUtils.doDestroyPlugin(instantiatedPlugin);
-                    return null;
-                });
-            }
-            return new ConcurrentHashMap<>();
-        });
+        publisher.publish(new PluginConfClearCacheEvent());
     }
 
     @Override
@@ -845,7 +599,7 @@ public class PluginService implements IPluginService, InitializingBean {
 
         // Create a clone if sensible plugin
         for (PluginParamDescriptor paramDesc : pluginMeta.getParameters()) {
-            if (Boolean.TRUE.equals(paramDesc.isSensible())) {
+            if (paramDesc.isSensible()) {
                 // Create a clone with decrypted value
                 return cloneSensiblePlugin(pluginMeta, pluginConf);
             }
@@ -874,7 +628,7 @@ public class PluginService implements IPluginService, InitializingBean {
             // Get related configuration parameter
             IPluginParam param = pluginConf.getParameter(paramDesc.getName());
 
-            if (Boolean.TRUE.equals(paramDesc.isSensible())) {
+            if (paramDesc.isSensible()) {
                 StringPluginParam source = (StringPluginParam) param;
                 StringPluginParam sensibleParam = IPluginParam.build(source.getName(), source.getValue());
                 try {

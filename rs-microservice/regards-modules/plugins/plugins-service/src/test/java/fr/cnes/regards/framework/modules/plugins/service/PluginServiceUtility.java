@@ -18,11 +18,22 @@
  */
 package fr.cnes.regards.framework.modules.plugins.service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
+import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.modules.plugins.SamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import org.junit.Before;
+import org.mockito.Mockito;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,6 +45,14 @@ import java.util.stream.Stream;
  * @author Christophe Mertz
  */
 public class PluginServiceUtility {
+
+    protected PluginConfigurationService pluginDaoServiceMocked;
+
+    protected IPluginService pluginServiceMocked;
+
+    protected IPublisher publisherMocked;
+
+    protected IRuntimeTenantResolver runtimeTenantResolver;
 
     public static final String A_SAMPLE_PLUGIN_PLUGIN_ID = "aSamplePlugin";
 
@@ -202,6 +221,34 @@ public class PluginServiceUtility {
     //        pluginMetaData.setVersion(VERSION);
     //        return pluginMetaData;
     //    }
+
+    /**
+     * This method is run before all tests
+     */
+    @Before
+    public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
+        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("tenant");
+
+        // mock services
+        publisherMocked = Mockito.mock(IPublisher.class);
+        pluginDaoServiceMocked = Mockito.mock(PluginConfigurationService.class);
+        BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
+        blowfishEncryptionService.init(new CipherProperties("src/test/resources/testKey", "12345678"));
+        PluginInstantiationService pluginInstanceService = new PluginInstantiationService(pluginDaoServiceMocked,
+                                                                                          blowfishEncryptionService);
+        // init plugin service
+        pluginServiceMocked = new PluginService(pluginDaoServiceMocked,
+                                                publisherMocked,
+                                                runtimeTenantResolver,
+                                                new PluginCache(pluginInstanceService, pluginDaoServiceMocked),
+                                                pluginInstanceService,
+                                                blowfishEncryptionService,
+                                                null);
+        PluginUtils.setup(Arrays.asList("fr.cnes.regards.plugins",
+                                        "fr.cnes.regards.framework.plugins",
+                                        "fr.cnes.regards.framework.modules.plugins"));
+    }
 
     protected PluginConfiguration getPluginConfigurationWithParameters() {
         return pluginConfiguration1;

@@ -128,7 +128,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         }
         try {
             sourcePlugin = pluginService.getPlugin(storageLocationSourceId);
-        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+        } catch (ModuleException e) {
             throw new JobParameterInvalidException(String.format(
                 "Invalid source location plugin %s. Associated storage location plugin not available",
                 storageLocationSourceId), e);

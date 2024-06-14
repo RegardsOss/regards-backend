@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.modules.plugins.service;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
@@ -74,11 +75,11 @@ public interface IPluginService {
      * @return whether the plugin configured by the given plugin configuration through its id can be instantiated or not
      * @throws NotAvailablePluginConfigurationException see {@link IPluginService#getPlugin(String, IPluginParam...)}
      */
-    boolean canInstantiate(String businessId) throws ModuleException, NotAvailablePluginConfigurationException;
+    boolean canInstantiate(String businessId) throws ModuleException;
 
     /**
-     * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
-     * return type.
+     * Get a plugin instance for a given configuration id and dynamic plugin parameters.
+     * When this method fails to retrieve a plugin, the transaction is not rollback
      *
      * @param <T>                     a plugin instance
      * @param businessId              business identifier of the {@link PluginConfiguration}.
@@ -91,11 +92,11 @@ public interface IPluginService {
         throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
-     * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
-     * return type.
+     * Get a plugin instance for a given configuration and dynamic plugin parameters.
+     * When this method fails to retrieve a plugin, the transaction is not rollback
      *
      * @param <T>                     a plugin instance
-     * @param plgConf                 {@link PluginConfiguration} to instanciate
+     * @param plgConf                 {@link PluginConfiguration} to instantiate
      * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
      * @return a plugin instance
      * @throws ModuleException                          thrown if we cannot find any PluginConfiguration corresponding to pId
@@ -105,8 +106,7 @@ public interface IPluginService {
         throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
-     * Get a plugin instance in an Optional for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
-     * return type.
+     * Get a plugin instance in an Optional for a given configuration by its businessId and dynamicPluginParameters
      *
      * @param <T>                     a plugin instance
      * @param businessId              business identifier of the {@link PluginConfiguration}.
@@ -118,7 +118,7 @@ public interface IPluginService {
         throws NotAvailablePluginConfigurationException;
 
     /**
-     * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface
+     * Get the first plugin instance of a plugin type. The interfacePluginType attribute indicates the PluginInterface
      * return type.
      *
      * @param <T>                 a plugin instance
@@ -141,6 +141,8 @@ public interface IPluginService {
 
     /**
      * Save a {@link PluginConfiguration} in internal database.
+     * When this method fails to save the plugin configuration, the transaction is not rollback, allowing you to
+     * pursue others plugins save for example
      *
      * @param pluginConfiguration the plugin configuration to saved
      * @return the saved {@link PluginConfiguration}
@@ -150,14 +152,19 @@ public interface IPluginService {
 
     /**
      * Delete a {@link PluginConfiguration}.
+     * When this method fails to delete the plugin configuration, the transaction is not rollback, allowing you to
+     * pursue others plugins deletion for example
      *
      * @param businessId business identifier of the {@link PluginConfiguration}.
      * @throws ModuleException Entity to delete does not exist
      */
-    void deletePluginConfiguration(String businessId) throws ModuleException;
+    void deletePluginConfiguration(String businessId) throws EntityNotFoundException,
+        EntityOperationForbiddenException;
 
     /**
      * Update a {@link PluginConfiguration}.
+     * When this method fails to update the plugin configuration, the transaction is not rollback, allowing you to
+     * pursue others plugins import for example
      *
      * @param plugin the {@link PluginConfiguration} to update
      * @return the updated {@link PluginConfiguration}
@@ -182,6 +189,7 @@ public interface IPluginService {
 
     /**
      * Get the {@link PluginConfiguration}.
+     * When this method fails to retrieve the plugin configuration, the transaction is not rollback
      *
      * @param businessId business identifier of the {@link PluginConfiguration}.
      * @return a specific configuration
@@ -251,6 +259,7 @@ public interface IPluginService {
 
     /**
      * Get a PluginConfiguration according to its unique label
+     * When this method fails to retrieve plugin configuration, the transaction is not rollback
      *
      * @param configurationLabel the configuration label
      * @return the plugin configuration
@@ -267,13 +276,14 @@ public interface IPluginService {
 
     /**
      * Remove plugin instance cache with specified configuration identifier (resolving tenant internally)
+     * on the local
      *
      * @param businessId business identifier
      */
-    void cleanPluginCache(String businessId);
+    void cleanLocalPluginCache(String businessId);
 
     /**
-     * Remove all plugin instances from cache
+     * Remove all plugin instances from caches for this microservice type
      */
     void cleanPluginCache();
 

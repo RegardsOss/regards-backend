@@ -78,6 +78,10 @@
             <artifactId>plugin-utils</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>

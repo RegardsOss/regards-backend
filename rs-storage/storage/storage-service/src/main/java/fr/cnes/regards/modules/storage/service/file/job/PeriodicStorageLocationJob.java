@@ -96,7 +96,7 @@ public class PeriodicStorageLocationJob extends AbstractJob<Void> {
                 logger.debug("[PERIODIC STORAGE LOCATION JOB] No periodic location defined for storage {}",
                              storageLocation);
             }
-        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+        } catch (ModuleException e) {
             logger.error(e.getMessage(), e);
             throw new RsRuntimeException(e);
         }

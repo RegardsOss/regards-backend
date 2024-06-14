@@ -355,7 +355,7 @@ public class NotificationProcessingService {
         } catch (IllegalArgumentException e) {
             LOGGER.error(e.getMessage(), e);
             return null;
-        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+        } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             // Should never happen, hopefully, but hey, you never know - expect the unexpected to show how modern you are
             throw new RsRuntimeException(e);

@@ -18,25 +18,39 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
+import com.google.common.collect.Lists;
 import com.jayway.jsonpath.JsonPath;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.event.AbstractPluginConfEvent;
+import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
+import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.CannotInstanciatePluginException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.modules.plugins.service.PluginCache;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.List;
+
+import static fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction.CREATE;
+import static fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction.UPDATE;
 
 /**
  * Test plugin controller
@@ -59,14 +73,25 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IPluginConfigurationRepository repository;
 
+    @Autowired
+    private IPublisher publisher;
+
+    @Captor
+    private ArgumentCaptor<ISubscribable> recordsCaptor;
+
+    @Autowired
+    private PluginCache pluginCache;
+
     @After
     public void cleanUp() {
         resolver.forceTenant(getDefaultTenant());
         repository.deleteAll();
+        // reset publisher count between tests
+        Mockito.reset(publisher);
     }
 
     @Test
-    public void savePluginConfigurationTest() throws ModuleException, NotAvailablePluginConfigurationException {
+    public void savePluginConfigurationTest() throws ModuleException {
 
         // Bad version plugin creation attempt
         // Creation Inner plugin : must fail
@@ -100,15 +125,22 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertNotNull(plugin);
         Assert.assertNotNull(plugin2);
         Assert.assertEquals("Should be the same instance ", plugin, plugin2);
-
+        // Ensure plugins cached events are sent
+        Mockito.verify(publisher, Mockito.atLeast(4)).publish(recordsCaptor.capture());
+        // innerConf and fakeConf plugin names are:
+        List<String> pluginLabels = Lists.newArrayList("sebbbbb", "Oliiiiiiive");
+        pluginLabels.forEach(pluginLabel -> {
+            Assert.assertTrue("plugin BroadcastPluginConfEvent exists",
+                              getCaptureEvent(BroadcastPluginConfEvent.class, pluginLabel));
+            Assert.assertTrue("plugin PluginConfEvent exists", getCaptureEvent(PluginConfEvent.class, pluginLabel));
+        });
         // With dynamic parameter
         String dynValue = "toto";
         plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class,
                                                     IPluginParam.build("pString", dynValue).dynamic());
         Assert.assertNotNull(plugin);
 
-        if (plugin instanceof ParamTestPlugin) {
-            ParamTestPlugin p = (ParamTestPlugin) plugin;
+        if (plugin instanceof ParamTestPlugin p) {
             Assert.assertEquals(p.getpString(), dynValue);
         } else {
             Assert.fail();
@@ -130,8 +162,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                                                     IPluginParam.build("pString", dynValue).dynamic(),
                                                     IPluginParam.build("pInteger", dynInt).dynamic());
         Assert.assertNotNull(plugin);
-        if (plugin instanceof ParamTestPlugin) {
-            ParamTestPlugin p = (ParamTestPlugin) plugin;
+        if (plugin instanceof ParamTestPlugin p) {
             Assert.assertEquals(p.getpString(), dynValue);
             Assert.assertEquals(p.getpInteger(), dynInt);
         } else {
@@ -147,12 +178,31 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                           "InnerParamTestPlugin",
                           innerConfigId);
 
+        // Ensure plugins cached events are sent
+        Mockito.verify(publisher, Mockito.atLeast(5)).publish(recordsCaptor.capture());
+        List<BroadcastPluginConfEvent> broadcastPluginConfEvents = recordsCaptor.getAllValues()
+                                                                                .stream()
+                                                                                .filter(event -> event instanceof BroadcastPluginConfEvent)
+                                                                                .map(BroadcastPluginConfEvent.class::cast) // now a Stream<SuitCard>
+                                                                                .toList();
+        Assert.assertEquals("should send 4 more create event",
+                            4,
+                            broadcastPluginConfEvents.stream().filter(bpce -> bpce.getAction() == CREATE).count());
+        // Send the update event to the cache service
+        List<BroadcastPluginConfEvent> updatePluginEvents = broadcastPluginConfEvents.stream()
+                                                                                     .filter(bpce -> bpce.getAction()
+                                                                                                     == UPDATE)
+                                                                                     .toList();
+        Assert.assertEquals("should send a single update event", 1, updatePluginEvents.size());
+        // send the event to the plugin cache service
+        updatePluginEvents.forEach(event -> pluginCache.cleanPluginRecursively(resolver.getTenant(),
+                                                                               event.getPluginBusinnessId()));
+
         // Re-instanciate plugin
         resolver.forceTenant(getDefaultTenant());
         plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class);
         Assert.assertNotNull(plugin);
-        if (plugin instanceof ParamTestPlugin) {
-            ParamTestPlugin p = (ParamTestPlugin) plugin;
+        if (plugin instanceof ParamTestPlugin p) {
             Assert.assertTrue(p.getInnerPlugin() instanceof InnerParamTestPlugin);
             Assert.assertEquals("Panthere", ((InnerParamTestPlugin) p.getInnerPlugin()).getToto());
         } else {
@@ -176,8 +226,16 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                           innerConfigId);
     }
 
+    private boolean getCaptureEvent(Class myClass, String pluginLabel) {
+        return recordsCaptor.getAllValues()
+                            .stream()
+                            .filter(myClass::isInstance)
+                            .map(AbstractPluginConfEvent.class::cast)
+                            .anyMatch(e -> e.getLabel().equals(pluginLabel));
+    }
+
     @Test(expected = CannotInstanciatePluginException.class)
-    public void instantiatePluginConfigurationTest() throws ModuleException, NotAvailablePluginConfigurationException {
+    public void instantiatePluginConfigurationTest() throws ModuleException {
         // Inner plugin creation with version 1.0.0
         ResultActions result = performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS,
                                                   readJsonContract("innerConf.json"),
@@ -185,10 +243,10 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                                                   "Configuration should be saved!",
                                                   "InnerParamTestPlugin");
         String resultAsString = payload(result);
-        String innerBusinessId = (String) JsonPath.read(resultAsString, "$.content.businessId");
+        String innerBusinessId = JsonPath.read(resultAsString, "$.content.businessId");
         // Remove from cache
         resolver.forceTenant(getDefaultTenant());
-        pluginService.cleanPluginCache(innerBusinessId);
+        pluginService.cleanLocalPluginCache(innerBusinessId);
 
         // Retrieve PLugin Configuration
         PluginConfiguration pluginConf = pluginService.loadPluginConfiguration(innerBusinessId);

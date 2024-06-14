@@ -774,7 +774,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     }
                     return extension;
                 }
-            } catch (NotAvailablePluginConfigurationException | ModuleException e) {
+            } catch (ModuleException e) {
                 LOGGER.warn("Unable to get postprocess plugin : " + e.getMessage(), e);
             }
         }

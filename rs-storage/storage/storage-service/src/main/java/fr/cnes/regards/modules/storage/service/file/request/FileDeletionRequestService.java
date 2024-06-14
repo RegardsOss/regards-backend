@@ -346,7 +346,7 @@ public class FileDeletionRequestService {
                 handleStorageNotAvailable(FileDeletionRequest.fromDto(error.getKey()),
                                           Optional.ofNullable(error.getValue()));
             }
-        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+        } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             handleStorageNotAvailable(fileDeletionRequests, Optional.empty());
         }

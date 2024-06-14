@@ -7,6 +7,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import java.util.Set;
 
 /**
+ * This event is raised when the plugin configuration availability changed (from active to unactive or vice versa)
  * Target.ONE_PER_MICROSERVICE_TYPE because only one ingesterService should manage a PluginConf change (Database
  * updated).
  * BROADCAST because UNICAST/ONE_PER_MICROSERVICE_TYPE doesn't exist...

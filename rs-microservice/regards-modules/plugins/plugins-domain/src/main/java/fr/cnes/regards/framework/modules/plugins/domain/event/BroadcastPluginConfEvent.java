@@ -25,9 +25,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import java.util.Set;
 
 /**
- * Target.MICROSERVICE because CATALOG must not receive events from DAM BUT ALL instances of CATALOG MUST receive
- * events. <br/>
- * WorkerMode.BROADCAST because ALL handlers of CATALOG must receive events.
+ * Events will be received by all instances of the publishing microservice type
  *
  * @author Sylvain Vissiere-Guerinet
  * @author oroussel

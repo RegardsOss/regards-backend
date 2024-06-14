@@ -101,7 +101,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         try {
             // Get an instance of the plugin
             generateSipPlugin = pluginService.getPlugin(processingChain.getGenerateSipPluginConf().getBusinessId());
-        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+        } catch (ModuleException e) {
             // Throw a global job error, do not iterate on products
             logger.error(e.getMessage(), e);
             throw new JobRuntimeException(e.getMessage());

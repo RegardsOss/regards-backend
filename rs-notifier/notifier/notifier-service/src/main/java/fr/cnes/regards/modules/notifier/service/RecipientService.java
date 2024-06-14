@@ -128,7 +128,7 @@ public class RecipientService implements IRecipientService {
     private Optional<IRecipientNotifier> getRecipientNotifierPlugin(PluginConfiguration pluginConfiguration) {
         try {
             return Optional.ofNullable(pluginService.getPlugin(pluginConfiguration));
-        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+        } catch (ModuleException e) {
             LOGGER.error("No plugin of IRecipientNotifier type instantiated for plugin configuration[id:{}]",
                          pluginConfiguration.getPluginId());
         }

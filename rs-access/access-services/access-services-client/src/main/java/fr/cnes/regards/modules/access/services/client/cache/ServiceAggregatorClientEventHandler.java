@@ -69,6 +69,8 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
 
         @Override
         public void handle(TenantWrapper<PluginConfEvent> wrapper) {
+            // WARNING : Event is only received by one instance of the current microservice.
+            // So, if there is multiple instance running cache is not cleared for all replicas.
             if ((wrapper.getContent() != null) && wrapper.getContent()
                                                          .getPluginTypes()
                                                          .contains(IService.class.getName())) {

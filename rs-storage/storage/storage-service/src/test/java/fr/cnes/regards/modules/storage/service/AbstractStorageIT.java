@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
@@ -181,6 +182,9 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     @Autowired
     protected ITemplateRepository templateRepo;
 
+    @Autowired
+    protected IPluginService pluginService;
+
     protected String originUrl = "file://in/this/directory/file.test";
 
     protected PluginConfiguration nearLineConf;
@@ -262,7 +266,11 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                                           0,
                                                                           dataStoMeta.getPluginId());
             dataStorageConf.setIsActive(true);
-            return storageLocationConfService.create(label, dataStorageConf, ALLOCATED_SIZE_IN_KO);
+            StorageLocationConfiguration storageLocationConfiguration = storageLocationConfService.create(label,
+                                                                                                          dataStorageConf,
+                                                                                                          ALLOCATED_SIZE_IN_KO);
+            pluginService.cleanLocalPluginCache(dataStorageConf.getBusinessId());
+            return storageLocationConfiguration;
         } catch (IOException e) {
             throw new ModuleException(e.getMessage(), e);
         }
@@ -307,6 +315,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                                            "delErr.*"));
         conf.getPluginConfiguration().setParameters(parameters);
         storageLocationConfService.update(conf.getName(), conf);
+        pluginService.cleanLocalPluginCache(conf.getPluginConfiguration().getBusinessId());
     }
 
     protected FileReference generateRandomStoredOnlineFileReference() throws InterruptedException, ExecutionException {
@@ -496,8 +505,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     protected FileStorageRequestAggregation generateStoreFileError(String owner,
                                                                    String storageDestination,
                                                                    String sessionOwner,
-                                                                   String session)
-        throws InterruptedException, ExecutionException {
+                                                                   String session) {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(),
                                                                        "MD5",
                                                                        "error.file.test",
@@ -519,9 +527,9 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                                                      fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
-        // only the configured storage can be used for storage. Otherwise the request should be set in eroor.
+        // only the configured storage can be used for storage. Otherwise the request should be set in error.
         if (storageDestination.equals(ONLINE_CONF_LABEL) || storageDestination.equals(NEARLINE_CONF_LABEL)) {
-            Assert.assertEquals("File reference request should be in TO_STORE status",
+            Assert.assertEquals("File reference request should be in TO_DO status",
                                 FileRequestStatus.TO_DO,
                                 fileRefReqs.stream().findFirst().get().getStatus());
             // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
@@ -534,7 +542,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
             // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
             fileRefReqs = stoReqService.search(destination.getStorage(), fileMetaInfo.getChecksum());
             oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-            Assert.assertFalse("File reference should have been created.", oFileRef.isPresent());
+            Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
             Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
             Assert.assertEquals("File reference request should be STORE_ERROR status",
                                 FileRequestStatus.ERROR,

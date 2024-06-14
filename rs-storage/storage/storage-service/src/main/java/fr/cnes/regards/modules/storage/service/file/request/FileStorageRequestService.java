@@ -702,7 +702,7 @@ public class FileStorageRequestService {
                 this.handleStorageNotAvailable(FileStorageRequestAggregation.fromDto(req),
                                                Optional.of("Request has not been handled by plugin."));
             }
-        } catch (ModuleException | PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
+        } catch (ModuleException | PluginUtilsRuntimeException e) {
             LOGGER.error(e.getMessage(), e);
             this.handleStorageNotAvailable(fileStorageRequests, Optional.of(e.getMessage()));
         }

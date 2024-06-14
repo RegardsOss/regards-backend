@@ -18,30 +18,31 @@
  */
 package fr.cnes.regards.framework.utils.plugins.exception;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+
 /**
  * @author sbinda
  */
-
-public class NotAvailablePluginConfigurationException extends Exception {
+public class NotAvailablePluginConfigurationException extends ModuleException {
 
     public NotAvailablePluginConfigurationException() {
         super();
     }
 
-    public NotAvailablePluginConfigurationException(String arg0, Throwable arg1, boolean arg2, boolean arg3) {
-        super(arg0, arg1, arg2, arg3);
+    public NotAvailablePluginConfigurationException(String message, Throwable cause, boolean enableSuppression, boolean writeStackTrace) {
+        super(message, cause, enableSuppression, writeStackTrace);
     }
 
-    public NotAvailablePluginConfigurationException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
+    public NotAvailablePluginConfigurationException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public NotAvailablePluginConfigurationException(String arg0) {
-        super(arg0);
+    public NotAvailablePluginConfigurationException(String message) {
+        super(message);
     }
 
-    public NotAvailablePluginConfigurationException(Throwable arg0) {
-        super(arg0);
+    public NotAvailablePluginConfigurationException(Throwable cause) {
+        super(cause);
     }
 
 }

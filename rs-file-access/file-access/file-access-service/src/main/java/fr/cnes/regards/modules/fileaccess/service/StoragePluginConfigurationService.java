@@ -68,7 +68,7 @@ public class StoragePluginConfigurationService {
             try {
                 IStorageLocation plugin = pluginService.getPlugin(id);
                 configurations.add(plugin.createWorkerStoreConfiguration());
-            } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+            } catch (ModuleException e) {
                 LOGGER.error("Error while attempting to retrieve plugin {}", id, e);
             } catch (NotSupportedException e) {
                 LOGGER.warn("The plugin {} has no shareable configuration defined", id);
@@ -81,7 +81,7 @@ public class StoragePluginConfigurationService {
         try {
             IStorageLocation plugin = pluginService.getPlugin(storageName);
             return Optional.of(plugin.createWorkerStoreConfiguration());
-        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+        } catch (ModuleException e) {
             LOGGER.error("Error while attempting to retrieve plugin {}", storageName, e);
         } catch (NotSupportedException e) {
             LOGGER.error("The plugin {} has no shareable configuration defined", storageName);

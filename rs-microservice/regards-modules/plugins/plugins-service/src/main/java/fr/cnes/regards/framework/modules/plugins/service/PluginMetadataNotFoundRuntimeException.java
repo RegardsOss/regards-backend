@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
  *
  * @author Marc Sordi
  */
-
 public class PluginMetadataNotFoundRuntimeException extends RuntimeException {
 
     public PluginMetadataNotFoundRuntimeException(String errorMessage) {

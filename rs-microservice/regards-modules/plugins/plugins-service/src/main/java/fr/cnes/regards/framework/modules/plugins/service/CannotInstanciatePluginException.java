@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 /**
  * @author oroussel
  */
-
 public class CannotInstanciatePluginException extends ModuleException {
 
     public CannotInstanciatePluginException(String message) {

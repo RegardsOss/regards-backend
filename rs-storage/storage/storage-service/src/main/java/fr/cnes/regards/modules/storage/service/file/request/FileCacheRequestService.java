@@ -445,7 +445,7 @@ public class FileCacheRequestService {
                         this.handleStorageNotAvailable(FileCacheRequest.fromDto(error.getKey()),
                                                        Optional.ofNullable(error.getValue()));
                     }
-                } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+                } catch (ModuleException e) {
                     LOGGER.error(e.getMessage(), e);
                     this.handleStorageNotAvailable(requests);
                 }
@@ -639,7 +639,7 @@ public class FileCacheRequestService {
                     // Add all requests for internal cache
                     fileInternalCacheRequests.addAll(storage.getValue());
                 }
-            } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+            } catch (ModuleException e) {
                 LOGGER.warn("Impossible to get the plugin with the storage {} in order to know if internal cache or "
                             + "external cache, cause {}", storage.getKey(), e.getMessage());
             }

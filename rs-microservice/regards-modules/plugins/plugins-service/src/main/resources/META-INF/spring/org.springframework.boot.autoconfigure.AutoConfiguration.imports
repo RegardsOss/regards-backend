@@ -1,1 +1,6 @@
 fr.cnes.regards.framework.modules.plugins.service.PluginService
+fr.cnes.regards.framework.modules.plugins.service.PluginCache
+fr.cnes.regards.framework.modules.plugins.service.PluginConfigurationService
+fr.cnes.regards.framework.modules.plugins.service.PluginInstantiationService
+fr.cnes.regards.framework.modules.plugins.service.handler.BroadcastPluginConfEventHandler
+fr.cnes.regards.framework.modules.plugins.service.handler.PluginConfClearCacheEventHandler

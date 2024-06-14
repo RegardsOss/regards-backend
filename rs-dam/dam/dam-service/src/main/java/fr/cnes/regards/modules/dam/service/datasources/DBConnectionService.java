@@ -93,9 +93,9 @@ public class DBConnectionService implements IDBConnectionService {
             plg = pluginService.getPlugin(businessId);
             // Test connection
             result = plg.testConnection();
-            // Remove plugin instance from cache after closing connection
+            // Remove local plugin instance from cache after closing connection
             if (!result) {
-                pluginService.cleanPluginCache(businessId);
+                pluginService.cleanLocalPluginCache(businessId);
             }
         } catch (NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);

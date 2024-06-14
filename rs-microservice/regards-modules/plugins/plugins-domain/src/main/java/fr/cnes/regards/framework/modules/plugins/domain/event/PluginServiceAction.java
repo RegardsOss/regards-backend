@@ -22,5 +22,15 @@ package fr.cnes.regards.framework.modules.plugins.domain.event;
  * @author Sylvain Vissiere-Guerinet
  */
 public enum PluginServiceAction {
-    DELETE, CREATE, UPDATE, DISABLE, ACTIVATE
+    DELETE(true), CREATE(false), UPDATE(true), DISABLE(true), ACTIVATE(true);
+
+    private final boolean requireCleanCache;
+
+    PluginServiceAction(boolean requireCleanCache) {
+        this.requireCleanCache = requireCleanCache;
+    }
+
+    public boolean isRequireCleanCache() {
+        return requireCleanCache;
+    }
 }

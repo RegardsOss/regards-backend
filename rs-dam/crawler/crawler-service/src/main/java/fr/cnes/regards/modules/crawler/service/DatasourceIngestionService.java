@@ -126,7 +126,7 @@ public class DatasourceIngestionService {
         pluginConfs.forEach(pluginConf -> {
             try {
                 updatePlannedDate(dsIngestionsMap.get(pluginConf.getBusinessId()));
-            } catch (RuntimeException | ModuleException | NotAvailablePluginConfigurationException e) {
+            } catch (RuntimeException | ModuleException e) {
                 LOGGER.error("Cannot compute next ingestion planned date", e);
             }
         });

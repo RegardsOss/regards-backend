@@ -195,7 +195,7 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
     }
 
     @Test
-    public void retryStoreErrors() throws InterruptedException, ExecutionException, ModuleException {
+    public void retryStoreErrors() throws ModuleException {
         FileStorageRequestAggregation fileRefReq = this.generateStoreFileError("someone",
                                                                                ONLINE_CONF_LABEL,
                                                                                SESSION_OWNER_1,
@@ -218,7 +218,7 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
     }
 
     @Test
-    public void relaunchStoreErrorRequest() throws InterruptedException, ExecutionException, ModuleException {
+    public void relaunchStoreErrorRequest() {
         String checksum = UUID.randomUUID().toString();
         String storageDestination = "somewhere";
         String owner = "owner";

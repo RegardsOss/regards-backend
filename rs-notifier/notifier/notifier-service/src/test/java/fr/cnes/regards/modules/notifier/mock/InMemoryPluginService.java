@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.notifier.mock;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
@@ -104,7 +105,8 @@ public class InMemoryPluginService implements IPluginService {
     }
 
     @Override
-    public void deletePluginConfiguration(String businessId) throws ModuleException {
+    public void deletePluginConfiguration(String businessId) throws EntityNotFoundException,
+        EntityOperationForbiddenException {
         savedPlugins.removeIf(p -> p.getBusinessId().equals(businessId));
     }
 
@@ -174,7 +176,7 @@ public class InMemoryPluginService implements IPluginService {
     }
 
     @Override
-    public void cleanPluginCache(String businessId) {
+    public void cleanLocalPluginCache(String businessId) {
         throw new NotImplementedException("tbd");
     }
 

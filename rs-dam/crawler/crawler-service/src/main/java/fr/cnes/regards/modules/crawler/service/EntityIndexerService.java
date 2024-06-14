@@ -512,7 +512,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                        group.getGroupName(),
                                                        searchFilter);
                     }
-                } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+                } catch (ModuleException e) {
                     // Plugin conf doesn't exists anymore, so remove all group assoc
                     removeOldDataObjectsGroupAssoc(dataset,
                                                    updateDate,

@@ -272,7 +272,7 @@ public final class PluginUtils {
      * @param <T>                 a {@link Plugin}
      * @param conf                the {@link PluginConfiguration}
      * @param pluginMetadata      the {@link PluginMetaData}
-     * @param instantiatedPlugins already instaniated plugins
+     * @param instantiatedPlugins already instantiated plugins
      * @param dynamicParams       an optional list of {@link IPluginParam}
      * @return an instance of a {@link Plugin} @ if a problem occurs
      */

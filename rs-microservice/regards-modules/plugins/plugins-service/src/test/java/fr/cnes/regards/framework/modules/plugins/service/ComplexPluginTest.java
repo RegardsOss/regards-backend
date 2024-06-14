@@ -18,26 +18,16 @@
  */
 package fr.cnes.regards.framework.modules.plugins.service;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
-import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,36 +36,8 @@ import java.util.List;
  *
  * @author sbinda
  */
-public class ComplexPluginTest {
+public class ComplexPluginTest extends PluginServiceUtility {
 
-    private IPluginConfigurationRepository pluginConfRepositoryMocked;
-
-    private IPluginService pluginServiceMocked;
-
-    private IPublisher publisherMocked;
-
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    /**
-     * This method is run before all tests
-     */
-    @Before
-    public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("tenant");
-
-        publisherMocked = Mockito.mock(IPublisher.class);
-        // create a mock repository
-        pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
-        BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
-        blowfishEncryptionService.init(new CipherProperties("src/test/resources/testKey", "12345678"));
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
-                                                publisherMocked,
-                                                runtimeTenantResolver,
-                                                blowfishEncryptionService,
-                                                null);
-        PluginUtils.setup();
-    }
 
     @Test
     public void test() throws ModuleException, NotAvailablePluginConfigurationException {
@@ -103,12 +65,11 @@ public class ComplexPluginTest {
 
         pluginConfs.add(aPluginConfiguration);
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc("complexPlugin"))
+        Mockito.when(pluginDaoServiceMocked.findByPluginIdOrderByPriorityOrderDesc("complexPlugin"))
                .thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(aPluginConfiguration);
-        Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
-               .thenReturn(true);
+        Mockito.when(pluginDaoServiceMocked.existsByBusinessId(aPluginConfiguration.getBusinessId())).thenReturn(true);
 
         ITestPlugin plugin = pluginServiceMocked.getPlugin(aPluginConfiguration.getBusinessId());
 

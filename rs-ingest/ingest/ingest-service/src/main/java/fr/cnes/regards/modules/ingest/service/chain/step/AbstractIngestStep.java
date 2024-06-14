@@ -73,7 +73,7 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
     protected <T> T getStepPlugin(String confId) throws ProcessingStepException {
         try {
             return pluginService.getPlugin(confId);
-        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+        } catch (ModuleException e) {
             throw new ProcessingStepException(IngestErrorType.UNEXPECTED, e);
         }
     }

@@ -19,9 +19,6 @@
 
 package fr.cnes.regards.framework.modules.plugins.service;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
-import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -29,25 +26,18 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.IComplexInterfacePlugin;
 import fr.cnes.regards.framework.modules.plugins.INotInterfacePlugin;
 import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Unit testing of {@link PluginService}.
@@ -57,32 +47,6 @@ import java.util.Optional;
  */
 public class PluginServiceFailedTest extends PluginServiceUtility {
 
-    private IPluginConfigurationRepository pluginConfRepositoryMocked;
-
-    private IPluginService pluginServiceMocked;
-
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    /**
-     * This method is run before all tests
-     */
-    @Before
-    public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("tenant");
-
-        // create a mock repository
-        pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
-        BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
-        blowfishEncryptionService.init(new CipherProperties("src/test/resources/testKey", "12345678"));
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
-                                                Mockito.mock(IPublisher.class),
-                                                runtimeTenantResolver,
-                                                blowfishEncryptionService,
-                                                null);
-        PluginUtils.setup();
-    }
-
     /**
      * Get an unsaved {@link PluginConfiguration}.
      *
@@ -91,7 +55,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     @Test(expected = ModuleException.class)
     public void getAPluginConfigurationUnknown() throws ModuleException {
         String fakeBusinessId = "fakebid";
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(fakeBusinessId)).thenReturn(null);
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(fakeBusinessId)).thenReturn(null);
 
         PluginConfiguration plg = pluginServiceMocked.getPluginConfiguration(fakeBusinessId);
         Assert.assertNull(plg);
@@ -105,7 +69,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     @Test(expected = ModuleException.class)
     public void deleteAPluginConfigurationUnknown() throws ModuleException {
         String fakeBusinessId = "fakebid";
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(fakeBusinessId)).thenReturn(null);
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(fakeBusinessId)).thenReturn(null);
         pluginServiceMocked.deletePluginConfiguration(fakeBusinessId);
         Assert.fail("There must be an exception thrown");
     }
@@ -171,7 +135,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         final Long aPluginId = 999L;
         aPluginConfiguration.setId(aPluginId);
-        Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(false);
+        Mockito.when(pluginDaoServiceMocked.existsByBusinessId(aPluginConfiguration.getBusinessId())).thenReturn(false);
 
         pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
         Assert.fail();
@@ -210,9 +174,9 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         pluginConfiguration1.setPriorityOrder(10);
         pluginConfigurations.add(pluginConfiguration1);
 
-        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfigurations);
-        Mockito.when(pluginConfRepositoryMocked.existsById(pluginConfiguration0.getId())).thenReturn(true);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findAllPluginConfigurations()).thenReturn(pluginConfigurations);
+        Mockito.when(pluginDaoServiceMocked.existsByBusinessId(pluginConfiguration0.getBusinessId())).thenReturn(true);
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
                .thenReturn(pluginConfiguration0);
         // When
         pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
@@ -240,9 +204,8 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(bPluginConfiguration);
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginDaoServiceMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                .thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.findById(bPluginConfiguration.getId())).thenReturn(Optional.empty());
 
         pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
 
@@ -267,7 +230,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
 
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(aPluginConfiguration);
 
         pluginServiceMocked.getPlugin(aPluginConfiguration.getBusinessId());

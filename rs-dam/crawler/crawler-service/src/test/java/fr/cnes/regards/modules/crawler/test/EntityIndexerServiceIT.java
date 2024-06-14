@@ -464,6 +464,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // -------------------------------------------------------------------------------
         dataAccessPlugin.getParameter(TestDataAccessRightPlugin.LABEL_PARAM).value("unknown");
         dataAccessPlugin = pluginService.updatePluginConfiguration(dataAccessPlugin);
+        pluginService.cleanLocalPluginCache(dataAccessPlugin.getBusinessId());
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
         // All data should be in group2 and only one (DO1) in group3
         results = searchService.search(searchKey,
@@ -488,7 +489,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // -------------------------------------------------------------------------------
         dataAccessPlugin.getParameter(TestDataAccessRightPlugin.LABEL_PARAM).value("DataObject 2");
         dataAccessPlugin = pluginService.updatePluginConfiguration(dataAccessPlugin);
-        pluginService.cleanPluginCache();
+        pluginService.cleanLocalPluginCache(dataAccessPlugin.getBusinessId());
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
         results = searchService.search(searchKey,
                                        100,

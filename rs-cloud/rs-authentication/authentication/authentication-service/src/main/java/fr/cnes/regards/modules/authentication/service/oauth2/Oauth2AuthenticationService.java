@@ -234,7 +234,7 @@ public class Oauth2AuthenticationService {
                                                                 password,
                                                                 scope);
                         pluginResponse.setServiceProviderName(pluginConfiguration.getBusinessId());
-                    } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+                    } catch (ModuleException e) {
                         LOGGER.info(e.getMessage(), e);
                     }
                 }

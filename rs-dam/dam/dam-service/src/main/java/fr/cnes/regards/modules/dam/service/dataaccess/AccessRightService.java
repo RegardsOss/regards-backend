@@ -423,7 +423,7 @@ public class AccessRightService implements IAccessRightService {
                                                                DefaultRole.PROJECT_ADMIN.name()));
                     }
                 }
-            } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+            } catch (ModuleException e) {
                 LOGGER.error(String.format("updateDynamicAccessRights - Error getting plugin %d for accessRight %d of "
                                            + "dataset %s and group %s. Does plugin exist anymore ?",
                                            ar.getDataAccessPlugin().getId(),

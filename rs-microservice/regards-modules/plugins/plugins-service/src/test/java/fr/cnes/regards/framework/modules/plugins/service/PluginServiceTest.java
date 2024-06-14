@@ -19,38 +19,27 @@
 
 package fr.cnes.regards.framework.modules.plugins.service;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
-import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.IComplexInterfacePlugin;
 import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.SamplePlugin;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
 import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Sort;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -65,38 +54,6 @@ import static org.mockito.ArgumentMatchers.any;
 public class PluginServiceTest extends PluginServiceUtility {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginServiceTest.class);
-
-    private IPluginConfigurationRepository pluginConfRepositoryMocked;
-
-    private IPluginService pluginServiceMocked;
-
-    private IPublisher publisherMocked;
-
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    /**
-     * This method is run before all tests
-     */
-    @Before
-    public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("tenant");
-        PluginUtils.setup();
-
-        publisherMocked = Mockito.mock(IPublisher.class);
-        // create a mock repository
-        pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
-        BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
-        blowfishEncryptionService.init(new CipherProperties("src/test/resources/testKey", "12345678"));
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
-                                                publisherMocked,
-                                                runtimeTenantResolver,
-                                                blowfishEncryptionService,
-                                                null);
-        PluginUtils.setup(Arrays.asList("fr.cnes.regards.plugins",
-                                        "fr.cnes.regards.framework.plugins",
-                                        "fr.cnes.regards.framework.modules.plugins"));
-    }
 
     @Test
     @Requirement("REGARDS_DSL_CMP_PLG_200")
@@ -165,11 +122,10 @@ public class PluginServiceTest extends PluginServiceUtility {
         try {
             final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
             aPluginConfiguration.setId(AN_ID);
-            Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
+            Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                    .thenReturn(aPluginConfiguration);
-            Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
+            Mockito.when(pluginDaoServiceMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
                    .thenReturn(true);
-            Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
             PluginConfiguration aConf;
             aConf = pluginServiceMocked.getPluginConfiguration(aPluginConfiguration.getBusinessId());
@@ -191,10 +147,10 @@ public class PluginServiceTest extends PluginServiceUtility {
             pluginConf.setId(AN_ID);
             //need to directly call PluginUtils.getPlugins.get(pluginId) to set metadata because of mockito
             pluginConf.setMetaDataAndPluginId(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
-            Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(pluginConf.getBusinessId()))
+            Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(pluginConf.getBusinessId()))
                    .thenReturn(pluginConf);
             pluginServiceMocked.deletePluginConfiguration(pluginConf.getBusinessId());
-            Mockito.verify(pluginConfRepositoryMocked).deleteById(pluginConf.getId());
+            Mockito.verify(pluginDaoServiceMocked).deleteById(pluginConf.getId());
             Mockito.verify(publisherMocked)
                    .publish(new BroadcastPluginConfEvent(pluginConf.getId(),
                                                          pluginConf.getBusinessId(),
@@ -216,29 +172,29 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     /**
-     * Save a {@link PluginConfiguration}.
+     * savePluginConfiguration a {@link PluginConfiguration}.
      */
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_100")
     @Requirement("REGARDS_DSL_CMP_PLG_300")
     @Purpose("Create a new plugin configuration")
-    public void saveAPluginConfiguration() {
+    public void savePluginConfigurationAPluginConfiguration() {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         final PluginConfiguration aPluginConfigurationWithId = clone(aPluginConfiguration);
         aPluginConfigurationWithId.setId(AN_ID);
         //need to directly call PluginUtils.getPlugins.get(pluginId) to set metadata because of mockito
         aPluginConfigurationWithId.setMetaDataAndPluginId(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
         try {
-            Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfigurationWithId);
+            Mockito.when(pluginDaoServiceMocked.savePluginConfiguration(aPluginConfiguration)).thenReturn(aPluginConfigurationWithId);
 
-            final PluginConfiguration savedPluginConfiguration = pluginServiceMocked.savePluginConfiguration(
+            final PluginConfiguration savePluginConfigurationdPluginConfiguration = pluginServiceMocked.savePluginConfiguration(
                 aPluginConfiguration);
 
-            Assert.assertEquals(aPluginConfiguration.getLabel(), savedPluginConfiguration.getLabel());
-            Assert.assertEquals(aPluginConfiguration.getPluginId(), savedPluginConfiguration.getPluginId());
-            Assert.assertEquals(aPluginConfiguration.isActive(), savedPluginConfiguration.isActive());
+            Assert.assertEquals(aPluginConfiguration.getLabel(), savePluginConfigurationdPluginConfiguration.getLabel());
+            Assert.assertEquals(aPluginConfiguration.getPluginId(), savePluginConfigurationdPluginConfiguration.getPluginId());
+            Assert.assertEquals(aPluginConfiguration.isActive(), savePluginConfigurationdPluginConfiguration.isActive());
             Assert.assertEquals(aPluginConfiguration.getParameters().size(),
-                                savedPluginConfiguration.getParameters().size());
+                                savePluginConfigurationdPluginConfiguration.getParameters().size());
 
             Mockito.verify(publisherMocked)
                    .publish(new BroadcastPluginConfEvent(aPluginConfigurationWithId.getId(),
@@ -252,7 +208,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     @Test(expected = ModuleException.class)
-    public void saveTwoPluginConfigurationWithSameBusinessId() throws ModuleException {
+    public void savePluginConfigurationTwoPluginConfigurationWithSameBusinessId() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         final PluginConfiguration aPluginConfigurationWithId = clone(aPluginConfiguration);
         aPluginConfigurationWithId.setBusinessId(aPluginConfiguration.getBusinessId());
@@ -263,16 +219,16 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginConfiguration theSamePluginConfiguration = getPluginConfigurationWithParameters();
         theSamePluginConfiguration.setBusinessId(aPluginConfiguration.getBusinessId());
 
-        // save a first plugin configuration
-        Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfigurationWithId);
+        // savePluginConfiguration a first plugin configuration
+        Mockito.when(pluginDaoServiceMocked.savePluginConfiguration(aPluginConfiguration)).thenReturn(aPluginConfigurationWithId);
         try {
             pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
         } catch (ModuleException e) {
             Assert.fail();
         }
 
-        // save a second plugin configuration with the same businessId
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfigurationWithId.getBusinessId()))
+        // savePluginConfiguration a second plugin configuration with the same businessId
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(aPluginConfigurationWithId.getBusinessId()))
                .thenReturn(aPluginConfigurationWithId);
         pluginServiceMocked.savePluginConfiguration(theSamePluginConfiguration);
 
@@ -281,7 +237,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     }
 
     @Test
-    public void saveTwoPluginConfigurationWithSameLabel() throws ModuleException {
+    public void savePluginConfigurationTwoPluginConfigurationWithSameLabel() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         final PluginConfiguration aPluginConfigurationWithId = clone(aPluginConfiguration);
         aPluginConfigurationWithId.setId(AN_ID);
@@ -290,15 +246,15 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         final PluginConfiguration theSamePluginConfiguration = getPluginConfigurationWithParameters();
 
-        // save a first plugin configuration
-        Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfigurationWithId);
+        // savePluginConfiguration a first plugin configuration
+        Mockito.when(pluginDaoServiceMocked.savePluginConfiguration(aPluginConfiguration)).thenReturn(aPluginConfigurationWithId);
         try {
             pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
         } catch (ModuleException e) {
             Assert.fail();
         }
 
-        // save a second plugin configuration with the same label
+        // savePluginConfiguration a second plugin configuration with the same label
         pluginServiceMocked.savePluginConfiguration(theSamePluginConfiguration);
     }
 
@@ -312,9 +268,9 @@ public class PluginServiceTest extends PluginServiceUtility {
     public void updateAPluginConfiguration() throws ModuleException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setId(AN_ID);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(aPluginConfiguration);
-        Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
+        Mockito.when(pluginDaoServiceMocked.savePluginConfiguration(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
         final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
         Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
@@ -332,13 +288,13 @@ public class PluginServiceTest extends PluginServiceUtility {
         aPluginConfiguration.setId(AN_ID);
         aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(aPluginConfiguration);
         PluginConfiguration toBeUpdated = clone(aPluginConfiguration);
         toBeUpdated.setIsActive(false);
         toBeUpdated.setBusinessId(aPluginConfiguration.getBusinessId());
         toBeUpdated.setId(AN_ID);
-        Mockito.when(pluginConfRepositoryMocked.save(toBeUpdated)).thenReturn(toBeUpdated);
+        Mockito.when(pluginDaoServiceMocked.savePluginConfiguration(toBeUpdated)).thenReturn(toBeUpdated);
 
         final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(toBeUpdated);
         Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
@@ -347,7 +303,7 @@ public class PluginServiceTest extends PluginServiceUtility {
                .publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
                                                      aPluginConfiguration.getBusinessId(),
                                                      aPluginConfiguration.getLabel(),
-                                                     PluginServiceAction.DISABLE,
+                                                     PluginServiceAction.UPDATE,
                                                      aPluginConfiguration.getInterfaceNames()));
     }
 
@@ -363,7 +319,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         aPluginConfiguration.setIsActive(false);
         aPluginConfiguration.setMetaDataAndPluginId(metaData);
         aPluginConfiguration.setVersion(metaData.getVersion());
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(aPluginConfiguration);
         PluginConfiguration toBeUpdated = clone(aPluginConfiguration);
         toBeUpdated.setBusinessId(aPluginConfiguration.getBusinessId());
@@ -371,7 +327,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         toBeUpdated.setId(AN_ID);
         //need to directly call PluginUtils.getPlugins.get(pluginId) to set metadata because of mockito
         toBeUpdated.setMetaDataAndPluginId(PluginUtils.getPluginMetadata(A_SAMPLE_PLUGIN_PLUGIN_ID));
-        Mockito.when(pluginConfRepositoryMocked.save(toBeUpdated)).thenReturn(toBeUpdated);
+        Mockito.when(pluginDaoServiceMocked.savePluginConfiguration(toBeUpdated)).thenReturn(toBeUpdated);
 
         final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(toBeUpdated);
         Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
@@ -380,7 +336,7 @@ public class PluginServiceTest extends PluginServiceUtility {
                .publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
                                                      aPluginConfiguration.getBusinessId(),
                                                      aPluginConfiguration.getLabel(),
-                                                     PluginServiceAction.ACTIVATE,
+                                                     PluginServiceAction.UPDATE,
                                                      aPluginConfiguration.getInterfaceNames()));
     }
 
@@ -402,7 +358,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfigurations.add(getPluginConfigurationWithDynamicParameter());
         pluginConfigurations.add(getPluginConfigurationWithParameters());
 
-        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfigurations);
+        Mockito.when(pluginDaoServiceMocked.findAllPluginConfigurations()).thenReturn(pluginConfigurations);
         // When
         List<PluginConfiguration> results = pluginServiceMocked.getPluginConfigurationsByType(ISamplePlugin.class);
         // Then
@@ -417,7 +373,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         pluginConfs.add(getPluginConfigurationWithParameters());
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginDaoServiceMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                .thenReturn(pluginConfs);
         final List<PluginConfiguration> results = pluginServiceMocked.getPluginConfigurations(PLUGIN_PARAMETER_ID);
 
@@ -432,7 +388,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfigurations.add(getPluginConfigurationWithDynamicParameter());
         pluginConfigurations.add(getPluginConfigurationWithParameters());
 
-        Mockito.when(pluginConfRepositoryMocked.findAll((Sort) any())).thenReturn(pluginConfigurations);
+        Mockito.when(pluginDaoServiceMocked.findAllPluginConfigurationsSorted(any())).thenReturn(pluginConfigurations);
         // When
         List<PluginConfiguration> results = pluginServiceMocked.getAllPluginConfigurations();
         // Then
@@ -460,10 +416,10 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
 
-        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findAllPluginConfigurations()).thenReturn(pluginConfs);
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(aPluginConfiguration);
-        Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(true);
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
@@ -488,11 +444,11 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
 
-        Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
+        Mockito.when(pluginDaoServiceMocked.findByPluginIdOrderByPriorityOrderDesc(PLUGIN_PARAMETER_ID))
                .thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(aPluginConfiguration);
-        Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(true);
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getPlugin(aPluginConfiguration.getBusinessId());
@@ -525,10 +481,10 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
 
-        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findAllPluginConfigurations()).thenReturn(pluginConfs);
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(aPluginConfiguration);
-        Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(true);
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
@@ -570,10 +526,10 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfiguration1.setPriorityOrder(10);
         pluginConfigurations.add(pluginConfiguration1);
 
-        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfigurations);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findAllPluginConfigurations()).thenReturn(pluginConfigurations);
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
                .thenReturn(pluginConfiguration0);
-        Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(pluginConfiguration0.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.existsByBusinessId(pluginConfiguration0.getBusinessId()))
                .thenReturn(true);
 
         // the argument for the dynamic parameter
@@ -612,10 +568,9 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfiguration1.setPriorityOrder(10);
         pluginConfigurations.add(pluginConfiguration1);
 
-        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfigurations);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findAllPluginConfigurations()).thenReturn(pluginConfigurations);
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
                .thenReturn(pluginConfiguration0);
-        Mockito.when(pluginConfRepositoryMocked.existsById(pluginConfiguration0.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
         IPluginParam aDynamicPlgParam = IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).dynamic();
@@ -654,10 +609,9 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(getPluginConfigurationWithDynamicParameter());
 
-        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findAllPluginConfigurations()).thenReturn(pluginConfs);
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(aPluginConfiguration);
-        Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
         IPluginParam aDynamicPlgParam = IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, -1).dynamic();
@@ -703,10 +657,10 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfiguration1.setPriorityOrder(10);
         pluginConfigurations.add(pluginConfiguration1);
 
-        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfigurations);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findAllPluginConfigurations()).thenReturn(pluginConfigurations);
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
                .thenReturn(pluginConfiguration0);
-        Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(pluginConfiguration0.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.existsByBusinessId(pluginConfiguration0.getBusinessId()))
                .thenReturn(true);
         // When
         SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
@@ -743,10 +697,10 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfiguration1.setPriorityOrder(10);
         pluginConfigurations.add(pluginConfiguration1);
 
-        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfigurations);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findAllPluginConfigurations()).thenReturn(pluginConfigurations);
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
                .thenReturn(pluginConfiguration0);
-        Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(pluginConfiguration0.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.existsByBusinessId(pluginConfiguration0.getBusinessId()))
                .thenReturn(true);
 
         // the argument for the dynamic parameter
@@ -780,10 +734,10 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfiguration1.setPriorityOrder(10);
         pluginConfigurations.add(pluginConfiguration1);
 
-        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfigurations);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findAllPluginConfigurations()).thenReturn(pluginConfigurations);
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
                .thenReturn(pluginConfiguration0);
-        Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(pluginConfiguration0.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.existsByBusinessId(pluginConfiguration0.getBusinessId()))
                .thenReturn(true);
         // When
         pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
@@ -817,10 +771,10 @@ public class PluginServiceTest extends PluginServiceUtility {
         pluginConfs.add(aPluginConfiguration);
         pluginConfs.add(bPluginConfiguration);
 
-        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.findAllPluginConfigurations()).thenReturn(pluginConfs);
+        Mockito.when(pluginDaoServiceMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(aPluginConfiguration);
-        Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
+        Mockito.when(pluginDaoServiceMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
                .thenReturn(true);
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
