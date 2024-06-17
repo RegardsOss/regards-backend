@@ -96,9 +96,12 @@ class BatchErrorIT extends AbstractBatchIT {
         // THEN
         // Wait for messages to be handled as invalid
         Awaitility.await().atMost(Durations.TEN_SECONDS).pollInterval(200, TimeUnit.MILLISECONDS).untilAsserted(() -> {
-            Assertions.assertThat(batchHandlerWithResponses.getHandleCalls()).isZero();
+            Assertions.assertThat(batchHandlerWithResponses.getHandleCalls())
+                      .as("unexpected number of batchHandlerWithResponses handle calls")
+                      .isZero();
             int numberInvalidMessages = invalidMessages.size();
             Assertions.assertThat(batchHandlerWithResponses.getInvalidCountByTenant(defaultTenant))
+                      .as("unexpected number of invalid messages on batchHandlerWithResponses")
                       .isEqualTo(numberInvalidMessages);
         });
         // Check error notification was sent
@@ -108,11 +111,17 @@ class BatchErrorIT extends AbstractBatchIT {
                   .atMost(Durations.TEN_SECONDS.plusSeconds(5))
                   .pollInterval(200, TimeUnit.MILLISECONDS)
                   .untilAsserted(() -> {
-                      Assertions.assertThat(testResponseBatchHandler.getHandleCalls()).isEqualTo(1);
+                      Assertions.assertThat(testResponseBatchHandler.getHandleCalls())
+                                .as("Unexpected number of testResponseBatchHandler handle calls")
+                                .isEqualTo(1);
                       List<ResponseTestedMessage> responseTestedMessages = testResponseBatchHandler.getResponseTestedMessages();
                       Assertions.assertThat(getMessagesRequestIds(responseTestedMessages))
+                                .as("unexpected invalid request ids published on testResponseBatchHandler")
                                 .containsExactlyInAnyOrderElementsOf(getMessagesRequestIds(invalidMessages));
                       responseTestedMessages.forEach(response -> Assertions.assertThat(response.getMessage())
+                                                                           .as("unexpected invalid message with id "
+                                                                               + response.getMessageProperties()
+                                                                                         .getHeader(AmqpConstants.REGARDS_REQUEST_ID_HEADER))
                                                                            .contains(BatchMessageErrorType.INVALID_MESSAGE.toString()));
                   });
     }
@@ -121,19 +130,25 @@ class BatchErrorIT extends AbstractBatchIT {
     void givenInvalidAndValidMessages_whenPublished_thenDeniedOrAccepted() {
         // GIVEN
         // Create invalid messages
-        List<TestedMessage> invalidMessages = List.of(TestedMessage.buildValidMessage(),
-                                                      TestedMessage.buildInvalidMessage());
+        List<TestedMessage> invalidAndValidMessages = List.of(TestedMessage.buildValidMessage(),
+                                                              TestedMessage.buildInvalidMessage());
 
         // WHEN
         // Messages are published
-        publisher.publish(invalidMessages, TEST_EXCHANGE_NAME, Optional.empty());
+        publisher.publish(invalidAndValidMessages, TEST_EXCHANGE_NAME, Optional.empty());
 
         // THEN
         // Wait for second message to be handled as invalid
         Awaitility.await().atMost(Durations.TEN_SECONDS).pollInterval(200, TimeUnit.MILLISECONDS).untilAsserted(() -> {
-            Assertions.assertThat(batchHandlerWithResponses.getHandleCalls()).isEqualTo(1);
-            Assertions.assertThat(batchHandlerWithResponses.getInvalidCountByTenant(defaultTenant)).isEqualTo(1);
-            Assertions.assertThat(batchHandlerWithResponses.getValidCountByTenant(defaultTenant)).isEqualTo(1);
+            Assertions.assertThat(batchHandlerWithResponses.getHandleCalls())
+                      .as("Unexpected number of batchHandlerWithResponses handle calls")
+                      .isEqualTo(1);
+            Assertions.assertThat(batchHandlerWithResponses.getInvalidCountByTenant(defaultTenant))
+                      .as("Unexpected number of invalid messages on batchHandlerWithResponses handler")
+                      .isEqualTo(1);
+            Assertions.assertThat(batchHandlerWithResponses.getValidCountByTenant(defaultTenant))
+                      .as("Unexpected number of valid messages on batchHandlerWithResponses handler")
+                      .isEqualTo(1);
         });
         // Check error notification was sent
         checkSentNotification(BatchMessageErrorType.INVALID_MESSAGE, true);
@@ -142,9 +157,12 @@ class BatchErrorIT extends AbstractBatchIT {
                   .atMost(Durations.TEN_SECONDS.plusSeconds(5))
                   .pollInterval(200, TimeUnit.MILLISECONDS)
                   .untilAsserted(() -> {
-                      Assertions.assertThat(testResponseBatchHandler.getHandleCalls()).isEqualTo(1);
+                      Assertions.assertThat(testResponseBatchHandler.getHandleCalls())
+                                .as("Unexpected number of testResponseBatchHandler handle calls")
+                                .isEqualTo(1);
                       Assertions.assertThat(getMessagesRequestIds(testResponseBatchHandler.getResponseTestedMessages()))
-                                .containsExactlyInAnyOrder(getMessageRequestId(invalidMessages.get(1)));
+                                .as("Unexpected number of messages on testResponseBatchHandler handler")
+                                .containsExactlyInAnyOrder(getMessageRequestId(invalidAndValidMessages.get(1)));
                   });
     }
 
@@ -164,7 +182,9 @@ class BatchErrorIT extends AbstractBatchIT {
         // Check error notification was sent
         checkSentNotification(BatchMessageErrorType.MISSING_TENANT, false);
         // no response message should have been published
-        Assertions.assertThat(batchHandlerWithResponses.getHandleCalls()).isZero();
+        Assertions.assertThat(batchHandlerWithResponses.getHandleCalls())
+                  .as("batchHandlerWithResponses should not receive messages as missing tenant error should be ignored")
+                  .isZero();
     }
 
     @Test
@@ -188,8 +208,11 @@ class BatchErrorIT extends AbstractBatchIT {
         // Check that the second message was successfully processed.
         // The first message was simply ignored because the tenant is not known
         Awaitility.await().atMost(Durations.TEN_SECONDS).pollInterval(200, TimeUnit.MILLISECONDS).untilAsserted(() -> {
-            Assertions.assertThat(batchHandlerWithResponses.getHandleCalls()).isEqualTo(1);
+            Assertions.assertThat(batchHandlerWithResponses.getHandleCalls())
+                      .as("Unexpected number of batchHandlerWithResponses calls")
+                      .isEqualTo(1);
             Assertions.assertThat(batchHandlerWithResponses.getValidCount())
+                      .as("Only one valid message should be published on tenant " + defaultTenant)
                       .containsExactlyInAnyOrderEntriesOf(Map.of(defaultTenant, 1));
         });
     }
@@ -224,15 +247,22 @@ class BatchErrorIT extends AbstractBatchIT {
                   .atMost(Durations.TEN_SECONDS.plusSeconds(5))
                   .pollInterval(200, TimeUnit.MILLISECONDS)
                   .untilAsserted(() -> {
-                      Assertions.assertThat(testResponseBatchHandler.getHandleCalls()).isEqualTo(1);
+                      Assertions.assertThat(testResponseBatchHandler.getHandleCalls())
+                                .as("Unexpected number of testResponseBatchHandler handle calls")
+                                .isEqualTo(1);
                       List<ResponseTestedMessage> responseTestedMessages = testResponseBatchHandler.getResponseTestedMessages();
                       Assertions.assertThat(getMessagesRequestIds(responseTestedMessages))
+                                .as("unexpected not converted request ids published on testResponseBatchHandler")
                                 .containsExactlyInAnyOrderElementsOf(notConvertibleMessages.stream()
                                                                                            .map(m -> (String) m.getMessageProperties()
                                                                                                                .getHeader(
                                                                                                                    AmqpConstants.REGARDS_REQUEST_ID_HEADER))
                                                                                            .toList());
                       responseTestedMessages.forEach(response -> Assertions.assertThat(response.getMessage())
+                                                                           .as("unexpected not converted message with "
+                                                                               + "id "
+                                                                               + response.getMessageProperties()
+                                                                                         .getHeader(AmqpConstants.REGARDS_REQUEST_ID_HEADER))
                                                                            .contains(BatchMessageErrorType.NOT_CONVERTED_MESSAGE.toString()));
                   });
     }
@@ -253,7 +283,9 @@ class BatchErrorIT extends AbstractBatchIT {
         // handle batch should fail on first call
         Awaitility.await()
                   .atMost(Durations.TEN_SECONDS)
-                  .untilAsserted(() -> Assertions.assertThat(batchHandlerWithResponses.getHandleCalls()).isEqualTo(1));
+                  .untilAsserted(() -> Assertions.assertThat(batchHandlerWithResponses.getHandleCalls())
+                                                 .as("Unexpected number of batchHandlerWithResponses handle calls")
+                                                 .isEqualTo(1));
         checkSentNotification(BatchMessageErrorType.UNEXPECTED_BATCH_FAILURE, true);
         checkDeadLetterMessages(defaultTenant,
                                 TEST_QUEUE_NAME,
@@ -282,6 +314,7 @@ class BatchErrorIT extends AbstractBatchIT {
         Awaitility.await()
                   .atMost(20, TimeUnit.SECONDS)
                   .untilAsserted(() -> Assertions.assertThat(testBatchHandlerWithRetry.getHandleCalls())
+                                                 .as("Unexpected number of testBatchHandlerWithRetry handle calls")
                                                  .isEqualTo(expectedNumberOfRetries));
         checkSentNotification(BatchMessageErrorType.UNEXPECTED_BATCH_FAILURE, true);
         checkDeadLetterMessages(defaultTenant,
@@ -301,8 +334,9 @@ class BatchErrorIT extends AbstractBatchIT {
                                                           .filter(event -> event instanceof NotificationEvent)
                                                           .map(event -> (NotificationEvent) event)
                                                           .toList();
-        Assertions.assertThat(notification).hasSize(1);
+        Assertions.assertThat(notification).as("unexpected number of notifications sent").hasSize(1);
         Assertions.assertThat(notification.get(0).getNotification().getMessage())
+                  .as("unexpected notification label")
                   .contains(batchMessageErrorType.getLabel());
     }
 
@@ -329,23 +363,30 @@ class BatchErrorIT extends AbstractBatchIT {
         List<String> requestIds = new ArrayList<>(expectedNumberOfDeadMessages);
         for (Message deadMessage : deadMessages) {
             Map<String, Object> headers = deadMessage.getMessageProperties().getHeaders();
-            Assertions.assertThat((String) headers.get(RepublishMessageRecoverer.X_EXCEPTION_MESSAGE)).isNotBlank();
+            Assertions.assertThat((String) headers.get(RepublishMessageRecoverer.X_EXCEPTION_MESSAGE))
+                      .as(String.format("header %s should not be blank", RepublishMessageRecoverer.X_EXCEPTION_MESSAGE))
+                      .isNotBlank();
             requestIds.add((String) headers.get(AmqpConstants.REGARDS_REQUEST_ID_HEADER));
             // headers are slightly different if the retry feature was enabled
             if (maxRetries >= 0) {
                 Assertions.assertThat((Integer) headers.get(RetryBatchMessageHandler.X_RETRY_HEADER))
+                          .as(String.format("unexpected header %s value", RetryBatchMessageHandler.X_RETRY_HEADER))
                           .isEqualTo(maxRetries);
                 Assertions.assertThat((String) headers.get(RepublishErrorBatchMessageRecover.X_EXCEPTION_STACKTRACE))
+                          .as(String.format("unexpected header %s value",
+                                            RepublishErrorBatchMessageRecover.X_EXCEPTION_STACKTRACE))
                           .contains(List.of(MaxRetriesReachedException.class.getName(),
                                             TestRuntimeException.class.getName()));
             } else {
                 Assertions.assertThat((String) headers.get(RepublishErrorBatchMessageRecover.X_EXCEPTION_STACKTRACE))
+                          .as(String.format("unexpected header %s value",
+                                            RepublishErrorBatchMessageRecover.X_EXCEPTION_STACKTRACE))
                           .contains(TestRuntimeException.class.getName());
             }
         }
         // Check that all the messages were properly re-routed to the DLX with requestIds
         Assertions.assertThat(requestIds)
-                  .as("Unexpected request ids headers")
+                  .as("Unexpected dead request ids")
                   .containsExactlyInAnyOrderElementsOf(messageRequestIds);
     }
 

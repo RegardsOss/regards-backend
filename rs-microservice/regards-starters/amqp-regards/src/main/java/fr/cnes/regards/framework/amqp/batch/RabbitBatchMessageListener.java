@@ -132,7 +132,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                         // Verify that messages are valid
                         List<BatchMessage> validMessages = getValidMessages(convertedMessages, tenant);
                         if (!validMessages.isEmpty()) {
-                            processValidMessages(channel, tenant, validMessages);
+                            processValidMessages(tenant, validMessages);
                         }
                     }
                 } else {
@@ -241,8 +241,9 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                                                                      new InvalidMessageException(ErrorTranslator.getErrorsAsString(
                                                                          errors)),
                                                                      BatchMessageErrorType.INVALID_MESSAGE);
+                    } else {
+                        validMessages.add(convertedMessage);
                     }
-                    validMessages.add(convertedMessage);
                 } catch (InvocationTargetException | UnprocessableBatchException e) {
                     batchMessageErrorHandler.handleDeniedMessage(convertedMessage,
                                                                  batchErrorResponse,
@@ -286,11 +287,10 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
      * Invokes the main {@link IBatchHandler} method to process a batch of messages that are grouped by tenant.
      * If an unexpected error is triggered during the process, all messages of the batch will be discarded.
      *
-     * @param channel       channel configuration for exchange/queue/binding.
      * @param tenant        project at the origin of the messages.
      * @param validMessages {@link BatchMessage}s that have been validated beforehand.
      */
-    private void processValidMessages(Channel channel, String tenant, List<BatchMessage> validMessages) {
+    private void processValidMessages(String tenant, List<BatchMessage> validMessages) {
         try {
             // Launch valid message processing
             invokeBatchHandler(tenant, validMessages);
@@ -299,7 +299,6 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             if (this.batchHandler.isRetryEnabled() && !(exception instanceof UnprocessableBatchException)) {
                 executeInTransaction(() -> retryBatchMessageHandler.handleBatchMessageRetry(tenant,
                                                                                             validMessages,
-                                                                                            channel,
                                                                                             exception), tenant);
             } else {
                 executeInTransaction(() -> batchMessageErrorHandler.discardBatch(tenant, validMessages, exception),

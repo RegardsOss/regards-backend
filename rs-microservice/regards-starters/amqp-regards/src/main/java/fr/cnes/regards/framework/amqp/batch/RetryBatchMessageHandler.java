@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.amqp.batch;
 
-import com.rabbitmq.client.Channel;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.batch.dto.BatchMessage;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
@@ -84,12 +83,10 @@ public class RetryBatchMessageHandler {
      *
      * @param tenant        project at the origin of the messages
      * @param validMessages AMQP messages that have been validated beforehand
-     * @param channel       AMQP channel
      * @param exception     unexpected exception to keep track of the failure
      */
     public void handleBatchMessageRetry(String tenant,
                                         List<BatchMessage> validMessages,
-                                        Channel channel,
                                         Exception exception) {
         List<BatchMessage> deadMessages = new ArrayList<>(validMessages.size());
         for (BatchMessage batchMessage : validMessages) {
@@ -139,9 +136,9 @@ public class RetryBatchMessageHandler {
      */
     private void updateRetryHeaders(MessageProperties messageProperties, int currentRetryValue, int maxRetries) {
         int nextRetryValue = currentRetryValue + 1;
-        int nextDelayValue = (int) retryProperties.getDelayAttempts().get(currentRetryValue).toMillis();
+        long nextDelayValue = retryProperties.getDelayAttempts().get(currentRetryValue).toMillis();
         messageProperties.setHeader(X_RETRY_HEADER, nextRetryValue);
-        messageProperties.setDelay(nextDelayValue);
+        messageProperties.setDelayLong(nextDelayValue);
 
         LOGGER.debug("[requestId: {}, correlationId: {}] Retrying message with delay of {}ms (current retry {}, "
                      + "maximum of retries {}).",

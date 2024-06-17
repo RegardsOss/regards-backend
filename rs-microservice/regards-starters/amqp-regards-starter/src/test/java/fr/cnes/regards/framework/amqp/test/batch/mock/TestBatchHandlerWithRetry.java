@@ -79,6 +79,7 @@ public class TestBatchHandlerWithRetry implements IBatchHandler<TestedMessage> {
         for (TestedMessage message : messages) {
             switch (message.getMessageType()) {
                 case VALID -> incrementValidCountByTenant(tenantResolver.getTenant());
+                case INVALID -> incrementInvalidCountByTenant(tenantResolver.getTenant());
                 case TEMPORARY_UNEXPECTED_EXCEPTION -> {
                     if (message.getMessageProperties().getHeader(RetryBatchMessageHandler.X_RETRY_HEADER) == null) {
                         throw new TestRuntimeException("Expected exception to verify retry.");

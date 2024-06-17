@@ -92,12 +92,11 @@ public interface IBatchHandler<M> extends IHandler<M> {
 
     /**
      * This method is called for each message<br/>
-     * Invalid message is negatively acknowledged (and so routed to DLQ.)<br/>
-     * Valid message is processed using {@link #handleBatch(List)} method.<br/>
-     * If an error occurs during batch processing, all valid messages are negatively acknowledged
-     * even if only single message causes the error.<br/>
-     * Consequently, validation must be as efficient as possible to avoid this behavior
-     * and guarantee the processing of valid messages as much as possible.
+     * An invalid message is acknowledged and trigger a DENIED message (if configured see
+     * {@link #buildDeniedResponseForInvalidMessage})<br/>
+     * A valid message is processed using {@link #handleBatch(List)} method.<br/>
+     * If an error occurs during a batch processing, valid messages are processed nominally and invalid messages are
+     * DENIED.
      *
      * @param message messages to manage
      * @return list of errors. If this list is null or empty, the message is considered valid.

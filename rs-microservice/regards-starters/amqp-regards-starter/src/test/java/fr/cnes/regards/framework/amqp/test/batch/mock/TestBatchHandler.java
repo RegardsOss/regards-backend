@@ -78,8 +78,10 @@ public class TestBatchHandler implements IBatchHandler<TestedMessage> {
         getLogger().info("Received {} valid TestedMessage.", messages.size());
         incrementHandleCalls();
         for (TestedMessage message : messages) {
+            String tenant = tenantResolver.getTenant();
             switch (message.getMessageType()) {
-                case VALID -> incrementValidCountByTenant(tenantResolver.getTenant());
+                case VALID -> incrementValidCountByTenant(tenant);
+                case INVALID -> incrementInvalidCountByTenant(tenant);
                 case PERMANENT_UNEXPECTED_EXCEPTION ->
                     throw new TestRuntimeException("Expected exception to verify retry.");
             }
