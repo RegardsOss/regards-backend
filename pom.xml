@@ -66,10 +66,10 @@
 
         <!-- COTS -->
         <!-- XML, el, jakarta, ... -->
-        <jakarta-el.version>5.0.0-M1</jakarta-el.version>
+        <jakarta.el-api.version>6.0.0</jakarta.el-api.version>
         <jakarta.activation-api.version>2.1.2</jakarta.activation-api.version>
-        <jakarta.validation-api.version>3.1.0-M1</jakarta.validation-api.version>
-        <jakarta.servlet-api.version>6.1.0-M1</jakarta.servlet-api.version>
+        <jakarta.validation-api.version>3.1.0</jakarta.validation-api.version>
+        <jakarta.servlet-api.version>6.1.0</jakarta.servlet-api.version>
         <jakarta.xml.bind-api.version>4.0.1</jakarta.xml.bind-api.version>
         <dom4j.version>2.1.4</dom4j.version>
         <snakeyaml.version>2.2</snakeyaml.version>
@@ -1966,9 +1966,9 @@
             </dependency>
             <!-- el -->
             <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.el</artifactId>
-                <version>${jakarta-el.version}</version>
+                <groupId>jakarta.el</groupId>
+                <artifactId>jakarta.el-api</artifactId>
+                <version>${jakarta.el-api.version}</version>
             </dependency>
             <!-- Jakarta servlet -->
             <dependency>
