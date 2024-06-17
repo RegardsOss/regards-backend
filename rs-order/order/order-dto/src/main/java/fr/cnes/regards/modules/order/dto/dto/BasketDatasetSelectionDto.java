@@ -38,15 +38,15 @@ public class BasketDatasetSelectionDto implements Comparable<BasketDatasetSelect
 
     private SortedSet<BasketDatedItemsSelectionDto> itemsSelections;
 
-    private ProcessDatasetDescription processDatasetDescription;
+    private ProcessDatasetDescriptionDto processDatasetDescription;
 
-    private FileSelectionDescriptionDTO fileSelectionDescription;
+    private FileSelectionDescriptionDto fileSelectionDescription;
 
-    public FileSelectionDescriptionDTO getFileSelectionDescription() {
+    public FileSelectionDescriptionDto getFileSelectionDescription() {
         return fileSelectionDescription;
     }
 
-    public void setFileSelectionDescription(FileSelectionDescriptionDTO fileSelectionDescription) {
+    public void setFileSelectionDescription(FileSelectionDescriptionDto fileSelectionDescription) {
         this.fileSelectionDescription = fileSelectionDescription;
     }
 
@@ -114,11 +114,11 @@ public class BasketDatasetSelectionDto implements Comparable<BasketDatasetSelect
         this.itemsSelections = itemsSelections;
     }
 
-    public ProcessDatasetDescription getProcessDatasetDescription() {
+    public ProcessDatasetDescriptionDto getProcessDatasetDescription() {
         return processDatasetDescription;
     }
 
-    public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
+    public void setProcessDatasetDescription(ProcessDatasetDescriptionDto processDatasetDescription) {
         this.processDatasetDescription = processDatasetDescription;
     }
 

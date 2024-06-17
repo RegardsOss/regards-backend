@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.order.service.utils;
 
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.StringUtils;
@@ -33,13 +33,13 @@ public final class FileSelectionDescriptionValidator {
     private FileSelectionDescriptionValidator() {
     }
 
-    public static boolean validate(@NotNull DataFile dataFile, FileSelectionDescription fileSelectionDescription) {
+    public static boolean validate(@NotNull DataFile dataFile, FileSelectionDescriptionDto fileSelectionDescription) {
         return respectsDataTypeFilter(dataFile, fileSelectionDescription) && respectsFileNameFilter(dataFile,
                                                                                                     fileSelectionDescription);
     }
 
     private static boolean respectsFileNameFilter(@NotNull DataFile dataFile,
-                                                  FileSelectionDescription fileSelectionDescription) {
+                                                  FileSelectionDescriptionDto fileSelectionDescription) {
         if (fileSelectionDescription != null) {
             if (StringUtils.isNotBlank(fileSelectionDescription.getFileNamePattern())) {
                 return dataFile.getFilename().matches(fileSelectionDescription.getFileNamePattern());
@@ -49,7 +49,7 @@ public final class FileSelectionDescriptionValidator {
     }
 
     private static boolean respectsDataTypeFilter(@NotNull DataFile dataFile,
-                                                  FileSelectionDescription fileSelectionDescription) {
+                                                  FileSelectionDescriptionDto fileSelectionDescription) {
         if (fileSelectionDescription != null) {
             if (fileSelectionDescription.getFileTypes().isEmpty()) {
                 // means that all dataTypes are allowed

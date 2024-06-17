@@ -23,7 +23,7 @@
 package fr.cnes.regards.modules.order.service.job;
 
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 
 public class BasketDatasetSelectionDescriptor {
 
@@ -31,11 +31,11 @@ public class BasketDatasetSelectionDescriptor {
 
     private final String datasetIpId;
 
-    private final ProcessDatasetDescription processDatasetDescription;
+    private final ProcessDatasetDescriptionDto processDatasetDescription;
 
     public BasketDatasetSelectionDescriptor(Long dsSelId,
                                             String datasetIpId,
-                                            ProcessDatasetDescription processDatasetDescription) {
+                                            ProcessDatasetDescriptionDto processDatasetDescription) {
         this.dsSelId = dsSelId;
         this.datasetIpId = datasetIpId;
         this.processDatasetDescription = processDatasetDescription;
@@ -53,7 +53,7 @@ public class BasketDatasetSelectionDescriptor {
         return datasetIpId;
     }
 
-    public ProcessDatasetDescription getProcessDatasetDescription() {
+    public ProcessDatasetDescriptionDto getProcessDatasetDescription() {
         return processDatasetDescription;
     }
 

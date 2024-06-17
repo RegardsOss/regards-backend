@@ -25,8 +25,8 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.dto.dto.DatasetTaskDto;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
@@ -80,12 +80,12 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
 
     @Column(name = "process_dataset_desc")
     @Type(JsonBinaryType.class)
-    private ProcessDatasetDescription processDatasetDescription;
+    private ProcessDatasetDescriptionDto processDatasetDescription;
 
     @Nullable
     @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "file_selection_description")
-    private FileSelectionDescription fileSelectionDescription;
+    private FileSelectionDescriptionDto fileSelectionDescription;
 
     public DatasetTask() {
     }
@@ -121,12 +121,12 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
         return dsTask;
     }
 
-    private void setFileSelectionDescription(@Nullable FileSelectionDescription fileSelectionDescription) {
+    private void setFileSelectionDescription(@Nullable FileSelectionDescriptionDto fileSelectionDescription) {
         this.fileSelectionDescription = fileSelectionDescription;
     }
 
     @Nullable
-    public FileSelectionDescription getFileSelectionDescription() {
+    public FileSelectionDescriptionDto getFileSelectionDescription() {
         return fileSelectionDescription;
     }
 
@@ -187,11 +187,11 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
         return this.processDatasetDescription != null;
     }
 
-    public ProcessDatasetDescription getProcessDatasetDescription() {
+    public ProcessDatasetDescriptionDto getProcessDatasetDescription() {
         return processDatasetDescription;
     }
 
-    public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
+    public void setProcessDatasetDescription(ProcessDatasetDescriptionDto processDatasetDescription) {
         this.processDatasetDescription = processDatasetDescription;
     }
 

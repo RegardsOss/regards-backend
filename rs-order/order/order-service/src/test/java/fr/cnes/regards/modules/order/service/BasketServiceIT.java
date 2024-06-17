@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 import fr.cnes.regards.modules.order.service.processing.AbstractOrderProcessingServiceIT;
 import fr.cnes.regards.modules.order.test.SearchClientMock;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
@@ -359,7 +359,7 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
             // Attach a processing to the basket
             basketService.attachProcessing(basket,
                                            basket.getDatasetSelections().stream().findFirst().get().getId(),
-                                           new ProcessDatasetDescription(processBusinessId, null));
+                                           new ProcessDatasetDescriptionDto(processBusinessId, null));
         } catch (TooManyItemsSelectedInBasketException | CatalogSearchException e) {
             LOGGER.error(e.getMessage(), e);
             Assert.fail("No error is expected at this point.");

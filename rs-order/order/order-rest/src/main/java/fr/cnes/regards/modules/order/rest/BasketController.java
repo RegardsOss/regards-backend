@@ -29,8 +29,8 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.dto.dto.BasketDto;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDTO;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 import fr.cnes.regards.modules.order.service.IBasketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -160,7 +160,7 @@ public class BasketController implements IResourceController<BasketDto> {
     @RequestMapping(method = RequestMethod.PUT, path = DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS)
     public ResponseEntity<EntityModel<BasketDto>> attachProcessDescriptionToDatasetSelection(
         @PathVariable("datasetSelectionId") Long dsSelectionId,
-        @RequestBody(required = false) ProcessDatasetDescription description)
+        @RequestBody(required = false) ProcessDatasetDescriptionDto description)
         throws EmptyBasketException, TooManyItemsSelectedInBasketException {
         Basket basket = basketService.find(authResolver.getUser());
         if (basket.getDatasetSelections().stream().anyMatch(ds -> ds.getFileSelectionDescription() != null)) {
@@ -244,7 +244,7 @@ public class BasketController implements IResourceController<BasketDto> {
     @PutMapping(DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS)
     public ResponseEntity<EntityModel<BasketDto>> updateFileFilters(
         @PathVariable("datasetSelectionId") Long dsSelectionId,
-        @RequestBody(required = false) FileSelectionDescriptionDTO fileSelectionDescriptionDTO)
+        @RequestBody(required = false) FileSelectionDescriptionDto fileSelectionDescriptionDTO)
         throws EmptyBasketException {
         Basket basket = basketService.find(authResolver.getUser());
         if (basket.getDatasetSelections().stream().anyMatch(BasketDatasetSelection::hasProcessing)) {

@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
 import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
 import fr.cnes.regards.modules.order.service.utils.BasketSelectionPageSearch;
@@ -431,7 +431,7 @@ public class OrderCreationService implements IOrderCreationService {
                                                Set<OrderDataFile> storageBucketFiles,
                                                Set<OrderDataFile> externalBucketFiles,
                                                BasketDatasetSelection dsSel) {
-        FileSelectionDescription fileSelectDescr = dsSel.getFileSelectionDescription();
+        FileSelectionDescriptionDto fileSelectDescr = dsSel.getFileSelectionDescription();
         List<DataFile> dataFileFiltered = feature.getFiles()
                                                  .values()
                                                  .stream()

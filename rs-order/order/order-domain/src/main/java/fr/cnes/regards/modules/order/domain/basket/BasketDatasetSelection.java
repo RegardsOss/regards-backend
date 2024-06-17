@@ -22,9 +22,8 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.order.dto.dto.BasketDatasetSelectionDto;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDTO;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.hibernate.annotations.SortNatural;
@@ -76,7 +75,7 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     @Nullable
     @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "file_selection_description")
-    private FileSelectionDescription fileSelectionDescription;
+    private FileSelectionDescriptionDto fileSelectionDescription;
 
     @ElementCollection
     @CollectionTable(name = "t_basket_ds_item",
@@ -87,7 +86,7 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
 
     @Column(name = "process_dataset_desc")
     @Type(JsonBinaryType.class)
-    private ProcessDatasetDescription processDatasetDescription;
+    private ProcessDatasetDescriptionDto processDatasetDescription;
 
     @Override
     public Long getId() {
@@ -190,20 +189,20 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
         this.itemsSelections.remove(itemsSelection);
     }
 
-    public ProcessDatasetDescription getProcessDatasetDescription() {
+    public ProcessDatasetDescriptionDto getProcessDatasetDescription() {
         return processDatasetDescription;
     }
 
-    public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
+    public void setProcessDatasetDescription(ProcessDatasetDescriptionDto processDatasetDescription) {
         this.processDatasetDescription = processDatasetDescription;
     }
 
     @Nullable
-    public FileSelectionDescription getFileSelectionDescription() {
+    public FileSelectionDescriptionDto getFileSelectionDescription() {
         return fileSelectionDescription;
     }
 
-    public void setFileSelectionDescription(@Nullable FileSelectionDescription fileSelectionDescription) {
+    public void setFileSelectionDescription(@Nullable FileSelectionDescriptionDto fileSelectionDescription) {
         this.fileSelectionDescription = fileSelectionDescription;
     }
 
@@ -255,7 +254,7 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
                                    .collect(TreeSet::new, Set::add, TreeSet::addAll));
         dto.setQuota(this.getFileTypeCount(DataType.RAWDATA.name() + "_!ref"));
         dto.setProcessDatasetDescription(this.getProcessDatasetDescription());
-        dto.setFileSelectionDescription(FileSelectionDescriptionDTO.makeFileSelectionDescriptionDTO(this.getFileSelectionDescription()));
+        dto.setFileSelectionDescription(this.getFileSelectionDescription());
         return dto;
     }
 

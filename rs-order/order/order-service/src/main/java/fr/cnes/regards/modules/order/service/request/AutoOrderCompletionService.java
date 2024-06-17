@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.ExceededBasketSizeException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.exception.AutoOrderException;
 import fr.cnes.regards.modules.order.service.BasketService;
@@ -142,7 +142,7 @@ public class AutoOrderCompletionService {
      * Create or update a basket from a {@link OrderRequestDto}. The basket will be completed with :
      * <ul>
      *     <li>{@link BasketDatasetSelection} computed from the request opensearch queries</li>
-     *     <li>{@link FileSelectionDescription} built with request filters</li>
+     *     <li>{@link FileSelectionDescriptionDto} built with request filters</li>
      * </ul>
      *
      * @param orderRequestDto order request with information to extract
@@ -168,10 +168,10 @@ public class AutoOrderCompletionService {
         // /!\ to do after addSelection because datasetSelections are init in this method
         if (orderRequestDto.getFilters() != null) {
             basket.getDatasetSelections()
-                  .forEach(ds -> ds.setFileSelectionDescription(new FileSelectionDescription(orderRequestDto.getFilters()
-                                                                                                            .getDataTypes(),
-                                                                                             orderRequestDto.getFilters()
-                                                                                                            .getFilenameRegExp())));
+                  .forEach(ds -> ds.setFileSelectionDescription(new FileSelectionDescriptionDto(orderRequestDto.getFilters()
+                                                                                                               .getDataTypes(),
+                                                                                                orderRequestDto.getFilters()
+                                                                                                               .getFilenameRegExp())));
         }
         return basket;
     }

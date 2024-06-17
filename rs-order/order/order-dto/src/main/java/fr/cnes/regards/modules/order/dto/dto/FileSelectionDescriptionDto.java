@@ -27,13 +27,13 @@ import java.util.Set;
 /**
  * @author Thomas GUILLOU
  **/
-public class FileSelectionDescriptionDTO {
+public class FileSelectionDescriptionDto {
 
     private Set<DataTypeLight> fileTypes;
 
     private String fileNamePattern;
 
-    public FileSelectionDescriptionDTO(Set<DataTypeLight> fileTypes, String fileNamePattern) {
+    public FileSelectionDescriptionDto(Set<DataTypeLight> fileTypes, String fileNamePattern) {
         this.fileTypes = fileTypes != null ? fileTypes : Collections.emptySet();
         this.fileNamePattern = fileNamePattern;
     }
@@ -54,7 +54,7 @@ public class FileSelectionDescriptionDTO {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        FileSelectionDescriptionDTO that = (FileSelectionDescriptionDTO) o;
+        FileSelectionDescriptionDto that = (FileSelectionDescriptionDto) o;
         return Objects.equals(fileTypes, that.fileTypes) && Objects.equals(fileNamePattern, that.fileNamePattern);
     }
 
@@ -80,13 +80,5 @@ public class FileSelectionDescriptionDTO {
                + fileNamePattern
                + '\''
                + '}';
-    }
-
-    public static FileSelectionDescriptionDTO makeFileSelectionDescriptionDTO(FileSelectionDescription fileSelectionDescription) {
-        if (fileSelectionDescription == null) {
-            return null;
-        }
-        return new FileSelectionDescriptionDTO(fileSelectionDescription.getFileTypes(),
-                                               fileSelectionDescription.getFileNamePattern());
     }
 }

@@ -20,13 +20,13 @@ package fr.cnes.regards.modules.order.dto.dto;
 import java.util.Map;
 import java.util.UUID;
 
-public class ProcessDatasetDescription {
+public class ProcessDatasetDescriptionDto {
 
     private final UUID processBusinessId;
 
     private final Map<String, String> parameters;
 
-    public ProcessDatasetDescription(UUID processBusinessId, Map<String, String> parameters) {
+    public ProcessDatasetDescriptionDto(UUID processBusinessId, Map<String, String> parameters) {
         this.processBusinessId = processBusinessId;
         this.parameters = parameters;
     }

@@ -35,9 +35,9 @@ public class DatasetTaskDto {
 
     private long filesSize = 0;
 
-    private ProcessDatasetDescription processDatasetDescription;
+    private ProcessDatasetDescriptionDto processDatasetDescription;
 
-    private FileSelectionDescription fileSelectionDescription;
+    private FileSelectionDescriptionDto fileSelectionDescription;
 
     // To be defined : a ProcessingTask should certainly be better
     // Or directly specifying JobInfo managing processing task
@@ -91,19 +91,19 @@ public class DatasetTaskDto {
         this.processingService = processingService;
     }
 
-    public ProcessDatasetDescription getProcessDatasetDescription() {
+    public ProcessDatasetDescriptionDto getProcessDatasetDescription() {
         return processDatasetDescription;
     }
 
-    public void setProcessDatasetDescription(ProcessDatasetDescription processDatasetDescription) {
+    public void setProcessDatasetDescription(ProcessDatasetDescriptionDto processDatasetDescription) {
         this.processDatasetDescription = processDatasetDescription;
     }
 
-    public FileSelectionDescription getFileSelectionDescription() {
+    public FileSelectionDescriptionDto getFileSelectionDescription() {
         return fileSelectionDescription;
     }
 
-    public void setFileSelectionDescription(FileSelectionDescription fileSelectionDescription) {
+    public void setFileSelectionDescription(FileSelectionDescriptionDto fileSelectionDescription) {
         this.fileSelectionDescription = fileSelectionDescription;
     }
 }

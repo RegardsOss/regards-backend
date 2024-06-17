@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.order.service;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDTO;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -130,7 +130,7 @@ public interface IBasketService {
      * @throws TooManyItemsSelectedInBasketException if the number of items to process is greater than the limit
      *                                               defined by the process
      */
-    Basket attachProcessing(Basket basket, Long datasetId, @Nullable ProcessDatasetDescription description)
+    Basket attachProcessing(Basket basket, Long datasetId, @Nullable ProcessDatasetDescriptionDto description)
         throws TooManyItemsSelectedInBasketException;
 
     /**
@@ -161,5 +161,5 @@ public interface IBasketService {
      */
     Basket attachFileFilters(Basket basket,
                              Long dsSelectionId,
-                             FileSelectionDescriptionDTO fileSelectionDescriptionDTO);
+                             FileSelectionDescriptionDto fileSelectionDescriptionDTO);
 }

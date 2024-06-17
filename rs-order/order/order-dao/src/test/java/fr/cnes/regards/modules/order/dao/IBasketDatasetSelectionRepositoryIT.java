@@ -19,7 +19,7 @@ package fr.cnes.regards.modules.order.dao;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
@@ -48,8 +48,8 @@ public class IBasketDatasetSelectionRepositoryIT extends AbstractDaoTransactiona
         BasketDatasetSelection dsSelWithProcess = new BasketDatasetSelection();
         dsSelWithProcess.setDatasetIpid("some ip id");
         dsSelWithProcess.setDatasetLabel("process");
-        dsSelWithProcess.setProcessDatasetDescription(new ProcessDatasetDescription(processBusinessId,
-                                                                                    new HashMap<>()));
+        dsSelWithProcess.setProcessDatasetDescription(new ProcessDatasetDescriptionDto(processBusinessId,
+                                                                                       new HashMap<>()));
         Long withProcessId = dsSelRepo.saveAndFlush(dsSelWithProcess).getId();
 
         List<BasketDatasetSelection> result = dsSelRepo.findByProcessBusinessId(processBusinessId.toString());

@@ -37,9 +37,8 @@ import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDTO;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 import fr.cnes.regards.modules.order.service.processing.OrderProcessingService;
 import fr.cnes.regards.modules.order.service.utils.BasketSelectionFromFileUtils;
 import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
@@ -298,7 +297,7 @@ public class BasketService implements IBasketService {
     }
 
     @Override
-    public Basket attachProcessing(Basket basket, Long datasetId, @Nullable ProcessDatasetDescription desc)
+    public Basket attachProcessing(Basket basket, Long datasetId, @Nullable ProcessDatasetDescriptionDto desc)
         throws TooManyItemsSelectedInBasketException {
         // find dataset selection with selected id
         BasketDatasetSelection basketSelection = basket.getDatasetSelections()
@@ -407,7 +406,7 @@ public class BasketService implements IBasketService {
     @Override
     public Basket attachFileFilters(Basket basket,
                                     Long datasetId,
-                                    @Nullable FileSelectionDescriptionDTO fileSelectionDescriptionDTO) {
+                                    @Nullable FileSelectionDescriptionDto fileSelectionDescriptionDTO) {
         // find dataset selection with selected id
         BasketDatasetSelection basketSelection = basket.getDatasetSelections()
                                                        .stream()
@@ -419,8 +418,9 @@ public class BasketService implements IBasketService {
                                                            + " doesn't exist")); // NOSONAR Duplicated strings
 
         if (fileSelectionDescriptionDTO != null) {
-            FileSelectionDescription fileSelectionDescription = new FileSelectionDescription(fileSelectionDescriptionDTO.getFileTypes(),
-                                                                                             fileSelectionDescriptionDTO.getFileNamePattern());
+            FileSelectionDescriptionDto fileSelectionDescription = new FileSelectionDescriptionDto(
+                fileSelectionDescriptionDTO.getFileTypes(),
+                fileSelectionDescriptionDTO.getFileNamePattern());
             basketSelection.setFileSelectionDescription(fileSelectionDescription);
         } else {
             basketSelection.setFileSelectionDescription(null);
@@ -430,7 +430,7 @@ public class BasketService implements IBasketService {
 
     private Basket attachProcessToDatasetSelectionAndSaveBasket(Basket basket,
                                                                 BasketDatasetSelection ds,
-                                                                ProcessDatasetDescription desc) {
+                                                                ProcessDatasetDescriptionDto desc) {
         ds.setProcessDatasetDescription(desc);
         Basket modified = repos.save(basket);
         return modified;

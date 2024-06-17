@@ -35,8 +35,8 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDTO;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 import fr.cnes.regards.modules.order.rest.mock.ProcessingClientMock;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -231,7 +231,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
                                                                          "$.content.datasetSelections[0].processDatasetDescription.parameters.key",
                                                                          "value");
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                          new ProcessDatasetDescription(processBusinessIdFeatures, parameters),
+                          new ProcessDatasetDescriptionDto(processBusinessIdFeatures, parameters),
                           customizerAddFeatures,
                           "error",
                           basket.getDatasetSelections().first().getId());
@@ -246,7 +246,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
                                                                       "$.content.datasetSelections[0].processDatasetDescription.parameters.key",
                                                                       "value");
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                          new ProcessDatasetDescription(processBusinessIdFiles, parameters),
+                          new ProcessDatasetDescriptionDto(processBusinessIdFiles, parameters),
                           customizerAddFiles,
                           "error",
                           basket.getDatasetSelections().first().getId());
@@ -261,7 +261,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
                                                                      "$.content.datasetSelections[0].processDatasetDescription.parameters.key",
                                                                      "value");
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                          new ProcessDatasetDescription(processBusinessIdSize, parameters),
+                          new ProcessDatasetDescriptionDto(processBusinessIdSize, parameters),
                           customizerAddSize,
                           "error",
                           basket.getDatasetSelections().first().getId());
@@ -276,7 +276,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
                                                                         "$.content.datasetSelections[0].processDatasetDescription.parameters.key",
                                                                         "value");
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                          new ProcessDatasetDescription(processBusinessIdNoLimit, parameters),
+                          new ProcessDatasetDescriptionDto(processBusinessIdNoLimit, parameters),
                           customizerAddNoLimit,
                           "error",
                           basket.getDatasetSelections().first().getId());
@@ -292,24 +292,24 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
         // Fail to attach processing because FEATURES limit is reached
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                          new ProcessDatasetDescription(UUID.fromString(ProcessingClientMock.PROCESS_ID_FEATURES_2L),
-                                                        parameters),
+                          new ProcessDatasetDescriptionDto(UUID.fromString(ProcessingClientMock.PROCESS_ID_FEATURES_2L),
+                                                           parameters),
                           customizerAdd,
                           "error",
                           basket.getDatasetSelections().first().getId());
 
         // Fail to attach processing because FILES limit is reached
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                          new ProcessDatasetDescription(UUID.fromString(ProcessingClientMock.PROCESS_ID_FILES_10L),
-                                                        parameters),
+                          new ProcessDatasetDescriptionDto(UUID.fromString(ProcessingClientMock.PROCESS_ID_FILES_10L),
+                                                           parameters),
                           customizerAdd,
                           "error",
                           basket.getDatasetSelections().first().getId());
 
         // Fail to attach processing because BYTES limit is reached
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                          new ProcessDatasetDescription(UUID.fromString(ProcessingClientMock.PROCESS_ID_BYTES_150L),
-                                                        parameters),
+                          new ProcessDatasetDescriptionDto(UUID.fromString(ProcessingClientMock.PROCESS_ID_BYTES_150L),
+                                                           parameters),
                           customizerAdd,
                           "error",
                           basket.getDatasetSelections().first().getId());
@@ -330,7 +330,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
                                                                  "$.content.datasetSelections[0].processDatasetDescription.parameters.key",
                                                                  "value");
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                          new ProcessDatasetDescription(processBusinessId, parameters),
+                          new ProcessDatasetDescriptionDto(processBusinessId, parameters),
                           customizerAdd,
                           "error",
                           basket.getDatasetSelections().first().getId());
@@ -440,7 +440,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         // GIVEN
         Basket basket = createBasket();
         Assertions.assertNull(basket.getDatasetSelections().first().getFileSelectionDescription());
-        FileSelectionDescriptionDTO body = new FileSelectionDescriptionDTO(null, "test");
+        FileSelectionDescriptionDto body = new FileSelectionDescriptionDto(null, "test");
 
         performDefaultPut(BasketController.ORDER_BASKET
                           + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS,
@@ -477,9 +477,11 @@ public class BasketControllerIT extends AbstractRegardsIT {
     public void test_failUpdateFileFiltersWithProcess() {
         // GIVEN
         Basket basket = createBasket();
-        FileSelectionDescriptionDTO body = new FileSelectionDescriptionDTO(null, "test");
+        FileSelectionDescriptionDto body = new FileSelectionDescriptionDto(null, "test");
         // set processing info
-        basket.getDatasetSelections().first().setProcessDatasetDescription(new ProcessDatasetDescription(null, null));
+        basket.getDatasetSelections()
+              .first()
+              .setProcessDatasetDescription(new ProcessDatasetDescriptionDto(null, null));
         basketRepos.save(basket);
 
         // WHEN try to update file filters

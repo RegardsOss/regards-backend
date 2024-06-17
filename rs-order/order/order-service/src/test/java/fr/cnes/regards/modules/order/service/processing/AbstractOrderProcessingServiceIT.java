@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 import fr.cnes.regards.modules.order.service.*;
 import fr.cnes.regards.modules.order.service.commons.OrderCreationCompletedEventTestHandler;
 import fr.cnes.regards.modules.order.service.job.ProcessExecutionJob;
@@ -318,7 +318,8 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 12L);
         BasketDatedItemsSelection itemSelection = createDatasetItemSelection(1L, 12, 3, "ALL");
         dsSelection.addItemsSelection(itemSelection);
-        dsSelection.setProcessDatasetDescription(new ProcessDatasetDescription(processBusinessId, processParameters));
+        dsSelection.setProcessDatasetDescription(new ProcessDatasetDescriptionDto(processBusinessId,
+                                                                                  processParameters));
         basket.addDatasetSelection(dsSelection);
 
         saveBasket(defaultTenant, basket);

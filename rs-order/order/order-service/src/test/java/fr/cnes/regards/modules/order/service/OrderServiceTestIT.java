@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDTO;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
 import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.service.commons.AbstractOrderServiceIT;
@@ -450,7 +450,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         basket = basketService.load(basket.getId());
         basketService.attachFileFilters(basket,
                                         id,
-                                        new FileSelectionDescriptionDTO(Set.of(DataTypeLight.RAWDATA), null));
+                                        new FileSelectionDescriptionDto(Set.of(DataTypeLight.RAWDATA), null));
 
         // Run order.
         Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240);
@@ -475,7 +475,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         basketService.addSelection(basketEmptyFilter.getId(), createBasketSelectionRequest(DS1_IP_ID.toString(), ""));
         basketEmptyFilter = basketService.load(basketEmptyFilter.getId());
         Long datasetId = basketEmptyFilter.getDatasetSelections().first().getId();
-        basketService.attachFileFilters(basketEmptyFilter, datasetId, new FileSelectionDescriptionDTO(null, null));
+        basketService.attachFileFilters(basketEmptyFilter, datasetId, new FileSelectionDescriptionDto(null, null));
 
         // create basket without indicate file filters
         Basket basketDefault = OrderTestUtils.getBasketSingleSelection("basket_without_filter");
@@ -515,7 +515,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         basket = basketService.load(basket.getId());
         Long datasetId = basket.getDatasetSelections().first().getId();
         // get only file that ends with .bin
-        basketService.attachFileFilters(basket, datasetId, new FileSelectionDescriptionDTO(null, ".*\\.bin$"));
+        basketService.attachFileFilters(basket, datasetId, new FileSelectionDescriptionDto(null, ".*\\.bin$"));
 
         // WHEN
         // Run order.
@@ -542,7 +542,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         basket = basketService.load(basket.getId());
         Long datasetId = basket.getDatasetSelections().first().getId();
         // get only file that ends with .bin
-        basketService.attachFileFilters(basket, datasetId, new FileSelectionDescriptionDTO(null, "RegexWithNoResult"));
+        basketService.attachFileFilters(basket, datasetId, new FileSelectionDescriptionDto(null, "RegexWithNoResult"));
 
         // WHEN
         // Run order.

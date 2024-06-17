@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 import fr.cnes.regards.modules.order.service.job.parameters.*;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.order.service.processing.correlation.BatchSuborderCorrelationIdentifier;
@@ -116,7 +116,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     @Override
     public void run() {
 
-        ProcessDatasetDescription processDatasetDescription = dsSel.getProcessDatasetDescription();
+        ProcessDatasetDescriptionDto processDatasetDescription = dsSel.getProcessDatasetDescription();
         PBatchRequest request = createBatchRequest(dsSel.getDatasetIpId(), processDatasetDescription);
         try {
             PBatchResponse batchResponse = createBatch(dsSel.getDsSelId(),
@@ -214,7 +214,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     }
 
     protected PBatchRequest createBatchRequest(String datasetIpid,
-                                               ProcessDatasetDescription processDatasetDescription) {
+                                               ProcessDatasetDescriptionDto processDatasetDescription) {
         FileSetStatistics stats = createBatchStats(datasetIpid);
         return new PBatchRequest(batchCorrelationId.repr(),
                                  processDesc.getProcessId(),
@@ -258,7 +258,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     }
 
     protected PBatchResponse createBatch(Long dsSelId,
-                                         ProcessDatasetDescription processDatasetDescription,
+                                         ProcessDatasetDescriptionDto processDatasetDescription,
                                          PBatchRequest request,
                                          IProcessingRestClient processingClient) {
         try {

@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
-import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 import fr.cnes.regards.modules.order.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderJobService;
@@ -145,7 +145,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                                                        OrderCounts orderCounts,
                                                        int subOrderDuration) throws ModuleException {
 
-        ProcessDatasetDescription processDatasetDesc = dsSel.getProcessDatasetDescription();
+        ProcessDatasetDescriptionDto processDatasetDesc = dsSel.getProcessDatasetDescription();
         String processIdStr = processDatasetDesc.getProcessBusinessId().toString();
         try {
             PProcessDTO processDto = getProcessByRest(owner, role, processIdStr);

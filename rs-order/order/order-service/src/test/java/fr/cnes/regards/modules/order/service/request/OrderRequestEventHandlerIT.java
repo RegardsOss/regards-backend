@@ -35,11 +35,11 @@ import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescription;
 import fr.cnes.regards.modules.order.domain.exception.ExceededBasketSizeException;
 import fr.cnes.regards.modules.order.dto.OrderErrorType;
+import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.service.IOrderService;
@@ -255,7 +255,8 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
                                          OrderRequestStatus.DENIED,
                                          "[FORBIDDEN] Unknown user : unknownUser at user: rejected value [null].",
                                          null,
-                                         OrderErrorType.FORBIDDEN, 1);
+                                         OrderErrorType.FORBIDDEN,
+                                         1);
 
         // check no mail was sent
         Mockito.verifyNoInteractions(emailClient);
@@ -434,7 +435,7 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         for (int i = 0; i < nbOrders; i++) {
             Basket basket = basketRepository.findByOwner(IOrderService.BASKET_OWNER_PREFIX + (firstOrderId + i));
             basket.getDatasetSelections().forEach(ds -> {
-                FileSelectionDescription filters = ds.getFileSelectionDescription();
+                FileSelectionDescriptionDto filters = ds.getFileSelectionDescription();
                 assertThat(filters).isNotNull();
                 assertThat(filters.getFileTypes()).containsExactlyInAnyOrder(DataTypeLight.RAWDATA);
                 assertThat(filters.getFileNamePattern()).isEqualTo(FILENAME_FILTER);
