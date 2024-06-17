@@ -92,7 +92,11 @@ public class UiConfigurationManager extends AbstractModuleManager<Void> {
             module.setId(null);
             configurations.add(ModuleConfigurationItem.build(module));
         }
-        return ModuleConfiguration.build(info, true, configurations);
+        // disable access microservice configuration resetBeforeImport default to true
+        // Currently, importing and exporting access microservice configuration is not convenient as the menu
+        // directly refers to the module id. If you import a module using its name, the menu won't be updated and
+        // menu configuration will still refer to the previous module id - so menu will break
+        return ModuleConfiguration.build(info, false, configurations);
     }
 
     @Override
