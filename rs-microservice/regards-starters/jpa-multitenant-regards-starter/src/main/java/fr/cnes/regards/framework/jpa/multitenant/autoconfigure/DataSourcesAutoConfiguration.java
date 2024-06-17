@@ -38,6 +38,7 @@ import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectio
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
 import fr.cnes.regards.framework.jpa.utils.*;
+import jakarta.persistence.Entity;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.cfg.AvailableSettings;
@@ -57,7 +58,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
-import jakarta.persistence.Entity;
 import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -217,6 +217,16 @@ public class DataSourcesAutoConfiguration {
     }
 
     /**
+     * Spring managed events for informing all microservice modules
+     *
+     * @return {@link MultitenantJpaEventPublisher}
+     */
+    @Bean
+    public MultitenantJpaEventPublisher localPublisher() {
+        return new MultitenantJpaEventPublisher();
+    }
+
+    /**
      * Init JPA event handler manager
      *
      * @param instanceSubscriber  to subscribe to tenant connection events
@@ -231,6 +241,7 @@ public class DataSourcesAutoConfiguration {
                                                                  @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME)
                                                                  Map<String, DataSource> dataSources,
                                                                  ILockingTaskExecutors lockingTaskExecutors,
+                                                                 MultitenantJpaEventPublisher localPublisher,
                                                                  LockService lockService) {
         return new MultitenantJpaEventHandler(microserviceName,
                                               dataSources,
@@ -239,20 +250,10 @@ public class DataSourcesAutoConfiguration {
                                               datasourceSchemaHelper,
                                               instanceSubscriber,
                                               multitenantResolver,
-                                              localPublisher(),
+                                              localPublisher,
                                               encryptionService,
                                               jpaProperties,
                                               lockService);
-    }
-
-    /**
-     * Spring managed events for informing all microservice modules
-     *
-     * @return {@link MultitenantJpaEventPublisher}
-     */
-    @Bean
-    public MultitenantJpaEventPublisher localPublisher() {
-        return new MultitenantJpaEventPublisher();
     }
 
     /**
