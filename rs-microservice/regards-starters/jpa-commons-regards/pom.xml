@@ -87,6 +87,10 @@
             <artifactId>jakarta.el-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
         </dependency>

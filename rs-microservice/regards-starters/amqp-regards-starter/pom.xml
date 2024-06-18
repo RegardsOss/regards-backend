@@ -58,6 +58,10 @@
             <artifactId>jakarta.el-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>amqp-regards</artifactId>
         </dependency>
