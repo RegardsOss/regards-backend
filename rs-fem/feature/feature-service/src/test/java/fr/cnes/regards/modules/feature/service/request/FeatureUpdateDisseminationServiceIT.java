@@ -28,8 +28,8 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.IFeatureRequestToSchedule;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
 import fr.cnes.regards.modules.feature.dto.event.in.DisseminationAckEvent;
@@ -334,8 +334,8 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
             return nbFeatureUpdateDisseminationRequestRemaining == 0;
         });
 
-        List<ILightFeatureUpdateRequest> scheduled = this.featureUpdateRequestRepository.findRequestsToSchedule(0,
-                                                                                                                properties.getMaxBulkSize());
+        List<IFeatureRequestToSchedule> scheduled = this.featureUpdateRequestRepository.findRequestsToSchedule(0,
+                                                                                                               properties.getMaxBulkSize());
         assertEquals(0, scheduled.size());
 
         featureWithDisseminationRepo.findAll().forEach(feature -> {

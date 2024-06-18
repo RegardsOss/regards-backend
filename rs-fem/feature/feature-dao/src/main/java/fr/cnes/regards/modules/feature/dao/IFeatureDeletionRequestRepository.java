@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.dao;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,7 +43,15 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
     Set<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
                                            @Param("now") OffsetDateTime offsetDateTime);
 
-    @Query("select fdr from FeatureDeletionRequest fdr where fdr.step in (:steps) and fdr.requestDate <= :now")
+    @Query("""
+           SELECT fdr FROM FeatureDeletionRequest fdr 
+           WHERE fdr.step IN (:steps) AND fdr.requestDate <= :now AND fdr.urn IN (:urns) 
+        """)
+    Set<FeatureDeletionRequest> findByUrnInAndStepIn(@Param("steps") Collection<FeatureRequestStep> steps,
+                                                     @Param("urns") Collection<FeatureUniformResourceName> urns,
+                                                     @Param("now") OffsetDateTime offsetDateTime);
+
+    @Query("   select fdr from FeatureDeletionRequest fdr where fdr.step in (:steps) and fdr.requestDate <= :now")
     Set<FeatureDeletionRequest> findByStepIn(@Param("steps") Collection<FeatureRequestStep> steps,
                                              @Param("now") OffsetDateTime offsetDateTime);
 

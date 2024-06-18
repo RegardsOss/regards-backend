@@ -73,7 +73,6 @@ public class FeatureUpdateJob extends AbstractFeatureJob {
 
         sample.stop(Timer.builder(this.getClass().getName()).tag("job", "run").register(registry));
         updatedFeatures.forEach(updatedFeature -> metrics.count(updatedFeature.getProviderId(),
-                                                                updatedFeature.getFeature().getUrn(),
                                                                 FeatureUpdateState.FEATURE_UPDATED));
         logger.info("[{}]{}{} update request(s) processed in {}ms",
                     jobInfoId,

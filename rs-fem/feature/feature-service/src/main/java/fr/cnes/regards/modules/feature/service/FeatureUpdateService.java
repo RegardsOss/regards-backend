@@ -35,10 +35,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.modules.feature.dao.*;
-import fr.cnes.regards.modules.feature.domain.AbstractFeatureEntity;
-import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
+import fr.cnes.regards.modules.feature.domain.*;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.DisseminationAckEvent;
@@ -209,7 +206,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         } else {
             // Manage granted request
             FeatureUpdateRequest request = createFeatureUpdateRequest(featureUpdateRequestEvt);
-            
+
             // Handle optional file mode
             request.setFileUpdateMode(FeatureFileUpdateMode.parse(featureUpdateRequestEvt.getFileUpdateMode()));
 
@@ -227,7 +224,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                                                         RequestState.GRANTED,
                                                         null));
             // Add to granted request collection
-            metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.UPDATE_REQUEST_GRANTED);
+            metrics.count(request.getProviderId(), FeatureUpdateState.UPDATE_REQUEST_GRANTED);
             grantedRequests.add(request);
             requestInfo.addGrantedRequest(request.getUrn(), request.getRequestId());
             // Update session properties
@@ -279,7 +276,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         } else {
             requestInfo.addDeniedRequest(request.getFeature().getUrn(), ErrorTranslator.getErrors(errors));
         }
-        metrics.count(featureId, null, FeatureUpdateState.UPDATE_REQUEST_DENIED);
+        metrics.count(featureId, FeatureUpdateState.UPDATE_REQUEST_DENIED);
         // Update session properties
         featureSessionNotifier.incrementCount(sessionInfo, FeatureSessionProperty.DENIED_UPDATE_REQUESTS);
     }
@@ -287,32 +284,32 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     @Override
     public int scheduleRequests() {
         long scheduleStart = System.currentTimeMillis();
-        List<ILightFeatureUpdateRequest> requestsToSchedule = this.featureUpdateRequestRepository.findRequestsToSchedule(
+        List<IFeatureRequestToSchedule> requestsToSchedule = this.featureUpdateRequestRepository.findRequestsToSchedule(
             this.properties.getDelayBeforeProcessing(),
             this.properties.getMaxBulkSize());
 
         if (!requestsToSchedule.isEmpty()) {
 
-            Optional<PriorityLevel> highestPriorityLevel = requestsToSchedule.stream()
-                                                                             .max((p1, p2) -> Math.max(p1.getPriority()
-                                                                                                         .getPriorityLevel(),
-                                                                                                       p2.getPriority()
-                                                                                                         .getPriorityLevel()))
-                                                                             .map(IAbstractRequest::getPriority);
+            Optional<Integer> highestPriorityLevel = requestsToSchedule.stream()
+                                                                       .max((p1, p2) -> Math.max(p1.getPriorityLevel(),
+                                                                                                 p2.getPriorityLevel()))
+                                                                       .map(IFeatureRequestToSchedule::getPriorityLevel);
 
             requestsToSchedule = filterUrnInDeletion(requestsToSchedule);
             if (!requestsToSchedule.isEmpty()) {
 
                 Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(
-                    requestsToSchedule.stream().map(ILightFeatureUpdateRequest::getUrn).collect(Collectors.toSet()));
+                    requestsToSchedule.stream()
+                                      .map(r -> FeatureUniformResourceName.fromString(r.getUrn()))
+                                      .collect(Collectors.toSet()));
 
                 // Compute request ids
                 Set<Long> requestIds = new HashSet<>();
                 requestsToSchedule.forEach(r -> {
                     requestIds.add(r.getId());
-                    metrics.count(r.getProviderId(), r.getUrn(), FeatureUpdateState.UPDATE_REQUEST_SCHEDULED);
+                    metrics.count(r.getProviderId(), FeatureUpdateState.UPDATE_REQUEST_SCHEDULED);
                     // Update session properties
-                    featureSessionNotifier.incrementCount(sessionInfoByUrn.get(r.getUrn()),
+                    featureSessionNotifier.incrementCount(sessionInfoByUrn.get(FeatureUniformResourceName.fromString(r.getUrn())),
                                                           FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
                 });
 
@@ -325,7 +322,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
                 // the job priority will be set according the priority of the first request to schedule
                 JobInfo jobInfo = new JobInfo(false,
-                                              highestPriorityLevel.orElse(PriorityLevel.NORMAL).getPriorityLevel(),
+                                              highestPriorityLevel.orElse(PriorityLevel.NORMAL.getPriorityLevel()),
                                               jobParameters,
                                               authResolver.getUser(),
                                               FeatureUpdateJob.class.getName());
@@ -348,20 +345,26 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
      * @param requestsToSchedule list to filter
      * @return filtered list
      */
-    private List<ILightFeatureUpdateRequest> filterUrnInDeletion(List<ILightFeatureUpdateRequest> requestsToSchedule) {
+    private List<IFeatureRequestToSchedule> filterUrnInDeletion(List<IFeatureRequestToSchedule> requestsToSchedule) {
         // request from db are stored into an unmodifiable collection so we need to create a new list to remove errors
-        List<ILightFeatureUpdateRequest> toSchedule = new ArrayList<>(requestsToSchedule);
+        List<IFeatureRequestToSchedule> toSchedule = new ArrayList<>(requestsToSchedule);
+        List<FeatureUniformResourceName> urnsToSchedule = requestsToSchedule.stream()
+                                                                            .filter(r -> r.getUrn() != null)
+                                                                            .map(r -> FeatureUniformResourceName.fromString(
+                                                                                r.getUrn()))
+                                                                            .toList();
         List<FeatureRequestStep> deletionSteps = Lists.newArrayList();
         deletionSteps.add(FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED);
         deletionSteps.add(FeatureRequestStep.LOCAL_SCHEDULED);
-        Set<FeatureUniformResourceName> deletionUrnScheduled = this.featureDeletionRequestRepository.findByStepIn(
+        Set<FeatureUniformResourceName> deletionUrnScheduled = this.featureDeletionRequestRepository.findByUrnInAndStepIn(
             deletionSteps,
+            urnsToSchedule,
             OffsetDateTime.now()).stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toSet());
-        Set<ILightFeatureUpdateRequest> errors = requestsToSchedule.stream()
-                                                                   .filter(request -> deletionUrnScheduled.contains(
-                                                                       request.getUrn()))
-                                                                   .collect(Collectors.toSet());
-        Set<Long> errorIds = errors.stream().map(IAbstractFeatureRequest::getId).collect(Collectors.toSet());
+        Set<IFeatureRequestToSchedule> errors = requestsToSchedule.stream()
+                                                                  .filter(request -> deletionUrnScheduled.contains(
+                                                                      FeatureUniformResourceName.fromString(request.getUrn())))
+                                                                  .collect(Collectors.toSet());
+        Set<Long> errorIds = errors.stream().map(IFeatureRequestToSchedule::getId).collect(Collectors.toSet());
         if (!errorIds.isEmpty()) {
             errors.forEach(r -> LOGGER.error(
                 "Update request {} on {} not scheduled cause a deletion request is processing on the same feature",
@@ -413,7 +416,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                                           request.getUrn(),
                                           request.getErrors());
                 // Register
-                metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.UPDATE_REQUEST_ERROR);
+                metrics.count(request.getProviderId(), FeatureUpdateState.UPDATE_REQUEST_ERROR);
             } else {
                 featureEntity.setLastUpdate(OffsetDateTime.now());
                 if (featureEntity.getFeature().getHistory() != null) {
@@ -469,7 +472,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                     handleAcknowledgedRecipient(request, featureEntity, disseminationInfos).ifPresent(
                         disseminationAckEvents::add);
                     // Register
-                    metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.FEATURE_MERGED);
+                    metrics.count(request.getProviderId(), FeatureUpdateState.FEATURE_MERGED);
                     // Add updated feature
                     featureEntities.add(featureEntity);
                 } catch (ModuleException e) {

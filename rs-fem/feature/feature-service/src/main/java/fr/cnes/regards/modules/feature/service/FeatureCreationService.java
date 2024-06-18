@@ -35,9 +35,13 @@ import fr.cnes.regards.modules.feature.dao.FeatureCreationRequestSpecificationsB
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.IFeatureRequestToSchedule;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
-import fr.cnes.regards.modules.feature.domain.request.*;
+import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
@@ -294,7 +298,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
                                                         urn,
                                                         RequestState.DENIED,
                                                         ErrorTranslator.getErrors(errors)));
-            metrics.count(featureId, null, FeatureCreationState.CREATION_REQUEST_DENIED);
+            metrics.count(featureId, FeatureCreationState.CREATION_REQUEST_DENIED);
             // Update session properties
             featureSessionNotifier.incrementCount(sessionOwner,
                                                   session,
@@ -328,7 +332,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
                                                         RequestState.GRANTED,
                                                         null));
             // Add to granted request collection
-            metrics.count(request.getProviderId(), null, FeatureCreationState.CREATION_REQUEST_GRANTED);
+            metrics.count(request.getProviderId(), FeatureCreationState.CREATION_REQUEST_GRANTED);
             grantedRequests.add(request);
             requestInfo.addGrantedRequest(request.getProviderId(), request.getRequestId());
             // Update session properties
@@ -365,23 +369,19 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         Set<JobParameter> jobParameters = Sets.newHashSet();
         Set<String> featureIdsScheduled = new HashSet<>();
         Set<Long> requestIds = new HashSet<>();
-        List<ILightFeatureCreationRequest> requestsToSchedule = new ArrayList<>();
 
-        List<ILightFeatureCreationRequest> dbRequests = featureCreationRequestRepo.findRequestsToSchedule(0,
-                                                                                                               properties.getMaxBulkSize());
-        Optional<PriorityLevel> highestPriorityLevel = dbRequests.stream()
-                                                                 .max((p1, p2) -> Math.max(p1.getPriority()
-                                                                                             .getPriorityLevel(),
-                                                                                           p2.getPriority()
-                                                                                             .getPriorityLevel()))
-                                                                 .map(IAbstractRequest::getPriority);
+        List<IFeatureRequestToSchedule> dbRequests = featureCreationRequestRepo.findRequestsToSchedule(0,
+                                                                                                       properties.getMaxBulkSize());
+        Optional<Integer> highestPriorityLevel = dbRequests.stream()
+                                                           .max((p1, p2) -> Math.max(p1.getPriorityLevel(),
+                                                                                     p2.getPriorityLevel()))
+                                                           .map(IFeatureRequestToSchedule::getPriorityLevel);
 
         if (!dbRequests.isEmpty()) {
-            for (ILightFeatureCreationRequest request : dbRequests) {
+            for (IFeatureRequestToSchedule request : dbRequests) {
                 // we will schedule only one feature request for a feature id
                 if (!featureIdsScheduled.contains(request.getProviderId())) {
-                    metrics.count(request.getProviderId(), null, FeatureCreationState.CREATION_REQUEST_SCHEDULED);
-                    requestsToSchedule.add(request);
+                    metrics.count(request.getProviderId(), FeatureCreationState.CREATION_REQUEST_SCHEDULED);
                     requestIds.add(request.getId());
                     featureIdsScheduled.add(request.getProviderId());
                     // Update session properties
@@ -394,15 +394,15 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
             // the job priority will be set according the priority of the highest request priority request
             JobInfo jobInfo = new JobInfo(false,
-                                          highestPriorityLevel.orElse(PriorityLevel.NORMAL).getPriorityLevel(),
+                                          highestPriorityLevel.orElse(PriorityLevel.NORMAL.getPriorityLevel()),
                                           jobParameters,
                                           authResolver.getUser(),
                                           FeatureCreationJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
 
-            LOGGER.trace("------------->>> {} creation requests scheduled in {} ms",
-                         requestsToSchedule.size(),
-                         System.currentTimeMillis() - scheduleStart);
+            LOGGER.warn("------------->>> {} creation requests scheduled in {} ms",
+                        requestIds.size(),
+                        System.currentTimeMillis() - scheduleStart);
 
             return requestIds.size();
         }
@@ -413,8 +413,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     @Override
     public Set<FeatureEntity> processRequests(Set<Long> requestIds, FeatureCreationJob featureCreationJob) {
 
-        Map<Boolean, List<FeatureCreationRequest>> requestByHasError = featureCreationRequestRepo.findAllById(
-                                                                                                     requestIds)
+        Map<Boolean, List<FeatureCreationRequest>> requestByHasError = featureCreationRequestRepo.findAllById(requestIds)
                                                                                                  .stream()
                                                                                                  .collect(Collectors.partitioningBy(
                                                                                                      request -> FeatureRequestStep.REMOTE_STORAGE_ERROR.equals(
@@ -591,9 +590,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         if (featureCreationJob != null) {
             featureCreationJob.advanceCompletion();
         }
-        metrics.count(featureCreationRequest.getProviderId(),
-                      featureEntity.getUrn(),
-                      FeatureCreationState.FEATURE_INITIALIZED);
+        metrics.count(featureCreationRequest.getProviderId(), FeatureCreationState.FEATURE_INITIALIZED);
 
         return featureEntity;
     }
