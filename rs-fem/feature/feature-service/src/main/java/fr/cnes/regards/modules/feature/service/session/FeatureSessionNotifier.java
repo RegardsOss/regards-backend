@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.IFeatureRequestToSchedule;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
@@ -53,8 +54,8 @@ public class FeatureSessionNotifier {
         }
     }
 
-    public void incrementCount(ILightFeatureCreationRequest request, FeatureSessionProperty property) {
-        incrementCount(request.getMetadata().getSessionOwner(), request.getMetadata().getSession(), property);
+    public void incrementCount(IFeatureRequestToSchedule request, FeatureSessionProperty property) {
+        incrementCount(request.getSessionOwner(), request.getSession(), property);
     }
 
     public void incrementCount(FeatureCreationRequest request, FeatureSessionProperty property) {

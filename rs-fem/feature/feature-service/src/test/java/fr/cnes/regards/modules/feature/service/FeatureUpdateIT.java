@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationReposi
 import fr.cnes.regards.modules.feature.domain.AbstractFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.IFeatureRequestToSchedule;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
@@ -856,12 +857,13 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
             mockNotificationSuccess();
         }
 
-        List<ILightFeatureUpdateRequest> scheduled = featureUpdateRequestRepo.findRequestsToSchedule(0,
-                                                                                                     properties.getMaxBulkSize());
+        List<IFeatureRequestToSchedule> scheduled = featureUpdateRequestRepo.findRequestsToSchedule(0,
+                                                                                                    properties.getMaxBulkSize());
         // half of scheduled should be with priority HIGH
         assertEquals(nbMinimalExpectedRequests, scheduled.size());
         // check that remaining FeatureUpdateRequests doesn't have high priority
-        assertFalse(scheduled.stream().anyMatch(request -> PriorityLevel.HIGH.equals(request.getPriority())));
+        assertFalse(scheduled.stream()
+                             .anyMatch(request -> PriorityLevel.HIGH.getPriorityLevel() == request.getPriorityLevel()));
 
         // Stop the test with the job running, which helps the test engine to kill it safely
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {

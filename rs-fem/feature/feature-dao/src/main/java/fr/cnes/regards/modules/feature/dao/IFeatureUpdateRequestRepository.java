@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
+import fr.cnes.regards.modules.feature.domain.IFeatureRequestToSchedule;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
@@ -54,59 +55,72 @@ public interface IFeatureUpdateRequestRepository extends IAbstractFeatureRequest
     /**
      * Get a limited number of {@link ILightFeatureUpdateRequest} ready to be scheduled ordered by priority and date.
      * {@link ILightFeatureUpdateRequest} with a {@link Feature} urn not assigned to an other {@link ILightFeatureUpdateRequest}
-     * or to an existing {@link ILightFeatureCreationRequest} and with it step set to LOCAL_SCHEDULED an ordered by
+     * or to an existing {@link IFeatureRequestToSchedule} and with it step set to LOCAL_SCHEDULED an ordered by
      * priority and date.
      *
      * @param size           maximum number of request to return
      * @param delayInSeconds delay in seconds from now of returned requests
      */
-    default List<ILightFeatureUpdateRequest> findRequestsToSchedule(int delayInSeconds, int size) {
+    default List<IFeatureRequestToSchedule> findRequestsToSchedule(int delayInSeconds, int size) {
         OffsetDateTime now = OffsetDateTime.now();
-        return doFindRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED,
+        return doFindRequestsToSchedule(FeatureRequestStep.LOCAL_DELAYED.name(),
                                         now,
-                                        List.of(FeatureRequestStep.LOCAL_SCHEDULED,
-                                                FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
-                                                FeatureRequestStep.REMOTE_STORAGE_REQUESTED,
-                                                FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED),
+                                        List.of(FeatureRequestStep.LOCAL_SCHEDULED.name(),
+                                                FeatureRequestStep.LOCAL_TO_BE_NOTIFIED.name(),
+                                                FeatureRequestStep.REMOTE_STORAGE_REQUESTED.name(),
+                                                FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED.name()),
                                         now.minusSeconds(delayInSeconds),
                                         Pageable.ofSize(size));
     }
 
-    @Query("""
-        SELECT
-          request.providerId as providerId,
-          request.urn as urn,
-          request.id as id,
-          request.groupId as groupId,
-          request.errors as errors,
-          request.requestOwner as requestOwner,
-          request.state as state,
-          request.priority as priority,
-          request.step as step,
-          request.registrationDate as registrationDate,
-          request.requestDate as requestDate,
-          request.requestId as requestId
-        FROM FeatureUpdateRequest request
-        WHERE NOT EXISTS (
-            SELECT scheduledRequest.urn
-            FROM FeatureUpdateRequest scheduledRequest
-            WHERE scheduledRequest.step in (:blocking_steps)
-            AND scheduledRequest.urn = request.urn
+    /**
+     * Native query to retrieve update requests information with :
+     * - No other update request with the same urn in running states
+     * - No other creation request with the same urn
+     * Those verification are made to avoid processing two update request on the same product at the same time
+     * or to avoid processing an update request on product under creation.
+     */
+    @Query(value = """
+        SELECT request.id AS id,
+               request.provider_id AS providerId,
+               request.urn AS urn,
+               request.priority AS priorityLevel,
+               request.session_name AS session,
+                request.session_owner AS sessionOwner
+        FROM (
+            SELECT request2.id, 
+                   request2.provider_id,
+                   request2.priority,
+                   request2.urn,
+                   request2.session_name,
+                   request2.session_owner
+             FROM t_feature_request request2
+             WHERE request2.step = :step
+             AND request2.request_type = 'UPDATE'
+             AND request2.request_date < :now
+             AND request2.registration_date <= :delay
+             ORDER BY request2.priority desc, request2.request_date
+        ) request
+        WHERE
+          NOT EXISTS(
+            SELECT 1 FROM t_feature_request req
+            where
+              req.step in (:blocking_steps)
+              AND req.urn = request.urn
+              AND req.request_type = 'UPDATE'
+            LIMIT 1
+          )
+          AND NOT EXISTS(
+            SELECT 1 FROM t_feature_request req
+            WHERE
+              req.urn = request.urn
+              AND req.request_type = 'CREATION'
+            LIMIT 1
         )
-        AND NOT EXISTS (
-            SELECT urn
-            FROM FeatureCreationRequest
-            WHERE urn = request.urn
-        )
-        AND request.step = :step
-        AND request.registrationDate <= :delay
-        AND request.requestDate <= :now
-        ORDER BY request.priority desc, request.requestDate
-        """)
-    List<ILightFeatureUpdateRequest> doFindRequestsToSchedule(@Param("step") FeatureRequestStep step,
-                                                              @Param("now") OffsetDateTime now,
-                                                              @Param("blocking_steps")
-                                                              List<FeatureRequestStep> blockingSteps,
-                                                              @Param("delay") OffsetDateTime delay,
-                                                              Pageable pageLimit);
+        """, nativeQuery = true)
+    List<IFeatureRequestToSchedule> doFindRequestsToSchedule(@Param("step") String step,
+                                                             @Param("now") OffsetDateTime now,
+                                                             @Param("blocking_steps") List<String> blockingSteps,
+                                                             @Param("delay") OffsetDateTime delay,
+                                                             Pageable pageLimit);
 }

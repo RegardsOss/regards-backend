@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -136,14 +135,14 @@ public class FeatureMetrics implements InitializingBean {
         counters.put(name, Counter.builder(name).tags(tags).register(registry));
     }
 
-    public void count(String providerId, FeatureUniformResourceName urn, FeatureCreationState state) {
+    public void count(String providerId, FeatureCreationState state) {
         if (properties.isMetricsEnabled()) {
             LOGGER.debug(METRICS_MARKER, METRICS_FORMAT, providerId, state);
             counters.get(state.getName()).increment();
         }
     }
 
-    public void count(String providerId, FeatureUniformResourceName urn, FeatureUpdateState state) {
+    public void count(String providerId, FeatureUpdateState state) {
         if (properties.isMetricsEnabled()) {
             LOGGER.debug(METRICS_MARKER, METRICS_FORMAT, providerId, state);
         }

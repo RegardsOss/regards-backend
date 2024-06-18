@@ -68,7 +68,7 @@ public class FeatureCreationJob extends AbstractFeatureJob {
         Timer.Sample sample = Timer.start(registry);
         Set<FeatureEntity> created = featureService.processRequests(featureCreationRequestIds, this);
         sample.stop(Timer.builder(this.getClass().getName()).tag("job", "run").register(registry));
-        created.forEach(e -> metrics.count(e.getProviderId(), e.getUrn(), FeatureCreationState.FEATURE_CREATED));
+        created.forEach(e -> metrics.count(e.getProviderId(), FeatureCreationState.FEATURE_CREATED));
         logger.info("[{}]{}{} creation request(s) processed in {} ms",
                     jobInfoId,
                     INFO_TAB,
