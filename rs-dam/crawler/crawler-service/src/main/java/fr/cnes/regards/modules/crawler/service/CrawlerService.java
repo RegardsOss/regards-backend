@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -202,10 +202,13 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
                 if (!datasetsToUpdate.isEmpty()) {
                     sendMessage("Start updating datasets associated to datasource...", datasourceIngestionId);
                     try {
+                        // Update entities associated to dataset for each entity updated previously,
+                        // So search for entities with last_update > ingestionStart.
+                        // And for each updated entity set last_update = OffsetDateTime.now()
                         entityIndexerService.updateDatasets(tenant,
                                                             datasetsToUpdate,
-                                                            lastUpdateDate,
                                                             ingestionStart,
+                                                            OffsetDateTime.now(),
                                                             true,
                                                             datasourceIngestionId);
                     } catch (ModuleException e) {
