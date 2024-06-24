@@ -22,6 +22,8 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,6 +31,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * JPA Repository to handle access to {@link FeatureUpdateDisseminationRequest} entities.
@@ -40,24 +44,56 @@ public interface IFeatureUpdateDisseminationRequestRepository
 
     /**
      * @return a page of {@link FeatureUpdateDisseminationRequest} that updates {@link FeatureEntity} that
-     * are not concerned by an existing {@link FeatureUpdateRequest} request (except request in error)
+     * are not concerned by an existing {@link FeatureUpdateRequest} running request
      */
+    default Page<FeatureUpdateDisseminationRequest> getFeatureUpdateDisseminationRequestsProcessable(OffsetDateTime now,
+                                                                                                     FeatureUpdateDisseminationInfoType type,
+                                                                                                     Pageable pageable) {
+        return doGetFeatureUpdateDisseminationRequestsProcessable(now,
+                                                                  type.ordinal(),
+                                                                  Arrays.stream(FeatureRequestStep.values())
+                                                                        .filter(FeatureRequestStep::isProcessing)
+                                                                        .map(Enum::name)
+                                                                        .toList(),
+                                                                  RequestState.GRANTED.name(),
+                                                                  pageable);
+    }
+
     @Query(value = """
-        SELECT fud FROM FeatureUpdateDisseminationRequest fud
-         WHERE fud.updateType = :type
-         AND fud.urn NOT IN
-            (SELECT DISTINCT ur.urn
-             FROM FeatureUpdateRequest ur
-             WHERE ur.state != 'ERROR')
-         AND fud.creationDate <= :now
-         ORDER BY fud.creationDate""", countQuery = """
-        SELECT count(fud.id) FROM FeatureUpdateDisseminationRequest fud
-         WHERE fud.updateType = :type
-         AND fud.urn NOT IN
-            (SELECT DISTINCT ur.urn
-             FROM FeatureUpdateRequest ur
-             WHERE NOT ur.state != 'ERROR')
-         AND fud.creationDate <= :now""")
-    Page<FeatureUpdateDisseminationRequest> getFeatureUpdateDisseminationRequestsProcessable(
-        @Param("now") OffsetDateTime now, @Param("type") FeatureUpdateDisseminationInfoType type, Pageable pageable);
+        SELECT id as id, 
+               feature_urn as feature_urn,
+               recipient_label as recipient_label,
+               creation_date as creation_date,
+               update_type as update_type,
+               ack_required as ack_required,
+               blocking_required as blocking_required
+        FROM t_feature_update_dissemination fud
+        WHERE fud.update_type = :type
+        AND NOT EXISTS(
+             SELECT 1 FROM t_feature_request req
+             WHERE req.request_type = 'UPDATE'
+             AND req.state = :state
+             AND req.step in (:running_steps)
+             AND fud.feature_urn = req.urn
+             LIMIT 1
+             )
+        AND fud.creation_date <= :now
+        ORDER BY fud.creation_date""", countQuery = """
+        SELECT count(fud.id) FROM t_feature_update_dissemination fud
+         WHERE fud.update_type = :type
+         AND NOT EXISTS(
+             SELECT 1 FROM t_feature_request req
+             WHERE
+             req.request_type = 'UPDATE'
+             AND req.state = :state
+             AND req.step in (:running_steps)
+             AND fud.feature_urn = req.urn
+             LIMIT 1)
+         AND fud.creation_date <= :now""", nativeQuery = true)
+    Page<FeatureUpdateDisseminationRequest> doGetFeatureUpdateDisseminationRequestsProcessable(
+        @Param("now") OffsetDateTime now,
+        @Param("type") int type,
+        @Param("running_steps") List<String> runningSteps,
+        @Param("state") String state,
+        Pageable pageable);
 }

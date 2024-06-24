@@ -1,0 +1,1 @@
+DROP INDEX idx_step_property_update_request_source;

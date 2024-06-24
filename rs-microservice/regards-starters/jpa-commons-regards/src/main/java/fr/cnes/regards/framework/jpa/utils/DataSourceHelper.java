@@ -142,10 +142,15 @@ public final class DataSourceHelper {
             config.setMinimumIdle(minPoolSize);
             config.setMaximumPoolSize(maxPoolSize);
             config.setPoolName(String.format("Hikari-Pool-%s", tenant));
+            // Maximum time in milliseconds that HikariCP will wait for a connection from the pool before throwing an
+            // exception
             // Default value is 30seconds (-5 for validation) see HikariConfig#CONNECTION_TIMEOUT_MS
             config.setConnectionTimeout(CONNECTION_TIMEOUT_MS);
+            // maximum amount of time that a connection can sit idle in the pool before being closed
             // Default value is 10 minutes see HikariConfig#CONNECTION_IDLE_TIMEOUT_MS
             config.setIdleTimeout(CONNECTION_IDLE_TIMEOUT_MS);
+            // Maximum lifetime of a connection in the pool, whether it is in use or not.
+            // This helps to periodically renew connections to avoid issues with connections becoming stale or corrupted over time.
             // Docker Swarm / Kube workaround: https://github.com/brettwooldridge/HikariCP/issues/1237
             // maxLifetime should be 10mins to avoid stale postgres connections
             config.setMaxLifetime(CONNECTION_MAX_LIFE_TIME_MS);
