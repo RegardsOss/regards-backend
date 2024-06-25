@@ -87,6 +87,10 @@
             <groupId>fr.cnes.regards.modules.workermanager</groupId>
             <artifactId>worker-manager-amqp</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>urn-regards</artifactId>
+        </dependency>
         <!-- This is needed for plugins only for now, but file-access will use it too at some point-->
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
@@ -95,12 +99,8 @@
         <!-- Test dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-test</artifactId>
+            <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>urn-regards</artifactId>
         </dependency>
     </dependencies>
 </project>

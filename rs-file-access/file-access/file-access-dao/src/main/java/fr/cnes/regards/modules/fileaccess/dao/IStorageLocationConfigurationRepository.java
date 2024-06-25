@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.fileaccess.dao;
 
 import fr.cnes.regards.modules.fileaccess.domain.StorageLocationConfiguration;
-import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -30,16 +29,6 @@ import java.util.Optional;
  * @author Thibaud Michaudel
  */
 public interface IStorageLocationConfigurationRepository extends JpaRepository<StorageLocationConfiguration, Long> {
-
-    /**
-     * We want the {@link StorageLocationConfiguration} with the lowest priority, which means the highest value of the
-     * attribute priority.
-     * To do so, we order by descending priority and take the first one
-     *
-     * @param storageType IStorageLocation type
-     * @return the less prioritized
-     */
-    StorageLocationConfiguration findFirstByStorageTypeOrderByPriorityDesc(StorageType storageType);
 
     Optional<StorageLocationConfiguration> findByName(String name);
 

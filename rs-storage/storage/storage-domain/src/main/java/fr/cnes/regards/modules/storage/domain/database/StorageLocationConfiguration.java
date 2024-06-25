@@ -59,7 +59,7 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
     @ConfigIgnore
     private Long id;
 
-    @Column(length = 128)
+    @Column(length = 128, unique = true)
     @NotNull
     private String name;
 

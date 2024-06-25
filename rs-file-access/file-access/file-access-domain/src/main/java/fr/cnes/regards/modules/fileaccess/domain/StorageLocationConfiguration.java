@@ -40,17 +40,10 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "t_storage_location_conf",
-       uniqueConstraints = { @UniqueConstraint(name = "uk_storage_loc_name", columnNames = { "name" }),
-                             @UniqueConstraint(name = "uk_storage_loc_conf_type_priority",
-                                               columnNames = { StorageLocationConfiguration.STORAGE_TYPE_COLUMN_NAME,
-                                                               StorageLocationConfiguration.PRIORITY_COLUMN_NAME }) })
-public class StorageLocationConfiguration implements Comparable<StorageLocationConfiguration> {
+       uniqueConstraints = { @UniqueConstraint(name = "uk_storage_loc_name", columnNames = { "name" }) })
+public class StorageLocationConfiguration {
 
     public static final String STORAGE_TYPE_COLUMN_NAME = "storage_type";
-
-    public static final String PRIORITY_COLUMN_NAME = "priority";
-
-    public static final long HIGHEST_PRIORITY = 0L;
 
     @Id
     @SequenceGenerator(name = "storageLocationConfSequence",
@@ -67,16 +60,12 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
     @OneToOne(optional = true)
     @JoinColumn(nullable = true,
                 name = "plugin_conf_id",
-                foreignKey = @ForeignKey(name = "fk_prioritized_storage_plugin_conf"))
+                foreignKey = @ForeignKey(name = "fk_storage_plugin_conf"))
     private PluginConfiguration pluginConfiguration;
 
     @Enumerated(EnumType.STRING)
     @Column(name = STORAGE_TYPE_COLUMN_NAME)
     private StorageType storageType = StorageType.OFFLINE;
-
-    @Min(HIGHEST_PRIORITY)
-    @Column(name = PRIORITY_COLUMN_NAME)
-    private Long priority;
 
     @Column(name = "allocated_size_ko")
     private Long allocatedSizeInKo = 0L;
@@ -100,20 +89,24 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
         }
     }
 
+    public static StorageLocationConfiguration fromDto(StorageLocationConfigurationDto configuration) {
+        StorageLocationConfiguration storageLocationConfiguration = new StorageLocationConfiguration(configuration.getName(),
+                                                                                                     configuration.getPluginConfiguration()
+                                                                                                     != null ?
+                                                                                                         PluginConfiguration.fromDto(
+                                                                                                             configuration.getPluginConfiguration()) :
+                                                                                                         null,
+                                                                                                     configuration.getAllocatedSizeInKo());
+        storageLocationConfiguration.setStorageType(configuration.getStorageType());
+        return storageLocationConfiguration;
+    }
+
     public PluginConfiguration getPluginConfiguration() {
         return pluginConfiguration;
     }
 
     public void setPluginConfiguration(PluginConfiguration dataStorageConfiguration) {
         this.pluginConfiguration = dataStorageConfiguration;
-    }
-
-    public Long getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Long priority) {
-        this.priority = priority;
     }
 
     public Long getId() {
@@ -155,50 +148,23 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
 
         StorageLocationConfiguration that = (StorageLocationConfiguration) o;
 
-        return pluginConfiguration != null ?
-            pluginConfiguration.equals(that.pluginConfiguration) :
-            that.pluginConfiguration == null;
+        return Objects.equals(pluginConfiguration, that.pluginConfiguration);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, pluginConfiguration, storageType, priority, allocatedSizeInKo);
-    }
-
-    @Override
-    public int compareTo(StorageLocationConfiguration o) {
-        // we implement a strict order on priorities so just to keep coherence with equals,
-        // if we compare to ourselves compareTo returns 0
-        if (this.equals(o)) {
-            return 0;
-        }
-        if (this.priority > o.priority) {
-            return 1;
-        } else {
-            return -1;
-        }
+        return Objects.hash(id, name, pluginConfiguration, storageType, allocatedSizeInKo);
     }
 
     public StorageLocationConfigurationDto toDto() {
+        // FIXME: the priority attribute is not migrated in rs-file-access. However, to keep backwards compatibility
+        //  (until the migration of rs-storage is completed) the priority is initialized to 0 by default.
         return new StorageLocationConfigurationDto(id,
                                                    name,
                                                    pluginConfiguration != null ? pluginConfiguration.toDto() : null,
                                                    storageType,
-                                                   priority,
+                                                   0L,
                                                    allocatedSizeInKo);
-    }
-
-    public static StorageLocationConfiguration fromDto(StorageLocationConfigurationDto configuration) {
-        StorageLocationConfiguration storageLocationConfiguration = new StorageLocationConfiguration(configuration.getName(),
-                                                                                                     configuration.getPluginConfiguration()
-                                                                                                     != null ?
-                                                                                                         PluginConfiguration.fromDto(
-                                                                                                             configuration.getPluginConfiguration()) :
-                                                                                                         null,
-                                                                                                     configuration.getAllocatedSizeInKo());
-        storageLocationConfiguration.setStorageType(configuration.getStorageType());
-        storageLocationConfiguration.setPriority(configuration.getPriority());
-        return storageLocationConfiguration;
     }
 
 }
