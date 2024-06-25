@@ -39,6 +39,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IFeatureRequestToSchedule;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.*;
+import fr.cnes.regards.modules.feature.dto.event.in.DisseminationAckEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -121,6 +122,106 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
     public void doInit() {
         // initialize notification
         this.isToNotify = initDefaultNotificationSettings();
+    }
+
+    @Test
+    @Purpose("Check that an update request is blocked by a processing dissemination info update request")
+    public void test_block_update_during_dissemination_update() {
+
+        // ---------------
+        // ---- GIVEN ----
+        // ---------------
+        int nbFeatures = 1;
+        // STEP 1 : create nbFeatures
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbFeatures, true, false);
+        featureCreationService.registerRequests(events);
+        featureCreationService.scheduleRequests();
+        Awaitility.await().atMost(2 * nbFeatures, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureRepo.count() == nbFeatures;
+        });
+        mockStorageHelper.mockFeatureCreationStorageSuccess();
+        mockNotificationSuccess();
+
+        // STEP 2 : Init dissemination put request
+        DisseminationAckEvent event = new DisseminationAckEvent(featureRepo.findAll().get(0).getUrn().toString(),
+                                                                "test" + "-diss");
+        featureUpdateDisseminationService.saveAckRequests(List.of(event));
+
+        // STEP 3 : create update request to simulate response for dissemination with ack required
+        List<FeatureUpdateRequest> featureUpdateRequests = featureRepo.findAll().stream().map(featureEntity -> {
+            FeatureUpdateRequest featureUpdateRequest = FeatureUpdateRequest.build(UUID.randomUUID().toString(),
+                                                                                   owner,
+                                                                                   OffsetDateTime.now(),
+                                                                                   RequestState.GRANTED,
+                                                                                   null,
+                                                                                   featureEntity.getFeature(),
+                                                                                   PriorityLevel.NORMAL,
+                                                                                   FeatureRequestStep.LOCAL_DELAYED);
+            featureUpdateRequest.setAcknowledgedRecipient("new-recipient");
+            return featureUpdateRequest;
+        }).toList();
+        featureUpdateRequestRepo.saveAll(featureUpdateRequests);
+        Assert.assertEquals(0, featureUpdateService.scheduleRequests());
+    }
+
+    @Test
+    @Purpose("Check that a dissemination info update is blocked by a processing update request")
+    public void test_block_dissemination_during_update() {
+
+        // ---------------
+        // ---- GIVEN ----
+        // ---------------
+        int nbFeatures = 1;
+        // STEP 1 : create nbFeatures
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbFeatures, true, false);
+        featureCreationService.registerRequests(events);
+        featureCreationService.scheduleRequests();
+        Awaitility.await().atMost(2 * nbFeatures, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureRepo.count() == nbFeatures;
+        });
+        mockStorageHelper.mockFeatureCreationStorageSuccess();
+        mockNotificationSuccess();
+
+        // STEP 2 : create update request to simulate response for dissemination with ack required
+        List<FeatureUpdateRequest> featureUpdateRequests = featureRepo.findAll().stream().map(featureEntity -> {
+            FeatureUpdateRequest featureUpdateRequest = FeatureUpdateRequest.build(UUID.randomUUID().toString(),
+                                                                                   owner,
+                                                                                   OffsetDateTime.now(),
+                                                                                   RequestState.GRANTED,
+                                                                                   null,
+                                                                                   featureEntity.getFeature(),
+                                                                                   PriorityLevel.NORMAL,
+                                                                                   FeatureRequestStep.REMOTE_STORAGE_REQUESTED);
+            featureUpdateRequest.setAcknowledgedRecipient("new-recipient");
+            return featureUpdateRequest;
+        }).toList();
+        featureUpdateRequestRepo.saveAll(featureUpdateRequests);
+
+        // STEP 3 : Simulate a dissemnination info update on the same produt while update is runnin
+        // (step=LOCAL_SCHEDULED)
+        DisseminationAckEvent event = new DisseminationAckEvent(featureRepo.findAll().get(0).getUrn().toString(),
+                                                                "test" + "-diss");
+        featureUpdateDisseminationService.saveAckRequests(List.of(event));
+
+        // THEN No dissemination request should be handled as the update request is still running
+        Assert.assertEquals(0, featureUpdateDisseminationService.handleRequests());
+
+        // Try with all other running step of a update request
+        Arrays.stream(FeatureRequestStep.values()).filter(step -> step.isProcessing()).forEach(step -> {
+            FeatureUpdateRequest featureToUpdate = featureUpdateRequestRepo.findAll().get(0);
+            featureToUpdate.setStep(step);
+            featureUpdateRequestRepo.save(featureToUpdate);
+            Assert.assertEquals(0, featureUpdateDisseminationService.handleRequests());
+        });
+
+        // When try with a not running step
+        FeatureUpdateRequest featureToUpdate = featureUpdateRequestRepo.findAll().get(0);
+        featureToUpdate.setStep(FeatureRequestStep.LOCAL_DELAYED);
+        featureUpdateRequestRepo.save(featureToUpdate);
+        Assert.assertEquals(1, featureUpdateDisseminationService.handleRequests());
+
     }
 
     @Test

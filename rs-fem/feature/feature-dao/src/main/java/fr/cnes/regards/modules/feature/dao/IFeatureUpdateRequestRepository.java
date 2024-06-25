@@ -116,11 +116,17 @@ public interface IFeatureUpdateRequestRepository extends IAbstractFeatureRequest
               req.urn = request.urn
               AND req.request_type = 'CREATION'
             LIMIT 1
-        )
+          )
+          AND NOT EXISTS(
+            SELECT 1 FROM t_feature_update_dissemination diss
+            WHERE diss.feature_urn = request.urn
+            LIMIT 1
+           )
         """, nativeQuery = true)
     List<IFeatureRequestToSchedule> doFindRequestsToSchedule(@Param("step") String step,
                                                              @Param("now") OffsetDateTime now,
                                                              @Param("blocking_steps") List<String> blockingSteps,
                                                              @Param("delay") OffsetDateTime delay,
                                                              Pageable pageLimit);
+
 }
