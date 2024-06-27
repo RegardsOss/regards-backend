@@ -53,7 +53,7 @@
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven-deploy.skip>true</maven-deploy.skip>
-        <regards.version>1.16.0</regards.version>
+        <regards.version>1.17.0-SNAPSHOT</regards.version>
         <revision>${regards.version}</revision>
 
         <!-- COTS dependencies needed by vulnerabilities (should be removed when dependency is resolved with safe
