@@ -47,7 +47,8 @@ public class AccountUnlockToken {
      * Id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @SequenceGenerator(name = "accountunlockseq", initialValue = 1, sequenceName = "seq_account_unlock")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accountunlockseq")
     private Long id;
 
     /**
