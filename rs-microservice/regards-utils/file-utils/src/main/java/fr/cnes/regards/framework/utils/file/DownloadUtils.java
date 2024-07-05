@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.s3.domain.StorageCommandResult;
 import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import fr.cnes.regards.framework.s3.utils.S3ServerUtils;
+import jakarta.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
-import jakarta.annotation.Nullable;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -180,20 +180,16 @@ public final class DownloadUtils {
     /**
      * Get an InputStream on a source URL with no proxy.
      *
-     * @param source               the source URL
-     * @param knownS3Servers       the list of known s3 servers for s3 download, can be null
-     * @param downloadTmpConfigDto configuration to indicate if the file should be downloaded locally before
-     *                             being copied to its final destination.
+     * @param source            the source URL
+     * @param knownS3Servers    the list of known s3 servers for s3 download, can be null
+     * @param downloadTmpConfig configuration to indicate if the file should be downloaded locally before
+     *                          being copied to its final destination.
      * @return an InputStream of the source or the local file
      */
     public static InputStream getInputStream(URL source,
                                              List<S3Server> knownS3Servers,
-                                             DownloadTmpConfigDto downloadTmpConfigDto) throws IOException {
-        return getInputStreamThroughProxy(source,
-                                          Proxy.NO_PROXY,
-                                          Sets.newHashSet(),
-                                          knownS3Servers,
-                                          downloadTmpConfigDto);
+                                             DownloadTmpConfigDto downloadTmpConfig) throws IOException {
+        return getInputStreamThroughProxy(source, Proxy.NO_PROXY, Sets.newHashSet(), knownS3Servers, downloadTmpConfig);
     }
 
     /**
@@ -341,8 +337,8 @@ public final class DownloadUtils {
                                                          Proxy proxy,
                                                          Collection<String> nonProxyHosts,
                                                          List<S3Server> knownS3Servers,
-                                                         DownloadTmpConfigDto downloadTmpConfigDto) throws IOException {
-        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, null, knownS3Servers, downloadTmpConfigDto);
+                                                         DownloadTmpConfigDto downloadTmpConfig) throws IOException {
+        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, null, knownS3Servers, downloadTmpConfig);
     }
 
     public static InputStream getInputStreamThroughProxy(URL source,
@@ -363,7 +359,7 @@ public final class DownloadUtils {
                                                          Collection<String> nonProxyHosts,
                                                          Integer timeoutInMS,
                                                          List<S3Server> knownS3Servers,
-                                                         @Nullable DownloadTmpConfigDto downloadTmpConfigDto)
+                                                         @Nullable DownloadTmpConfigDto downloadTmpConfig)
         throws IOException {
         Optional<S3Server> s3Server = S3ServerUtils.isUrlFromS3Server(source, knownS3Servers);
         if (s3Server.isPresent()) {
@@ -374,9 +370,9 @@ public final class DownloadUtils {
             InputStream s3InputStream = getInputStreamFromS3Source(keyAndStorage.key(),
                                                                    keyAndStorage.storageConfig(),
                                                                    cmdId);
-            if (downloadTmpConfigDto != null && (downloadTmpConfigDto.forceTmpFile()
-                                                 || contentLength > downloadTmpConfigDto.maxContentLength())) {
-                return getInputStreamUsingTmpFile(downloadTmpConfigDto, s3InputStream);
+            if (downloadTmpConfig != null && (downloadTmpConfig.forceTmpFile()
+                                              || contentLength > downloadTmpConfig.maxContentLength())) {
+                return getInputStreamUsingTmpFile(downloadTmpConfig, s3InputStream);
             } else {
                 return s3InputStream;
             }
@@ -385,7 +381,7 @@ public final class DownloadUtils {
                                                                proxy,
                                                                nonProxyHosts,
                                                                timeoutInMS,
-                                                               downloadTmpConfigDto);
+                                                               downloadTmpConfig);
         }
 
     }
@@ -561,10 +557,12 @@ public final class DownloadUtils {
     /**
      * Get an InputStream of the file to download
      *
-     * @param source        the file to download
-     * @param proxy         the proxy to use if needed
-     * @param nonProxyHosts the list of hosts for which the proxy is not needed
-     * @param timeoutInMS   the time the process will wait while trying to connect, can be null
+     * @param source            the file to download
+     * @param proxy             the proxy to use if needed
+     * @param nonProxyHosts     the list of hosts for which the proxy is not needed
+     * @param timeoutInMS       the time the process will wait while trying to connect, can be null
+     * @param downloadTmpConfig configuration to indicate if the file should be downloaded locally before
+     *                          being copied to its final destination.
      * @return an InputStream of the file
      * @throws IOException when there is an error during connection opening
      */
@@ -572,28 +570,29 @@ public final class DownloadUtils {
                                                                            Proxy proxy,
                                                                            Collection<String> nonProxyHosts,
                                                                            Integer timeoutInMS,
-                                                                           DownloadTmpConfigDto downloadTmpConfigDto)
+                                                                           @Nullable
+                                                                           DownloadTmpConfigDto downloadTmpConfig)
         throws IOException {
-        URLConnection connection = getConnectionThroughProxy(source, proxy, nonProxyHosts, timeoutInMS);
-        connection.connect();
+        URLConnection urlConnection = getConnectionThroughProxy(source, proxy, nonProxyHosts, timeoutInMS);
+        urlConnection.connect();
 
         // Handle specific case of HTTP URLs.
-        if (connection instanceof HttpURLConnection conn) {
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                conn.disconnect();
+        if (urlConnection instanceof HttpURLConnection httpURLConnection) {
+            if (httpURLConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                httpURLConnection.disconnect();
                 throw new FileNotFoundException(String.format(
                     "Error during http/https access for URL %s, got response code : %d",
                     source,
-                    conn.getResponseCode()));
+                    httpURLConnection.getResponseCode()));
             }
-            if (getContentLengthThroughProxy(source, proxy, nonProxyHosts, timeoutInMS, new ArrayList<>())
-                > downloadTmpConfigDto.maxContentLength()) {
-                InputStream httpInputStream = connection.getInputStream();
-                return getInputStreamUsingTmpFile(downloadTmpConfigDto, httpInputStream);
+            if (downloadTmpConfig != null
+                && getContentLengthThroughProxy(source, proxy, nonProxyHosts, timeoutInMS, new ArrayList<>())
+                   > downloadTmpConfig.maxContentLength()) {
+                return getInputStreamUsingTmpFile(downloadTmpConfig, urlConnection.getInputStream());
             }
         }
 
-        return connection.getInputStream();
+        return urlConnection.getInputStream();
     }
 
     /**
