@@ -111,9 +111,9 @@
 
         <!-- elastic search -->
         <!-- FIXME : 8.11.4 available -->
-        <org.elasticsearch.version>7.17.14</org.elasticsearch.version>
-        <!-- Better use same Lucene version as the one used by Elasticsearch (7.17.14 -> 8.11.1) (8.11.4 -> 9.9.1) -->
-        <lucene.version>8.11.1</lucene.version>
+        <org.elasticsearch.version>7.17.22</org.elasticsearch.version>
+        <!-- Better use same Lucene version as the one used by Elasticsearch (7.17.22 -> 8.11.3) (8.11.4 -> 9.9.1) -->
+        <lucene.version>8.11.3</lucene.version>
 
         <!-- HTTP client : use  version 4 as long as feign-httpclient continue to use this version
         Note : version 5 is org.apache.httpcomponents.client5:httpclient5

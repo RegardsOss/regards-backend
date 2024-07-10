@@ -22,7 +22,7 @@ services:
       - regards_IT_network
 
   rs-elasticsearch:
-    image: 172.26.46.158/regards-elasticsearch:7
+    image: 172.26.46.158/regards-elasticsearch:7.17.22
     environment:
       - cluster.name=regards
       - bootstrap.memory_lock=true
