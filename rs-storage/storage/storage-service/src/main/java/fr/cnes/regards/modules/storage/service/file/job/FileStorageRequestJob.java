@@ -109,7 +109,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                                                                                           this);
 
         nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
-        logger.debug("[STORAGE JOB] Runing storage job for {} storage requests", nbRequestToHandle);
+        logger.debug("[STORAGE JOB] Running storage job for {} storage requests", nbRequestToHandle);
         // Calculates if needed image dimensions
         workingSubset.getFileReferenceRequests().forEach(FileStorageRequestJob::calculateImageDimension);
 

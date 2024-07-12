@@ -99,6 +99,7 @@ public class PluginCache {
      * Clean recursively from the cache the given plugin and its dependencies.
      */
     public void cleanPluginRecursively(String tenant, String businessId) {
+        runtimeTenantResolver.forceTenant(tenant);
         // get all dependent plugins to destroy
         Set<PluginConfiguration> parentPluginConfs = pluginDaoService.getDependentPlugins(businessId);
         parentPluginConfs.forEach(parent -> cleanPluginRecursively(tenant, parent.getBusinessId()));
