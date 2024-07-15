@@ -189,7 +189,7 @@ public class FileReferenceService {
         if (!pendingActionErrorPaths.isEmpty()) {
             String notification = "";
             final Map<String, Object> data = new HashMap<>();
-            data.put("files", pendingActionErrorPaths.stream().map(Path::toString));
+            data.put("files", pendingActionErrorPaths.stream().map(Path::toString).toList());
             try {
                 notification = templateService.render(StorageTemplatesConf.ACTION_REMAINING_TEMPLATE_NAME, data);
             } catch (TemplateException e) {
