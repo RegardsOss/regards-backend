@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.plugins.IDataOb
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.dam.domain.entities.metadata.DataObjectGroup;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessRightService;
@@ -217,15 +218,16 @@ public class EntityIndexerService implements IEntityIndexerService {
      *
      * @param tenant                        concerned tenant (also index intoES)
      * @param ipId                          concerned entity IpId
-     * @param lastUpdateDate                for dataset entity, if this date is provided, only more recent data objects must be taken
+     * @param minLastUpdateCriteria         for dataset entity, if this date is provided, only more recent data objects must be taken
      *                                      into account
+     * @param updateDate                    update date saved inside data objects
      * @param forceAssociatedEntitiesUpdate for dataset entity, force associated entities (ie data objects) update
      * @param dsiId                         DataSourceIngestion identifier
      */
     @Override
     public void updateEntityIntoEs(String tenant,
                                    UniformResourceName ipId,
-                                   OffsetDateTime lastUpdateDate,
+                                   OffsetDateTime minLastUpdateCriteria,
                                    OffsetDateTime updateDate,
                                    boolean forceAssociatedEntitiesUpdate,
                                    String dsiId) throws ModuleException {
@@ -246,8 +248,7 @@ public class EntityIndexerService implements IEntityIndexerService {
             indexService.configureMappings(tenant, entity.getModel().getName());
             ICriterion savedSubsettingClause = null;
             // Remove parameters of dataset datasource to avoid expose security values
-            if (entity instanceof Dataset) {
-                Dataset dataset = (Dataset) entity;
+            if (entity instanceof Dataset dataset) {
                 savedSubsettingClause = dataset.getSubsettingClause();
                 prepareDatasetForEs(dataset);
                 // update dataset groups
@@ -268,17 +269,16 @@ public class EntityIndexerService implements IEntityIndexerService {
             }
             // Then save entity
             LOGGER.debug("Saving entity {}", entity);
-            // If lastUpdateDate is provided, this means that update comes from an ingestion, in this case all data
+            // If minLastUpdateCriteria is provided, this means that update comes from an ingestion, in this case all data
             // objects must be updated.
             // If lastUpdatedDate isn't provided it means update come from a change into dataset
             // (cf. DatasetCrawlerService.handle(...)) and so it is necessary to check if differences exist between
             // previous version of dataset and current one.
-            // It may also mean that it comes from a first ingestion. In this case, lastUpdateDate is null but all
+            // It may also mean that it comes from a first ingestion. In this case, minLastUpdateCriteria is null but all
             // data objects must be updated
-            boolean needAssociatedDataObjectsUpdate = (lastUpdateDate != null) || forceAssociatedEntitiesUpdate;
+            boolean needAssociatedDataObjectsUpdate = (minLastUpdateCriteria != null) || forceAssociatedEntitiesUpdate;
             // A dataset change may need associated data objects update
-            if (!needAssociatedDataObjectsUpdate && (entity instanceof Dataset)) {
-                Dataset dataset = (Dataset) entity;
+            if (!needAssociatedDataObjectsUpdate && (entity instanceof Dataset dataset)) {
                 needAssociatedDataObjectsUpdate |= needAssociatedDataObjectsUpdate(dataset,
                                                                                    esRepos.get(Optional.of(tenant),
                                                                                                dataset));
@@ -288,7 +288,7 @@ public class EntityIndexerService implements IEntityIndexerService {
             if ((entity instanceof Dataset) && needAssociatedDataObjectsUpdate) {
                 // Subsetting clause is needed by many things
                 ((Dataset) entity).setSubsettingClause(savedSubsettingClause);
-                manageDatasetUpdate((Dataset) entity, lastUpdateDate, updateDate, dsiId);
+                manageDatasetUpdate((Dataset) entity, minLastUpdateCriteria, updateDate, dsiId);
             }
         }
         LOGGER.info(ipId + " managed into Elasticsearch");
@@ -400,18 +400,21 @@ public class EntityIndexerService implements IEntityIndexerService {
     /**
      * Search and update associated dataset data objects (ie add dataset IpId into tags)
      *
-     * @param dataset concerned dataset
+     * @param dataset               concerned dataset
+     * @param datasourceIngestionId {@link DatasourceIngestion} id
+     * @param minLastUpdateCriteria Take into account only more recent minLastUpdateCriteria than provided
+     * @param updateDate            update date saved inside data objects
      */
     private void manageDatasetUpdate(Dataset dataset,
-                                     OffsetDateTime lastUpdateDate,
+                                     OffsetDateTime minLastUpdateCriteria,
                                      OffsetDateTime updateDate,
-                                     String dsiId) throws ModuleException {
+                                     String datasourceIngestionId) throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
         sendDataSourceMessage(String.format(
             "      Updating dataset %s indexation and all its associated data objects...",
-            dataset.getLabel()), dsiId);
+            dataset.getLabel()), datasourceIngestionId);
         sendDataSourceMessage(String.format("        Searching for dataset %s associated data objects...",
-                                            dataset.getLabel()), dsiId);
+                                            dataset.getLabel()), datasourceIngestionId);
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
         addProjectInfos(tenant, searchKey);
 
@@ -424,25 +427,30 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                                                       dataset.getId());
         // Remove association between dataobjects and dataset for all dataobjects which does not match the dataset filter anymore.
         try {
-            removeOldDatasetDataObjectsAssoc(dataset, updateDate, searchKey, executor, saveDataObjectsCallable, dsiId);
+            removeOldDatasetDataObjectsAssoc(dataset,
+                                             updateDate,
+                                             searchKey,
+                                             executor,
+                                             saveDataObjectsCallable,
+                                             datasourceIngestionId);
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             sendDataSourceMessage(String.format("Error removing all dataset objects. Cause: %s.", e.getMessage()),
-                                  dsiId);
+                                  datasourceIngestionId);
         }
         // Associate dataset to all dataobjets. Associate groups of dataset to the dataobjets through metadata
         try {
             addOrUpdateDatasetDataObjectsAssoc(dataset,
-                                               lastUpdateDate,
+                                               minLastUpdateCriteria,
                                                updateDate,
                                                searchKey,
                                                executor,
                                                saveDataObjectsCallable,
-                                               dsiId);
+                                               datasourceIngestionId);
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             sendDataSourceMessage(String.format("Error updating new dataset objects. Cause: %s.", e.getMessage()),
-                                  dsiId);
+                                  datasourceIngestionId);
         }
 
         // Update dataset access groups for dynamic plugin access rights
@@ -452,22 +460,22 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                     updateDate,
                                                     executor,
                                                     saveDataObjectsCallable,
-                                                    dsiId);
+                                                    datasourceIngestionId);
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             sendDataSourceMessage(String.format("Error updating dataset access rights. Cause: %s.", e.getMessage()),
-                                  dsiId);
+                                  datasourceIngestionId);
         }
 
         // To remove thread used by executor
         executor.shutdown();
 
-        computeComputedAttributes(dataset, dsiId, tenant);
+        computeComputedAttributes(dataset, datasourceIngestionId, tenant);
 
         prepareDatasetForEs(dataset);
         esRepos.save(tenant, dataset);
         LOGGER.info("Dataset {} updated", dataset.getId());
-        sendDataSourceMessage("      ...Dataset indexation updated.", dsiId);
+        sendDataSourceMessage("      ...Dataset indexation updated.", datasourceIngestionId);
     }
 
     private void addProjectInfos(String tenant, SimpleSearchKey<DataObject> searchKey) {
@@ -560,14 +568,14 @@ public class EntityIndexerService implements IEntityIndexerService {
 
     /**
      * Associate all DATA entities matching the subsetting clause to the given DATASET entity and dataset groups.<br/>
-     * Only groups with no {@link AccessLevel#CUSTOM_ACCESS} are associated the the dataobjects in this method.<br/>
+     * Only groups with no {@link AccessLevel#CUSTOM_ACCESS} are associated the dataobjects in this method.<br/>
      * The association is done by the {@link DataObjectUpdater} consumer.<br/>
      * To handle the groups with {@link AccessLevel#CUSTOM_ACCESS} see {@link EntityIndexerService#addOrUpdateDataObectGroupAssoc}.<br/>
-     * <b>NOTE</b> : The subsetting clause to find DATA entities is computed by adding dataset subsetting clause and "lastUpdate > lastUpdateDate parameter".<br/>
+     * <b>NOTE</b> : The subsetting clause to find DATA entities is computed by adding dataset subsetting clause and "lastUpdate > minLastUpdateCriteria parameter".<br/>
      *
      * @param dataset                 {@link Dataset} to associate to DATA entities
-     * @param lastUpdateDate          {@link OffsetDateTime}. If not null, add a datatime criterion in the subsesstin clause
-     *                                to find only DATA with a lastUpdateDate greter than this parameter
+     * @param minLastUpdateCriteria   {@link OffsetDateTime}. If not null, add a datatime criterion in the subsesstin clause
+     *                                to find only DATA with a minLastUpdateCriteria greter than this parameter
      * @param updateDate              {@link OffsetDateTime} of the current update process
      * @param searchKey               {@link SimpleSearchKey} used to run elasticsearch searh of DATA entities to update
      * @param executor                {@link ExecutorService}
@@ -575,7 +583,7 @@ public class EntityIndexerService implements IEntityIndexerService {
      * @param dsiId                   {@link DatasourceIngestion} identifier
      */
     private void addOrUpdateDatasetDataObjectsAssoc(Dataset dataset,
-                                                    OffsetDateTime lastUpdateDate,
+                                                    OffsetDateTime minLastUpdateCriteria,
                                                     OffsetDateTime updateDate,
                                                     SimpleSearchKey<DataObject> searchKey,
                                                     ExecutorService executor,
@@ -593,8 +601,9 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                                     maxBulkSize);
         ICriterion subsettingCrit = dataset.getSubsettingClause();
         // Add lastUpdate restriction if a date is provided
-        if (lastUpdateDate != null) {
-            subsettingCrit = ICriterion.and(subsettingCrit, ICriterion.gt(Dataset.LAST_UPDATE, lastUpdateDate));
+        if (minLastUpdateCriteria != null) {
+            subsettingCrit = ICriterion.and(subsettingCrit,
+                                            ICriterion.gt(StaticProperties.LAST_UPDATE_PATH, minLastUpdateCriteria));
         }
         try {
             esRepos.searchAll(searchKey, dataObjectUpdater, subsettingCrit);
@@ -794,14 +803,19 @@ public class EntityIndexerService implements IEntityIndexerService {
     @MultitenantTransactional
     public void updateDatasets(String tenant,
                                Collection<Dataset> datasets,
-                               OffsetDateTime lastUpdateDate,
+                               OffsetDateTime minLastUpdateCriteria,
                                OffsetDateTime updateDate,
                                boolean forceDataObjectsUpdate,
                                String dsiId) throws ModuleException {
         for (Dataset dataset : datasets) {
             LOGGER.info("Updating dataset {} ...", dataset.getLabel());
             sendDataSourceMessage(String.format("  Updating dataset %s...", dataset.getLabel()), dsiId);
-            updateEntityIntoEs(tenant, dataset.getIpId(), lastUpdateDate, updateDate, forceDataObjectsUpdate, dsiId);
+            updateEntityIntoEs(tenant,
+                               dataset.getIpId(),
+                               minLastUpdateCriteria,
+                               updateDate,
+                               forceDataObjectsUpdate,
+                               dsiId);
             sendDataSourceMessage(String.format("  ...Dataset %s updated.", dataset.getLabel()), dsiId);
             LOGGER.info("Dataset {} updated.", dataset.getLabel());
         }
@@ -1225,14 +1239,13 @@ public class EntityIndexerService implements IEntityIndexerService {
                         computeComputedAttributes(dataset, null, tenant);
                         prepareDatasetForEs(dataset);
                         esRepos.save(tenant, dataset);
-                        LOGGER.info("Dataset {} updated", dataset.getId());
+                        LOGGER.info("Dataset {} computed properties updated", dataset.getId());
                     } catch (ModuleException e) {
-                        String message = String.format("Dataset %s cannot be updated!", dataset.getId());
-                        LOGGER.error(message, e);
+                        LOGGER.error("Dataset {} computed properties cannot be updated!", dataset.getId(), e);
                     }
                 });
             } catch (ModuleException e) {
-                LOGGER.error("Cannot update datasets after feature deletion", e);
+                LOGGER.error("Cannot update datasets computed properties", e);
             }
         }
     }
