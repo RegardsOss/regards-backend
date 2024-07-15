@@ -81,13 +81,14 @@ public interface IEntityIndexerService {
     /**
      * Transactional method updating a set of datasets
      *
-     * @param lastUpdateDate         Take into account only more recent lastUpdateDate than provided
-     * @param forceDataObjectsUpdate true to force all associated data objects update
-     * @param dsiId                  datasetIngestion id   @throws ModuleException
+     * @param minLastUpdateCriteria Take into account only more recent minLastUpdateCriteria than provided
+     * @param updateDate                update date saved inside data objects
+     * @param forceDataObjectsUpdate    true to force all associated data objects update
+     * @param dsiId                     datasetIngestion id   @throws ModuleException
      */
     void updateDatasets(String tenant,
                         Collection<Dataset> datasets,
-                        OffsetDateTime lastUpdateDate,
+                        OffsetDateTime minLastUpdateCriteria,
                         OffsetDateTime updateDate,
                         boolean forceDataObjectsUpdate,
                         String dsiId) throws ModuleException;
