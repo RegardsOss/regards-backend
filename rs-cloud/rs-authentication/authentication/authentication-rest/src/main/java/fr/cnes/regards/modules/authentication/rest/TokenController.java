@@ -31,7 +31,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -77,12 +79,21 @@ public class TokenController {
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Authentication granted."),
                             @ApiResponse(responseCode = "400", description = "Authentication denied.") })
     @ResourceAccess(role = DefaultRole.PUBLIC, description = "Oauth2 authentication endpoint.")
-    @PostMapping(path = PATH_TOKEN)
+    @PostMapping(path = PATH_TOKEN, consumes = { MediaType.ALL_VALUE })
     public ResponseEntity<Authentication> postAccessToken(
         @Deprecated @RequestParam Map<String, String> requestParameters,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication credentials.",
                                                               content = @Content(schema = @Schema(implementation = ServiceProviderDto.class)))
-        @RequestBody Optional<UserAuthentication> userAuthenticationOpt) {
+        @RequestBody(required = false) MultiValueMap<String, String> bodyParams) {
+
+        Optional<UserAuthentication> userAuthenticationOpt = Optional.empty();
+        if (bodyParams != null) {
+            UserAuthentication inUserAuthentication = new UserAuthentication(bodyParams.getFirst("username"),
+                                                                             bodyParams.getFirst("password"),
+                                                                             bodyParams.getFirst("scope"),
+                                                                             bodyParams.getFirst("grant_type"));
+            userAuthenticationOpt = Optional.ofNullable(inUserAuthentication);
+        }
         // requestParameters map may or may not contain all user authentication properties.
         // If not, userAuthentication must contain these properties
         UserAuthentication userAuthentication = mergeUserAuthentication(requestParameters, userAuthenticationOpt);
