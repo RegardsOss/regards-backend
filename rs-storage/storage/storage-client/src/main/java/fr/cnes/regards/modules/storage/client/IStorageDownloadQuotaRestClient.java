@@ -83,7 +83,7 @@ public interface IStorageDownloadQuotaRestClient {
     @ResponseBody
     ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas(@PathVariable(USER_EMAIL_PARAM) String userEmail);
 
-    @GetMapping(path = PATH_QUOTA,
+    @GetMapping(path = PATH_MAX_QUOTA,
                 produces = MediaType.APPLICATION_JSON_VALUE,
                 consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
