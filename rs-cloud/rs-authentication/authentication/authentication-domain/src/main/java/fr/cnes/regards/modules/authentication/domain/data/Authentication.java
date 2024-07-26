@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.authentication.domain.data;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.annotations.SerializedName;
 
 import java.time.OffsetDateTime;
@@ -25,6 +26,11 @@ import java.util.Objects;
 
 /**
  * Mimic Spring Authentication object
+ *
+ * NOTE : Both SerializedName & JsonProperty annotations are mandatory her for both Jackson and gson
+ * serialization/deserialization.
+ * Gson is used by regards microservices.
+ * Jackson is used in rs-gateway by the ExternalAuthenticationVerifier coded with reactive WebFlux.
  */
 public class Authentication {
 
@@ -32,12 +38,14 @@ public class Authentication {
      * It's a constant but the aim is to be serialized in json => final with a getter
      */
     @SerializedName("token_type")
+    @JsonProperty("token_type")
     private final String tokenType = "bearer";
 
     /**
      * project, tenant and scope is same thing
      */
     @SerializedName("tenant")
+    @JsonProperty("tenant")
     private String project;
 
     private String scope;
@@ -52,12 +60,15 @@ public class Authentication {
     private String email;
 
     @SerializedName("service_provider_name")
+    @JsonProperty("service_provider_name")
     private String serviceProviderName;
 
     @SerializedName("access_token")
+    @JsonProperty("access_token")
     private String accessToken;
 
     @SerializedName("expires_in")
+    @JsonProperty("expires_in")
     private Long expiresIn;
 
     public Authentication() {
