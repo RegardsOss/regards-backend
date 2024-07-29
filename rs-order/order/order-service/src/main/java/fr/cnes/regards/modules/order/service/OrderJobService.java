@@ -34,10 +34,13 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
+import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.service.job.OrderJobPriority;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
+import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
 import fr.cnes.regards.modules.order.service.request.CancelOrderJob;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.DisposableBean;
@@ -50,6 +53,7 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -149,17 +153,30 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
         if (event.getJobEventType().isFinalState()) {
             tenantResolver.forceTenant(wrapper.getTenant());
 
-            Optional<JobInfo> endedJobInfo = jobInfoRepository.findById(event.getJobId());
-            if (endedJobInfo.isPresent()) {
-                if (JobEventType.FAILED == event.getJobEventType() && CancelOrderJob.class.getName()
-                                                                                          .equals(endedJobInfo.get()
-                                                                                                              .getClassName())) {
-                    LOGGER.info("[{}] cancel order job is in failed status. Initialize in queued status again");
-                    endedJobInfo.get().updateStatus(JobStatus.QUEUED);
-                    jobInfoRepository.save(endedJobInfo.get());
+            JobInfo endedJobInfo = jobInfoRepository.findCompleteById(event.getJobId());
+            if (endedJobInfo != null) {
+                if (JobEventType.FAILED == event.getJobEventType()) {
+                    if (CancelOrderJob.class.getName().equals(endedJobInfo.getClassName())) {
+                        LOGGER.info("[{}] cancel order job is in failed status. Initialize in queued status again",
+                                    endedJobInfo.getId());
+                        endedJobInfo.updateStatus(JobStatus.QUEUED);
+                        jobInfoRepository.save(endedJobInfo);
+                    }
+                    if (StorageFilesJob.class.getName().equals(endedJobInfo.getClassName())) {
+                        LOGGER.info("[{}] storage file job is in failed status. set as failed status",
+                                    endedJobInfo.getId());
+                        // Update datafile_status to error
+                        Long[] fileIds = endedJobInfo.getParametersAsMap().get(FilesJobParameter.NAME).getValue();
+                        List<OrderDataFile> errorDataFiles =
+                            orderDataFileRepository.findAllById(Arrays.asList(fileIds));
+                        errorDataFiles.forEach(df -> df.setState(FileState.ERROR));
+                        // Save update dataFiles with error status and launch next fileTasks if any (done in the
+                        // saveAll method)
+                        orderDataFileRepository.saveAll(errorDataFiles);
+                    }
                 }
 
-                self.manageUserOrderStorageFilesJobInfos(endedJobInfo.get().getOwner());
+                self.manageUserOrderStorageFilesJobInfos(endedJobInfo.getOwner());
             }
             tenantResolver.clearTenant();
         }

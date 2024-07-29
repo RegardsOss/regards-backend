@@ -22,11 +22,13 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import jakarta.persistence.Convert;
+import org.hibernate.annotations.Parameter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import jakarta.annotation.Nullable;
@@ -161,4 +163,7 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
                                                             Pageable page);
 
     boolean existsByStateAndOrderId(FileState available, Long orderId);
+
+    @Query("SELECT DISTINCT f.filesTaskId FROM OrderDataFile f WHERE f.id IN :ids")
+    List<Long> findDistinctFilesTaskIdByIdIn(@Param("ids") List<Long> dataFilesIds);
 }

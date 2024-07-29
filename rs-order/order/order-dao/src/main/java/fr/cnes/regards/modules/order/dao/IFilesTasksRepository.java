@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -36,6 +37,8 @@ public interface IFilesTasksRepository extends JpaRepository<FilesTask, Long> {
 
     @EntityGraph(value = "graph.filesTask.complete", type = EntityGraph.EntityGraphType.LOAD)
     List<FilesTask> findDistinctByFilesIn(List<OrderDataFile> files);
+
+    List<Long> findDistinctIdByFilesIn(List<OrderDataFile> files);
 
     Stream<FilesTask> findByOrderId(Long orderId);
 

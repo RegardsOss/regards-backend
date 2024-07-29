@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.order.service;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import feign.Response;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -206,8 +207,10 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     @Override
     public void launchNextFilesTasks(Iterable<OrderDataFile> dataFiles) {
         // Look at FilesTasks if they are ended (no more file to download)...
-        List<FilesTask> filesTasks = filesTasksRepository.findDistinctByFilesIn(io.vavr.collection.List.ofAll(dataFiles)
-                                                                                                       .toJavaList());
+        List<Long> dataFilesIds = Lists.newArrayList(dataFiles).stream().map(OrderDataFile::getId).toList();
+        List<Long> filesTasksIds =
+            orderDataFileRepository.findDistinctFilesTaskIdByIdIn(dataFilesIds);
+        List<FilesTask> filesTasks = filesTasksRepository.findAllById(filesTasksIds);
         Long orderId = null;
         // Update all these FileTasks
         for (FilesTask filesTask : filesTasks) {
