@@ -24,11 +24,11 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
 import fr.cnes.regards.modules.notifier.dto.RecipientDto;
 import fr.cnes.regards.modules.notifier.dto.internal.NotifierClearCacheEvent;
+import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
@@ -129,8 +128,9 @@ public class RecipientService implements IRecipientService {
         try {
             return Optional.ofNullable(pluginService.getPlugin(pluginConfiguration));
         } catch (ModuleException e) {
-            LOGGER.error("No plugin of IRecipientNotifier type instantiated for plugin configuration[id:{}]",
-                         pluginConfiguration.getPluginId());
+            LOGGER.error("Error while loading IRecipientNotifier plugin with id : {}",
+                         pluginConfiguration.getPluginId(),
+                         e);
         }
         return Optional.empty();
     }
