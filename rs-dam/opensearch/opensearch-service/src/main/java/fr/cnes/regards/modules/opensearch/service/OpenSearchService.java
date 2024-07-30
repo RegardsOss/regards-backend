@@ -34,10 +34,8 @@ import fr.cnes.regards.modules.search.schema.UrlType;
 import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
 import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -72,11 +70,9 @@ public class OpenSearchService implements IOpenSearchService {
     /**
      * Default HttpClient if none is found
      */
-    private HttpClient httpClient = HttpClientBuilder.create().build();
+    private final HttpClient httpClient;
 
-    public OpenSearchService(IAttributeFinder finder,
-                             @Autowired(required = false) HttpClient httpClient,
-                             IToponymsClient toponymClient) {
+    public OpenSearchService(IAttributeFinder finder, HttpClient httpClient, IToponymsClient toponymClient) {
         OpenSearchService.parsersHolder = ThreadLocal.withInitial(() -> Lists.newArrayList(new QueryParser(finder),
                                                                                            new GeometryParser(),
                                                                                            new CircleParser(),
@@ -84,9 +80,7 @@ public class OpenSearchService implements IOpenSearchService {
                                                                                            new ImageOnlyParser(),
                                                                                            new ToponymParser(
                                                                                                toponymClient)));
-        if (this.httpClient != null) {
-            this.httpClient = httpClient;
-        }
+        this.httpClient = httpClient;
     }
 
     @Override

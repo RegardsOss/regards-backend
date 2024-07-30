@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RestClient(name = "opensearch-descriptor", contextId = "opensearch-descriptor")
 public interface IOpensearchDescriptorClient {
 
-    @GetMapping(path = "/", consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
+    @GetMapping(consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
     ResponseEntity<OpenSearchDescription> getDescriptor();
 
 }
