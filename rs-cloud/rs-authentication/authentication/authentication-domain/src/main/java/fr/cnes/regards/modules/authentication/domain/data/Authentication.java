@@ -38,14 +38,12 @@ public class Authentication {
      * It's a constant but the aim is to be serialized in json => final with a getter
      */
     @SerializedName("token_type")
-    @JsonProperty("token_type")
     private final String tokenType = "bearer";
 
     /**
      * project, tenant and scope is same thing
      */
     @SerializedName("tenant")
-    @JsonProperty("tenant")
     private String project;
 
     private String scope;
@@ -60,7 +58,6 @@ public class Authentication {
     private String email;
 
     @SerializedName("service_provider_name")
-    @JsonProperty("service_provider_name")
     private String serviceProviderName;
 
     @SerializedName("access_token")
@@ -68,7 +65,6 @@ public class Authentication {
     private String accessToken;
 
     @SerializedName("expires_in")
-    @JsonProperty("expires_in")
     private Long expiresIn;
 
     public Authentication() {
