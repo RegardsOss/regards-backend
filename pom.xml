@@ -66,7 +66,6 @@
 
         <!-- COTS -->
         <!-- XML, el, jakarta, ... -->
-        <jakarta.el-api.version>6.0.0</jakarta.el-api.version>
         <expressly.version>5.0.0</expressly.version>
         <jakarta.activation-api.version>2.1.2</jakarta.activation-api.version>
         <jakarta.validation-api.version>3.1.0</jakarta.validation-api.version>
@@ -112,9 +111,9 @@
 
         <!-- elastic search -->
         <!-- FIXME : 8.11.4 available -->
-        <org.elasticsearch.version>7.17.14</org.elasticsearch.version>
-        <!-- Better use same Lucene version as the one used by Elasticsearch (7.17.14 -> 8.11.1) (8.11.4 -> 9.9.1) -->
-        <lucene.version>8.11.1</lucene.version>
+        <org.elasticsearch.version>7.17.22</org.elasticsearch.version>
+        <!-- Better use same Lucene version as the one used by Elasticsearch (7.17.22 -> 8.11.3) (8.11.4 -> 9.9.1) -->
+        <lucene.version>8.11.3</lucene.version>
 
         <!-- HTTP client : use  version 4 as long as feign-httpclient continue to use this version
         Note : version 5 is org.apache.httpcomponents.client5:httpclient5
@@ -1964,12 +1963,6 @@
                 <groupId>com.fasterxml.woodstox</groupId>
                 <artifactId>woodstox-core</artifactId>
                 <version>${woodstox-core.version}</version>
-            </dependency>
-            <!-- el API spec-->
-            <dependency>
-                <groupId>jakarta.el</groupId>
-                <artifactId>jakarta.el-api</artifactId>
-                <version>${jakarta.el-api.version}</version>
             </dependency>
             <!-- el API Implementation -->
             <dependency>

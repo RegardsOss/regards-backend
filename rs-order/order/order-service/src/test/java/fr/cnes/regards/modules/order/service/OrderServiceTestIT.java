@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -80,6 +80,7 @@ import static org.mockito.ArgumentMatchers.any;
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_test_it",
                                    "regards.amqp.enabled=true",
+                                   // "spring.jpa.show-sql=true",
                                    "regards.order.max.storage.files.jobs.per.user=2" })
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class OrderServiceTestIT extends AbstractOrderServiceIT {

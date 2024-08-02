@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -96,7 +96,7 @@ public class RetryBatchMessageHandler {
             int maxRetries = retryProperties.getMaxRetries();
             // Check if message is retryable
             if (retryValueHeader < maxRetries) {
-                updateRetryHeaders(messageProperties, retryValueHeader, maxRetries);
+                updateRetryHeaders(messageProperties, retryValueHeader, maxRetries, exception);
                 // republish again the message with delay
                 publisher.basicPublish(tenant,
                                        amqpAdmin.getRetryExchangeName(),
@@ -134,19 +134,23 @@ public class RetryBatchMessageHandler {
     /**
      * Update the retry and delay headers for the next retry iteration.
      */
-    private void updateRetryHeaders(MessageProperties messageProperties, int currentRetryValue, int maxRetries) {
+    private void updateRetryHeaders(MessageProperties messageProperties, int currentRetryValue, int maxRetries,
+                                    Exception causeException) {
         int nextRetryValue = currentRetryValue + 1;
         long nextDelayValue = retryProperties.getDelayAttempts().get(currentRetryValue).toMillis();
         messageProperties.setHeader(X_RETRY_HEADER, nextRetryValue);
         messageProperties.setDelayLong(nextDelayValue);
 
-        LOGGER.debug("[requestId: {}, correlationId: {}] Retrying message with delay of {}ms (current retry {}, "
-                     + "maximum of retries {}).",
-                     messageProperties.getHeader(AmqpConstants.REGARDS_REQUEST_ID_HEADER),
-                     messageProperties.getHeader(AmqpHeaders.CORRELATION_ID),
-                     nextDelayValue,
-                     currentRetryValue,
-                     maxRetries);
+        String errorMessage = String.format("[requestId: %s, correlationId: %s] Failed cause %s. Retrying message with"
+                                            + " delay of %dms (current retry %d, maximum of retries %d).",
+                                            messageProperties.getHeader(AmqpConstants.REGARDS_REQUEST_ID_HEADER),
+                                            messageProperties.getHeader(AmqpHeaders.CORRELATION_ID),
+                                            causeException.getMessage(),
+                                            nextDelayValue,
+                                            currentRetryValue,
+                                            maxRetries);
+
+        LOGGER.error(errorMessage, causeException);
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -47,7 +47,8 @@ public class AccountUnlockToken {
      * Id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @SequenceGenerator(name = "accountunlockseq", initialValue = 1, sequenceName = "seq_account_unlock")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "accountunlockseq")
     private Long id;
 
     /**

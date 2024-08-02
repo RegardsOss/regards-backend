@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.authentication.domain.data;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.annotations.SerializedName;
 
 import java.time.OffsetDateTime;
@@ -25,6 +26,11 @@ import java.util.Objects;
 
 /**
  * Mimic Spring Authentication object
+ *
+ * NOTE : Both SerializedName & JsonProperty annotations are mandatory her for both Jackson and gson
+ * serialization/deserialization.
+ * Gson is used by regards microservices.
+ * Jackson is used in rs-gateway by the ExternalAuthenticationVerifier coded with reactive WebFlux.
  */
 public class Authentication {
 
@@ -55,6 +61,7 @@ public class Authentication {
     private String serviceProviderName;
 
     @SerializedName("access_token")
+    @JsonProperty("access_token")
     private String accessToken;
 
     @SerializedName("expires_in")

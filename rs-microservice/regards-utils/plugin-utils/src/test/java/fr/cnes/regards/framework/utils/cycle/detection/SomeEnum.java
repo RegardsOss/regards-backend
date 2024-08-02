@@ -1,5 +1,5 @@
 package fr.cnes.regards.framework.utils.cycle.detection;/*
- * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *

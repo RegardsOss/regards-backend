@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -52,6 +53,7 @@ public class ExternalAuthenticationVerifier {
                                .get()
                                .uri("http://rs-authentication/serviceproviders/verify?externalToken={externalToken}",
                                     externalToken)
+                               .accept(MediaType.ALL)
                                .header(AUTHORIZATION, BEARER + " " + token)
                                .exchangeToMono(response -> {
                                    if (response.statusCode().equals(HttpStatus.OK)) {

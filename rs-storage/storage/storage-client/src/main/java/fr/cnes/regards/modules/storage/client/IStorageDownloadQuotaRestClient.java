@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -83,7 +83,7 @@ public interface IStorageDownloadQuotaRestClient {
     @ResponseBody
     ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas(@PathVariable(USER_EMAIL_PARAM) String userEmail);
 
-    @GetMapping(path = PATH_QUOTA,
+    @GetMapping(path = PATH_MAX_QUOTA,
                 produces = MediaType.APPLICATION_JSON_VALUE,
                 consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody

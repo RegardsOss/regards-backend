@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -203,11 +203,13 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
                     sendMessage("Start updating datasets associated to datasource...", datasourceIngestionId);
                     try {
                         // Update entities associated to dataset for each entity updated previously,
-                        // So search for entities with last_update > ingestionStart.
+                        // So search for entities with last_update > (ingestionStart - 1s)
                         // And for each updated entity set last_update = OffsetDateTime.now()
+                        // criteria used to detect which products have been recently updated in current crawling
+                        OffsetDateTime minLastUpdateCriteria = ingestionStart.withNano(0).minusSeconds(1);
                         entityIndexerService.updateDatasets(tenant,
                                                             datasetsToUpdate,
-                                                            ingestionStart,
+                                                            minLastUpdateCriteria,
                                                             OffsetDateTime.now(),
                                                             true,
                                                             datasourceIngestionId);

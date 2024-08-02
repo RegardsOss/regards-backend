@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -67,7 +67,20 @@ public class RegistrationController {
     @PostMapping
     @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> requestAccess(@Valid @RequestBody AccessRequestDto accessRequestDto) {
-        ResponseEntity<EntityModel<AccessRequestDto>> response = registrationClient.requestAccess(accessRequestDto);
+        // FIXME use a different dto. We use a new dto here to remove the role parameter. 
+        // Users should not be able to specify the role of the new user to create. The role of user is managed by project administrators.
+        AccessRequestDto mangledDto = new AccessRequestDto(accessRequestDto.getEmail(),
+                                                           accessRequestDto.getFirstName(),
+                                                           accessRequestDto.getLastName(),
+                                                           null,
+                                                           accessRequestDto.getMetadata(),
+                                                           accessRequestDto.getPassword(),
+                                                           accessRequestDto.getOriginUrl(),
+                                                           accessRequestDto.getRequestLink(),
+                                                           accessRequestDto.getOrigin(),
+                                                           accessRequestDto.getAccessGroups(),
+                                                           null);
+        ResponseEntity<EntityModel<AccessRequestDto>> response = registrationClient.requestAccess(mangledDto);
         HttpStatus status = response.getStatusCode().is2xxSuccessful() ?
             HttpStatus.CREATED :
             HttpStatus.INTERNAL_SERVER_ERROR;

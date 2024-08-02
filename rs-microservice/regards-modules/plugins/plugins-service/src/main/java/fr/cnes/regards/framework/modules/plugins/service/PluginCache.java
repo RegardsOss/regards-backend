@@ -23,6 +23,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import org.slf4j.Logger;
@@ -46,6 +47,11 @@ public class PluginCache {
     private final PluginConfigurationService pluginDaoService;
 
     /**
+     * {@link IRuntimeTenantResolver}
+     */
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
      * Map<Tenant, Cache(PluginBusinessId, Plugin)).
      * A {@link Map} with all the {@link Plugin} currently instantiated by tenant.
      * One and only one {@link Plugin} should be instantiated by tenant.
@@ -55,9 +61,12 @@ public class PluginCache {
                                                                                                  .maximumSize(10000)
                                                                                                  .build();
 
-    public PluginCache(PluginInstantiationService pluginInstanceService, PluginConfigurationService pluginDaoService) {
+    public PluginCache(PluginInstantiationService pluginInstanceService, PluginConfigurationService pluginDaoService,
+
+                       IRuntimeTenantResolver runtimeTenantResolver) {
         this.pluginInstanceService = pluginInstanceService;
         this.pluginDaoService = pluginDaoService;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     public ConcurrentHashMap<String, Object> getTenantCache(String tenant) {
@@ -76,6 +85,7 @@ public class PluginCache {
         pluginInstanceService.instantiateInnerPlugins(plgConf, pluginTenantCache);
         pluginTenantCache.computeIfAbsent(plgConf.getBusinessId(), bid -> {
             try {
+                runtimeTenantResolver.forceTenant(tenant);
                 return pluginInstanceService.instantiatePlugin(pluginDaoService.findCompleteByBusinessId(plgConf.getBusinessId()),
                                                                pluginTenantCache);
             } catch (ModuleException e) {
@@ -89,6 +99,7 @@ public class PluginCache {
      * Clean recursively from the cache the given plugin and its dependencies.
      */
     public void cleanPluginRecursively(String tenant, String businessId) {
+        runtimeTenantResolver.forceTenant(tenant);
         // get all dependent plugins to destroy
         Set<PluginConfiguration> parentPluginConfs = pluginDaoService.getDependentPlugins(businessId);
         parentPluginConfs.forEach(parent -> cleanPluginRecursively(tenant, parent.getBusinessId()));

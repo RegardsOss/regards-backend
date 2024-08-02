@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -617,8 +617,10 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     protected void sessionInfoUpdateForRetry(Collection<FeatureUpdateRequest> requests) {
         // Retrieve LightEntity associated to each update request to retry
         Map<FeatureUniformResourceName, ILightFeatureEntity> entitiesByUrn = getSessionInfoByUrn(requests.stream()
-                                                                                                         .map(request -> request.getFeature()
-                                                                                                                                .getUrn())
+                                                                                                         .map(
+                                                                                                             FeatureUpdateRequest::getFeature)
+                                                                                                         .filter(Objects::nonNull)
+                                                                                                         .map(Feature::getUrn)
                                                                                                          .collect(
                                                                                                              Collectors.toSet()));
         // Groups requests by entity urn

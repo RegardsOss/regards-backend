@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -212,16 +212,6 @@ public class PluginServiceUtility {
                                                                                      0,
                                                                                      A_SAMPLE_PLUGIN_PLUGIN_ID);
 
-    //    protected PluginMetaData getPluginMetaData() {
-    //        final PluginMetaData pluginMetaData = new PluginMetaData();
-    //        pluginMetaData.setPluginClassName(SamplePlugin.class.getCanonicalName());
-    //        pluginMetaData.setInterfaceNames(Sets.newHashSet(ISamplePlugin.class.getName()));
-    //        pluginMetaData.setPluginId(A_SAMPLE_PLUGIN_PLUGIN_ID);
-    //        pluginMetaData.setAuthor("CS-SI");
-    //        pluginMetaData.setVersion(VERSION);
-    //        return pluginMetaData;
-    //    }
-
     /**
      * This method is run before all tests
      */
@@ -241,7 +231,7 @@ public class PluginServiceUtility {
         pluginServiceMocked = new PluginService(pluginDaoServiceMocked,
                                                 publisherMocked,
                                                 runtimeTenantResolver,
-                                                new PluginCache(pluginInstanceService, pluginDaoServiceMocked),
+                                                new PluginCache(pluginInstanceService, pluginDaoServiceMocked, runtimeTenantResolver),
                                                 pluginInstanceService,
                                                 blowfishEncryptionService,
                                                 null);
