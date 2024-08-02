@@ -1,5 +1,5 @@
 package fr.cnes.regards.modules.workermanager.service.cache;/*
- * Copyright 2017-2023 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *

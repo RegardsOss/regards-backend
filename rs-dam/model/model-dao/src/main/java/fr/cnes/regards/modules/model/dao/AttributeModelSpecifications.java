@@ -1,6 +1,6 @@
 package fr.cnes.regards.modules.model.dao;
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
