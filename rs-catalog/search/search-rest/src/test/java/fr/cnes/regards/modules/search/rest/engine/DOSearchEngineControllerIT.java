@@ -90,7 +90,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
     private ResultActions searchDataobjects() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // 9 data from planets & 2 datas from test datas
-        customizer.expectValue("$.content.length()", 14);
+        customizer.expectValue("$.content.length()", 15);
 
         return performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
     }
@@ -141,7 +141,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
     public void searchFullTextDataobjects2() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.expectValue("$.content.length()", 2);
-        // Add full text search
+        // Add full text search on Mercury or property search on planet = Jupiter
         String value = MERCURY + " OR " + PLANET + ":" + JUPITER;
         customizer.addParameter("q", value);
 
@@ -152,12 +152,72 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
     public void searchFullTextDataobjects3() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.expectValue("$.content.length()", 2);
-        // Add full text search
+        // Add full text search (=> Assertion error even "Mercury Jupiter", even Mercury OR Jupiter but not
+        // Mercury Jupiter
         String value = MERCURY + " " + JUPITER;
-        //        String value = MERCURY + " OR " + JUPITER;
         customizer.addParameter("q", value);
 
         performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
     }
 
+    @Test
+    public void searchFullTextEscapedCharacter() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expectValue("$.content.length()", 1);
+        // Search for Planet+X~"()[]^*.:
+        String value = "Planet+";
+        customizer.addParameter("q", value);
+
+        performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
+
+        // Continue
+        customizer = customizer().expectStatusOk();
+        customizer.expectValue("$.content.length()", 1);
+        // Search for Planet+X~"()[]^*.:
+        // ~ must be antislashed
+        value = "Planet+X\\~";
+        customizer.addParameter("q", value);
+
+        performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
+
+        // Continue
+        customizer = customizer().expectStatusOk();
+        customizer.expectValue("$.content.length()", 1);
+        // Search for Planet+X~"()[]^*.:
+        // " must be antislashed
+        value = "Planet+X\\~\\\"";
+        customizer.addParameter("q", value);
+
+        performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
+
+        // Continue
+        customizer = customizer().expectStatusOk();
+        customizer.expectValue("$.content.length()", 1);
+        // Search for Planet+X~"()[]^*.:
+        // ()[] must be antislashed
+        value = "Planet+X\\~\\\"\\(\\)\\[\\]";
+        customizer.addParameter("q", value);
+
+        performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
+
+        // Continue
+        customizer = customizer().expectStatusOk();
+        customizer.expectValue("$.content.length()", 1);
+        // Search for Planet+X~"()[]^*.:
+        // ^ must be antislashed
+        value = "Planet+X\\~\\\"\\(\\)\\[\\]\\^";
+        customizer.addParameter("q", value);
+
+        performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
+
+        // Continue
+        customizer = customizer().expectStatusOk();
+        customizer.expectValue("$.content.length()", 1);
+        // Search for Planet+X~"()[]^*.:
+        // : must be antislashed (not * nor .)
+        value = "Planet+X\\~\\\"\\(\\)\\[\\]\\^*.\\:";
+        customizer.addParameter("q", value);
+
+        performDefaultGet(PATH, customizer, "Search all error", ENGINE_TYPE);
+    }
 }

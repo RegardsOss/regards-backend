@@ -521,6 +521,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planets.add(createPlanet(planetModel, "Saturn", PLANET_TYPE_GAS_GIANT, 120_536, 1_427_000_000L));
         planets.add(createPlanet(planetModel, "Uranus", PLANET_TYPE_ICE_GIANT, 51_800, 2_800_000_000L));
         planets.add(createPlanet(planetModel, "Neptune", PLANET_TYPE_ICE_GIANT, 49_500, 4_489_435_980L));
+        planets.add(createPlanet(planetModel, "Planet+X~\"()[]^*.:", PLANET_TYPE_ICE_GIANT, 70_500, 120_489_435_980L));
         // Attach planets to dataset
         planets.forEach(planet -> planet.addTags(dataset.toString()));
         return planets;

@@ -47,6 +47,8 @@ public final class MultiSearchHelper {
         Set<AttributeModel> result = new HashSet<>();
         result.addAll(finder.findByType(PropertyType.STRING));
         result.addAll(finder.findByType(PropertyType.STRING_ARRAY));
+        // Remove all attributes not indexed (not indexed => not searchable)
+        result.removeIf(attributeModel -> !attributeModel.isIndexed());
         return result;
     }
 }
