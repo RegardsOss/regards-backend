@@ -26,6 +26,7 @@ import fr.cnes.regards.cloud.gateway.authentication.ExternalAuthenticationVerifi
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -89,8 +91,10 @@ public class ExternalTokenVerificationFilter implements GlobalFilter {
                     ServerHttpRequest modifiedRequest = request.mutate()
                                                                .header(AUTHORIZATION, BEARER + " " + jwtVal)
                                                                .build();
-                    // Even if it's an expired Regards token, pass it along, it will be invalidated by the JWTAuthenticationProvider down stream
                     return chain.filter(exchange.mutate().request(modifiedRequest).build());
+                }).onErrorResume(JwtException.class, e -> {
+                    LOGGER.error("Invalid JWT token, unauthorized access");
+                    throw new AccessDeniedException("Invalid JWT token, unauthorized access", e);
                 });
             } else {
                 LOGGER.debug("Token found in already invalid tokens cache");
@@ -118,10 +122,10 @@ public class ExternalTokenVerificationFilter implements GlobalFilter {
 
             return Mono.fromCallable(() -> jwtService.parseToken(authentication))
                        .map(JWTAuthentication::getJwt)
-                       .onErrorResume(JwtException.class, e -> {
+                       .onErrorResume(InvalidJwtException.class, e -> {
                            if (authentication.getTenant() == null) {
                                LOGGER.error("Cannot external authenticate without scope param (header or queryParam)");
-                               return Mono.empty();
+                               return Mono.error(e.getCause());
                            }
                            return externalAuthenticationVerifier.verifyAndAuthenticate(jwtKey,
                                                                                        authentication.getTenant())
@@ -132,7 +136,7 @@ public class ExternalTokenVerificationFilter implements GlobalFilter {
                                                                                 t);
                                                                     // If not resolved, mark token as invalid.
                                                                     invalid.put(jwtKey, jwtKey);
-                                                                    return Mono.empty();
+                                                                    return Mono.error(t.getCause());
                                                                 });
                        })
                        // If resolved, it's supposed to be a valid REGARDS token in any case:

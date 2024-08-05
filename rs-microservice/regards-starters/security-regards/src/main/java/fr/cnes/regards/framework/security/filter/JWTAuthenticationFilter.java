@@ -123,23 +123,16 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 }
 
                 // Authenticate user with JWT
-                try {
-                    final Authentication authentication = authenticationManager.authenticate(jwtAuthentication);
-                    // Set security context
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                final Authentication authentication = authenticationManager.authenticate(jwtAuthentication);
+                // Set security context
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                    MDC.put("username", authentication.getName());
+                MDC.put("username", authentication.getName());
 
-                    LOGGER.debug("[REGARDS JWT FILTER] Access granted");
+                LOGGER.debug("[REGARDS JWT FILTER] Access granted");
 
-                    // Continue the filtering chain
-                    filterChain.doFilter(request, response);
-                } catch (AuthenticationException e) {
-                    if (e.getCause() instanceof ExpiredJwtException expiredJwtException) {
-                        MDC.put("username", expiredJwtException.getClaims().getSubject());
-                    }
-                    throw e;
-                }
+                // Continue the filtering chain
+                filterChain.doFilter(request, response);
             }
         }
     }
