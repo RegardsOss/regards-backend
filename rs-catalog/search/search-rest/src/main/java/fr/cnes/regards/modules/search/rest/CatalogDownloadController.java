@@ -131,7 +131,7 @@ public class CatalogDownloadController {
             if (damResp.status() != HttpStatus.OK.value()) {
                 LOGGER.error("Error downloading file {} from storage", checksum);
             }
-            addHeaders(damResp, null, response);
+            addHeaders(damResp, null, response, isContentInline);
             return formatDamResponse(damResp);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             LOGGER.error(String.format("Error downloading file through storage microservice. Cause : %s",
@@ -296,13 +296,16 @@ public class CatalogDownloadController {
                                                     Boolean isContentInline,
                                                     HttpServletResponse response) throws IOException {
         Response storageResponse = storageRestClient.downloadFile(checksum, isContentInline);
-        addHeaders(storageResponse, fileName, response);
+        addHeaders(storageResponse, fileName, response, isContentInline);
         return storageResponse.status() == HttpStatus.OK.value() ?
             CatalogDownloadResponse.successfulDownload(storageResponse) :
             CatalogDownloadResponse.failedDownload(storageResponse);
     }
 
-    private void addHeaders(Response fromStorageResponse, @Nullable String fileName, HttpServletResponse inResponse) {
+    private void addHeaders(Response fromStorageResponse,
+                            @Nullable String fileName,
+                            HttpServletResponse inResponse,
+                            Boolean isContentInline) {
         // Add storage headers in the response
         // CacheControl headers are filtered because This download endpoints must not activate cache control.
         // Headers are not added in ResponseEntity but in HttpServletResponse
@@ -315,7 +318,9 @@ public class CatalogDownloadController {
                            .forEach(header -> addHeaders(header, inResponse));
         if (fileName != null) {
             inResponse.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                                 ContentDisposition.builder("attachment").filename(fileName).build().toString());
+                                 ContentDisposition.builder((isContentInline == null || !isContentInline) ?
+                                                                "attachment" :
+                                                                "inline").filename(fileName).build().toString());
         }
     }
 
