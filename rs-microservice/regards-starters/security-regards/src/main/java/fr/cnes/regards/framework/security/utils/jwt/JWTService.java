@@ -235,6 +235,9 @@ public class JWTService implements InitializingBean {
         } catch (MalformedJwtException | IllegalArgumentException | SignatureException m) {
             LOG.error("Failed to parse claims");
             throw new InvalidJwtException(m);
+        } catch (ExpiredJwtException e) {
+            LOG.error("Expired token");
+            throw new JwtException(e);
         }
 
         String tenant = claims.getBody().get(CLAIM_TENANT, String.class);

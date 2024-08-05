@@ -76,7 +76,7 @@ public class JWTServiceIT {
      * Test JWT generation without group
      */
     @Test
-    public void generateJWT() throws IOException {
+    public void generateJWT() {
 
         // Generate token
         final String jwt = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE);
@@ -97,6 +97,21 @@ public class JWTServiceIT {
             LOGGER.debug(message, e);
             Assert.fail(message);
         }
+    }
+
+    @Test(expected = JwtException.class)
+    public void test_expired_tokens() throws JwtException {
+        // Generate expired token
+        final String jwt = jwtService.generateToken(TENANT,
+                                                    LOGIN,
+                                                    EMAIL,
+                                                    ROLE,
+                                                    OffsetDateTime.now().minusHours(1),
+                                                    new HashMap<>());
+        LOGGER.debug(jwt);
+        // Expect JwtException is thrown
+        jwtService.parseToken(new JWTAuthentication(jwt));
+
     }
 
     /**
@@ -147,7 +162,8 @@ public class JWTServiceIT {
         String token = jwtService.generateToken(TENANT,
                                                 LOGIN,
                                                 EMAIL,
-                                                ROLE, OffsetDateTime.now().plusDays(3),
+                                                ROLE,
+                                                OffsetDateTime.now().plusDays(3),
                                                 addParams,
                                                 null,
                                                 true);

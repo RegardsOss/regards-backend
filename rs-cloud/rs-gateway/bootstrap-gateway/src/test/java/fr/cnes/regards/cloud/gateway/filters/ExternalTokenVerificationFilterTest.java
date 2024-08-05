@@ -5,6 +5,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import org.junit.jupiter.api.AfterEach;
@@ -111,7 +112,7 @@ class ExternalTokenVerificationFilterTest {
         when(authentication.getTenant()).thenReturn(TENANT);
         when(authentication.getJwt()).thenReturn(authenticationToken);
         doNothing().when(authentication).setTenant(any());
-        JwtException expected = new JwtException("Expected");
+        JwtException expected = new InvalidJwtException("Expected");
         when(jwtService.parseToken(any())).thenThrow(expected);
 
         HttpHeaders requestHeaders = new HttpHeaders();
@@ -125,7 +126,7 @@ class ExternalTokenVerificationFilterTest {
                                                                   anyString())).thenReturn(Mono.error(err));
 
         // -- WHEN --
-        StepVerifier.create(tokenFilter.filter(exchange, filterChain)).verifyComplete();
+        StepVerifier.create(tokenFilter.filter(exchange, filterChain)).verifyError();
 
         // -- THEN --
         assertFalse(tokenFilter.getValidCache().asMap().containsKey(token));
@@ -142,7 +143,7 @@ class ExternalTokenVerificationFilterTest {
         when(authentication.getTenant()).thenReturn(TENANT);
         when(authentication.getJwt()).thenReturn(token);
         doNothing().when(authentication).setTenant(any());
-        JwtException expected = new JwtException("Expected");
+        JwtException expected = new InvalidJwtException("Expected");
         when(jwtService.parseToken(any())).thenThrow(expected);
 
         HttpHeaders requestHeaders = new HttpHeaders();
