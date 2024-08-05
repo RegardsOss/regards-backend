@@ -25,8 +25,10 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionResult;
+import fr.cnes.regards.modules.crawler.domain.IngestionStatus;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
@@ -42,6 +44,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -62,6 +66,8 @@ public class IngesterService implements IHandler<PluginConfEvent> {
      */
     public static final AtomicBoolean managing = new AtomicBoolean(false);
 
+    public static final AtomicBoolean startup = new AtomicBoolean(true);
+
     /**
      * An atomic boolean permitting to take into account a new data source creation or update while managing current ones
      * (or inverse)
@@ -81,6 +87,9 @@ public class IngesterService implements IHandler<PluginConfEvent> {
     private DatasourceIngestionService dsIngestionService;
 
     @Autowired
+    private IDatasourceIngestionRepository datasourceIngestionRepository;
+
+    @Autowired
     private IDatasourceIngesterService datasourceIngester;
 
     /**
@@ -88,9 +97,18 @@ public class IngesterService implements IHandler<PluginConfEvent> {
      */
     private boolean consumeOnlyMode = false;
 
+    private CrawlerService crawlerService;
+
     @EventListener
     public void handleApplicationReadyEvent(ModelJsonReadyEvent event) {
         subscriber.subscribeTo(PluginConfEvent.class, this);
+        // Clean started process if any. There should be no started crawling process at startup as the dam
+        // service is not scalable.
+        try {
+            forceRunningDataSourcesToErrorStatus();
+        } finally {
+            startup.set(false);
+        }
     }
 
     /**
@@ -123,6 +141,10 @@ public class IngesterService implements IHandler<PluginConfEvent> {
     @Scheduled(initialDelayString = "${regards.ingester.rate.init.ms:300000}",
                fixedDelayString = "${regards.ingester.rate.ms:60000}")
     public void manage() {
+        if (startup.get()) {
+            // Service is starting. Wait ...
+            return;
+        }
         LOGGER.info("IngesterService.manage() called...");
         // if this method is called while currently been executed, doItAgain is set to true and nothing else is done
         if (managing.getAndSet(true)) {
@@ -184,6 +206,40 @@ public class IngesterService implements IHandler<PluginConfEvent> {
             dsIngestionService.setNotFinished(dsId, nfe);
         }
         return summary;
+    }
+
+    /**
+     * Used at service startup to update started datasource to error status.
+     */
+    private void forceRunningDataSourcesToErrorStatus() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                List<DatasourceIngestion> datasources = datasourceIngestionRepository.findAll();
+                datasources.forEach(datasourceIngestion -> {
+                    if (datasourceIngestion.getStatus() == IngestionStatus.STARTED) {
+                        String errorMessage = String.format(
+                            "Datasource %s was in started state at service startup. Updating "
+                            + "state to error. This datasource crawling will be restarted as "
+                            + "soon as possible.",
+                            datasourceIngestion.getLabel());
+                        LOGGER.error(errorMessage);
+                        // Force status to error
+                        datasourceIngestion.setStatus(IngestionStatus.ERROR);
+                        // Add startup restart message
+                        String stackTrace = datasourceIngestion.getStackTrace() != null ? String.format("%s%n%s",
+                                                                                                        datasourceIngestion.getStackTrace(),
+                                                                                                        errorMessage) : errorMessage;
+                        datasourceIngestion.setStackTrace(stackTrace);
+                        // Update next planed date to now in order to force crawling restart.
+                        datasourceIngestion.setNextPlannedIngestDate(OffsetDateTime.now());
+                    }
+                });
+                datasourceIngestionRepository.saveAll(datasources);
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
     }
 
     private void setDatasourceIngestInError(String dsId, Exception e) {

@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionResult;
+import fr.cnes.regards.modules.crawler.domain.IngestionStatus;
 import fr.cnes.regards.modules.crawler.service.conf.CrawlerPropertiesConfiguration;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
