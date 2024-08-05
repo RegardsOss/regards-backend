@@ -47,7 +47,7 @@ public abstract class AbstractCrawlerService<T extends AbstractEntityEvent> impl
      * All tenants resolver
      */
     @Autowired
-    private ITenantResolver tenantResolver;
+    protected ITenantResolver tenantResolver;
 
     /**
      * Current tenant resolver

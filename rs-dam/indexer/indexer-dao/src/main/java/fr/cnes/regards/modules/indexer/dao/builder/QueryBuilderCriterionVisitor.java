@@ -26,7 +26,10 @@ import fr.cnes.regards.modules.indexer.dao.spatial.builders.EnvelopeBuilder;
 import fr.cnes.regards.modules.indexer.dao.spatial.builders.PolygonBuilder;
 import fr.cnes.regards.modules.indexer.domain.criterion.*;
 import org.elasticsearch.geometry.Geometry;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.IOException;
@@ -118,9 +121,10 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
             case STARTS_WITH:
                 return QueryBuilders.matchPhrasePrefixQuery(attName, searchValue).maxExpansions(10_000);
             case ENDS_WITH:
-                return QueryBuilders.regexpQuery(attName + searchIndexSuffix, ".*" + escape(searchValue));
+                return QueryBuilders.regexpQuery(attName + searchIndexSuffix, ".*" + regExpEscape(searchValue)).caseInsensitive(true);
             case CONTAINS:
-                return QueryBuilders.regexpQuery(attName + searchIndexSuffix, ".*" + escape(searchValue) + ".*");
+                return QueryBuilders.regexpQuery(attName + searchIndexSuffix, ".*" + regExpEscape(searchValue) +
+                                                                              ".*").caseInsensitive(criterion.getMatchType() == StringMatchType.FULL_TEXT_SEARCH);
             case REGEXP:
                 return QueryBuilders.regexpQuery(attName + searchIndexSuffix, searchValue);
             default:
@@ -128,18 +132,33 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
         }
     }
 
-    private String escape(String searchValue) {
-        return "\"" + searchValue + "\"";
+    private String regExpEscape(String searchValue) {
+        return searchValue.replaceAll("([\\.\\?\\+\\*\\|\\{\\}\\[\\]\\(\\)\"])", "\\\\$1");
     }
 
+    /**
+     * Beware: criterion type isn't used, a multi-match criterion forcely use a "contains text" behaviour
+     */
     @Override
     public QueryBuilder visitStringMultiMatchCriterion(StringMultiMatchCriterion criterion) {
         String searchValue = criterion.getValue();
         Set<String> attNames = criterion.getNames();
-        MultiMatchQueryBuilder builder = QueryBuilders.multiMatchQuery(searchValue,
-                                                                       attNames.toArray(new String[attNames.size()]));
-        builder.type(criterion.getType());
-        return builder;
+        // remove starting and trailing '*' if exists
+        if (searchValue.startsWith("*")) {
+            searchValue = searchValue.substring(1);
+        }
+        if (searchValue.endsWith("*")) {
+            searchValue = searchValue.substring(0, searchValue.length() - 1);
+        }
+        // Create a "should" of regexps using searchValue starting and ending with ".*"
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        for (String attName : attNames) {
+            // regexp is a term-level query, so it applies to  ".keyword" subfield, searchValue is regexp escaped
+            boolQueryBuilder.should(QueryBuilders.regexpQuery(attName + ".keyword",
+                                                              ".*" + regExpEscape(searchValue) + ".*")
+                                                 .caseInsensitive(true));
+        }
+        return boolQueryBuilder;
     }
 
     @Override

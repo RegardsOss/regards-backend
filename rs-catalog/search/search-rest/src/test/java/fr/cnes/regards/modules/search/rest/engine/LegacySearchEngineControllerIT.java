@@ -316,7 +316,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
                           ENGINE_TYPE);
 
         customizer = customizer().expectStatusOk();
-        customizer.expectValue("$.metadata.totalElements", 12);
+        customizer.expectValue("$.metadata.totalElements", 13);
         customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.FEATURE_FILE_RAWDATA_FILENAME + ":(*.txt)");
         addCommontMatchers(customizer);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
@@ -352,7 +352,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         customizer.addParameter("sort", "providerId" + ",ASC");
         customizer.expectValue("$.content[0].content.providerId", JUPITER);
         customizer.expectValue("$.content[1].content.providerId", MERCURY);
-        addFullTextSearchQuery(customizer, "\"" + MERCURY + " " + JUPITER + "\"");
+        addFullTextSearchQuery(customizer, MERCURY + " OR " + JUPITER);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,
                           "Search all error",
@@ -374,7 +374,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
         customizer.addParameter("sort", "providerId" + ",ASC");
-        customizer.expectValue("$.content.length()", 12);
+        customizer.expectValue("$.content.length()", 13);
         addSearchTermQuery(customizer, "origine.name", "CNE*");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,
@@ -482,7 +482,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
 
         // Search the 9 planets
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expectValue("$.length()", 12);
+        customizer.expectValue("$.length()", 13);
 
         customizer.addParameter("maxCount", "13");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTY_VALUES,
@@ -493,7 +493,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
 
         // Search only the 8 planets of the solar system
         customizer = customizer().expectStatusOk();
-        customizer.expectValue("$.length()", 8);
+        customizer.expectValue("$.length()", 9);
 
         // Retrieve dataset URN
         Dataset solarSystem = getAstroObject(SOLAR_SYSTEM);
@@ -535,7 +535,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
 
         customizer.expectIsNotEmpty("$..[?(@.propertyName=='properties.sun_distance')]");
         customizer.expectValue("$..[?(@.propertyName=='properties.sun_distance')].lowerBound", 7000000);
-        customizer.expectValue("$..[?(@.propertyName=='properties.sun_distance')].upperBound", 4_489_435_980L);
+        customizer.expectValue("$..[?(@.propertyName=='properties.sun_distance')].upperBound", 120_489_435_980L);
 
         customizer.expectIsNotEmpty("$..[?(@.propertyName=='properties.TimePeriod.startDate')]");
 

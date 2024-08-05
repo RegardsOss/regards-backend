@@ -69,7 +69,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addParameter("page", "1");
         customizer.addParameter("maxRecords", "3");
         customizer.expect(MockMvcResultMatchers.xpath("feed/itemsPerPage").string(Matchers.is("3")));
-        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("15")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("16")));
         customizer.expect(MockMvcResultMatchers.xpath("feed/startIndex").string(Matchers.is("4")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,
@@ -97,7 +97,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         // Test specific opensearch pagination parameters
         customizer.addParameter(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME, "1");
         customizer.addParameter(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME, "100");
-        customizer.expectValue("$.properties.totalResults", 15);
+        customizer.expectValue("$.properties.totalResults", 16);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,
                           "Search all error",
@@ -182,7 +182,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("TimePeriod.startDate", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.addParameter("TimePeriod.stopDate", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
-        customizer.expectValue("$.properties.totalResults", 12);
+        customizer.expectValue("$.properties.totalResults", 13);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,
                           "Search all error",
@@ -207,7 +207,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("debut", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.addParameter("fin", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
-        customizer.expectValue("$.properties.totalResults", 12);
+        customizer.expectValue("$.properties.totalResults", 13);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,
                           "Search all error",
@@ -221,7 +221,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                                 String.format("(TimePeriod.startDate:[%s TO %s])",
                                               startDateValue.format(DateTimeFormatter.ISO_DATE_TIME),
                                               stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME)));
-        customizer.expectValue("$.properties.totalResults", 12);
+        customizer.expectValue("$.properties.totalResults", 13);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,
                           "Search all error",
@@ -318,7 +318,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                                                       + "/Parameter[@name='sun_distance' and @minInclusive='7000000.0']")
                                                .exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl
-                                                      + "/Parameter[@name='sun_distance' and @maxInclusive='4.48943598E9']")
+                                                      + "/Parameter[@name='sun_distance' and @maxInclusive='1.2048943598E11']")
                                                .exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=25]").exists());
 
@@ -382,7 +382,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
         customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
-        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("21")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("22")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING,
                           customizer,
                           "Search all error",
@@ -395,7 +395,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
         customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
-        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("15")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("16")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer,
                           "Search all error",
@@ -413,7 +413,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
         customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
-        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("8")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("9")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING,
                           customizer,
                           "Search all error",
@@ -427,7 +427,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         customizer.addParameter("page", "0");
         customizer.addParameter("maxRecords", "100");
-        customizer.expectValue("$.properties.totalResults", 21);
+        customizer.expectValue("$.properties.totalResults", 22);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING,
                           customizer,
                           "Search all error",
