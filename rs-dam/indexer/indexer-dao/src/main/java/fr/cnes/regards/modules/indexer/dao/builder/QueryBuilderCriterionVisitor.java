@@ -124,7 +124,7 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
                 return QueryBuilders.regexpQuery(attName + searchIndexSuffix, ".*" + regExpEscape(searchValue)).caseInsensitive(true);
             case CONTAINS:
                 return QueryBuilders.regexpQuery(attName + searchIndexSuffix, ".*" + regExpEscape(searchValue) +
-                                                                              ".*").caseInsensitive(criterion.getMatchType() == StringMatchType.FULL_TEXT_SEARCH);
+                                                                              ".*").caseInsensitive(true);
             case REGEXP:
                 return QueryBuilders.regexpQuery(attName + searchIndexSuffix, searchValue);
             default:
