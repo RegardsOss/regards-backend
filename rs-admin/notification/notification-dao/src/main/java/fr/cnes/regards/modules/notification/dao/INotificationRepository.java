@@ -69,7 +69,7 @@ public interface INotificationRepository
      * @return The list of notifications
      */
     default Page<Notification> findByStatus(NotificationStatus status, Pageable pageable) {
-        Page<Long> idPage = findIdPageByStatus(status.toString(), pageable);
+        Page<Long> idPage = findIdPageByStatus(status, pageable);
         List<Notification> notifs = findAllNotificationByIdInOrderByIdDesc(idPage.stream()
                                                                                  .collect(Collectors.toList()));
         return new PageImpl<>(notifs, idPage.getPageable(), idPage.getTotalElements());
@@ -79,16 +79,8 @@ public interface INotificationRepository
                  type = EntityGraph.EntityGraphType.LOAD)
     List<Notification> findAllNotificationByIdInOrderByIdDesc(List<Long> ids);
 
-    @Query(value = "select notif.id from {h-schema}t_notification notif "
-                   + "left join {h-schema}ta_notification_projectuser_email pu on notif.id=pu.notification_id "
-                   + "left join {h-schema}ta_notification_role_name role on notif.id=role.notification_id "
-                   + "where notif.status=:status",
-           countQuery = "select count(notif.id) from {h-schema}t_notification notif "
-                        + "left join {h-schema}ta_notification_projectuser_email pu on notif.id=pu.notification_id "
-                        + "left join {h-schema}ta_notification_role_name role on notif.id=role.notification_id "
-                        + "where notif.status=:status",
-           nativeQuery = true)
-    Page<Long> findIdPageByStatus(@Param("status") String status, Pageable pageable);
+    @Query(value = "select id from Notification where status=:status", countQuery = "select count(1) from Notification where status=:status")
+    Page<Long> findIdPageByStatus(@Param("status") NotificationStatus status, Pageable pageable);
 
     Long countByStatus(NotificationStatus pStatus);
 
