@@ -48,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -103,6 +104,26 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
             roleService.createRole(new Role(authResolver.getRole(),
                                             roleService.retrieveRole(DefaultRole.REGISTERED_USER.toString())));
         }
+    }
+
+    @Test
+    public void test_retrieve_notif_to_send() {
+        int nbNotifs = 60;
+        // Given
+        for (int i = 0; i < nbNotifs; i++) {
+            notificationService.createNotification(new NotificationDtoBuilder("message",
+                                                                                                   "title",
+                                                                                                   NotificationLevel.INFO,
+                                                                                                   "moi").toRolesAndUsers(
+                Sets.newHashSet(DefaultRole.EXPLOIT.toString()),
+                Sets.newHashSet("jeanclaude")));
+        }
+
+        Page<Notification> toSend = notificationService.retrieveNotificationsToSend(PageRequest.of(0, 10));
+        Assert.assertEquals(10, toSend.getNumberOfElements());
+        Assert.assertEquals(nbNotifs, toSend.getTotalElements());
+        toSend.getContent().forEach(n -> Assert.assertEquals(3, n.getRoleRecipients().size()));
+        toSend.getContent().forEach(n -> Assert.assertEquals(1, n.getProjectUserRecipients().size()));
     }
 
     @Test
