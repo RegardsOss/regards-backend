@@ -68,5 +68,6 @@
         <module>s3-storage-utils-dto</module>
         <module>xml-utils</module>
         <module>response-entity-utils</module>
+        <module>validation-utils</module>
     </modules>
 </project>

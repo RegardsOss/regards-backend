@@ -58,7 +58,11 @@
             <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
             <artifactId>plugins-dto</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>validation-utils</artifactId>
+        </dependency>
+        
         <!-- External -->
         <dependency>
             <groupId>org.springframework</groupId>

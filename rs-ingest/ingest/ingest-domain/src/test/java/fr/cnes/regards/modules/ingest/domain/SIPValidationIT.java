@@ -19,10 +19,11 @@
 package fr.cnes.regards.modules.ingest.domain;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.oais.dto.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.oais.dto.sip.SIPReference;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
@@ -118,7 +119,7 @@ public class SIPValidationIT {
         if (!errors.hasErrors()) {
             Assert.fail("An empty SIP reference should be invalid");
         }
-        Assert.assertEquals(4, errors.getErrorCount());
+        Assert.assertEquals(5, errors.getErrorCount());
     }
 
     /**
@@ -129,7 +130,10 @@ public class SIPValidationIT {
     @Purpose("SIP validation")
     public void validSIPReference() {
 
-        SIPDto sip = SIPDto.buildReference(EntityType.DATA, PROVIDER_ID, Paths.get("sip.xml"), "checksum");
+        SIPDto sip = SIPDto.buildReference(EntityType.DATA,
+                                           PROVIDER_ID,
+                                           Paths.get("sip.xml"),
+                                           "c26f20f5ef4453400b47fc98c3ce86b3");
         validator.validate(sip, errors);
         if (errors.hasErrors()) {
             Assert.fail("Builder should properly build SIP reference");
@@ -172,7 +176,7 @@ public class SIPValidationIT {
         sip.withGeometry(IGeometry.point(IGeometry.position(10.0, 10.0)));
         // Content information
         // Content information - data object
-        sip.withDataObject(DataType.RAWDATA, Paths.get("sip.fits"), "abff1dffdfdf2sdsfsd");
+        sip.withDataObject(DataType.RAWDATA, Paths.get("sip.fits"), RandomChecksumUtils.generateRandomChecksum());
         // Content information - data object representation information
         sip.withSyntaxAndSemantic("FITS",
                                   "http://www.iana.org/assignments/media-types/application/fits",

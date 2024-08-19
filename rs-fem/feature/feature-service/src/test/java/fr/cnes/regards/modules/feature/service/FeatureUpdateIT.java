@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropert
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -702,7 +703,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                                                                            "fileName",
                                                                            10L,
                                                                            "MD5",
-                                                                           "checksum");
+                                                                           RandomChecksumUtils.generateRandomChecksum());
             updates.forEach(u -> u.getFeature().getFiles().add(FeatureFile.build(attributes, newLocations)));
         } else {
 

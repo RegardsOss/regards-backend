@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
@@ -87,7 +88,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
     @Test
     public void create_cacheFile_in_internalCache() throws MalformedURLException {
         // Given : initialize new file in cache
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1).truncatedTo(ChronoUnit.MICROS);
 
         Assert.assertFalse("File should not referenced in cache", cacheService.findByChecksum(checksum).isPresent());
@@ -136,7 +137,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
     @Test
     public void create_cacheFile_in_externalCache() throws MalformedURLException {
         // Given : initialize new file in cache
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1).truncatedTo(ChronoUnit.MICROS);
 
         Assert.assertFalse("File should not referenced in cache", cacheService.findByChecksum(checksum).isPresent());
@@ -361,7 +362,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
         if (!Files.exists(path)) {
             Files.createFile(path);
         }
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         try {
             cacheFileRepository.save(CacheFile.buildFileInternalCache(checksum,
                                                                       12L,

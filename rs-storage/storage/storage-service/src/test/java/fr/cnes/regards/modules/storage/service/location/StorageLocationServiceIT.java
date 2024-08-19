@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.StorageLocationDto;
@@ -114,7 +115,7 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
     }
 
     private FileReference createFileReference(String storage, Long fileSize, boolean pendingActionRemaining) {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum,
                                                                        "MD5",
                                                                        "file.test",

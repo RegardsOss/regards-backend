@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.service;
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -173,7 +174,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                                        "fileName",
                                                                        10L,
                                                                        "MD5",
-                                                                       "new_file_checksum");
+                                                                       RandomChecksumUtils.generateRandomChecksum());
         FeatureFileLocation location = FeatureFileLocation.build("file:///test/file.txt", "somewhere");
         events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes, location));
 
@@ -183,7 +184,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                                         "fileName2",
                                                                         10L,
                                                                         "MD5",
-                                                                        "new_file_checksum_2");
+                                                                        RandomChecksumUtils.generateRandomChecksum());
         FeatureFileLocation location2 = FeatureFileLocation.build("file:///dir/file.txt");
         events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes2, location2));
         events.get(0).getMetadata().setStorages(Lists.newArrayList(StorageMetadata.build("elsewhere")));
@@ -208,7 +209,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                                        "fileName2",
                                                                        10L,
                                                                        "MD5",
-                                                                       "checksum2");
+                                                                       RandomChecksumUtils.generateRandomChecksum());
         FeatureFileLocation location = FeatureFileLocation.build("file://dir/file.txt");
         events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes, location));
 

@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.*;
@@ -219,7 +220,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         sip.withDataObject(DataType.RAWDATA,
                            Paths.get("src", "test", "resources", "data", fileName),
                            "MD5",
-                           UUID.randomUUID().toString());
+                           RandomChecksumUtils.generateRandomChecksum());
         sip.withSyntax(MediaType.APPLICATION_JSON);
         sip.registerContentInformation();
         if ((tags != null) && !tags.isEmpty()) {

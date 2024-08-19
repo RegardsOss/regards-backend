@@ -19,6 +19,9 @@
 package fr.cnes.regards.modules.fileaccess.dto.request;
 
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.validation.ValidFileStorageRequestChecksum;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import java.util.Optional;
@@ -38,26 +41,35 @@ import java.util.Optional;
  *
  * @author Sébastien Binda
  */
+@ValidFileStorageRequestChecksum(message = "The file storage request checksum is not valid for this algorithm")
 public class FileStorageRequestDto {
 
+    @NotBlank(message = "File name is mandatory")
     private String fileName;
 
+    @NotBlank(message = "Checksum is mandatory")
     private String checksum;
 
+    @NotBlank(message = "Algorithm is mandatory")
     private String algorithm;
 
+    @NotBlank(message = "MimeType is mandatory")
     private String mimeType;
 
+    @NotBlank(message = "Owner is mandatory")
     private String owner;
 
     private String type;
 
+    @NotBlank(message = "Origine URL is mandatory")
     private String originUrl;
 
+    @NotBlank(message = "Storage is mandatory")
     private String storage;
 
     private FileReferenceMetaInfoDto metaInfo;
 
+    @Nullable
     private String subDirectory;
 
     private String sessionOwner;

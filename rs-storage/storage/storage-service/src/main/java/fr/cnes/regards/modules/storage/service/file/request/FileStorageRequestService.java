@@ -23,6 +23,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -39,6 +40,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestResultDto;
@@ -81,6 +83,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeTypeUtils;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -138,6 +143,8 @@ public class FileStorageRequestService {
 
     private final ITemplateService templateService;
 
+    private final Validator validator;
+
     @Value("${regards.storage.storage.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
 
@@ -159,7 +166,8 @@ public class FileStorageRequestService {
                                      SessionNotifier sessionNotifier,
                                      IJobInfoRepository jobInfoRepo,
                                      INotificationClient notificationClient,
-                                     ITemplateService templateService) {
+                                     ITemplateService templateService,
+                                     Validator validator) {
         this.pluginService = pluginService;
         this.fileStorageRequestRepo = fileStorageRequestRepo;
         this.jobInfoService = jobInfoService;
@@ -176,6 +184,7 @@ public class FileStorageRequestService {
         this.jobInfoRepo = jobInfoRepo;
         this.notificationClient = notificationClient;
         this.templateService = templateService;
+        this.validator = validator;
     }
 
     /**
@@ -193,11 +202,27 @@ public class FileStorageRequestService {
         Set<FileStorageRequestAggregation> existingRequests = fileStorageRequestRepo.findByMetaInfoChecksumIn(checksums);
         Set<FileDeletionRequest> existingDeletionRequests = fileDelReqService.searchByChecksums(checksums);
         for (FilesStorageRequestEvent item : list) {
-            doStore(item.getFiles(), item.getGroupId(), existingFiles, existingRequests, existingDeletionRequests);
-            reqGroupService.granted(item.getGroupId(),
-                                    FileRequestType.STORAGE,
-                                    item.getFiles().size(),
-                                    getRequestExpirationDate());
+
+            Errors errors = new MapBindingResult(new HashMap<>(), FileReferenceRequestDto.class.getName());
+            validator.validate(item, errors);
+            if (errors.hasErrors()) {
+                reqGroupService.denied(item.getGroupId(),
+                                       FileRequestType.REFERENCE,
+                                       ErrorTranslator.getErrorsAsString(errors));
+                // notify denied requests to the session agent
+                item.getFiles().forEach(file -> {
+                    String sessionOwner = file.getSessionOwner();
+                    String session = file.getSession();
+                    this.sessionNotifier.incrementReferenceRequests(sessionOwner, session);
+                    this.sessionNotifier.incrementDeniedRequests(sessionOwner, session);
+                });
+            } else {
+                doStore(item.getFiles(), item.getGroupId(), existingFiles, existingRequests, existingDeletionRequests);
+                reqGroupService.granted(item.getGroupId(),
+                                        FileRequestType.STORAGE,
+                                        item.getFiles().size(),
+                                        getRequestExpirationDate());
+            }
         }
     }
 

@@ -548,6 +548,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.utils</groupId>
+                <artifactId>validation-utils</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.utils</groupId>
                 <artifactId>exception-utils</artifactId>
                 <version>${revision}</version>
             </dependency>

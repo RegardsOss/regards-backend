@@ -73,6 +73,10 @@
             <artifactId>jpa-commons-regards</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>validation-utils</artifactId>
+        </dependency>
 
     </dependencies>
 

@@ -54,6 +54,7 @@
     </parent>
 
     <dependencies>
+        <!-- Regards -->
         <dependency>
             <groupId>fr.cnes.regards.modules.model</groupId>
             <artifactId>model-dto</artifactId>
@@ -76,12 +77,25 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>validation-utils</artifactId>
+        </dependency>
+
+        <!-- External -->
+        <dependency>
             <groupId>org.springframework.hateoas</groupId>
             <artifactId>spring-hateoas</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>swagger-regards-starter</artifactId>
+        </dependency>
+
+        <!-- Tests-->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

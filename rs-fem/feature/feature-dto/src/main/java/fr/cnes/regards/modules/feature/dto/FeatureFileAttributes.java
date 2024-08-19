@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.dto;
 
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
+import fr.cnes.regards.modules.feature.dto.validation.ValidFeatureFileAttributes;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.util.MimeType;
@@ -29,6 +30,7 @@ import org.springframework.util.MimeType;
  *
  * @author Marc SORDI
  */
+@ValidFeatureFileAttributes(message = "The feature file attributes checksum is not valid for this algorithm")
 public class FeatureFileAttributes {
 
     @NotNull(message = "Data type is required")

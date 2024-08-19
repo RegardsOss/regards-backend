@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.service.file.request;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
@@ -216,7 +217,7 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
     public void checkGroupExpired() {
         String groupId = UUID.randomUUID().toString();
         String destStorage = ONLINE_CONF_LABEL;
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         List<FilesStorageRequestEvent> items = new ArrayList<>();
 
         // 1. Run a storage request
@@ -267,7 +268,7 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
     public void checkGroupPending() {
         String groupId = UUID.randomUUID().toString();
         String destStorage = ONLINE_CONF_LABEL;
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         storageReqService.createNewFileStorageRequest(Sets.newHashSet("owner"),
                                                       new FileReferenceMetaInfo(checksum,
                                                                                 "UUID",

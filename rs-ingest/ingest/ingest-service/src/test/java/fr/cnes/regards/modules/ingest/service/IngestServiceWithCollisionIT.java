@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
@@ -31,8 +31,8 @@ import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.service.aip.scheduler.IngestRequestSchedulerService;
@@ -120,7 +120,7 @@ public class IngestServiceWithCollisionIT extends IngestMultitenantServiceIT {
 
         // Ingest SIP
         String providerId = "SIP_001";
-        String checksum = "zaasfsdfsdlfkmsldgfml12df";
+        String checksum = "a1b81e2b75c8c1ec4a2ca5bdf607bb75";
         ingestSIP(providerId, checksum);
         ingestRequestSchedulerService.scheduleRequests();
         ingestServiceTest.waitForIngestion(1, TEN_SECONDS, getDefaultTenant());

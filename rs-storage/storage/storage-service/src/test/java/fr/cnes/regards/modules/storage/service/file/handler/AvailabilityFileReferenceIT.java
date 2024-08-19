@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
@@ -113,7 +114,7 @@ public class AvailabilityFileReferenceIT extends AbstractStorageIT {
                                                   SESSION_1,
                                                   false).get();
         // Simulate storage of a file in two locations : 1 in nearline and 1 in online
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         generateStoredFileReference(checksum,
                                     "owner",
                                     "file.online.nealine.test",

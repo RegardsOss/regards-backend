@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.fileaccess.dto.request;
 
+import fr.cnes.regards.modules.fileaccess.dto.validation.ValidFileReferenceRequestChecksum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.util.Assert;
@@ -38,6 +39,7 @@ import org.springframework.util.Assert;
  *
  * @author Sébastien Binda
  */
+@ValidFileReferenceRequestChecksum(message = "The file reference request checksum is not valid for this algorithm")
 public class FileReferenceRequestDto {
 
     @NotBlank(message = "File name is required for FileReferenceRequest")

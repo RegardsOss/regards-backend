@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
@@ -133,7 +134,7 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
      */
     @Test
     public void delete_file_one_owner() {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String storage = "some-storage";
         String owner = "owner";
         this.referenceFile(checksum, owner, null, "file.test", storage, SESSION_OWNER_1, SESSION_1, false);
@@ -199,7 +200,7 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
      */
     @Test
     public void delete_file_multiple_owners() {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String storage = "some-storage";
         String owner = "owner";
         this.referenceFile(checksum, owner, null, "file.test", storage, SESSION_OWNER_1, SESSION_1, false);
@@ -252,7 +253,7 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
      */
     @Test
     public void delete_file_last_owner() throws InterruptedException, ExecutionException {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String owner = "owner";
         FileReference fileRef = this.generateStoredFileReference(checksum,
                                                                  owner,
@@ -348,7 +349,7 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
      */
     @Test
     public void delete_file_error() throws InterruptedException, ExecutionException {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String owner = "owner";
         FileReference fileRef = this.generateStoredFileReference(checksum,
                                                                  owner,
@@ -438,7 +439,7 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
      */
     @Test
     public void delete_file_error_force() throws InterruptedException, ExecutionException {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String owner = "owner";
         FileReference fileRef = this.generateStoredFileReference(checksum,
                                                                  owner,
@@ -532,7 +533,7 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
     public void delete_referenced_file() {
         // PREPARATION
         // init parameters
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String storage = "local";
         String owner = "owner-test";
 

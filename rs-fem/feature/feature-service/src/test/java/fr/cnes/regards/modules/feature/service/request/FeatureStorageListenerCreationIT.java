@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.service.request;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.IFeatureCopyRequestRepository;
@@ -118,7 +119,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         FileReferenceDto ref = null;
         info.getErrorRequests()
             .add(RequestResultInfoDto.build(info.getGroupId(),
-                                            "",
+                                            RandomChecksumUtils.generateRandomChecksum(),
                                             "",
                                             "",
                                             Lists.newArrayList(),
@@ -164,7 +165,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         FileReferenceDto ref = null;
         info.getErrorRequests()
             .add(RequestResultInfoDto.build(info.getGroupId(),
-                                            "",
+                                            RandomChecksumUtils.generateRandomChecksum(),
                                             "",
                                             "",
                                             Lists.newArrayList(),
@@ -187,9 +188,9 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
 
         RequestInfo info = RequestInfo.build();
 
-        initData(info);
+        String checksum = initData(info);
         RequestResultInfoDto resultInfo = RequestResultInfoDto.build(null,
-                                                                     "checksum",
+                                                                     checksum,
                                                                      null,
                                                                      "dtc",
                                                                      Sets.newHashSet(featureRepo.findAll()
@@ -227,7 +228,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
 
         initData(info);
         RequestResultInfoDto resultInfo = RequestResultInfoDto.build(null,
-                                                                     "fail",
+                                                                     RandomChecksumUtils.generateRandomChecksum(),
                                                                      null,
                                                                      "dtc",
                                                                      Sets.newHashSet(featureRepo.findAll()
@@ -254,7 +255,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
 
         initData(info);
         RequestResultInfoDto resultInfo = RequestResultInfoDto.build(null,
-                                                                     "checksum",
+                                                                     RandomChecksumUtils.generateRandomChecksum(),
                                                                      null,
                                                                      "dtc",
                                                                      Sets.newHashSet(FeatureUniformResourceName.build(
@@ -275,7 +276,8 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
 
     }
 
-    private void initData(RequestInfo info) {
+    private String initData(RequestInfo info) {
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String model = "model";
         FeatureCreationRequest fcr = FeatureCreationRequest.build("id1",
                                                                   "owner",
@@ -322,12 +324,13 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
                                                                  "toto",
                                                                  1024l,
                                                                  "MD5",
-                                                                 "checksum"),
+                                                                 checksum),
                                      FeatureFileLocation.build("www.google.com", "GPFS"),
                                      FeatureFileLocation.build("www.perdu.com", "GPFS")));
         feature.getFeature().setFiles(filles);
         this.featureRepo.save(feature);
         fcr.setFeatureEntity(feature);
         this.fcrRepo.save(fcr);
+        return checksum;
     }
 }

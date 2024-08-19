@@ -204,7 +204,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         SIPCollection sips = SIPCollection.build(metadata);
 
         Path filePath = Paths.get("data1.fits");
-        String checksum = "sdsdfm1211vd";
+        String checksum = "4bb3363980381d42912d0a97b815696b";
         SIPDto sip = SIPDto.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, filePath, checksum);
         sip.withSyntax("FITS(FlexibleImageTransport)",
@@ -301,7 +301,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         SIPCollection sips = SIPCollection.build(metadata);
 
         Path filePath = Paths.get("data1.fits");
-        String checksum = "sdsdfm1211vd";
+        String checksum = "4bb3363980381d42912d0a97b815696b";
         SIPDto sip = SIPDto.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, filePath, checksum);
         sip.withSyntax("FITS(FlexibleImageTransport)",
@@ -391,7 +391,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         SIPCollection sips = SIPCollection.build(metadata);
 
         SIPDto sip = SIPDto.build(EntityType.DATA, SIP_ID_TEST);
-        sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
+        sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "4bb3363980381d42912d0a97b815696b");
         sip.withSyntax("FITS(FlexibleImageTransport)",
                        "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.service;
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -142,7 +143,7 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
     private void testFilesSharingSameChecksum(Feature feature) {
         Errors errors;
         // Update feature with two files having same checksum
-        String SAME_CHECKSUM = "new_file_checksum";
+        String SAME_CHECKSUM = RandomChecksumUtils.generateRandomChecksum();
         FeatureFileAttributes attributes = FeatureFileAttributes.build(DataType.RAWDATA,
                                                                        MediaType.APPLICATION_OCTET_STREAM,
                                                                        "fileName",

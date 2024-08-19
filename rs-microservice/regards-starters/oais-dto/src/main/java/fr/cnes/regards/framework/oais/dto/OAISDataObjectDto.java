@@ -19,13 +19,14 @@
  */
 package fr.cnes.regards.framework.oais.dto;
 
+import fr.cnes.regards.framework.oais.dto.validator.ValidOAISDataObjectChecksum;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ import java.util.Set;
  * @author Marc Sordi
  * @author Michael Nguyen
  */
+@ValidOAISDataObjectChecksum(message = "The data object checksum is not valid for this algorithm")
 public class OAISDataObjectDto {
 
     /**

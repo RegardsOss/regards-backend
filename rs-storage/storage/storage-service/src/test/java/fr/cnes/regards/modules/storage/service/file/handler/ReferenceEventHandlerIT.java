@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileGroupRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
@@ -81,7 +82,7 @@ public class ReferenceEventHandlerIT extends AbstractStorageIT {
      */
     @Test
     public void add_file_reference() throws InterruptedException {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String storage = "storage";
         // Create a new bus message File reference request
         FilesReferenceEvent item = new FilesReferenceEvent(FileReferenceRequestDto.build("file.name",
@@ -145,7 +146,7 @@ public class ReferenceEventHandlerIT extends AbstractStorageIT {
 
     @Test
     public void add_file_reference_same_checksum() throws InterruptedException {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String owner = "new-owner";
         String storage = "somewhere";
         List<FilesReferenceEvent> items = Lists.newArrayList();
@@ -189,7 +190,7 @@ public class ReferenceEventHandlerIT extends AbstractStorageIT {
     @Test
     public void add_file_reference_no_checksum() throws InterruptedException {
 
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String owner = "new-owner";
         String storage = "somewhere";
         List<FilesReferenceEvent> items = Lists.newArrayList();
@@ -244,7 +245,7 @@ public class ReferenceEventHandlerIT extends AbstractStorageIT {
      */
     @Test
     public void add_file_reference_already_exists() throws InterruptedException, ExecutionException {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String owner = "new-owner";
         FileReference fileRef = this.generateStoredFileReference(checksum,
                                                                  owner,
@@ -343,7 +344,7 @@ public class ReferenceEventHandlerIT extends AbstractStorageIT {
      */
     @Test
     public void add_file_reference_already_stored() throws InterruptedException, ExecutionException {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String owner = "new-owner";
         String storage = "aStorage";
         this.generateStoredFileReference(checksum,

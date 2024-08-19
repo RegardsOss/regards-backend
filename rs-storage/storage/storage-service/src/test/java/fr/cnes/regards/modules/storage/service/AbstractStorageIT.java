@@ -737,5 +737,4 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
             Assert.fail(e.getMessage());
         }
     }
-
 }

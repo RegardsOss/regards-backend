@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
@@ -112,7 +113,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
     @Test
     public void store_file_already_stored() {
         String owner = "new-owner";
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String storage = "storage";
         // Create a new bus message File reference request
         FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
@@ -190,7 +191,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
     @Test
     public void store_file_nearline_with_pending_actions() {
         String owner = "new-owner";
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String storage = "storage";
         // Create a new bus message File reference request
         FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("pending.file.name",
@@ -222,7 +223,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
     @Test
     public void store_file_while_previous_request_exists() {
         String owner = "new-owner";
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String storage = "storage";
         // Create a new bus message File reference request
         String algorithm = "MD5";
@@ -327,7 +328,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
     public void store_same_file() {
         String owner = "new-owner";
         String owner2 = owner + "23";
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String storage = "storage";
         // Create a new bus message File reference request
         FilesStorageRequestEvent item1 = new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
@@ -531,7 +532,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
      */
     @Test
     public void store_file_unknown_storage() {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         String storageDestination = "somewheere";
         // Create a new bus message File reference request
         FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
@@ -593,7 +594,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
      */
     @Test
     public void store_file_error() {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         // Create a new bus message File reference request
         FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("error.file.name",
                                                                                                  checksum,

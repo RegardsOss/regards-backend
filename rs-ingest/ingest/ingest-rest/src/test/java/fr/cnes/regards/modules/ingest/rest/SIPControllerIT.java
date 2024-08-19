@@ -19,12 +19,12 @@
 package fr.cnes.regards.modules.ingest.rest;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.geojson.GeoJsonFieldDescriptors;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.geojson.OaisFieldDescriptors;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -256,7 +256,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         // SIP 1
         SIPDto sip = SIPDto.build(EntityType.DATA, "SIP_001");
-        sip.withDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "FAKE_ALGO", "sdsdfm1211vd");
+        sip.withDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "FAKE_ALGO", "4bb3363980381d42912d0a97b815696b");
         sip.withSyntax("FITS(FlexibleImageTransport)",
                        "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));

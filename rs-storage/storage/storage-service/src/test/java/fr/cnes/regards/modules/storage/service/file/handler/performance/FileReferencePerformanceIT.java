@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
@@ -138,7 +139,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
 
         Set<FileReference> toSave = Sets.newHashSet();
         for (Long i = 0L; i < 1_000; i++) {
-            String checksum = UUID.randomUUID().toString();
+            String checksum = RandomChecksumUtils.generateRandomChecksum();
             nlChecksums.add(checksum);
             FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum,
                                                                        "UUID",
@@ -158,7 +159,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
 
     @Test
     public void reference_file_with_many_owners() {
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         Set<FileReferenceRequestDto> requests = Sets.newHashSet();
         List<FilesReferenceEvent> items = new ArrayList<>();
         for (int i = 0; i < 5_000; i++) {
@@ -193,7 +194,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
             String newOwner = "owner-" + UUID.randomUUID().toString();
             String sessionOwner = "source-" + i;
             String session = "session-" + i;
-            String checksum = UUID.randomUUID().toString();
+            String checksum = RandomChecksumUtils.generateRandomChecksum();
             Set<FileReferenceRequestDto> requests = Sets.newHashSet();
             requests.add(FileReferenceRequestDto.build("quicklook.1-" + checksum,
                                                        UUID.randomUUID().toString(),
@@ -277,7 +278,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
         OffsetDateTime now = OffsetDateTime.now();
         List<FilesStorageRequestEvent> items = Lists.newArrayList();
         for (int i = 0; i < 5000; i++) {
-            String checksum = UUID.randomUUID().toString();
+            String checksum = RandomChecksumUtils.generateRandomChecksum();
             // Create a new bus message File reference request
             items.add(new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
                                                                                checksum,

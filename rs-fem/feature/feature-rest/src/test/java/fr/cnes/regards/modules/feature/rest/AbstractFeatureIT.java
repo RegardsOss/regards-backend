@@ -224,7 +224,7 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
                                                                         "filename",
                                                                         100L,
                                                                         "MD5",
-                                                                        "checksum"),
+                                                                        "6d2499064a0333e8dc3d5f1c7e8d1d14"),
                                             FeatureFileLocation.build("http://www.test.com/filename.xml")));
 
         return feature;

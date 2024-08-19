@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
@@ -108,7 +109,7 @@ public class StoreMultipleFilesIT extends AbstractStorageIT {
     @Purpose("Test if all 'storedFile' notification are received in case of duplicated file (same checksum)")
     public void store_multiple_files_same_checksum() throws InterruptedException {
         // init checksum, it must be the same for all files
-        String checksum = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
 
         // create a new bus message of store requests
         List<FilesStorageRequestEvent> items = new ArrayList<>();

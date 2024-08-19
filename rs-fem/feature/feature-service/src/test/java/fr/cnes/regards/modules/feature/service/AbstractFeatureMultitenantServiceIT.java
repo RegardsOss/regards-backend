@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRep
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.*;
@@ -41,9 +42,9 @@ import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureFileUpdateMode;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureFileUpdateMode;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
@@ -570,7 +571,7 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
                                                                  "toto",
                                                                  1024L,
                                                                  "MD5",
-                                                                 "checksum"),
+                                                                 RandomChecksumUtils.generateRandomChecksum()),
                                      FeatureFileLocation.build("http://www.google.com", "GPFS"));
 
             featureToAdd = Feature.build("id" + i,

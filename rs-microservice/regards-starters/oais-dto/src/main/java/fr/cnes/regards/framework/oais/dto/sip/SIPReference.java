@@ -19,13 +19,15 @@
  */
 package fr.cnes.regards.framework.oais.dto.sip;
 
+import fr.cnes.regards.framework.oais.dto.validator.ValidSIPChecksum;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
 import java.net.URL;
 import java.security.MessageDigest;
 
+@ValidSIPChecksum(message = "The sip checksum is not valid for this algorithm")
 public class SIPReference {
 
     @NotNull(message = "SIP reference URL is required")

@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
@@ -32,8 +32,8 @@ import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.service.job.IngestPostProcessingJob;
@@ -190,11 +190,11 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
 
         // Ingest SIP
         String providerId = "SIP_002";
-        ingestSIP(providerId, "zaasfsdfsdlfkmsldgfml12df");
+        ingestSIP(providerId, "a1b81e2b75c8c1ec4a2ca5bdf607bb75");
         ingestServiceTest.waitForIngestion(1, TEN_SECONDS, getDefaultTenant());
 
         // Ingest next SIP version
-        ingestSIP(providerId, "yaasfsdfsdlfkmsldgfml12df");
+        ingestSIP(providerId, "a1b81e2b75c8c1ec4a2ca5bdf607bb76");
         ingestServiceTest.waitForIngestion(2, TEN_SECONDS, getDefaultTenant());
 
         // Check remove storage requested

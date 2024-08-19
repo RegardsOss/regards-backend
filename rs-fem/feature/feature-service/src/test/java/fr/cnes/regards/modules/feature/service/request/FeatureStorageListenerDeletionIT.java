@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
@@ -101,7 +102,7 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
         List<FeatureDeletionRequest> toDelete = this.featureDeletionRequestRepo.findAll();
         requestService.handleDeletionError(toDelete.stream()
                                                    .map(t -> RequestResultInfoDto.build(t.getGroupId(),
-                                                                                        "checksum",
+                                                                                        RandomChecksumUtils.generateRandomChecksum(),
                                                                                         "storage",
                                                                                         "storePath",
                                                                                         null,

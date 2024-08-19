@@ -90,6 +90,7 @@ public class FilesStorageRequestEventHandler
         LOGGER.debug("[FILE STORAGE REQUEST EVENT HANDLER] Bulk saving {} FilesStorageRequestEvent...",
                      messages.size());
         long start = System.currentTimeMillis();
+
         fileStorageRequestService.createStorageRequests(messages);
         LOGGER.info("[FILE STORAGE REQUEST EVENT HANDLER] {} FilesStorageRequestEvent handled in {} ms",
                     messages.size(),

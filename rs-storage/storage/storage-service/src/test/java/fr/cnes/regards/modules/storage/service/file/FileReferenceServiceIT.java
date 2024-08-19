@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.storage.service.file;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.storage.dao.FileReferenceSpecification;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
@@ -210,7 +211,7 @@ public class FileReferenceServiceIT extends AbstractStorageIT {
         String session = "session";
         int nbFiles = 5;
         for (int i = 0; i < nbFiles; i++) {
-            String checksum = UUID.randomUUID().toString();
+            String checksum = RandomChecksumUtils.generateRandomChecksum();
             checksums.add(checksum);
             referenceFile(checksum, owner, type, fileName + i, storage, sessionOwner, session, false);
         }
