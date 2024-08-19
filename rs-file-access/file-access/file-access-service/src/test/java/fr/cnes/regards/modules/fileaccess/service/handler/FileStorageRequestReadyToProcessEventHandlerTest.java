@@ -20,12 +20,18 @@ package fr.cnes.regards.modules.fileaccess.service.handler;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageWorkerRequestEvent;
 import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.dto.input.FileStorageMetaInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.*;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
+import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
 import fr.cnes.regards.modules.fileaccess.service.StoragePluginConfigurationService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,13 +40,19 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Thibaud Michaudel
  **/
 public class FileStorageRequestReadyToProcessEventHandlerTest {
+
+    public static final String VALIDATION_ERROR = "Simulated error";
+
+    public static final String STORAGE_NAME = "Storage1";
 
     private FilesStorageRequestReadyToProcessEventHandler handler;
 
@@ -52,6 +64,8 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
 
     private IRuntimeTenantResolver tenantResolver;
 
+    private IPluginService pluginService;
+
     @BeforeEach
     public void init() {
         MockitoAnnotations.initMocks(this);
@@ -60,8 +74,9 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
         tenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         subscriber = Mockito.mock(ISubscriber.class);
         publisher = Mockito.mock(IPublisher.class);
+        pluginService = Mockito.mock(IPluginService.class);
 
-        Mockito.when(storagePluginConfigurationService.getByName("Storage1"))
+        Mockito.when(storagePluginConfigurationService.getByName(STORAGE_NAME))
                .thenReturn(Optional.of(new TestStoragePluginConfigurationDto("Storage1Value")));
         Mockito.when(storagePluginConfigurationService.getByName("Storage2"))
                .thenReturn(Optional.of(new TestStoragePluginConfigurationDto("Storage2Value")));
@@ -69,7 +84,8 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
         handler = new FilesStorageRequestReadyToProcessEventHandler(subscriber,
                                                                     storagePluginConfigurationService,
                                                                     publisher,
-                                                                    tenantResolver);
+                                                                    tenantResolver,
+                                                                    pluginService);
     }
 
     @Test
@@ -81,22 +97,24 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
                                                                                                  "checksum1",
                                                                                                  "MD5",
                                                                                                  "http://url1.com",
-                                                                                                 "Storage1",
+                                                                                                 STORAGE_NAME,
                                                                                                  "/sub/dir",
                                                                                                  " owner1",
                                                                                                  "session1",
                                                                                                  false,
-                                                                                                 metaInfoDto);
+                                                                                                 metaInfoDto,
+                                                                                                 false);
         FileStorageRequestReadyToProcessEvent event2 = new FileStorageRequestReadyToProcessEvent(2L,
                                                                                                  "checksum2",
                                                                                                  "MD5",
                                                                                                  "http://url2.com",
-                                                                                                 "Storage1",
+                                                                                                 STORAGE_NAME,
                                                                                                  "/sub/dir",
                                                                                                  " owner1",
                                                                                                  "session1",
                                                                                                  false,
-                                                                                                 metaInfoDto);
+                                                                                                 metaInfoDto,
+                                                                                                 false);
         FileStorageRequestReadyToProcessEvent event3 = new FileStorageRequestReadyToProcessEvent(3L,
                                                                                                  "checksum3",
                                                                                                  "MD5",
@@ -106,7 +124,8 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
                                                                                                  " owner1",
                                                                                                  "session1",
                                                                                                  false,
-                                                                                                 metaInfoDto);
+                                                                                                 metaInfoDto,
+                                                                                                 false);
         FileStorageRequestReadyToProcessEvent event4 = new FileStorageRequestReadyToProcessEvent(4L,
                                                                                                  "checksum4",
                                                                                                  "MD5",
@@ -116,7 +135,8 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
                                                                                                  " owner1",
                                                                                                  "session1",
                                                                                                  false,
-                                                                                                 metaInfoDto);
+                                                                                                 metaInfoDto,
+                                                                                                 false);
 
         // When
         handler.handleBatch(List.of(event1, event2, event3, event4));
@@ -150,6 +170,88 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
 
     }
 
+    @Test
+    public void test_reference_ok() throws ModuleException {
+
+        // Given
+        String pluginBusinessId = STORAGE_NAME;
+        String url = "http://url1.com";
+
+        Mockito.when(pluginService.getPlugin(pluginBusinessId)).thenReturn(new TestStorageLocation(true));
+
+        FileStorageMetaInfoDto metaInfoDto = new FileStorageMetaInfoDto("text/plain", "RAWDATA", 0, 0);
+
+        FileStorageRequestReadyToProcessEvent event = new FileStorageRequestReadyToProcessEvent(1L,
+                                                                                                "checksum1",
+                                                                                                "MD5",
+                                                                                                url,
+                                                                                                pluginBusinessId,
+                                                                                                "/sub/dir",
+                                                                                                " owner1",
+                                                                                                "session1",
+                                                                                                false,
+                                                                                                metaInfoDto,
+                                                                                                true);
+
+        // When
+        handler.handleBatch(List.of(event));
+
+        // Then
+        ArgumentCaptor<List> publishedEventsCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(publisher, Mockito.times(1)).publish(publishedEventsCaptor.capture());
+        List<List> allEvents = publishedEventsCaptor.getAllValues();
+        Optional<List> oEventList = allEvents.stream()
+                                             .filter(l -> l.get(0) instanceof StorageResponseEvent)
+                                             .findFirst();
+        Assertions.assertTrue(oEventList.isPresent());
+        List<StorageResponseEvent> eventList = oEventList.get();
+        Assertions.assertEquals(1, eventList.size(), "There should be only one success");
+        Assertions.assertEquals(url, eventList.get(0).getUrl(), "The url should be the same one as the request");
+        Assertions.assertEquals(null, eventList.get(0).getErrorType(), "There should be no error");
+
+    }
+
+    @Test
+    public void test_reference_nok() throws ModuleException {
+
+        // Given
+        String pluginBusinessId = "storage-test";
+        String url = "http://url1.com";
+
+        Mockito.when(pluginService.getPlugin(pluginBusinessId)).thenReturn(new TestStorageLocation(false));
+
+        FileStorageMetaInfoDto metaInfoDto = new FileStorageMetaInfoDto("text/plain", "RAWDATA", 0, 0);
+
+        FileStorageRequestReadyToProcessEvent event = new FileStorageRequestReadyToProcessEvent(1L,
+                                                                                                "checksum1",
+                                                                                                "MD5",
+                                                                                                url,
+                                                                                                pluginBusinessId,
+                                                                                                "/sub/dir",
+                                                                                                " owner1",
+                                                                                                "session1",
+                                                                                                false,
+                                                                                                metaInfoDto,
+                                                                                                true);
+
+        // When
+        handler.handleBatch(List.of(event));
+
+        // Then
+        ArgumentCaptor<List> publishedEventsCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(publisher, Mockito.times(1)).publish(publishedEventsCaptor.capture());
+        List<List> allEvents = publishedEventsCaptor.getAllValues();
+        Optional<List> oEventList = allEvents.stream()
+                                             .filter(l -> l.get(0) instanceof StorageResponseEvent)
+                                             .findFirst();
+        Assertions.assertTrue(oEventList.isPresent());
+        List<StorageResponseEvent> eventList = oEventList.get();
+        Assertions.assertEquals(1, eventList.size(), "There should be only one error");
+        Assertions.assertEquals(url, eventList.get(0).getUrl(), "The url should be the same one as the request");
+        Assertions.assertNotNull(eventList.get(0).getErrorType(), "There should be an error");
+
+    }
+
     private class TestStoragePluginConfigurationDto extends AbstractStoragePluginConfigurationDto {
 
         private final String value;
@@ -160,6 +262,54 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
 
         public String getValue() {
             return value;
+        }
+    }
+
+    private class TestStorageLocation implements IStorageLocation {
+
+        private boolean valid;
+
+        private TestStorageLocation(boolean valid) {
+            this.valid = valid;
+        }
+
+        @Override
+        public boolean isValidUrl(String urlToValidate, Set<String> errors) {
+            if (!valid) {
+                errors.add(VALIDATION_ERROR);
+            }
+            return valid;
+        }
+
+        @Override
+        public PreparationResponse<FileStorageWorkingSubset, FileStorageRequestAggregationDto> prepareForStorage(
+            Collection<FileStorageRequestAggregationDto> fileReferenceRequests) {
+            return null;
+        }
+
+        @Override
+        public PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequestDto> prepareForDeletion(Collection<FileDeletionRequestDto> fileDeletionRequests) {
+            return null;
+        }
+
+        @Override
+        public PreparationResponse<FileRestorationWorkingSubset, FileCacheRequestDto> prepareForRestoration(Collection<FileCacheRequestDto> requests) {
+            return null;
+        }
+
+        @Override
+        public void delete(FileDeletionWorkingSubset workingSet, IDeletionProgressManager progressManager) {
+
+        }
+
+        @Override
+        public void store(FileStorageWorkingSubset workingSet, IStorageProgressManager progressManager) {
+
+        }
+
+        @Override
+        public boolean allowPhysicalDeletion() {
+            return false;
         }
     }
 

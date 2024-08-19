@@ -47,6 +47,8 @@ public interface IFileStorageRequestAggregationRepository extends JpaRepository<
     @Query("SELECT storage FROM FileStorageRequestAggregation WHERE status = :status")
     Set<String> findStoragesByStatus(@Param("status") StorageRequestStatus status);
 
+    Set<FileStorageRequestAggregation> findByMetaInfoChecksumAndStorage(String checksum, String storage);
+    
     Page<FileStorageRequestAggregation> findAllByStorageAndStatus(String storage,
                                                                   StorageRequestStatus status,
                                                                   Pageable page);

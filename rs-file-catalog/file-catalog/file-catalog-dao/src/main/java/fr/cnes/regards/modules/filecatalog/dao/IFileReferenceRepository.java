@@ -19,13 +19,16 @@
 package fr.cnes.regards.modules.filecatalog.dao;
 
 import fr.cnes.regards.modules.filecatalog.domain.FileReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -40,6 +43,41 @@ public interface IFileReferenceRepository
     @Modifying
     void addOwner(@Param("id") Long id, @Param("owner") String owner);
 
-    Set<FileReference> findByLocationStorageAndMetaInfoChecksumIn(String storage, List<String> checksums);
+    @Query(value = "delete from ta_file_reference_owner where file_ref_id=:id and owner=:owner", nativeQuery = true)
+    @Modifying
+    void removeOwner(@Param("id") Long id, @Param("owner") String owner);
 
+    @Query(value = "select exists(select 1 from ta_file_reference_owner where file_ref_id=:id and owner=:owner)",
+           nativeQuery = true)
+    boolean isOwnedBy(@Param("id") Long id, @Param("owner") String owner);
+
+    @Query(value = "select exists(select 1 from ta_file_reference_owner where file_ref_id=:id)", nativeQuery = true)
+    boolean hasOwner(@Param("id") Long id);
+
+    Page<FileReference> findByLocationStorage(String storage, Pageable page);
+
+    Set<FileReference> findByLocationStorageAndMetaInfoChecksumIn(String storage, Collection<String> checksums);
+
+    @Query(value = "SELECT owner FROM ta_file_reference_owner WHERE file_ref_id=:id", nativeQuery = true)
+    Collection<String> findOwnersById(@Param("id") Long fileRefId);
+
+    Optional<FileReference> findByLocationStorageAndMetaInfoChecksum(String storage, String checksum);
+
+    Page<FileReference> findByLocationStorageAndMetaInfoTypeIn(String storage,
+                                                               Collection<String> type,
+                                                               Pageable pageable);
+
+    Set<FileReference> findByMetaInfoChecksumIn(Collection<String> checksums);
+
+    Set<FileReference> findByLocationUrlIn(Collection<String> urls);
+
+    Set<FileReference> findByMetaInfoChecksum(String checksum);
+
+    //FIXME this should change in neo storage
+    Set<FileReference> findByLocationStorageAndLocationPendingActionRemaining(String storage,
+                                                                              boolean pendingActionRemaining);
+
+    //FIXME this should change in neo storage
+    Set<FileReference> findByLocationPendingActionRemainingAndLocationUrlIn(boolean pendingActionRemaining,
+                                                                            Set<String> urls);
 }

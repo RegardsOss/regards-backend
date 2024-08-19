@@ -48,6 +48,8 @@ public class FileStorageRequestReadyToProcessDto {
 
     private final FileStorageMetaInfoDto metadata;
 
+    private final boolean reference;
+
     public FileStorageRequestReadyToProcessDto(Long requestId,
                                                String checksum,
                                                String algorithm,
@@ -57,7 +59,8 @@ public class FileStorageRequestReadyToProcessDto {
                                                String owner,
                                                String session,
                                                boolean activateSmallFilePackaging,
-                                               FileStorageMetaInfoDto metadata) {
+                                               FileStorageMetaInfoDto metadata,
+                                               boolean reference) {
         this.requestId = requestId;
         this.checksum = checksum;
         this.algorithm = algorithm;
@@ -68,6 +71,7 @@ public class FileStorageRequestReadyToProcessDto {
         this.session = session;
         this.activateSmallFilePackaging = activateSmallFilePackaging;
         this.metadata = metadata;
+        this.reference = reference;
     }
 
     public Long getRequestId() {
@@ -110,6 +114,10 @@ public class FileStorageRequestReadyToProcessDto {
         return activateSmallFilePackaging;
     }
 
+    public boolean isReference() {
+        return reference;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -129,7 +137,8 @@ public class FileStorageRequestReadyToProcessDto {
                && Objects.equals(subDirectory, that.subDirectory)
                && Objects.equals(owner, that.owner)
                && Objects.equals(session, that.session)
-               && Objects.equals(metadata, that.metadata);
+               && Objects.equals(metadata, that.metadata)
+               && Objects.equals(reference, that.reference);
     }
 
     @Override
@@ -143,7 +152,8 @@ public class FileStorageRequestReadyToProcessDto {
                             owner,
                             session,
                             activateSmallFilePackaging,
-                            metadata);
+                            metadata,
+                            reference);
     }
 
     @Override
@@ -172,10 +182,12 @@ public class FileStorageRequestReadyToProcessDto {
                + ", session='"
                + session
                + '\''
-               + ", smallFileManaged="
+               + ", activateSmallFilePackaging="
                + activateSmallFilePackaging
                + ", metadata="
                + metadata
+               + ", reference="
+               + reference
                + '}';
     }
 }

@@ -16,33 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.service.file.request;
+package fr.cnes.regards.modules.filecatalog.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
-import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
-import fr.cnes.regards.modules.storage.domain.FileReferenceResult;
-import fr.cnes.regards.modules.storage.domain.FileReferenceResultStatusEnum;
-import fr.cnes.regards.modules.storage.domain.database.FileLocation;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
-import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
-import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
-import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
+import fr.cnes.regards.modules.filecatalog.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.filecatalog.domain.*;
+import fr.cnes.regards.modules.filecatalog.domain.request.FileDeletionRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,6 +50,7 @@ import java.util.stream.Collectors;
  * Service to handle File reference requests.
  *
  * @author Sébastien Binda
+ * @author Thibaud Michaudel
  */
 @Service
 @MultitenantTransactional
@@ -79,10 +68,6 @@ public class FileReferenceRequestService {
 
     private final Validator validator;
 
-    private final IPluginService pluginService;
-
-    private final StoragePluginConfigurationHandler storagePluginConfHandler;
-
     private final SessionNotifier sessionNotifier;
 
     @Value("${regards.storage.reference.requests.days.before.expiration:5}")
@@ -93,16 +78,12 @@ public class FileReferenceRequestService {
                                        FileDeletionRequestService fileDeletionRequestService,
                                        FileReferenceService fileRefService,
                                        Validator validator,
-                                       IPluginService pluginService,
-                                       StoragePluginConfigurationHandler storagePluginConfHandler,
                                        SessionNotifier sessionNotifier) {
         this.fileRefEventPublisher = fileRefEventPublisher;
         this.reqGrpService = reqGrpService;
         this.fileDeletionRequestService = fileDeletionRequestService;
         this.fileRefService = fileRefService;
         this.validator = validator;
-        this.pluginService = pluginService;
-        this.storagePluginConfHandler = storagePluginConfHandler;
         this.sessionNotifier = sessionNotifier;
     }
 
@@ -127,28 +108,35 @@ public class FileReferenceRequestService {
         for (FilesReferenceEvent item : list) {
             Errors errors = item.validate(validator);
             if (errors.hasErrors()) {
-                reqGrpService.denied(item.getGroupId(),
-                                     FileRequestType.REFERENCE,
-                                     ErrorTranslator.getErrorsAsString(errors));
-                // notify denied requests to the session agent
-                item.getFiles().forEach(file -> {
-                    String sessionOwner = file.getSessionOwner();
-                    String session = file.getSession();
-                    this.sessionNotifier.incrementReferenceRequests(sessionOwner, session);
-                    this.sessionNotifier.incrementDeniedRequests(sessionOwner, session);
-                });
+                denyEvent(item, ErrorTranslator.getErrorsAsString(errors));
             } else {
-                reqGrpService.granted(item.getGroupId(),
-                                      FileRequestType.REFERENCE,
-                                      item.getFiles().size(),
-                                      getRequestExpirationDate());
-                reference(item.getFiles(),
-                          item.getGroupId(),
-                          existingOnesWithSameChecksum,
-                          existingOnesWithSameUrl,
-                          existingDeletionRequests);
+                try {
+                    reqGrpService.granted(item.getGroupId(),
+                                          FileRequestType.REFERENCE,
+                                          item.getFiles().size(),
+                                          getRequestExpirationDate());
+                    reference(item.getFiles(),
+                              item.getGroupId(),
+                              existingOnesWithSameChecksum,
+                              existingOnesWithSameUrl,
+                              existingDeletionRequests);
+                } catch (ModuleException e) {
+                    LOGGER.error("[{} Group request] {}", FileRequestType.REFERENCE, e.getMessage());
+                    denyEvent(item, e.getMessage());
+                }
             }
         }
+    }
+
+    private void denyEvent(FilesReferenceEvent item, String errorMessage) {
+        reqGrpService.denied(item.getGroupId(), FileRequestType.REFERENCE, errorMessage);
+        // notify denied requests to the session agent
+        item.getFiles().forEach(file -> {
+            String sessionOwner = file.getSessionOwner();
+            String session = file.getSession();
+            this.sessionNotifier.incrementReferenceRequests(sessionOwner, session);
+            this.sessionNotifier.incrementDeniedRequests(sessionOwner, session);
+        });
     }
 
     /**
@@ -297,9 +285,10 @@ public class FileReferenceRequestService {
                                          String session) throws ModuleException {
         Optional<FileReference> oFileRef = fileRefService.search(location.getStorage(), metaInfo.getChecksum());
         Optional<FileDeletionRequest> oFileDelReq = Optional.empty();
-        if (oFileRef.isPresent()) {
-            oFileDelReq = fileDeletionRequestService.search(oFileRef.get());
-        }
+        // TODO later, update using neo storage way of handling deletion requests
+        //        if (oFileRef.isPresent()) {
+        //            oFileDelReq = fileDeletionRequestService.search(oFileRef.get());
+        //        }
         FileReferenceRequestDto fileRef = FileReferenceRequestDto.build(metaInfo.getFileName(),
                                                                         metaInfo.getChecksum(),
                                                                         metaInfo.getAlgorithm(),
@@ -336,8 +325,6 @@ public class FileReferenceRequestService {
         if (fileRef.isPresent()) {
             return handleAlreadyExists(fileRef.get(), fileDelReq, request, groupIds);
         } else {
-            // If referenced file is associated to a known storage location then validate the reference
-            validateReferenceUrl(request);
             FileReference newFileRef = fileRefService.create(Lists.newArrayList(request.getOwner()),
                                                              FileReferenceMetaInfo.buildFromFileReferenceRequestDto(
                                                                  request),
@@ -351,28 +338,6 @@ public class FileReferenceRequestService {
                                            newFileRef.getMetaInfo().getChecksum());
             fileRefEventPublisher.storeSuccess(newFileRef, message, groupIds, Lists.newArrayList(request.getOwner()));
             return FileReferenceResult.build(newFileRef, FileReferenceResultStatusEnum.CREATED);
-        }
-    }
-
-    private void validateReferenceUrl(FileReferenceRequestDto request) throws ModuleException {
-        Optional<PluginConfiguration> conf = storagePluginConfHandler.getConfiguredStorage(request.getStorage());
-        if (conf.isPresent()) {
-            try {
-                IStorageLocation storagePlugin = pluginService.getPlugin(conf.get().getBusinessId());
-                Set<String> errors = Sets.newHashSet();
-                if (!storagePlugin.isValidUrl(request.getUrl(), errors)) {
-                    throw new ModuleException(String.format(
-                        "File reference %s url=%s format is not valid for storage location %s. Cause : %s",
-                        request.getFileName(),
-                        request.getUrl(),
-                        conf.get().getBusinessId(),
-                        errors));
-                }
-            } catch (NotAvailablePluginConfigurationException e) {
-                throw new ModuleException(String.format("File reference %s cannot be validated by the %s plugin.",
-                                                        request.getFileName(),
-                                                        conf.get().getBusinessId()), e);
-            }
         }
     }
 

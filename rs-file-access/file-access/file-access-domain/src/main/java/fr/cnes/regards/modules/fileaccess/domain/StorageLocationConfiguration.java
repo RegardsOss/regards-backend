@@ -58,9 +58,7 @@ public class StorageLocationConfiguration {
     private String name;
 
     @OneToOne(optional = true)
-    @JoinColumn(nullable = true,
-                name = "plugin_conf_id",
-                foreignKey = @ForeignKey(name = "fk_storage_plugin_conf"))
+    @JoinColumn(nullable = true, name = "plugin_conf_id", foreignKey = @ForeignKey(name = "fk_storage_plugin_conf"))
     private PluginConfiguration pluginConfiguration;
 
     @Enumerated(EnumType.STRING)

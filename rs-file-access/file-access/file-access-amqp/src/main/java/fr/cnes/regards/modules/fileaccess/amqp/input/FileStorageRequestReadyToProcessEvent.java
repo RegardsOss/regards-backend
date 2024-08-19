@@ -43,7 +43,8 @@ public class FileStorageRequestReadyToProcessEvent extends FileStorageRequestRea
                                                  String owner,
                                                  String session,
                                                  boolean activateSmallFilePackaging,
-                                                 FileStorageMetaInfoDto metadata) {
+                                                 FileStorageMetaInfoDto metadata,
+                                                 boolean reference) {
         super(requestId,
               checksum,
               algorithm,
@@ -53,6 +54,7 @@ public class FileStorageRequestReadyToProcessEvent extends FileStorageRequestRea
               owner,
               session,
               activateSmallFilePackaging,
-              metadata);
+              metadata,
+              reference);
     }
 }

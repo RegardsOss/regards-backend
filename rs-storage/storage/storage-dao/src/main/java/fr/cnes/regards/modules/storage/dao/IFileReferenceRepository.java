@@ -58,35 +58,35 @@ public interface IFileReferenceRepository
     Set<FileReference> findByMetaInfoChecksumIn(Collection<String> checksums);
 
     @Query(
-        "select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(1) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
-        + " from FileReference fr group by fr.location.storage")
+        "SELECT fr.location.storage AS storage, sum(fr.metaInfo.fileSize) AS usedSize, count(1) AS numberOfFileReference, max(fr.id) AS lastFileReferenceId"
+        + " FROM FileReference fr GROUP BY fr.location.storage")
     Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation();
 
     @Query(
-        "select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(1) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
-        + " from FileReference fr where fr.id > :id group by fr.location.storage")
-    Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation(@Param("id") Long fromFileReferenceId);
+        "SELECT fr.location.storage AS storage, sum(fr.metaInfo.fileSize) AS usedSize, count(1) AS numberOfFileReference, max(fr.id) AS lastFileReferenceId"
+        + " FROM FileReference fr WHERE fr.id > :id GROUP BY fr.location.storage")
+    Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation(@Param("id") Long FROMFileReferenceId);
 
-    @Query("select fr.location.storage as storage, count(1) as numberOfPendingReferences"
-           + " from FileReference fr where fr.location.pendingActionRemaining = true group by fr.location.storage")
+    @Query("SELECT fr.location.storage AS storage, count(1) AS numberOfPendingReferences"
+           + " FROM FileReference fr WHERE fr.location.pendingActionRemaining = true GROUP BY fr.location.storage")
     Collection<StoragePendingFilesAggregation> getPendingFilesAggregation();
 
-    @Query(value = "insert into ta_file_reference_owner(file_ref_id,owner) values(:id, :owner)", nativeQuery = true)
+    @Query(value = "INSERT INTO ta_file_reference_owner(file_ref_id,owner) VALUES(:id, :owner)", nativeQuery = true)
     @Modifying
     void addOwner(@Param("id") Long id, @Param("owner") String owner);
 
-    @Query(value = "delete from ta_file_reference_owner where file_ref_id=:id and owner=:owner", nativeQuery = true)
+    @Query(value = "DELETE FROM ta_file_reference_owner WHERE file_ref_id=:id AND owner=:owner", nativeQuery = true)
     @Modifying
     void removeOwner(@Param("id") Long id, @Param("owner") String owner);
 
-    @Query(value = "select exists(select 1 from ta_file_reference_owner where file_ref_id=:id and owner=:owner)",
+    @Query(value = "SELECT exists(SELECT 1 FROM ta_file_reference_owner WHERE file_ref_id=:id AND owner=:owner)",
            nativeQuery = true)
     boolean isOwnedBy(@Param("id") Long id, @Param("owner") String owner);
 
     @Query(value = "SELECT owner FROM ta_file_reference_owner WHERE file_ref_id=:id", nativeQuery = true)
     Collection<String> findOwnersById(@Param("id") Long fileRefId);
 
-    @Query(value = "select exists(select 1 from ta_file_reference_owner where file_ref_id=:id)", nativeQuery = true)
+    @Query(value = "SELECT exists(SELECT 1 FROM ta_file_reference_owner WHERE file_ref_id=:id)", nativeQuery = true)
     boolean hasOwner(@Param("id") Long id);
 
     FileReference findOneById(Long id);

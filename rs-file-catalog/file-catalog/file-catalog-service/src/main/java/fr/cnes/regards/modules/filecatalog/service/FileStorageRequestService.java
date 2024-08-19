@@ -39,6 +39,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -129,7 +130,8 @@ public class FileStorageRequestService {
                                                                                              storageSubDirectory,
                                                                                              groupId,
                                                                                              sessionOwner,
-                                                                                             session);
+                                                                                             session,
+                                                                                             false);
         fileStorageRequest.setStatus(reqStatusService.getNewStatus(fileStorageRequest, status));
         fileStorageRequest.setErrorCause(errorCause.orElse(null));
         // notify request is running to the session agent
@@ -337,6 +339,17 @@ public class FileStorageRequestService {
                                                          request.getOwner(),
                                                          request.getSession(),
                                                          false,
-                                                         metaData);
+                                                         metaData,
+                                                         request.isReference());
+    }
+
+    /**
+     * Search for {@link FileStorageRequestAggregation}s matching the given destination storage and checksum
+     *
+     * @return {@link FileStorageRequestAggregation}
+     */
+    @Transactional(readOnly = true)
+    public Collection<FileStorageRequestAggregation> search(String destinationStorage, String checksum) {
+        return fileStorageRequestAggregationRepository.findByMetaInfoChecksumAndStorage(checksum, destinationStorage);
     }
 }

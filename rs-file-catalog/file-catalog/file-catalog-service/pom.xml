@@ -88,6 +88,14 @@
             <groupId>fr.cnes.regards.modules.fileaccess</groupId>
             <artifactId>file-access-amqp</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.templates</groupId>
+            <artifactId>templates-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>notification-regards-starter</artifactId>
+        </dependency>
         <!-- Test dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

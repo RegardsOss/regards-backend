@@ -16,9 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.domain;
-
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
+package fr.cnes.regards.modules.filecatalog.domain;
 
 /**
  * POJO to represent a reference action result. A reference action can result with 3 types :

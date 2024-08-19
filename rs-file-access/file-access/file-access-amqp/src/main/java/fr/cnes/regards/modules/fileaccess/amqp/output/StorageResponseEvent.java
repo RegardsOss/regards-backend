@@ -58,6 +58,10 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
         super(requestId, url, checksum, errorType, error);
     }
 
+    public StorageResponseEvent(Long requestId, String url, String checksum) {
+        super(requestId, url, checksum);
+    }
+
     /**
      * Success event
      */
@@ -80,5 +84,12 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
                                                            String errorType,
                                                            String error) {
         return new StorageResponseEvent(requestId, url, checksum, errorType, error);
+    }
+
+    /**
+     * Success Reference event
+     */
+    public static StorageResponseEvent createSuccessResponse(Long requestId, String url, String checksum) {
+        return new StorageResponseEvent(requestId, url, checksum);
     }
 }

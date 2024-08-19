@@ -64,6 +64,12 @@ public class FileStorageRequestDto {
 
     private String session;
 
+    /**
+     * Indicate if the storage request requires a physical storage (reference = false) or is just a reference to an
+     * external file (reference = true).
+     */
+    private boolean reference;
+
     public static FileStorageRequestDto build(String fileName,
                                               String checksum,
                                               String algorithm,
@@ -99,6 +105,7 @@ public class FileStorageRequestDto {
         if (subDirectory != null) {
             request.subDirectory = subDirectory.orElse(null);
         }
+        request.reference = false;
         return request;
     }
 
@@ -142,6 +149,43 @@ public class FileStorageRequestDto {
         if (subDirectory != null) {
             request.subDirectory = subDirectory.orElse(null);
         }
+        request.reference = false;
+        return request;
+    }
+
+    /**
+     * Build a storage request dto for a referenced file (A referenced file is an external file that is only
+     * referenced using an uri, no physical copy of the file is done for a reference request).
+     */
+    public static FileStorageRequestDto buildReference(FileReferenceRequestDto fileReferenceRequestDto) {
+
+        Assert.notNull(fileReferenceRequestDto.getFileName(), "File name is mandatory.");
+        Assert.notNull(fileReferenceRequestDto.getChecksum(), "Checksum is mandatory.");
+        Assert.notNull(fileReferenceRequestDto.getAlgorithm(), "Algorithm is mandatory.");
+        Assert.notNull(fileReferenceRequestDto.getMimeType(), "MimeType is mandatory.");
+        Assert.notNull(fileReferenceRequestDto.getOwner(), "Owner is mandatory.");
+        Assert.notNull(fileReferenceRequestDto.getUrl(), "Origin url is mandatory.");
+        Assert.notNull(fileReferenceRequestDto.getStorage(), "Destination storage location is mandatory");
+
+        FileStorageRequestDto request = new FileStorageRequestDto();
+        request.fileName = fileReferenceRequestDto.getFileName();
+        request.checksum = fileReferenceRequestDto.getChecksum();
+        request.algorithm = fileReferenceRequestDto.getAlgorithm();
+        request.mimeType = fileReferenceRequestDto.getMimeType();
+        request.owner = fileReferenceRequestDto.getOwner();
+        request.originUrl = fileReferenceRequestDto.getUrl();
+        request.storage = fileReferenceRequestDto.getStorage();
+        request.metaInfo = new FileReferenceMetaInfoDto(request.checksum,
+                                                        request.algorithm,
+                                                        request.fileName,
+                                                        null,
+                                                        null,
+                                                        null,
+                                                        request.mimeType,
+                                                        null);
+        request.sessionOwner = fileReferenceRequestDto.getSessionOwner();
+        request.session = fileReferenceRequestDto.getSession();
+        request.reference = true;
         return request;
     }
 
@@ -197,6 +241,10 @@ public class FileStorageRequestDto {
         return session;
     }
 
+    public boolean isReference() {
+        return reference;
+    }
+
     /**
      * Add optional type to current {@link FileStorageRequestDto}
      *
@@ -219,8 +267,9 @@ public class FileStorageRequestDto {
         String t = (type != null ? "type=" + type + ", " : "");
         String url = (originUrl != null ? "originUrl=" + originUrl + ", " : "");
         String sto = (storage != null ? "storage=" + storage + ", " : "");
-        String sd = (subDirectory != null ? "subDirectory=" + subDirectory : "");
-        return "FileStorageRequestDto [" + fn + cs + algo + mt + ow + so + s + t + url + sto + sd + "]";
+        String sd = (subDirectory != null ? "subDirectory=" + subDirectory + ", " : "");
+        String ir = "isReference=" + reference;
+        return "FileStorageRequestDto [" + fn + cs + algo + mt + ow + so + s + t + url + sto + sd + ir + "]";
     }
 
 }

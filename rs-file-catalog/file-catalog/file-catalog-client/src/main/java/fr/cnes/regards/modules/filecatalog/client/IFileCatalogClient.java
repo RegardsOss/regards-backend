@@ -16,33 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.client;
+package fr.cnes.regards.modules.filecatalog.client;
 
 import fr.cnes.regards.modules.fileaccess.dto.request.FileCopyDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesCopyEvent;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesDeletionEvent;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
-import fr.cnes.regards.modules.filecatalog.amqp.input.FilesRestorationRequestEvent;
-import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
-import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
+import fr.cnes.regards.modules.filecatalog.amqp.input.*;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
 
 import java.util.Collection;
 
 /**
- * Client interface for requesting the file storage service
+ * Client interface for requesting the file catalog service
  * <p>
  * Client requests are done asynchronously.
- * To listen to the feedback messages, you have to implement your own message handler listening to {@link FileReferenceEvent}.
+ * To listen to the feedback messages, you have to implement your own message handler listening to {@link fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent}.
  * Be sure to check that the message is intended for you by validating the owner.
  * Look at {@link IStorageRequestListener} to adapt your behavior after global request finished status.
  * Look at {@link IStorageFileListener} to adapt your behavior after each file modification done.
- */
-public interface IStorageClient {
+ *
+ * @author Thibaud Michaudel
+ **/
+public interface IFileCatalogClient {
 
     /**
      * Requests storage of a file from a local accessible URL to a destination storage defined
@@ -165,7 +162,7 @@ public interface IStorageClient {
      * in {@link IStorageRequestListener} implementation.
      */
     Collection<RequestInfo> makeAvailable(Collection<String> checksums, int availabilityHours);
-    
+
     /**
      * Submit a cancel request to storage microservice. The cancel request remove all requests associated to the given request group ids.
      *

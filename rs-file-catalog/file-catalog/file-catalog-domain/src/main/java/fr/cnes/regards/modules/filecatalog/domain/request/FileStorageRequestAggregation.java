@@ -23,9 +23,9 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
 import fr.cnes.regards.modules.filecatalog.domain.FileLocation;
 import fr.cnes.regards.modules.filecatalog.domain.FileReferenceMetaInfo;
+import jakarta.persistence.*;
 import org.springframework.util.Assert;
 
-import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -103,6 +103,9 @@ public class FileStorageRequestAggregation {
     @Column(name = "session_name")
     private String session;
 
+    @Column(name = "reference")
+    private boolean reference;
+
     public FileStorageRequestAggregation() {
         super();
         this.creationDate = OffsetDateTime.now();
@@ -115,7 +118,8 @@ public class FileStorageRequestAggregation {
                                          Optional<String> storageSubDirectory,
                                          String groupId,
                                          String sessionOwner,
-                                         String session) {
+                                         String session,
+                                         boolean reference) {
         super();
         Assert.notNull(owner, FILE_STORAGE_REQUEST_NEED_A_OWNER);
         Assert.notNull(originUrl, "File storage request need an origin location !");
@@ -134,6 +138,7 @@ public class FileStorageRequestAggregation {
         this.creationDate = OffsetDateTime.now();
         this.sessionOwner = sessionOwner;
         this.session = session;
+        this.reference = reference;
     }
 
     public Long getId() {
@@ -233,6 +238,14 @@ public class FileStorageRequestAggregation {
         this.session = session;
     }
 
+    public boolean isReference() {
+        return reference;
+    }
+
+    public void setReference(boolean reference) {
+        this.reference = reference;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -260,7 +273,8 @@ public class FileStorageRequestAggregation {
                    && Objects.equals(creationDate, that.creationDate)
                    && Objects.equals(jobId, that.jobId)
                    && Objects.equals(sessionOwner, that.sessionOwner)
-                   && Objects.equals(session, that.session);
+                   && Objects.equals(session, that.session)
+                   && Objects.equals(reference, that.reference);
         } else {
             return id.equals(that.id);
         }
@@ -283,7 +297,8 @@ public class FileStorageRequestAggregation {
                             creationDate,
                             jobId,
                             sessionOwner,
-                            session);
+                            session,
+                            reference);
     }
 
     @Override
@@ -325,6 +340,8 @@ public class FileStorageRequestAggregation {
                + ", session='"
                + session
                + '\''
+               + ", reference="
+               + reference
                + '}';
     }
 }

@@ -88,6 +88,13 @@ public class StorageResponseDto {
         this(requestId, url, checksum, 0, 0, 0, false, errorType, error);
     }
 
+    /**
+     * Reference success constructor
+     */
+    public StorageResponseDto(Long requestId, String url, String checksum) {
+        this(requestId, url, checksum, 0, 0, 0, false);
+    }
+
     public Long getRequestId() {
         return requestId;
     }

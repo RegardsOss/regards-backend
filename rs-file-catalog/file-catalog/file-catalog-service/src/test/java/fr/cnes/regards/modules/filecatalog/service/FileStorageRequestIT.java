@@ -719,7 +719,8 @@ public class FileStorageRequestIT extends AbstractMultitenantServiceIT {
                                                                                   Optional.empty(),
                                                                                   "groupId",
                                                                                   "sessionOwner",
-                                                                                  "session");
+                                                                                  "session",
+                                                                                  false);
         request.setStatus(status);
         return request;
     }

@@ -29,7 +29,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  * @author Thibaud Michaudel
  */
-@SpringBootApplication(scanBasePackages = {"fr.cnes.regards.modules", "fr.cnes.regards.contrib"})
+@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
 @MicroserviceInfo(name = "file-catalog", version = "1.15.0")
 public class Application {
 
