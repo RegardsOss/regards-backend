@@ -911,8 +911,6 @@ public class FileStorageRequestService {
         Set<String> files = new HashSet<>();
         for (FileStorageRequestResultDto result : results) {
             boolean isHandleSuccess = true;
-            // As the request is rebuilt from the dto, the status information is not available and the request need
-            // to be recovered from the database if the status is needed
             FileStorageRequestAggregation request = FileStorageRequestAggregation.fromDto(result.getRequest());
             FileReferenceMetaInfo reqMetaInfos = request.getMetaInfo();
             Set<FileReference> fileRefs = Sets.newHashSet();
