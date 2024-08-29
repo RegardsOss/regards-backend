@@ -25,9 +25,9 @@ import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregat
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import jakarta.persistence.*;
 import org.springframework.util.Assert;
 
-import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Objects;
@@ -177,7 +177,6 @@ public class FileStorageRequestAggregation {
                                           Set<String> owners,
                                           Set<String> groupIds,
                                           FileReferenceMetaInfo metaInfo,
-                                          FileRequestStatus status,
                                           String errorCause,
                                           OffsetDateTime creationDate,
                                           String jobId,
@@ -189,7 +188,6 @@ public class FileStorageRequestAggregation {
         this.storage = storage;
         this.owners.addAll(owners);
         this.metaInfo = metaInfo;
-        this.status = status;
         this.errorCause = errorCause;
         this.creationDate = creationDate;
         this.jobId = jobId;
@@ -396,11 +394,14 @@ public class FileStorageRequestAggregation {
                                                     session,
                                                     jobId,
                                                     errorCause,
-                                                    status,
                                                     creationDate,
                                                     groupIds);
     }
 
+    /**
+     * Recreate the entity from the dto
+     * This entity status won't be set, if the status is needed, it have to be recovered from the database
+     */
     public static FileStorageRequestAggregation fromDto(FileStorageRequestAggregationDto dto) {
         return new FileStorageRequestAggregation(dto.getId(),
                                                  dto.getOriginUrl(),
@@ -409,7 +410,6 @@ public class FileStorageRequestAggregation {
                                                  dto.getOwners(),
                                                  dto.getGroupIds(),
                                                  FileReferenceMetaInfo.buildFromDto(dto.getMetaInfo()),
-                                                 dto.getStatus(),
                                                  dto.getErrorCause(),
                                                  dto.getCreationDate(),
                                                  dto.getJobId(),

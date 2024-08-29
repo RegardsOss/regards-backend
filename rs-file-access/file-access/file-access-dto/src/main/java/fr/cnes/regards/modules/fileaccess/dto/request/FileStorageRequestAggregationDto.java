@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.fileaccess.dto.request;
 
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
-import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -63,8 +62,6 @@ public class FileStorageRequestAggregationDto {
 
     private final String errorCause;
 
-    private final FileRequestStatus status;
-
     private final OffsetDateTime creationDate;
 
     private final Set<String> groupIds = new HashSet<>();
@@ -79,7 +76,6 @@ public class FileStorageRequestAggregationDto {
                                             String session,
                                             String jobId,
                                             String errorCause,
-                                            FileRequestStatus status,
                                             OffsetDateTime creationDate,
                                             Set<String> groupIds) {
         this.id = id;
@@ -94,7 +90,6 @@ public class FileStorageRequestAggregationDto {
         this.session = session;
         this.jobId = jobId;
         this.errorCause = errorCause;
-        this.status = status;
         this.creationDate = creationDate;
         if (groupIds != null) {
             this.groupIds.addAll(groupIds);
@@ -140,10 +135,6 @@ public class FileStorageRequestAggregationDto {
 
     public String getErrorCause() {
         return errorCause;
-    }
-
-    public FileRequestStatus getStatus() {
-        return status;
     }
 
     public OffsetDateTime getCreationDate() {
@@ -205,9 +196,6 @@ public class FileStorageRequestAggregationDto {
                + '\''
                + ", errorCause='"
                + errorCause
-               + '\''
-               + ", status="
-               + status
                + ", creationDate="
                + creationDate
                + ", groupIds="
