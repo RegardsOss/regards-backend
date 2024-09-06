@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.amqp.autoconfigure;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.*;
 import fr.cnes.regards.framework.amqp.configuration.*;
@@ -27,6 +28,8 @@ import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.single.SingleVhostPoller;
 import fr.cnes.regards.framework.amqp.single.SingleVhostPublisher;
 import fr.cnes.regards.framework.amqp.single.SingleVhostSubscriber;
+import fr.cnes.regards.framework.geojson.modules.GeometrySerializerModule;
+import fr.cnes.regards.framework.geojson.modules.MimeTypeSerializerModule;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantBootstrapProperties;
@@ -39,6 +42,7 @@ import org.springframework.amqp.rabbit.listener.BlockingQueueConsumer;
 import org.springframework.amqp.rabbit.transaction.RabbitTransactionManager;
 import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.JacksonUtils;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -205,7 +209,11 @@ public class AmqpAutoConfiguration {
         JsonMessageConverters converters = new JsonMessageConverters(runtimeTenantResolver);
 
         // Register Jackson
-        Jackson2JsonMessageConverter jacksonConverter = new Jackson2JsonMessageConverter();
+        ObjectMapper objectMapper = JacksonUtils.enhancedObjectMapper();
+        objectMapper.registerModule(new GeometrySerializerModule());
+        objectMapper.registerModule(new MimeTypeSerializerModule());
+
+        Jackson2JsonMessageConverter jacksonConverter = new Jackson2JsonMessageConverter(objectMapper);
         jacksonConverter.setTypePrecedence(TypePrecedence.INFERRED);
         converters.registerConverter(JsonMessageConverter.JACKSON, jacksonConverter);
 

@@ -20,15 +20,16 @@ package fr.cnes.regards.framework.geojson;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import fr.cnes.regards.framework.geojson.deserializers.GeometryDeserializerModule;
-import fr.cnes.regards.framework.geojson.serializers.GeometrySerializerModule;
-import fr.cnes.regards.framework.geojson.serializers.MimeTypeSerializerModule;
+import fr.cnes.regards.framework.geojson.modules.GeometrySerializerModule;
+import fr.cnes.regards.framework.geojson.modules.MimeTypeSerializerModule;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 /**
+ * Configuration bean to register modules in the default jackson ObjectMapper which is constructed when calling new ObjectMapper()
+ *
  * @author Thomas GUILLOU
  **/
 @AutoConfiguration
@@ -36,7 +37,7 @@ public class CustomJacksonAutoconfiguration {
 
     /**
      * Create an ObjectMapperBuilder.
-     * The default ObjectMapper configuration will be overridden
+     * The default ObjectMapper configuration that is used when neww ObjectMapper() is called will be overridden
      */
     @Bean
     @Primary
@@ -46,8 +47,7 @@ public class CustomJacksonAutoconfiguration {
         // jackson-datatype-jdk8: support for other Java 8 types like Optional
         // jackson-datatype-jsr310: support for Java 8 Date & Time API types
         return new Jackson2ObjectMapperBuilder().modulesToInstall(new MimeTypeSerializerModule(),
-                                                                  new GeometrySerializerModule(),
-                                                                  new GeometryDeserializerModule())
+                                                                  new GeometrySerializerModule())
                                                 .serializationInclusion(JsonInclude.Include.NON_ABSENT)
                                                 .failOnUnknownProperties(false)
                                                 // Spring Cloud default config has disable WRITE_DATES_AS_TIMESTAMPS

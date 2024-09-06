@@ -18,18 +18,23 @@
  */
 package fr.cnes.regards.framework.geojson.deserializers;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import org.springframework.util.MimeType;
+
+import java.io.IOException;
 
 /**
- * Jackson deserializer for IGeometry properties.
+ * Jackson serializer for MimeType properties.
  *
- * @author Thomas GUILLOU
+ * @author Thibaud Michaudel
  **/
-public class DeserializerIGeometry<T extends IGeometry> extends GenericGeometryDeserializer<IGeometry> {
-
+public class DeserializerMimeType extends JsonDeserializer<MimeType> {
+    
     @Override
-    public IGeometry getNullValue(DeserializationContext context) {
-        return IGeometry.unlocated();
+    public MimeType deserialize(JsonParser jsonParser, DeserializationContext context) throws IOException {
+        String mimeTypeString = jsonParser.getText();
+        return MimeType.valueOf(mimeTypeString);
     }
 }

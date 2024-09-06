@@ -27,6 +27,8 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import java.io.IOException;
 
 /**
+ * Jackson serializer for IGeometry properties.
+ *
  * @author Thomas GUILLOU
  **/
 public class SerializerIGeometry extends JsonSerializer<IGeometry> {

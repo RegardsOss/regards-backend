@@ -20,10 +20,7 @@ package fr.cnes.regards.framework.amqp.converter;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.event.EventUtils;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -70,8 +67,8 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         messageProperties.setContentEncoding(DEFAULT_CHARSET);
         messageProperties.setContentLength(bytes.length);
         // Add wrapped type information for Gson deserialization if not already set
-        if (!messageProperties.getHeaders().containsKey(AmqpConstants.REGARDS_TYPE_HEADER)) {
-            messageProperties.setHeader(AmqpConstants.REGARDS_TYPE_HEADER, object.getClass().getName());
+        if (!messageProperties.getHeaders().containsKey(AmqpConstants.REGARDS_TYPE_HEADER_LEGACY)) {
+            messageProperties.setHeader(AmqpConstants.REGARDS_TYPE_HEADER_LEGACY, object.getClass().getName());
         }
         return new Message(bytes, messageProperties);
     }
@@ -104,6 +101,11 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         try {
             Object typeHeader = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TYPE_HEADER);
             if (typeHeader == null) {
+                // Use the legacy header in case the REGARDS_TYPE_HEADER is not set, this means that the message was
+                // created in a old regards version.
+                typeHeader = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TYPE_HEADER_LEGACY);
+            }
+            if (typeHeader == null) {
                 // Compatibility
                 typeHeader = message.getMessageProperties().getHeader(WRAPPED_TYPE_HEADER);
             }
@@ -113,18 +115,6 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
             String errorMessage = String.format(CONVERSION_ERROR, "JAVA event type no found");
             LOGGER.error(errorMessage, e);
             throw new MessageConversionException("Cannot convert incoming message", e);
-        }
-    }
-
-    public static void setDefaultHeaders(Message message, IBatchHandler<?> handler) {
-        MessageProperties mp = message.getMessageProperties();
-        // For GSON converter
-        if (handler.getMType() != null) {
-            JsonMessageConverter jmc = EventUtils.getMessageConverter(handler.getMType());
-            if (JsonMessageConverter.GSON.equals(jmc)) {
-                mp.setHeader(AmqpConstants.REGARDS_TYPE_HEADER, handler.getMType().getName());
-                mp.setHeader(AmqpConstants.REGARDS_CONVERTER_HEADER, jmc.toString());
-            }
         }
     }
 }
