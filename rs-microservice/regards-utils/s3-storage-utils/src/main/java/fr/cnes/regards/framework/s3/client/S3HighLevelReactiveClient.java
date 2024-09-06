@@ -302,7 +302,10 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
                         .map(report -> new ReportAndChecksum(report, digest))
                         .flatMap(report -> {
                             if (checksum != null && !report.getChecksum().equalsIgnoreCase(checksum)) {
-                                return Mono.error(new ChecksumDoesntMatchException(checksum, report.getChecksum()));
+                                ChecksumDoesntMatchException exception = new ChecksumDoesntMatchException(checksum,
+                                                                                                          report.getChecksum());
+                                LOGGER.error(exception.getMessage());
+                                return Mono.error(exception);
                             }
                             return Mono.just(report);
                         })
