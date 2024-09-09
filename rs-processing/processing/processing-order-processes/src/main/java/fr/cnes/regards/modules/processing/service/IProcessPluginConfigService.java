@@ -39,6 +39,8 @@ public interface IProcessPluginConfigService {
 
     ProcessPluginConfigurationRightsDTO findByBusinessId(UUID processBusinessId);
 
+    ProcessPluginConfigurationRightsDTO findByBusinessIdNullable(UUID processBusinessId);
+
     ProcessPluginConfigurationRightsDTO update(UUID processBusinessId, ProcessPluginConfigurationRightsDTO rightsDto)
         throws ModuleException;
 
