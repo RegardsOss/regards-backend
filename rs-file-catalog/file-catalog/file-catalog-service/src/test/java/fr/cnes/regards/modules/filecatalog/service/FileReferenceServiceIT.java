@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.filecatalog.service;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
 import fr.cnes.regards.modules.filecatalog.dao.specification.FileReferenceSpecification;
 import fr.cnes.regards.modules.filecatalog.domain.FileReference;
 import org.junit.Assert;
@@ -68,13 +69,13 @@ public class FileReferenceServiceIT extends AbstractFileCatalogIT {
                                                     "anywhere",
                                                     SESSION_OWNER_1,
                                                     SESSION_1,
-                                                    false).get();
+                                                    null).get();
         OffsetDateTime afterFirstDate = OffsetDateTime.now();
         Thread.sleep(1);
-        referenceRandomFile("someone-else", "Type1", "file2.test", "somewhere-else", SESSION_OWNER_1, SESSION_1, false);
-        referenceRandomFile("someone-else", "Type2", "file3.test", "somewhere-else", SESSION_OWNER_1, SESSION_1, false);
-        referenceRandomFile("someone-else", "Test", "data_4.nc", "somewhere-else", SESSION_OWNER_1, SESSION_1, false);
-        referenceRandomFile("someone-else", "Test", "data_5.nc", "void", SESSION_OWNER_1, SESSION_1, false);
+        referenceRandomFile("someone-else", "Type1", "file2.test", "somewhere-else", SESSION_OWNER_1, SESSION_1, null);
+        referenceRandomFile("someone-else", "Type2", "file3.test", "somewhere-else", SESSION_OWNER_1, SESSION_1, null);
+        referenceRandomFile("someone-else", "Test", "data_4.nc", "somewhere-else", SESSION_OWNER_1, SESSION_1, null);
+        referenceRandomFile("someone-else", "Test", "data_5.nc", "void", SESSION_OWNER_1, SESSION_1, null);
         OffsetDateTime afterEndDate = OffsetDateTime.now().plusSeconds(1);
 
         // Search all
@@ -201,12 +202,12 @@ public class FileReferenceServiceIT extends AbstractFileCatalogIT {
                                                     NEARLINE_CONF_LABEL,
                                                     SESSION_OWNER_1,
                                                     SESSION_1,
-                                                    true).get();
-        Assert.assertTrue(fileRef.getLocation().isPendingActionRemaining());
+                                                    FileArchiveStatus.TO_STORE).get();
+        Assert.assertEquals(FileArchiveStatus.TO_STORE, fileRef.getLocation().getFileArchiveStatus());
         fileReferenceService.handleRemainingPendingActionSuccess(Sets.newHashSet(fileRef.getLocation().getUrl()));
         fileRef = fileReferenceService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum())
                                       .get();
-        Assert.assertFalse(fileRef.getLocation().isPendingActionRemaining());
+        Assert.assertEquals(FileArchiveStatus.STORED, fileRef.getLocation().getFileArchiveStatus());
     }
 
     @Test
@@ -224,7 +225,7 @@ public class FileReferenceServiceIT extends AbstractFileCatalogIT {
         for (int i = 0; i < nbFiles; i++) {
             String checksum = UUID.randomUUID().toString();
             checksums.add(checksum);
-            referenceFile(checksum, owner, type, fileName + i, storage, sessionOwner, session, false);
+            referenceFile(checksum, owner, type, fileName + i, storage, sessionOwner, session, null);
         }
         // reference other file
         referenceFile(UUID.randomUUID().toString(),
@@ -234,7 +235,7 @@ public class FileReferenceServiceIT extends AbstractFileCatalogIT {
                       storage,
                       sessionOwner,
                       session,
-                      false);
+                      null);
 
         // --- WHEN ---
         Set<FileReference> filesReferenced = fileReferenceService.search(storage, checksums);

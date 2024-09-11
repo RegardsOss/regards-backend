@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.filecatalog.dao;
 
+import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
 import fr.cnes.regards.modules.filecatalog.domain.FileReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -73,11 +74,9 @@ public interface IFileReferenceRepository
 
     Set<FileReference> findByMetaInfoChecksum(String checksum);
 
-    //FIXME this should change in neo storage
-    Set<FileReference> findByLocationStorageAndLocationPendingActionRemaining(String storage,
-                                                                              boolean pendingActionRemaining);
-
-    //FIXME this should change in neo storage
-    Set<FileReference> findByLocationPendingActionRemainingAndLocationUrlIn(boolean pendingActionRemaining,
-                                                                            Set<String> urls);
+    Set<FileReference> findByLocationStorageAndLocationFileArchiveStatus(String storage,
+                                                                         FileArchiveStatus fileArchiveStatus);
+    
+    Set<FileReference> findByLocationFileArchiveStatusAndLocationUrlIn(FileArchiveStatus fileArchiveStatus,
+                                                                       Set<String> urls);
 }

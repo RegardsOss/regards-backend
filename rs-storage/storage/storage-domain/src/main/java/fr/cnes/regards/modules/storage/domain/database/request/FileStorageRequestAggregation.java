@@ -400,7 +400,7 @@ public class FileStorageRequestAggregation {
 
     /**
      * Recreate the entity from the dto
-     * This entity status won't be set, if the status is needed, it have to be recovered from the database
+     * This entity status won't be set, if the status is needed, it must be recovered from the database
      */
     public static FileStorageRequestAggregation fromDto(FileStorageRequestAggregationDto dto) {
         return new FileStorageRequestAggregation(dto.getId(),

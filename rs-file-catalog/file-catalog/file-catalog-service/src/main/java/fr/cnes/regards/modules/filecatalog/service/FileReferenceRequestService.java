@@ -23,6 +23,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
+import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
@@ -210,7 +211,7 @@ public class FileReferenceRequestService {
                                                                   oFileDeletionReq,
                                                                   Sets.newHashSet(groupId),
                                                                   true,
-                                                                  false);
+                                                                  null);
                     FileReference fileRef = fileRefResult.getFileReference();
                     reqGrpService.requestSuccess(groupId,
                                                  FileRequestType.REFERENCE,
@@ -302,17 +303,17 @@ public class FileReferenceRequestService {
         fileRef.withHeight(metaInfo.getHeight());
         fileRef.withWidth(metaInfo.getWidth());
         fileRef.withType(metaInfo.getType());
-        return reference(fileRef, oFileRef, oFileDelReq, groupIds, false, location.isPendingActionRemaining());
+        return reference(fileRef, oFileRef, oFileDelReq, groupIds, false, location.getFileArchiveStatus());
     }
 
     /**
      * Reference a new file. No file movement is made here. File is only referenced.
      *
-     * @param request                {@link FileReferenceRequestDto}
-     * @param fileRef                {@link FileReference} of associated file if already exists
-     * @param groupIds               Business requests identifiers associated to the new file reference.
-     * @param isReferenced           does the file is a reference (meaning not stored b this service)
-     * @param pendingActionRemaining does an asynchronous action needed to consider file as fully stored
+     * @param request           {@link FileReferenceRequestDto}
+     * @param fileRef           {@link FileReference} of associated file if already exists
+     * @param groupIds          Business requests identifiers associated to the new file reference.
+     * @param isReferenced      does the file is a reference (meaning not stored b this service)
+     * @param fileArchiveStatus storage status of the file if it's in an archive
      * @return {@link FileReference}
      * @throws ModuleException if the file reference can not be created.
      */
@@ -321,7 +322,7 @@ public class FileReferenceRequestService {
                                           Optional<FileDeletionRequest> fileDelReq,
                                           Collection<String> groupIds,
                                           boolean isReferenced,
-                                          boolean pendingActionRemaining) throws ModuleException {
+                                          FileArchiveStatus fileArchiveStatus) throws ModuleException {
         if (fileRef.isPresent()) {
             return handleAlreadyExists(fileRef.get(), fileDelReq, request, groupIds);
         } else {
@@ -330,7 +331,7 @@ public class FileReferenceRequestService {
                                                                  request),
                                                              new FileLocation(request.getStorage(),
                                                                               request.getUrl(),
-                                                                              pendingActionRemaining),
+                                                                              fileArchiveStatus),
                                                              isReferenced);
             String message = String.format("New file <%s> referenced at <%s> (checksum: %s)",
                                            newFileRef.getMetaInfo().getFileName(),

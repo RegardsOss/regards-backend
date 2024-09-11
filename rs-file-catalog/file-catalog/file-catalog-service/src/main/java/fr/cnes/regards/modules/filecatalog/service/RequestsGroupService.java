@@ -25,8 +25,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileGroupRequestStatus;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
-import fr.cnes.regards.modules.filecatalog.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.filecatalog.dao.IRequestGroupRepository;
+import fr.cnes.regards.modules.filecatalog.dao.RequestResultInfoRepository;
 import fr.cnes.regards.modules.filecatalog.domain.FileReference;
 import fr.cnes.regards.modules.filecatalog.domain.RequestResultInfo;
 import fr.cnes.regards.modules.filecatalog.domain.request.RequestGroup;
@@ -64,14 +64,14 @@ public class RequestsGroupService {
     @Value("${regards.storage.groups.requests.bulk:500}")
     private final Integer maxRequestPerTransaction = 500;
 
-    private IGroupRequestInfoRepository groupReqInfoRepository;
+    private RequestResultInfoRepository groupReqInfoRepository;
 
     private final IPublisher publisher;
 
     private final IRequestGroupRepository reqGroupRepository;
 
     public RequestsGroupService(IPublisher publisher,
-                                IGroupRequestInfoRepository groupReqInfoRepository,
+                                RequestResultInfoRepository groupReqInfoRepository,
                                 IRequestGroupRepository reqGroupRepository) {
         this.publisher = publisher;
         this.groupReqInfoRepository = groupReqInfoRepository;

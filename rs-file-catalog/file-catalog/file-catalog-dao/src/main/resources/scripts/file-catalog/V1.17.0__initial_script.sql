@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS t_file_storage_request (
-    id                   INT8 NOT NULL,
-    creation_date        TIMESTAMP,
-    error_cause          VARCHAR(512),
+                                                      id                   INT8 NOT NULL,
+                                                      creation_date        TIMESTAMP,
+                                                      error_cause          VARCHAR(512),
     job_id               VARCHAR(255),
     owner                VARCHAR(256) NOT NULL,
     algorithm            VARCHAR(16) NOT NULL,
@@ -33,21 +33,21 @@ CREATE INDEX IF NOT EXISTS idx_file_storage_request_storage
     ON t_file_storage_request (storage);
 
 CREATE TABLE IF NOT EXISTS t_file_reference (
-    id                 INT8 NOT NULL,
-    storage            VARCHAR(128),
-    url                VARCHAR(2048),
-    algorithm          VARCHAR(16) NOT NULL,
-    checksum           VARCHAR(128) NOT NULL,
-    filename           VARCHAR(256) NOT NULL,
-    filesize           INT8,
-    height             INT8,
-    mime_type          VARCHAR(255) NOT NULL,
-    type               VARCHAR(256),
-    width              INT8,
-    storagedate        TIMESTAMP,
-    referenced         BOOL DEFAULT false,
-    pending            BOOL DEFAULT false,
-    nearline_confirmed BOOL DEFAULT false,
+                                                id                  INT8 NOT NULL,
+                                                storage             VARCHAR(128),
+    url                 VARCHAR(2048),
+    algorithm           VARCHAR(16) NOT NULL,
+    checksum            VARCHAR(128) NOT NULL,
+    filename            VARCHAR(256) NOT NULL,
+    filesize            INT8,
+    height              INT8,
+    mime_type           VARCHAR(255) NOT NULL,
+    type                VARCHAR(256),
+    width               INT8,
+    storagedate         TIMESTAMP,
+    referenced          BOOL DEFAULT false,
+    file_archive_status VARCHAR(255),
+    nearline_confirmed  BOOL DEFAULT false,
     PRIMARY KEY (id)
     );
 
@@ -75,11 +75,11 @@ CREATE INDEX IF NOT EXISTS idx_file_reference_url
 CREATE INDEX IF NOT EXISTS idx_nearline_confirmed
     ON t_file_reference (nearline_confirmed);
 
-CREATE INDEX IF NOT EXISTS idx_t_file_ref_pendings
-    ON t_file_reference (pending);
+CREATE INDEX IF NOT EXISTS idx_t_file_ref_file_archive_status
+    ON t_file_reference (file_archive_status);
 
 CREATE TABLE IF NOT EXISTS ta_file_reference_owner (
-    file_ref_id INT8 NOT NULL, owner VARCHAR(255)
+                                                       file_ref_id INT8 NOT NULL, owner VARCHAR(255)
     );
 
 ALTER TABLE ta_file_reference_owner
@@ -92,10 +92,10 @@ CREATE INDEX IF NOT EXISTS idx_ta_file_ref_owner_file_id
     ON ta_file_reference_owner (file_ref_id);
 
 CREATE TABLE IF NOT EXISTS t_file_deletion_request (
-    id             INT8 NOT NULL,
-    file_reference INT8 NOT NULL,
-    creation_date  TIMESTAMP,
-    error_cause    VARCHAR(512),
+                                                       id             INT8 NOT NULL,
+                                                       file_reference INT8 NOT NULL,
+                                                       creation_date  TIMESTAMP,
+                                                       error_cause    VARCHAR(512),
     force_delete   BOOL,
     group_id       VARCHAR(128) NOT NULL,
     job_id         VARCHAR(255),
@@ -116,8 +116,8 @@ CREATE INDEX IF NOT EXISTS idx_file_deletion_request
     ON t_file_deletion_request (storage);
 
 CREATE TABLE IF NOT EXISTS ta_storage_request_group_ids (
-    file_storage_request_id INT8 NOT NULL,
-    group_id                VARCHAR(128) NOT NULL,
+                                                            file_storage_request_id INT8 NOT NULL,
+                                                            group_id                VARCHAR(128) NOT NULL,
     PRIMARY KEY (file_storage_request_id, group_id)
     );
 
@@ -138,9 +138,9 @@ CREATE SEQUENCE IF NOT EXISTS seq_file_reference START 1 INCREMENT 50;
 CREATE SEQUENCE IF NOT EXISTS seq_file_storage_request START 1 INCREMENT 50;
 
 CREATE TABLE IF NOT EXISTS t_request_result_info (
-    id                 INT8 NOT NULL,
-    error              BOOL,
-    error_cause        VARCHAR(512),
+                                                     id                 INT8 NOT NULL,
+                                                     error              BOOL,
+                                                     error_cause        VARCHAR(512),
     group_id           VARCHAR(128) NOT NULL,
     request_checksum   VARCHAR(128) NOT NULL,
     request_owners     JSONB,
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS t_request_result_info (
     );
 
 ALTER TABLE t_request_result_info
-    ADD CONSTRAINT fkc9bxmi7kd5qm75tg4tmxfflc8 FOREIGN KEY (result_file_ref_id) REFERENCES t_file_reference;
+    ADD CONSTRAINT fk_t_request_result_id_t_file_reference FOREIGN KEY (result_file_ref_id) REFERENCES t_file_reference;
 
 CREATE SEQUENCE seq_groups_requests_info START WITH 1 INCREMENT 50;
 

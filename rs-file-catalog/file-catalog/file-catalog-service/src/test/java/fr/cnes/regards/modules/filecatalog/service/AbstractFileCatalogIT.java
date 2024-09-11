@@ -21,10 +21,12 @@ package fr.cnes.regards.modules.filecatalog.service;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
 import fr.cnes.regards.modules.filecatalog.dao.*;
 import fr.cnes.regards.modules.filecatalog.domain.FileLocation;
 import fr.cnes.regards.modules.filecatalog.domain.FileReference;
 import fr.cnes.regards.modules.filecatalog.domain.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.filecatalog.service.handler.FileArchiveResponseEventHandler;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,18 +71,21 @@ public abstract class AbstractFileCatalogIT extends AbstractMultitenantServiceIT
     protected IFileStorageRequestAggregationRepository fileStorageRequestAggregationRepository;
 
     @Autowired
-    protected IGroupRequestInfoRepository groupRequestInfoRepository;
+    protected RequestResultInfoRepository requestResultInfoRepository;
 
     @Autowired
     protected IRequestGroupRepository requestGroupRepository;
+
+    @Autowired
+    protected FileArchiveResponseEventHandler fileArchiveResponseEventHandler;
 
     protected void init() throws ModuleException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         simulateApplicationStartedEvent();
         fileDeletionRequestRepository.deleteAll();
+        requestResultInfoRepository.deleteAll();
         fileReferenceRepository.deleteAll();
         fileStorageRequestAggregationRepository.deleteAll();
-        groupRequestInfoRepository.deleteAll();
         requestGroupRepository.deleteAll();
     }
 
@@ -91,16 +96,14 @@ public abstract class AbstractFileCatalogIT extends AbstractMultitenantServiceIT
                                                     String storage,
                                                     String sessionOwner,
                                                     String session,
-                                                    boolean pendingActionRemaining) {
+                                                    FileArchiveStatus fileArchiveStatus) {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum,
                                                                        "MD5",
                                                                        fileName,
                                                                        1024L,
                                                                        MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.setType(type);
-        FileLocation location = new FileLocation(storage,
-                                                 "anywhere://in/this/directory/file.test",
-                                                 pendingActionRemaining);
+        FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/file.test", fileArchiveStatus);
         try {
             fileRefeferenceRequestservice.reference(owner,
                                                     fileMetaInfo,
@@ -121,7 +124,7 @@ public abstract class AbstractFileCatalogIT extends AbstractMultitenantServiceIT
                                                           String storage,
                                                           String sessionOwner,
                                                           String session,
-                                                          boolean pendingRemainingAction) {
+                                                          FileArchiveStatus fileArchiveStatus) {
         return this.referenceFile(UUID.randomUUID().toString(),
                                   owner,
                                   type,
@@ -129,6 +132,6 @@ public abstract class AbstractFileCatalogIT extends AbstractMultitenantServiceIT
                                   storage,
                                   sessionOwner,
                                   session,
-                                  pendingRemainingAction);
+                                  fileArchiveStatus);
     }
 }

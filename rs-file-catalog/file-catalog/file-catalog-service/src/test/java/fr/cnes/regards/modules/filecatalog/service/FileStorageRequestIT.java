@@ -731,7 +731,7 @@ public class FileStorageRequestIT extends AbstractMultitenantServiceIT {
                                                                    "file" + file,
                                                                    1000L,
                                                                    MimeType.valueOf("text/plain"));
-        FileLocation fileLoc = new FileLocation("storage" + storage, "https://originurl.com/file" + file, false);
+        FileLocation fileLoc = new FileLocation("storage" + storage, "https://originurl.com/file" + file, null);
 
         FileReference fileRef = new FileReference("owner0", metaInfo, fileLoc);
 

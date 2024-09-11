@@ -78,7 +78,7 @@ public class FileReferenceRequestServiceIT extends AbstractFileCatalogIT {
                                                                ONLINE_CONF_LABEL,
                                                                SESSION_OWNER_1,
                                                                SESSION_1,
-                                                               false);
+                                                               null);
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
         Collection<FileStorageRequestAggregation> storageReqs = fileStorageRequestService.search(oFileRef.get()
                                                                                                          .getLocation()

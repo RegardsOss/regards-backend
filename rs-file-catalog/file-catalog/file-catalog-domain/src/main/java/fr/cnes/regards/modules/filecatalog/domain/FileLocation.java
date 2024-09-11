@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.modules.filecatalog.domain;
 
+import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileLocationDto;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 /**
  * Definition of a file location
@@ -51,18 +53,19 @@ public class FileLocation {
      * Indicates if stored file need an extra asynchronous action to be fully stored.
      * Whatever the value of this boolean, the file is considered as stored.
      */
-    @Column(name = "pending")
-    private boolean pendingActionRemaining;
+    @Column(name = "file_archive_status")
+    @Enumerated(EnumType.STRING)
+    private FileArchiveStatus fileArchiveStatus;
 
     public FileLocation() {
         super();
     }
 
-    public FileLocation(String storage, String url, boolean pendingActionRemaining) {
+    public FileLocation(String storage, String url, FileArchiveStatus fileArchiveStatus) {
         super();
         this.storage = storage;
         this.url = url;
-        this.pendingActionRemaining = pendingActionRemaining;
+        this.fileArchiveStatus = fileArchiveStatus;
     }
 
     /**
@@ -93,12 +96,12 @@ public class FileLocation {
         this.url = url;
     }
 
-    public boolean isPendingActionRemaining() {
-        return pendingActionRemaining;
+    public FileArchiveStatus getFileArchiveStatus() {
+        return fileArchiveStatus;
     }
 
-    public void setPendingActionRemaining(boolean pendingActionRemaining) {
-        this.pendingActionRemaining = pendingActionRemaining;
+    public void setFileArchiveStatus(FileArchiveStatus fileArchiveStatus) {
+        this.fileArchiveStatus = fileArchiveStatus;
     }
 
     /* (non-Javadoc)
@@ -154,7 +157,7 @@ public class FileLocation {
     }
 
     public static FileLocation buildFromDto(FileLocationDto dto) {
-        return new FileLocation(dto.getStorage(), dto.getUrl(), false);
+        return new FileLocation(dto.getStorage(), dto.getUrl(), dto.getFileArchiveStatus());
     }
 
 }

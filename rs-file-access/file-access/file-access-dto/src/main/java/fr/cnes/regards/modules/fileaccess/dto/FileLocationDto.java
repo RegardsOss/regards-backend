@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.fileaccess.dto;
 
+import java.util.Objects;
+
 /**
  * Dto to represents location a file referenced in storage catalog.
  *
@@ -35,16 +37,19 @@ public class FileLocationDto {
      */
     private final String url;
 
-    private final boolean pendingActionRemaining;
+    /**
+     * Status of the file inside its small file archive, null if the file is not a small file in a tier 3 storage.
+     */
+    private final FileArchiveStatus fileArchiveStatus;
 
-    public FileLocationDto(String storage, String url, boolean pendingActionRemaining) {
+    public FileLocationDto(String storage, String url, FileArchiveStatus fileArchiveStatus) {
         this.storage = storage;
         this.url = url;
-        this.pendingActionRemaining = pendingActionRemaining;
+        this.fileArchiveStatus = fileArchiveStatus;
     }
 
     public FileLocationDto(String storage, String url) {
-        this(storage, url, false);
+        this(storage, url, null);
     }
 
     public String getStorage() {
@@ -55,13 +60,40 @@ public class FileLocationDto {
         return url;
     }
 
-    public boolean isPendingActionRemaining() {
-        return pendingActionRemaining;
+    public FileArchiveStatus getFileArchiveStatus() {
+        return fileArchiveStatus;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FileLocationDto that = (FileLocationDto) o;
+        return Objects.equals(storage, that.storage)
+               && Objects.equals(url, that.url)
+               && fileArchiveStatus == that.fileArchiveStatus;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(storage, url, fileArchiveStatus);
     }
 
     @Override
     public String toString() {
-        return String.format("FileLocation storage=[%s] url=[%s]", this.storage, this.url);
+        return "FileLocationDto{"
+               + "storage='"
+               + storage
+               + '\''
+               + ", url='"
+               + url
+               + '\''
+               + ", fileArchiveStatus="
+               + fileArchiveStatus
+               + '}';
     }
-
 }

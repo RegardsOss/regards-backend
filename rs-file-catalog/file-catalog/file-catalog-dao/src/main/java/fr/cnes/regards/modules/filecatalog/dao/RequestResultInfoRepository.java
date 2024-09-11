@@ -29,7 +29,7 @@ import java.util.Set;
  *
  * @author Sébatien Binda
  */
-public interface IGroupRequestInfoRepository extends JpaRepository<RequestResultInfo, Long> {
+public interface RequestResultInfoRepository extends JpaRepository<RequestResultInfo, Long> {
 
     /**
      * Retrieve all {@RequestResultInfo}s matching the given group id.

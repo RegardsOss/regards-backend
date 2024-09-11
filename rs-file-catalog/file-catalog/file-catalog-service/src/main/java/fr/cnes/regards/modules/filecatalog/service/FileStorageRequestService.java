@@ -18,19 +18,30 @@
  */
 package fr.cnes.regards.modules.filecatalog.service;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
+import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.input.FileStorageMetaInfoDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FileArchiveResponseEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.filecatalog.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.filecatalog.dao.IFileStorageRequestAggregationRepository;
 import fr.cnes.regards.modules.filecatalog.dao.result.RequestAndMaxStatus;
-import fr.cnes.regards.modules.filecatalog.domain.FileReference;
-import fr.cnes.regards.modules.filecatalog.domain.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.filecatalog.domain.*;
 import fr.cnes.regards.modules.filecatalog.domain.request.FileStorageRequestAggregation;
+import fr.cnes.regards.modules.filecatalog.dto.FileArchiveResponseDto;
+import fr.cnes.regards.modules.filecatalog.service.template.StorageTemplatesConf;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -40,8 +51,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeTypeUtils;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -59,9 +72,19 @@ public class FileStorageRequestService {
 
     public static final int SMALL_PAGE_SIZE = 200;
 
-    private final RequestStatusService reqStatusService;
+    private final RequestStatusService requestStatusService;
+
+    private final FileReferenceRequestService fileReferenceRequestService;
+
+    private final RequestsGroupService requestsGroupService;
+
+    private final ITemplateService templateService;
 
     private final SessionNotifier sessionNotifier;
+
+    private final INotificationClient notificationClient;
+
+    private final FileReferenceEventPublisher eventPublisher;
 
     private final IFileStorageRequestAggregationRepository fileStorageRequestAggregationRepository;
 
@@ -69,13 +92,23 @@ public class FileStorageRequestService {
 
     private final IPublisher publisher;
 
-    public FileStorageRequestService(RequestStatusService reqStatusService,
+    public FileStorageRequestService(RequestStatusService requestStatusService,
+                                     FileReferenceRequestService fileReferenceRequestService,
+                                     RequestsGroupService requestsGroupService,
+                                     ITemplateService templateService,
                                      SessionNotifier sessionNotifier,
+                                     INotificationClient notificationClient,
+                                     FileReferenceEventPublisher eventPublisher,
                                      IFileStorageRequestAggregationRepository fileStorageRequestAggregationRepository,
                                      IFileReferenceRepository fileReferenceRepository,
                                      IPublisher publisher) {
-        this.reqStatusService = reqStatusService;
+        this.requestStatusService = requestStatusService;
+        this.fileReferenceRequestService = fileReferenceRequestService;
+        this.requestsGroupService = requestsGroupService;
+        this.templateService = templateService;
         this.sessionNotifier = sessionNotifier;
+        this.notificationClient = notificationClient;
+        this.eventPublisher = eventPublisher;
         this.fileStorageRequestAggregationRepository = fileStorageRequestAggregationRepository;
         this.fileReferenceRepository = fileReferenceRepository;
         this.publisher = publisher;
@@ -132,7 +165,7 @@ public class FileStorageRequestService {
                                                                                              sessionOwner,
                                                                                              session,
                                                                                              false);
-        fileStorageRequest.setStatus(reqStatusService.getNewStatus(fileStorageRequest, status));
+        fileStorageRequest.setStatus(requestStatusService.getNewStatus(fileStorageRequest, status));
         fileStorageRequest.setErrorCause(errorCause.orElse(null));
         // notify request is running to the session agent
         this.sessionNotifier.incrementRunningRequests(fileStorageRequest.getSessionOwner(),
@@ -351,5 +384,190 @@ public class FileStorageRequestService {
     @Transactional(readOnly = true)
     public Collection<FileStorageRequestAggregation> search(String destinationStorage, String checksum) {
         return fileStorageRequestAggregationRepository.findByMetaInfoChecksumAndStorage(checksum, destinationStorage);
+    }
+
+    private void handleSuccess(Collection<FileStorageResult> results) {
+        Set<String> filesWithActionsRemaining = new HashSet<>();
+        for (FileStorageResult result : results) {
+            boolean isHandleSuccess = true;
+            FileStorageRequestAggregation request = result.request();
+            FileReferenceMetaInfo reqMetaInfos = request.getMetaInfo();
+            Set<FileReference> fileRefs = Sets.newHashSet();
+            // parameters for session notification
+            String sessionOwner = request.getSessionOwner();
+            String session = request.getSession();
+            int nbFilesStored = 0;
+
+            try {
+                FileReferenceMetaInfo fileMeta = new FileReferenceMetaInfo(reqMetaInfos.getChecksum(),
+                                                                           reqMetaInfos.getAlgorithm(),
+                                                                           reqMetaInfos.getFileName(),
+                                                                           request.getMetaInfo().getFileSize(),
+                                                                           reqMetaInfos.getMimeType());
+                fileMeta.setHeight(reqMetaInfos.getHeight());
+                fileMeta.setWidth(reqMetaInfos.getWidth());
+                fileMeta.setType(reqMetaInfos.getType());
+                FileReferenceResult fileReferenceResult = fileReferenceRequestService.reference(request.getOwner(),
+                                                                                                fileMeta,
+                                                                                                new FileLocation(request.getStorage(),
+                                                                                                                 result.fileUrl(),
+                                                                                                                 result.storageStatus()),
+                                                                                                request.getGroupIds(),
+                                                                                                sessionOwner,
+                                                                                                session);
+                fileRefs.add(fileReferenceResult.getFileReference());
+                if (fileReferenceResult.getStatus() != FileReferenceResultStatusEnum.UNMODIFIED) {
+                    // Only increment count of stored files if referenced file is new or updated.
+                    // If reference file already exists for the given owner (unmodified), total of stored files already contains this one.
+                    nbFilesStored++;
+                }
+            } catch (ModuleException e) {
+                LOGGER.error(e.getMessage(), e);
+                handleError(request, e.getMessage());
+                isHandleSuccess = false;
+            }
+
+            for (String groupId : request.getGroupIds()) {
+                for (FileReference fileRef : fileRefs) {
+                    requestsGroupService.requestSuccess(groupId,
+                                                        FileRequestType.STORAGE,
+                                                        fileRef.getMetaInfo().getChecksum(),
+                                                        fileRef.getLocation().getStorage(),
+                                                        request.getStorageSubDirectory(),
+                                                        List.of(request.getOwner()),
+                                                        fileRef);
+                }
+            }
+
+            // Session handling
+            // decrement the number of running requests
+            this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+            // notify the number of successful created files
+            this.sessionNotifier.incrementStoredFiles(sessionOwner, session, nbFilesStored);
+
+            if (result.notifyActionRemainingToAdmin()) {
+                filesWithActionsRemaining.add(result.fileUrl());
+            }
+
+            // Delete the FileRefRequest as it has been handled
+            if (isHandleSuccess) {
+                delete(request);
+            }
+        }
+
+        /**
+         * Notify the admin that some files are temporarily stored locally before they are fully stored on the target
+         * storage
+         */
+        if (!filesWithActionsRemaining.isEmpty()) {
+            notificationClient.notifyRoles(createStorageActionPendingNotification(filesWithActionsRemaining),
+                                           "Storage not completed",
+                                           NotificationLevel.ERROR,
+                                           MimeTypeUtils.TEXT_HTML,
+                                           Sets.newHashSet(DefaultRole.PROJECT_ADMIN.toString()));
+        }
+    }
+
+    /**
+     * Handle a {@link FileStorageRequestAggregation} error.
+     * <ul>
+     * <li> Update the request into database </li>
+     * <li> Send bus message information about storage error </li>
+     * <li> Update group with the error request </li>
+     * </ul>
+     */
+    private void handleError(FileStorageRequestAggregation request, String errorCause) {
+        // The file is not really referenced so handle reference error by modifying request to be retry later
+        request.setStatus(StorageRequestStatus.ERROR);
+        request.setErrorCause(errorCause);
+        save(request);
+        eventPublisher.storeError(request.getMetaInfo().getChecksum(),
+                                  List.of(request.getOwner()),
+                                  request.getStorage(),
+                                  errorCause,
+                                  request.getGroupIds());
+        for (String groupId : request.getGroupIds()) {
+            requestsGroupService.requestError(groupId,
+                                              FileRequestType.STORAGE,
+                                              request.getMetaInfo().getChecksum(),
+                                              request.getStorage(),
+                                              request.getStorageSubDirectory(),
+                                              List.of(request.getOwner()),
+                                              errorCause);
+        }
+        // notify error to the session agent
+        String sessionOwner = request.getSessionOwner();
+        String session = request.getSession();
+        this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
+        this.sessionNotifier.incrementErrorRequests(sessionOwner, session);
+    }
+
+    /**
+     * Create a new {@link FileStorageRequestAggregation} or update it if it exists
+     *
+     * @param fileStorageRequest to save
+     */
+    public FileStorageRequestAggregation save(FileStorageRequestAggregation fileStorageRequest) {
+        return fileStorageRequestAggregationRepository.save(fileStorageRequest);
+    }
+
+    /**
+     * Delete a {@link FileStorageRequestAggregation}
+     *
+     * @param fileStorageRequest to delete
+     */
+    public void delete(FileStorageRequestAggregation fileStorageRequest) {
+        if (fileStorageRequestAggregationRepository.existsById(fileStorageRequest.getId())) {
+            fileStorageRequestAggregationRepository.deleteById(fileStorageRequest.getId());
+        } else {
+            LOGGER.debug("Unable to delete file storage request {} cause it does not exists",
+                         fileStorageRequest.getId());
+        }
+    }
+
+    /**
+     * Creates notification for project administrators to inform action pending is remaining on stored files
+     */
+    private String createStorageActionPendingNotification(Set<String> files) {
+        final Map<String, Object> data = new HashMap<>();
+        data.put("files", files);
+        try {
+            return templateService.render(StorageTemplatesConf.ACTION_REMAINING_TEMPLATE_NAME, data);
+        } catch (TemplateException e) {
+            LOGGER.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Create the file reference for each successful request
+     */
+    public void handleSuccess(List<FileArchiveResponseEvent> messages) {
+        List<FileStorageRequestAggregation> requestList = fileStorageRequestAggregationRepository.findAllById(messages.stream()
+                                                                                                                      .map(
+                                                                                                                          FileArchiveResponseDto::getRequestId)
+                                                                                                                      .toList());
+
+        Map<Long, FileStorageRequestAggregation> requestMap = requestList.stream()
+                                                                         .collect(Collectors.toMap(
+                                                                             FileStorageRequestAggregation::getId,
+                                                                             Function.identity()));
+
+        List<FileStorageResult> resultList = messages.stream()
+                                                     .map(message -> new FileStorageResult(requestMap.get(message.getRequestId()),
+                                                                                           message.getFileUrl(),
+                                                                                           FileArchiveStatus.TO_STORE,
+                                                                                           true))
+                                                     .toList();
+
+        this.handleSuccess(resultList);
+
+    }
+
+    private record FileStorageResult(FileStorageRequestAggregation request,
+                                     String fileUrl,
+                                     FileArchiveStatus storageStatus,
+                                     boolean notifyActionRemainingToAdmin) {
+
     }
 }

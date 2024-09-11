@@ -22,6 +22,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.AbstractPublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileAvailableEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
@@ -164,7 +165,7 @@ public class FileReferenceEventPublisher {
                                                  FileReferenceEventType.STORE_ERROR,
                                                  owners,
                                                  message,
-                                                 new FileLocation(storage, null, false).toDto(),
+                                                 new FileLocation(storage, null, null).toDto(),
                                                  null,
                                                  groupIds));
     }
@@ -202,7 +203,9 @@ public class FileReferenceEventPublisher {
                                                  FileReferenceEventType.AVAILABLE,
                                                  owners,
                                                  message,
-                                                 new FileLocation(availableStorage, url.toString(), false).toDto(),
+                                                 new FileLocation(availableStorage,
+                                                                  url.toString(),
+                                                                  FileArchiveStatus.STORED).toDto(),
                                                  null,
                                                  groupIds));
         publisher.broadcast(FileAvailableEvent.EXCHANGE_NAME,

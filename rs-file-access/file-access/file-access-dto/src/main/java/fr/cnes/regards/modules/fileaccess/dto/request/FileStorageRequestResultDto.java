@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.fileaccess.dto.request;
 
+import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
+
+import java.util.Objects;
+
 /**
  * POJO to centralize information about FileStorageRequest execution results.
  *
@@ -35,10 +39,27 @@ public class FileStorageRequestResultDto {
 
     private String errorCause;
 
-    private boolean pendingActionRemaining;
+    private FileArchiveStatus fileArchiveStatus;
 
     private boolean notifyActionRemainingToAdmin;
 
+    public static FileStorageRequestResultDto build(FileStorageRequestAggregationDto request,
+                                                    String storedUrl,
+                                                    Long fileSize,
+                                                    FileArchiveStatus fileArchiveStatus,
+                                                    boolean notifyActionRemainingToAdmin) {
+        FileStorageRequestResultDto dto = new FileStorageRequestResultDto();
+        dto.request = request;
+        dto.storedUrl = storedUrl;
+        dto.fileSize = fileSize;
+        dto.fileArchiveStatus = fileArchiveStatus;
+        dto.notifyActionRemainingToAdmin = notifyActionRemainingToAdmin;
+        return dto;
+    }
+
+    /**
+     * Build for legacy storage where the archive status is just a boolean (STORED / TO_STORE)
+     */
     public static FileStorageRequestResultDto build(FileStorageRequestAggregationDto request,
                                                     String storedUrl,
                                                     Long fileSize,
@@ -48,7 +69,7 @@ public class FileStorageRequestResultDto {
         dto.request = request;
         dto.storedUrl = storedUrl;
         dto.fileSize = fileSize;
-        dto.pendingActionRemaining = pendingActionRemaining;
+        dto.fileArchiveStatus = pendingActionRemaining ? FileArchiveStatus.TO_STORE : FileArchiveStatus.STORED;
         dto.notifyActionRemainingToAdmin = notifyActionRemainingToAdmin;
         return dto;
     }
@@ -79,11 +100,69 @@ public class FileStorageRequestResultDto {
         return errorCause;
     }
 
-    public boolean isPendingActionRemaining() {
-        return pendingActionRemaining;
-    }
-
     public boolean isNotifyActionRemainingToAdmin() {
         return notifyActionRemainingToAdmin;
+    }
+
+    public FileArchiveStatus getFileArchiveStatus() {
+        return fileArchiveStatus;
+    }
+
+    @Override
+    public String toString() {
+        return "FileStorageRequestResultDto{"
+               + "request="
+               + request
+               + ", error="
+               + error
+               + ", storedUrl='"
+               + storedUrl
+               + '\''
+               + ", fileSize="
+               + fileSize
+               + ", errorCause='"
+               + errorCause
+               + '\''
+               + ", fileArchiveStatus="
+               + fileArchiveStatus
+               + ", notifyActionRemainingToAdmin="
+               + notifyActionRemainingToAdmin
+               + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FileStorageRequestResultDto that = (FileStorageRequestResultDto) o;
+        return error == that.error
+               && notifyActionRemainingToAdmin == that.notifyActionRemainingToAdmin
+               && Objects.equals(request, that.request)
+               && Objects.equals(storedUrl, that.storedUrl)
+               && Objects.equals(fileSize, that.fileSize)
+               && Objects.equals(errorCause, that.errorCause)
+               && fileArchiveStatus == that.fileArchiveStatus;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(request,
+                            error,
+                            storedUrl,
+                            fileSize,
+                            errorCause,
+                            fileArchiveStatus,
+                            notifyActionRemainingToAdmin);
+    }
+
+    /**
+     * Method for the legacy storage where the archive status is just a boolean (STORED / TO_STORE)
+     */
+    public boolean isPendingActionRemaining() {
+        return FileArchiveStatus.TO_STORE.equals(fileArchiveStatus);
     }
 }

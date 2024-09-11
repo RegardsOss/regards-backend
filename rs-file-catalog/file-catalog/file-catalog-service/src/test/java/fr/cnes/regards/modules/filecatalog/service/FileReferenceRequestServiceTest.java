@@ -272,7 +272,7 @@ public class FileReferenceRequestServiceTest {
                                        boolean checksumExists) {
         String storage1 = "testStorage";
 
-        FileLocation existingFileLoc = new FileLocation(storage1, existingFileUrl, false);
+        FileLocation existingFileLoc = new FileLocation(storage1, existingFileUrl, null);
         FileReferenceMetaInfo existingFileMetaInfo = new FileReferenceMetaInfo(existingFileChecksum,
                                                                                MD5,
                                                                                FILE_NAME,
@@ -289,7 +289,7 @@ public class FileReferenceRequestServiceTest {
                    .thenReturn(new HashSet<>(List.of(existingFileRef)));
         }
         if (newFileUrl != null) {
-            FileLocation newFileLoc = new FileLocation(storage1, newFileUrl, false);
+            FileLocation newFileLoc = new FileLocation(storage1, newFileUrl, null);
             FileReferenceMetaInfo newFileMetaInfo = new FileReferenceMetaInfo(newFileChecksum,
                                                                               MD5,
                                                                               FILE_NAME,

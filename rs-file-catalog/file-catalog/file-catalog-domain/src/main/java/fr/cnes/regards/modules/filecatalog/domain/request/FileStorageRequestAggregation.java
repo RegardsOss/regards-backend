@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.filecatalog.domain.request;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.filecatalog.domain.FileLocation;
 import fr.cnes.regards.modules.filecatalog.domain.FileReferenceMetaInfo;
 import jakarta.persistence.*;
@@ -139,6 +140,33 @@ public class FileStorageRequestAggregation {
         this.sessionOwner = sessionOwner;
         this.session = session;
         this.reference = reference;
+    }
+
+    private FileStorageRequestAggregation(Long id,
+                                          String owner,
+                                          String originUrl,
+                                          String storageSubDirectory,
+                                          String storage,
+                                          FileReferenceMetaInfo metaInfo,
+                                          StorageRequestStatus status,
+                                          String errorCause,
+                                          OffsetDateTime creationDate,
+                                          String jobId,
+                                          String sessionOwner,
+                                          String session) {
+        this.id = id;
+        this.owner = owner;
+        this.originUrl = originUrl;
+        this.storageSubDirectory = storageSubDirectory;
+        this.storage = storage;
+        this.metaInfo = metaInfo;
+        this.status = status;
+        this.statusString = statusString;
+        this.errorCause = errorCause;
+        this.creationDate = creationDate;
+        this.jobId = jobId;
+        this.sessionOwner = sessionOwner;
+        this.session = session;
     }
 
     public Long getId() {
@@ -343,5 +371,24 @@ public class FileStorageRequestAggregation {
                + ", reference="
                + reference
                + '}';
+    }
+
+    /**
+     * Recreate the entity from the dto
+     * This entity status won't be set, if the status is needed, it must be recovered from the database
+     */
+    public static FileStorageRequestAggregation fromDto(FileStorageRequestAggregationDto dto) {
+        return new FileStorageRequestAggregation(dto.getId(),
+                                                 dto.getOwners().stream().findAny().get(),
+                                                 dto.getOriginUrl(),
+                                                 dto.getSubDirectory(),
+                                                 dto.getStorage(),
+                                                 FileReferenceMetaInfo.buildFromDto(dto.getMetaInfo()),
+                                                 null,
+                                                 dto.getErrorCause(),
+                                                 dto.getCreationDate(),
+                                                 dto.getJobId(),
+                                                 dto.getSessionOwner(),
+                                                 dto.getSession());
     }
 }

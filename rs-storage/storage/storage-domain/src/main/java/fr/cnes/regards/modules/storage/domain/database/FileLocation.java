@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.domain.database;
 
+import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileLocationDto;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -150,11 +150,15 @@ public class FileLocation {
     }
 
     public FileLocationDto toDto() {
-        return new FileLocationDto(storage, url, pendingActionRemaining);
+        return new FileLocationDto(storage,
+                                   url,
+                                   pendingActionRemaining ? FileArchiveStatus.TO_STORE : FileArchiveStatus.STORED);
     }
 
     public static FileLocation buildFromDto(FileLocationDto dto) {
-        return new FileLocation(dto.getStorage(), dto.getUrl(), dto.isPendingActionRemaining());
+        return new FileLocation(dto.getStorage(),
+                                dto.getUrl(),
+                                dto.getFileArchiveStatus() == FileArchiveStatus.TO_STORE);
     }
 
 }

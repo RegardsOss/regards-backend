@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.filecatalog.dao.IFileReferenceWithOwnersRepository;
@@ -141,9 +142,9 @@ public class FileReferenceService {
      * @param pendingActionSucceedUrls urls of file references to update
      */
     public void handleRemainingPendingActionSuccess(Set<String> pendingActionSucceedUrls) {
-        Set<FileReference> refs = fileRefRepo.findByLocationPendingActionRemainingAndLocationUrlIn(true,
-                                                                                                   pendingActionSucceedUrls);
-        refs.forEach(f -> f.getLocation().setPendingActionRemaining(false));
+        Set<FileReference> refs = fileRefRepo.findByLocationFileArchiveStatusAndLocationUrlIn(FileArchiveStatus.TO_STORE,
+                                                                                              pendingActionSucceedUrls);
+        refs.forEach(f -> f.getLocation().setFileArchiveStatus(FileArchiveStatus.STORED));
         fileRefRepo.saveAll(refs);
     }
 
@@ -295,9 +296,8 @@ public class FileReferenceService {
      * @return {@link FileReference}s
      */
     @Transactional(readOnly = true)
-    public Set<FileReference> searchPendingActionsRemaining(String storage) {
-        //FIXME this should change in neo storage
-        return fileRefRepo.findByLocationStorageAndLocationPendingActionRemaining(storage, true);
+    public Set<FileReference> searchToStore(String storage) {
+        return fileRefRepo.findByLocationStorageAndLocationFileArchiveStatus(storage, FileArchiveStatus.TO_STORE);
     }
 
     @Transactional(readOnly = true)
