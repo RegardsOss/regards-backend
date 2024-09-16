@@ -28,6 +28,10 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.service.IUILayoutService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
@@ -42,6 +46,7 @@ import org.springframework.web.bind.annotation.*;
  *
  * @author Sébastien Binda
  */
+@Tag(name = "UI layout controller")
 @RestController
 @RequestMapping("/layouts")
 public class UILayoutController implements IResourceController<UILayout> {
@@ -57,10 +62,12 @@ public class UILayoutController implements IResourceController<UILayout> {
      *
      * @return {@link UILayout}
      */
-    @RequestMapping(value = "/{applicationId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve IHM UILayout configuration for the given applicationId",
+    @GetMapping(value = "/{applicationId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieve UI layout configuration for the given application identifier",
                     role = DefaultRole.PUBLIC)
+    @Operation(summary = "Get an UI layout configuration",
+               description = "Retrieve UI layout configuration for the given application identifier")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the UI layout configuration") })
     public HttpEntity<EntityModel<UILayout>> retrieveUILayout(@PathVariable("applicationId") final String applicationId)
         throws EntityNotFoundException {
         final UILayout UILayout = UILayoutService.retrieveLayout(applicationId);
@@ -73,10 +80,13 @@ public class UILayoutController implements IResourceController<UILayout> {
      *
      * @return updated {@link UILayout}
      */
-    @RequestMapping(value = "/{applicationId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve IHM UILayout configuration for the given applicationId",
+    @PutMapping(value = "/{applicationId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to update the UI layout configuration for the given application identifier",
                     role = DefaultRole.PROJECT_ADMIN)
+    @Operation(summary = "Update an UI layout configuration",
+               description = "Update the UI layout configuration for the given application identifier")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Returns the updated UI layout configuration") })
     public HttpEntity<EntityModel<UILayout>> updateUILayout(@PathVariable("applicationId") final String applicationId,
                                                             @Valid @RequestBody final UILayout UILayout)
         throws EntityException {
