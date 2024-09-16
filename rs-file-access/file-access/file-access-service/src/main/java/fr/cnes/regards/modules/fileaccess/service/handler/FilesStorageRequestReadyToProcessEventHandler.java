@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToPr
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageWorkerRequestEvent;
 import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
+import fr.cnes.regards.modules.fileaccess.dto.output.StorageResponseErrorEnum;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
 import fr.cnes.regards.modules.fileaccess.service.StoragePluginConfigurationService;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -50,7 +51,7 @@ import java.util.*;
 public class FilesStorageRequestReadyToProcessEventHandler
     implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileStorageRequestReadyToProcessEvent> {
 
-    public static final String UNKNOWN_STORAGE_LOCATION = "UNKNOWN_STORAGE_LOCATION";
+    public static final String CONTENT_TYPE_HEADER_VALUE = "store-";
 
     private final ISubscriber subscriber;
 
@@ -112,7 +113,7 @@ public class FilesStorageRequestReadyToProcessEventHandler
                 resultEventsToSend.add(StorageResponseEvent.createErrorResponse(message.getRequestId(),
                                                                                 message.getOriginUrl(),
                                                                                 message.getChecksum(),
-                                                                                UNKNOWN_STORAGE_LOCATION,
+                                                                                StorageResponseErrorEnum.UNKNOWN_STORAGE_LOCATION,
                                                                                 errorMessage));
 
             } else {
@@ -160,7 +161,8 @@ public class FilesStorageRequestReadyToProcessEventHandler
                                                                               message.isActivateSmallFilePackaging(),
                                                                               configuration);
         // Headers
-        eventToSend.setHeader(StorageWorkerRequestEvent.CONTENT_TYPE_HEADER, "store-" + message.getStorage());
+        eventToSend.setHeader(StorageWorkerRequestEvent.CONTENT_TYPE_HEADER,
+                              CONTENT_TYPE_HEADER_VALUE + message.getStorage());
         eventToSend.setHeader(StorageWorkerRequestEvent.REQUEST_ID_HEADER, message.getRequestId());
         eventToSend.setHeader(StorageWorkerRequestEvent.TENANT_HEADER, runtimeTenantResolver.getTenant());
         eventToSend.setHeader(StorageWorkerRequestEvent.OWNER_HEADER, message.getOwner());
@@ -180,7 +182,7 @@ public class FilesStorageRequestReadyToProcessEventHandler
                 return StorageResponseEvent.createErrorResponse(request.getRequestId(),
                                                                 request.getOriginUrl(),
                                                                 request.getChecksum(),
-                                                                "VALIDATION_ERROR",
+                                                                StorageResponseErrorEnum.INVALID_REQUEST_CONTENT,
                                                                 String.format("The file reference url %s format is not"
                                                                               + " valid for storage location %s. "
                                                                               + "Cause : %s",
@@ -193,7 +195,7 @@ public class FilesStorageRequestReadyToProcessEventHandler
             return StorageResponseEvent.createErrorResponse(request.getRequestId(),
                                                             request.getOriginUrl(),
                                                             request.getChecksum(),
-                                                            "CONFIGURATION_ERROR",
+                                                            StorageResponseErrorEnum.INVALID_REQUEST_CONTENT,
                                                             String.format("The file reference url %s reference the "
                                                                           + "storage %s which does no exist or is not"
                                                                           + " active",

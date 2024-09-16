@@ -33,15 +33,15 @@ public class StorageResponseDto {
 
     private final String checksum;
 
-    private final int size;
+    private final long size;
 
-    private final int height;
+    private final Integer height;
 
-    private final int weight;
+    private final Integer weight;
 
     private final boolean storedInCache;
 
-    private final String errorType;
+    private final StorageResponseErrorEnum errorType;
 
     private final String error;
 
@@ -51,11 +51,11 @@ public class StorageResponseDto {
     public StorageResponseDto(Long requestId,
                               String url,
                               String checksum,
-                              int size,
-                              int height,
-                              int weight,
+                              long size,
+                              Integer height,
+                              Integer weight,
                               boolean storedInCache,
-                              String errorType,
+                              StorageResponseErrorEnum errorType,
                               String error) {
         this.requestId = requestId;
         this.url = url;
@@ -74,9 +74,9 @@ public class StorageResponseDto {
     public StorageResponseDto(Long requestId,
                               String url,
                               String checksum,
-                              int size,
-                              int height,
-                              int weight,
+                              long size,
+                              Integer height,
+                              Integer weight,
                               boolean storedInCache) {
         this(requestId, url, checksum, size, height, weight, storedInCache, null, null);
     }
@@ -84,8 +84,12 @@ public class StorageResponseDto {
     /**
      * Error constructor
      */
-    public StorageResponseDto(Long requestId, String url, String checksum, String errorType, String error) {
-        this(requestId, url, checksum, 0, 0, 0, false, errorType, error);
+    public StorageResponseDto(Long requestId,
+                              String url,
+                              String checksum,
+                              StorageResponseErrorEnum errorType,
+                              String error) {
+        this(requestId, url, checksum, 0L, 0, 0, false, errorType, error);
     }
 
     /**
@@ -107,15 +111,15 @@ public class StorageResponseDto {
         return checksum;
     }
 
-    public int getSize() {
+    public long getSize() {
         return size;
     }
 
-    public int getHeight() {
+    public Integer getHeight() {
         return height;
     }
 
-    public int getWeight() {
+    public Integer getWeight() {
         return weight;
     }
 
@@ -123,8 +127,12 @@ public class StorageResponseDto {
         return storedInCache;
     }
 
-    public String getErrorType() {
+    public StorageResponseErrorEnum getErrorType() {
         return errorType;
+    }
+
+    public boolean isRequestSuccessful() {
+        return errorType == null && error == null;
     }
 
     public String getError() {
@@ -141,8 +149,8 @@ public class StorageResponseDto {
         }
         StorageResponseDto that = (StorageResponseDto) o;
         return size == that.size
-               && height == that.height
-               && weight == that.weight
+               && Objects.equals(height, that.height)
+               && Objects.equals(weight, that.weight)
                && storedInCache == that.storedInCache
                && Objects.equals(requestId, that.requestId)
                && Objects.equals(url, that.url)

@@ -25,9 +25,9 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.dto.output.worker.StorageWorkerRequestDto;
-import org.springframework.amqp.core.MessageProperties;
-
+import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.amqp.core.MessageProperties;
 
 import java.util.Objects;
 
@@ -40,15 +40,15 @@ import java.util.Objects;
 public class StorageWorkerRequestEvent extends StorageWorkerRequestDto
     implements ISubscribable, IMessagePropertiesAware {
 
-    public static final String CONTENT_TYPE_HEADER = "content-type";
+    public static final String CONTENT_TYPE_HEADER = EventHeadersHelper.CONTENT_TYPE_HEADER;
 
-    public static final String REQUEST_ID_HEADER = "requestId";
+    public static final String REQUEST_ID_HEADER = EventHeadersHelper.REQUEST_ID_HEADER;
 
-    public static final String TENANT_HEADER = "tenant";
+    public static final String TENANT_HEADER = EventHeadersHelper.TENANT_HEADER;
 
-    public static final String OWNER_HEADER = "owner";
+    public static final String OWNER_HEADER = EventHeadersHelper.OWNER_HEADER;
 
-    public static final String SESSION_HEADER = "session";
+    public static final String SESSION_HEADER = EventHeadersHelper.SESSION_HEADER;
 
     @GsonIgnore
     @NotNull(message = "Message properties is required")

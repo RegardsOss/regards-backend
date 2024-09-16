@@ -667,6 +667,7 @@ public class RequestService {
             String requestId = EventHeadersHelper.getRequestIdHeader(event).orElse(null);
             String owner = EventHeadersHelper.getOwnerHeader(event).orElse(null);
             String session = EventHeadersHelper.getSessionHeader(event).orElse(null);
+            String contentType = EventHeadersHelper.getContentTypeHeader(event).orElse(null);
             LOGGER.warn("Skipped request {}. Causes : {}",
                         EventHeadersHelper.getRequestIdHeader(event).orElse("undefined"),
                         String.join(",", errors));
@@ -674,7 +675,7 @@ public class RequestService {
                                                          requestId,
                                                          getRequestTypeForSds(),
                                                          owner).withMessages(errors);
-            addResponseHeaders(response, requestId, owner, session, null);
+            addResponseHeaders(response, requestId, owner, session, null, contentType);
             publisher.publish(response);
             requestInfo.getSkippedEvents().add(event);
             return false;
@@ -766,7 +767,8 @@ public class RequestService {
                            request.getRequestId(),
                            request.getSource(),
                            request.getSession(),
-                           request.getDispatchedWorkerType());
+                           request.getDispatchedWorkerType(),
+                           request.getContentType());
         return Optional.ofNullable(event);
     }
 
@@ -774,12 +776,14 @@ public class RequestService {
                                     String requestId,
                                     String owner,
                                     String session,
-                                    String workerId) {
+                                    String workerId,
+                                    String contentType) {
         if (event != null) {
             event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
             event.setHeader(EventHeadersHelper.OWNER_HEADER, owner);
             event.setHeader(EventHeadersHelper.SESSION_HEADER, session);
             event.setHeader(EventHeadersHelper.WORKER_ID, workerId);
+            event.setHeader(EventHeadersHelper.CONTENT_TYPE_HEADER, contentType);
         }
     }
 

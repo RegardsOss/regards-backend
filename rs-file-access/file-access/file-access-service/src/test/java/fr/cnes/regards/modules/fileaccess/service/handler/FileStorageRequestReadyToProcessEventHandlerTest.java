@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageWorkerRequestEvent;
 import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.dto.input.FileStorageMetaInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.output.StorageResponseErrorEnum;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.*;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
@@ -161,7 +162,7 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
         Assertions.assertEquals(1, nokList.size(), "There should be only one error");
         StorageResponseEvent error = nokList.get(0);
         Assertions.assertEquals(4L, error.getRequestId(), "The request in error is not the expected one");
-        Assertions.assertEquals(FilesStorageRequestReadyToProcessEventHandler.UNKNOWN_STORAGE_LOCATION,
+        Assertions.assertEquals(StorageResponseErrorEnum.UNKNOWN_STORAGE_LOCATION,
                                 error.getErrorType(),
                                 "The error is not the expected one");
 

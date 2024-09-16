@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.fileaccess.dto.output.worker.type;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.springframework.util.Assert;
 
 import java.beans.ConstructorProperties;
@@ -28,6 +29,8 @@ import java.util.Objects;
  *
  * @author Iliana Ghazali
  **/
+// annotation required to deserialize object with polymorphism
+@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
 public class FileMetadata {
 
     /**
