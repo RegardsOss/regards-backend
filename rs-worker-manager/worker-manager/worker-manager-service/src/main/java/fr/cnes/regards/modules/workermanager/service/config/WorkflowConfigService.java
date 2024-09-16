@@ -150,7 +150,9 @@ public class WorkflowConfigService {
                                                                                              stepDto.getWorkerType()))
                                                             .toList();
                 // add valid workflow configuration
-                workflowsCreated.add(new WorkflowConfig(workflowConfigDto.getWorkflowType(), steps));
+                workflowsCreated.add(new WorkflowConfig(workflowConfigDto.getWorkflowType(),
+                                                        steps,
+                                                        workflowConfigDto.isKeepErrors()));
             }
         }
         return workflowsCreated;

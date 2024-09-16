@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.workermanager.domain.config;
 
-import java.util.List;
-import java.util.Objects;
-
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.workermanager.dto.WorkflowConfigDto;
@@ -34,6 +28,11 @@ import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Define a workflow of workers
@@ -54,19 +53,23 @@ public class WorkflowConfig {
      */
     @Column(columnDefinition = "jsonb")
     @Type(value = JsonBinaryType.class,
-            parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-                    value = "fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep") })
+          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
+                                    value = "fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep") })
     @NotEmpty
     @Valid
     private List<WorkflowStep> steps;
+
+    @Column(name = "keep_errors")
+    private boolean keepErrors = true;
 
     public WorkflowConfig() {
         // no-args constructor for jpa
     }
 
-    public WorkflowConfig(String workflowType, List<WorkflowStep> steps) {
+    public WorkflowConfig(String workflowType, List<WorkflowStep> steps, boolean keepErrors) {
         this.workflowType = workflowType;
         this.steps = steps;
+        this.keepErrors = keepErrors;
     }
 
     public String getWorkflowType() {
@@ -77,6 +80,10 @@ public class WorkflowConfig {
         return steps;
     }
 
+    public boolean isKeepErrors() {
+        return keepErrors;
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -100,6 +107,8 @@ public class WorkflowConfig {
     }
 
     public WorkflowConfigDto toDto() {
-        return new WorkflowConfigDto(this.workflowType, this.steps.stream().map(WorkflowStep::toDto).toList());
+        return new WorkflowConfigDto(this.workflowType,
+                                     this.steps.stream().map(WorkflowStep::toDto).toList(),
+                                     this.keepErrors);
     }
 }

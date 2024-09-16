@@ -78,6 +78,16 @@ public class WorkerConfigService {
     }
 
     /**
+     * Search for the configuration of a given worker types.
+     *
+     * @param workerTypes list of worker type
+     * @return {@link WorkerConfig}
+     */
+    public List<WorkerConfig> search(List<String> workerTypes) {
+        return workerConfigRepository.findByWorkerTypeIn(workerTypes);
+    }
+
+    /**
      * Save the worker config provided into repo
      *
      * @param workerConfig entity to update
@@ -118,12 +128,14 @@ public class WorkerConfigService {
                     WorkerConfig workerConfig = workerConfigOpt.get();
                     workerConfig.setContentTypeInputs(workerConfigDto.getContentTypeInputs());
                     workerConfig.setContentTypeOutput(workerConfigDto.getContentTypeOutput());
+                    workerConfig.setKeepErrors(workerConfigDto.isKeepErrors());
                     update(workerConfig);
                 } else {
                     // Create missing worker config
                     create(WorkerConfig.build(workerConfigDto.getWorkerType(),
                                               workerConfigDto.getContentTypeInputs(),
-                                              workerConfigDto.getContentTypeOutput()));
+                                              workerConfigDto.getContentTypeOutput(),
+                                              workerConfigDto.isKeepErrors()));
                 }
             }
         }
@@ -187,5 +199,4 @@ public class WorkerConfigService {
         }
         return currentWorkerConfValid;
     }
-
 }

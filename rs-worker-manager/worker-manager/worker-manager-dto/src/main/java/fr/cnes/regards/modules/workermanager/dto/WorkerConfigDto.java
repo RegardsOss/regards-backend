@@ -50,13 +50,22 @@ public class WorkerConfigDto {
     @Nullable
     private final String contentTypeOutput;
 
-    public WorkerConfigDto(String workerType, Set<String> contentTypeInputs, @Nullable String contentTypeOutput) {
+    /**
+     * Indicate if worker response in error must be stored in worker-manager database or not
+     */
+    private final boolean keepErrors;
+    
+    public WorkerConfigDto(String workerType,
+                           Set<String> contentTypeInputs,
+                           @Nullable String contentTypeOutput,
+                           boolean keepErrors) {
         Assert.notNull(workerType, "WorkerType is mandatory.");
         Assert.notNull(contentTypeInputs, "Content types is mandatory.");
         // We check later for emptiness
         this.workerType = workerType;
         this.contentTypeInputs = contentTypeInputs;
         this.contentTypeOutput = contentTypeOutput;
+        this.keepErrors = keepErrors;
     }
 
     public String getWorkerType() {
@@ -72,4 +81,7 @@ public class WorkerConfigDto {
         return contentTypeOutput;
     }
 
+    public boolean isKeepErrors() {
+        return keepErrors;
+    }
 }

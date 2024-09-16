@@ -305,9 +305,18 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
     // --------------------
     private void initWorkers() {
         // save in db
-        List<WorkerConfig> workers = List.of(WorkerConfig.build(WORKER_TYPE_1, Set.of(CONTENT_TYPE_1), CONTENT_TYPE_2),
-                                             WorkerConfig.build(WORKER_TYPE_2, Set.of(CONTENT_TYPE_2), WORKER_TYPE_3),
-                                             WorkerConfig.build(WORKER_TYPE_3, Set.of(CONTENT_TYPE_3), CONTENT_TYPE_1));
+        List<WorkerConfig> workers = List.of(WorkerConfig.build(WORKER_TYPE_1,
+                                                                Set.of(CONTENT_TYPE_1),
+                                                                CONTENT_TYPE_2,
+                                                                true),
+                                             WorkerConfig.build(WORKER_TYPE_2,
+                                                                Set.of(CONTENT_TYPE_2),
+                                                                WORKER_TYPE_3,
+                                                                true),
+                                             WorkerConfig.build(WORKER_TYPE_3,
+                                                                Set.of(CONTENT_TYPE_3),
+                                                                CONTENT_TYPE_1,
+                                                                true));
         workerConfigRepository.saveAll(workers);
         // register workers in cache
         List<WorkerHeartBeatEvent> workersBeats = List.of(new WorkerHeartBeatEvent(WORKER_TYPE_1,
@@ -326,13 +335,15 @@ public class RequestServiceWorkflowIT extends AbstractWorkerManagerServiceUtilsI
         WorkflowConfig workflowConfig1 = new WorkflowConfig(WORKFLOW_TYPE_1,
                                                             List.of(new WorkflowStep(INIT_STEP + STEP_INC,
                                                                                      WORKER_TYPE_2),
-                                                                    new WorkflowStep(INIT_STEP, WORKER_TYPE_1)));
+                                                                    new WorkflowStep(INIT_STEP, WORKER_TYPE_1)),
+                                                            true);
         WorkflowConfig workflowConfig2 = new WorkflowConfig(WORKFLOW_TYPE_2,
                                                             List.of(new WorkflowStep(INIT_STEP + STEP_INC,
                                                                                      WORKER_TYPE_1),
                                                                     new WorkflowStep(INIT_STEP + 2 * STEP_INC,
                                                                                      WORKER_TYPE_2),
-                                                                    new WorkflowStep(INIT_STEP, WORKER_TYPE_3)));
+                                                                    new WorkflowStep(INIT_STEP, WORKER_TYPE_3)),
+                                                            true);
         workflowRepository.saveAll(List.of(workflowConfig1, workflowConfig2));
     }
 

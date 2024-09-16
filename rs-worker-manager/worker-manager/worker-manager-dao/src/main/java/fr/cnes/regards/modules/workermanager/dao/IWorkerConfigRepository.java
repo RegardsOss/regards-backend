@@ -39,4 +39,6 @@ public interface IWorkerConfigRepository
     List<WorkerConfig> findAllByContentTypeInputsIn(Set<String> contentTypes);
 
     Long countByContentTypeInputsIn(Set<String> contentTypes);
+
+    List<WorkerConfig> findByWorkerTypeIn(List<String> workerTypes);
 }

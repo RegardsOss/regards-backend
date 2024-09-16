@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.amqp.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.dao.RequestSpecificationsBuilder;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
 import fr.cnes.regards.modules.workermanager.domain.config.WorkflowStep;
@@ -52,6 +53,7 @@ import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.WorkerManagerJobsPriority;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
+import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigService;
 import fr.cnes.regards.modules.workermanager.service.config.settings.WorkerManagerSettingsService;
 import fr.cnes.regards.modules.workermanager.service.requests.job.ScanRequestJob;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
@@ -134,6 +136,9 @@ public class RequestService {
 
     @Autowired
     private WorkerConfigCacheService workerConfigCacheService;
+
+    @Autowired
+    private WorkerConfigService workerConfigService;
 
     @Value("${worker.request.queue.name.template:regards.worker.%s.request}")
     private String WORKER_REQUEST_QUEUE_NAME_TEMPLATE;
@@ -401,21 +406,21 @@ public class RequestService {
     }
 
     /**
-     * Handle events received from workers to inform about a request status changed
+     * Handle workerResponseEvents received from workers to inform about a request status changed
      *
-     * @param events {@link WorkerResponseEvent} to handle
+     * @param workerResponseEvents {@link WorkerResponseEvent} to handle
      * @return SessionsRequestsInfo containing information about requests updated
      */
-    public SessionsRequestsInfo handleWorkersResponses(Collection<WorkerResponseEvent> events) {
+    public SessionsRequestsInfo handleWorkersResponses(Collection<WorkerResponseEvent> workerResponseEvents) {
         SessionsRequestsInfo requestInfo = new SessionsRequestsInfo();
         SessionsRequestsInfo newRequestInfo = new SessionsRequestsInfo();
         // Retrieve requests matching worker responses
-        List<Request> requests = requestRepository.findByRequestIdIn(events.stream()
-                                                                           .map(WorkerResponseEvent::getRequestIdHeader)
-                                                                           .collect(Collectors.toList()));
+        List<Request> requests = requestRepository.findByRequestIdIn(workerResponseEvents.stream()
+                                                                                         .map(WorkerResponseEvent::getRequestIdHeader)
+                                                                                         .collect(Collectors.toList()));
         requestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
         // For each worker response update matching request status
-        events.forEach(workerResponseEvent -> {
+        workerResponseEvents.forEach(workerResponseEvent -> {
             Optional<Request> oRequest = requests.stream()
                                                  .filter(r -> workerResponseEvent.getRequestIdHeader()
                                                                                  .equals(r.getRequestId()))
@@ -440,7 +445,7 @@ public class RequestService {
                     case SUCCESS -> handleRequestSuccess(request, workerResponseEvent);
                 }
             } else {
-                LOGGER.warn("Request id {} from worker {} does not match ay known request on manager.",
+                LOGGER.warn("Request id {} from worker {} does not match any known request on manager.",
                             workerResponseEvent.getRequestIdHeader(),
                             workerResponseEvent.getRequestIdHeader());
             }
@@ -460,12 +465,63 @@ public class RequestService {
         newRequestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
         sessionService.notifySessions(requestInfo, newRequestInfo);
 
-        // Delete succeeded requests. Success requests do not need to be persisted
-        requestRepository.deleteAllInBatch(requests.stream()
-                                                   .filter(r -> r.getStatus().equals(RequestStatus.SUCCESS))
-                                                   .toList());
+        deleteRequestsIfNeeded(requests);
 
         return newRequestInfo;
+    }
+
+    private void deleteRequestsIfNeeded(List<Request> requests) {
+        // Delete succeeded requests. Success requests do not need to be persisted
+        Set<Request> requestsToDelete = requests.stream()
+                                                .filter(r -> r.getStatus().equals(RequestStatus.SUCCESS))
+                                                .collect(Collectors.toSet());
+
+        // Delete requests in an error status if the error is not managed by the worker manager.
+        // This applies to requests whose responses are handled by another microservice,
+        // which will implement its own error management.
+        // That information depends on worker or workflow config (keep errors configuration)
+        List<Request> errors = requests.stream()
+                                       .filter(r -> r.getStatus()
+                                                     .isOneOfStatuses(RequestStatus.ERROR,
+                                                                      RequestStatus.INVALID_CONTENT))
+                                       .toList();
+        requestsToDelete.addAll(getRequestsInErrorToDiscard(errors));
+        requestRepository.deleteAllInBatch(requestsToDelete);
+    }
+
+    private Set<Request> getRequestsInErrorToDiscard(List<Request> requestsInError) {
+        Set<String> contentTypes = requestsInError.stream().map(Request::getContentType).collect(Collectors.toSet());
+        // retrieve all contentType deletable by workflow/worker config among current requests
+        List<String> deletableRequestContentTypes = getNoKeepErrorContentTypes(contentTypes);
+        // return the list of requests that can be deleted
+        return requestsInError.stream()
+                              .filter(request -> deletableRequestContentTypes.contains(request.getContentType()))
+                              .collect(Collectors.toSet());
+    }
+
+    /**
+     * Get the content types for which the errors should not be saved by the worker manager.
+     */
+    private List<String> getNoKeepErrorContentTypes(Set<String> contentTypes) {
+        // Add workflow content types with the keep error parameter set to false
+        List<String> result = new ArrayList<>(contentTypes.stream().filter(contentType -> {
+            Optional<WorkflowConfig> workflowByType = workflowService.findWorkflowByType(contentType);
+            return workflowByType.isPresent() && !workflowByType.get().isKeepErrors();
+        }).toList());
+
+        // Retrieve content types with no associated workflow
+        List<String> workerContentTypes = contentTypes.stream()
+                                                      .filter(contentType -> workflowService.findWorkflowByType(
+                                                          contentType).isEmpty())
+                                                      .toList();
+        // Add worker content type with keep error parameter set to false
+        result.addAll(workerConfigService.search(workerContentTypes)
+                                         .stream()
+                                         .filter(workerConfig -> !workerConfig.isKeepErrors())
+                                         .map(WorkerConfig::getContentTypeInputs)
+                                         .flatMap(Collection::stream)
+                                         .toList());
+        return result;
     }
 
     private RequestStatus fromWorkerResponseStatus(WorkerResponseStatus status) {

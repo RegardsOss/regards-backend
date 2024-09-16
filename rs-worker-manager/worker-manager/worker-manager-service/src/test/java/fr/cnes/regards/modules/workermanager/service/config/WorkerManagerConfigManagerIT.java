@@ -86,12 +86,43 @@ public class WorkerManagerConfigManagerIT extends AbstractWorkerManagerServiceUt
                                                                                                  new WorkerConfigDto(
                                                                                                      workerType,
                                                                                                      contentTypes1,
-                                                                                                     null)))),
+                                                                                                     null,
+                                                                                                     true)))),
                                                                Sets.newHashSet());
+        ModuleConfiguration moduleConfiguration = configManager.exportConfiguration(Lists.newArrayList());
         Assert.assertEquals("Should not get errors", 0, errors.size());
         Assert.assertEquals("Should now get a configuration when export",
                             1,
+                            moduleConfiguration.getConfiguration().size());
+        Assert.assertTrue(((WorkerConfigDto) moduleConfiguration.getConfiguration().get(0).getValue()).isKeepErrors());
+    }
+
+    @Test
+    public void test_import_worker_without_keeping_errors() {
+        // Verify that keepErrors is well imported and exported with value as false
+        Assert.assertEquals("Should be able to export conf, 0 at first",
+                            0,
                             configManager.exportConfiguration(Lists.newArrayList()).getConfiguration().size());
+        String workerType = "workerType";
+        String contentType3 = "contentType3";
+        String contentType2 = "contentType2";
+        String contentType1 = "contentType1";
+        Set<String> contentTypes1 = Sets.newHashSet(contentType1, contentType2, contentType3);
+        Set<String> errors = configManager.importConfiguration(ModuleConfiguration.build(null,
+                                                                                         Lists.newArrayList(
+                                                                                             ModuleConfigurationItem.build(
+                                                                                                 new WorkerConfigDto(
+                                                                                                     workerType,
+                                                                                                     contentTypes1,
+                                                                                                     null,
+                                                                                                     false)))),
+                                                               Sets.newHashSet());
+        ModuleConfiguration moduleConfiguration = configManager.exportConfiguration(Lists.newArrayList());
+        Assert.assertEquals("Should not get errors", 0, errors.size());
+        Assert.assertEquals("Should now get a configuration when export",
+                            1,
+                            moduleConfiguration.getConfiguration().size());
+        Assert.assertFalse(((WorkerConfigDto) moduleConfiguration.getConfiguration().get(0).getValue()).isKeepErrors());
     }
 
     @Test
@@ -129,8 +160,8 @@ public class WorkerManagerConfigManagerIT extends AbstractWorkerManagerServiceUt
     public void import_workflow_conf_nominal() throws FileNotFoundException {
         // GIVEN
         // save corresponding worker configurations first
-        WorkerConfig workerConfig1 = WorkerConfig.build("workerType1", Set.of("contentType1"), "contentType2");
-        WorkerConfig workerConfig2 = WorkerConfig.build("workerType2", Set.of("contentType2"), "contentType3");
+        WorkerConfig workerConfig1 = WorkerConfig.build("workerType1", Set.of("contentType1"), "contentType2", true);
+        WorkerConfig workerConfig2 = WorkerConfig.build("workerType2", Set.of("contentType2"), "contentType3", true);
         workerConfigRepository.saveAll(List.of(workerConfig1, workerConfig2));
 
         // WHEN

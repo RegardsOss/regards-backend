@@ -125,7 +125,8 @@ public class RequestServiceTest {
         // Worker will be retrieved from the workflow for the request with workflow
         Mockito.when(workerCacheService.getWorkerTypeByContentType(WORKFLOW_TYPE_1)).thenReturn(Optional.empty());
         WorkflowConfig workflowConfig = new WorkflowConfig(WORKFLOW_TYPE_1,
-                                                           List.of(new WorkflowStep(INIT_STEP, WORKER_TYPE_2)));
+                                                           List.of(new WorkflowStep(INIT_STEP, WORKER_TYPE_2)),
+                                                           true);
         Mockito.when(workflowService.findWorkflowByType(WORKFLOW_TYPE_1)).thenReturn(Optional.of(workflowConfig));
         Mockito.when(workflowService.getWorkerTypeInWorkflow(workflowConfig, INIT_STEP))
                .thenReturn(Optional.of(WORKER_TYPE_2));

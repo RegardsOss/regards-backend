@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.workermanager.dto.requests;
 
+import java.util.Arrays;
+
 /**
  * Enumeration to define all status for a {@link RequestDTO}
  *
@@ -65,4 +67,8 @@ public enum RequestStatus {
      * Request will be deleted soon
      */
     TO_DELETE;
+
+    public boolean isOneOfStatuses(RequestStatus... status) {
+        return Arrays.asList(status).contains(this);
+    }
 }

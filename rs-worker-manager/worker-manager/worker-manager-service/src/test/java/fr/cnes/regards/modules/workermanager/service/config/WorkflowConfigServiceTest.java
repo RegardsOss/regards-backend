@@ -112,9 +112,9 @@ public class WorkflowConfigServiceTest {
 
         // mock workerConfigs to validate workflow
         Mockito.when(workerConfigRepository.findByWorkerType(WORKER_1))
-               .thenReturn(Optional.of(WorkerConfig.build("type1", Set.of(CONTENT_TYPE_1), CONTENT_TYPE_2)));
+               .thenReturn(Optional.of(WorkerConfig.build("type1", Set.of(CONTENT_TYPE_1), CONTENT_TYPE_2, true)));
         Mockito.when(workerConfigRepository.findByWorkerType(WORKER_2))
-               .thenReturn(Optional.of(WorkerConfig.build("type2", Set.of(CONTENT_TYPE_2), CONTENT_TYPE_3)));
+               .thenReturn(Optional.of(WorkerConfig.build("type2", Set.of(CONTENT_TYPE_2), CONTENT_TYPE_3, true)));
 
         // --- WHEN ---
         Set<String> errors = workflowConfigService.importConfiguration(workflowDtos);
@@ -122,9 +122,9 @@ public class WorkflowConfigServiceTest {
         // --- THEN ---
         Mockito.verify(workflowRepository)
                .saveAll(Set.of(new WorkflowConfig(WORKFLOW_1,
-                                                  List.of(new WorkflowStep(1, WORKER_1),
-                                                          new WorkflowStep(2, WORKER_2))),
-                               new WorkflowConfig(WORKFLOW_2, List.of(new WorkflowStep(1, WORKER_1)))));
+                                                  List.of(new WorkflowStep(1, WORKER_1), new WorkflowStep(2, WORKER_2)),
+                                                  true),
+                               new WorkflowConfig(WORKFLOW_2, List.of(new WorkflowStep(1, WORKER_1)), true)));
         assertThat(errors).isEmpty();
     }
 
@@ -175,9 +175,9 @@ public class WorkflowConfigServiceTest {
 
         // mock workerConfigs to invalidate workflow
         Mockito.when(workerConfigRepository.findByWorkerType(WORKER_1))
-               .thenReturn(Optional.of(WorkerConfig.build("type1", Set.of(CONTENT_TYPE_1), CONTENT_TYPE_2)));
+               .thenReturn(Optional.of(WorkerConfig.build("type1", Set.of(CONTENT_TYPE_1), CONTENT_TYPE_2, true)));
         Mockito.when(workerConfigRepository.findByWorkerType(WORKER_2))
-               .thenReturn(Optional.of(WorkerConfig.build("type2", Set.of(CONTENT_TYPE_3), CONTENT_TYPE_3)));
+               .thenReturn(Optional.of(WorkerConfig.build("type2", Set.of(CONTENT_TYPE_3), CONTENT_TYPE_3, true)));
 
         // --- WHEN ---
         Set<String> errors = workflowConfigService.importConfiguration(workflowDto);
@@ -198,9 +198,9 @@ public class WorkflowConfigServiceTest {
 
         // mock workerConfigs to invalidate workflow
         Mockito.when(workerConfigRepository.findByWorkerType(WORKER_1))
-               .thenReturn(Optional.of(WorkerConfig.build("type1", Set.of(CONTENT_TYPE_1), CONTENT_TYPE_2)));
+               .thenReturn(Optional.of(WorkerConfig.build("type1", Set.of(CONTENT_TYPE_1), CONTENT_TYPE_2, true)));
         Mockito.when(workerConfigRepository.findByWorkerType(WORKER_2))
-               .thenReturn(Optional.of(WorkerConfig.build("type2", Set.of(CONTENT_TYPE_2), null)));
+               .thenReturn(Optional.of(WorkerConfig.build("type2", Set.of(CONTENT_TYPE_2), null, true)));
 
         // --- WHEN ---
         Set<String> errors = workflowConfigService.importConfiguration(workflowDto);

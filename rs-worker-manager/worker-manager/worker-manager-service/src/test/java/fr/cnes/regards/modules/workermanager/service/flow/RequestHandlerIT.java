@@ -195,7 +195,8 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
                           workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(
                               RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE_1,
                               Sets.newHashSet(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE_0),
-                              null))).isEmpty());
+                              null,
+                              true))).isEmpty());
 
         // Scan
         requestScanService.scanNoWorkerAvailableRequests();

@@ -55,7 +55,10 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
     public void testImportConf() throws ModuleException {
         String workerType1 = "workerType1";
         HashSet<String> contentType1 = Sets.newHashSet("contentType1");
-        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentType1, null)));
+        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1,
+                                                                                    contentType1,
+                                                                                    null,
+                                                                                    true)));
         Optional<WorkerConfig> workerConfigOptional = workerConfigService.search(workerType1);
 
         Assert.assertTrue("should retrieve one config", workerConfigOptional.isPresent());
@@ -64,7 +67,10 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
         // test update previous workerType
 
         HashSet<String> contentType2 = Sets.newHashSet("contentType2");
-        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentType2, null)));
+        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1,
+                                                                                    contentType2,
+                                                                                    null,
+                                                                                    true)));
         List<WorkerConfig> workerConfigs = workerConfigService.searchAll();
         Assert.assertEquals("still one configuration", 1, workerConfigs.size());
 
@@ -84,13 +90,15 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
                             1,
                             workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto("workerInvalid",
                                                                                                         new HashSet<>(),
-                                                                                                        null))).size());
+                                                                                                        null,
+                                                                                                        true))).size());
         Assert.assertEquals("should return an error when empty worker type",
                             1,
                             workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto("",
                                                                                                         Sets.newHashSet(
                                                                                                             "contentType"),
-                                                                                                        null))).size());
+                                                                                                        null,
+                                                                                                        true))).size());
     }
 
     @Test
@@ -114,15 +122,18 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
                             0,
                             workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType,
                                                                                                         contentTypes1,
-                                                                                                        null),
+                                                                                                        null,
+                                                                                                        true),
                                                                                     new WorkerConfigDto(workerType2,
                                                                                                         contentTypes2,
-                                                                                                        null))).size());
+                                                                                                        null,
+                                                                                                        true))).size());
         Assert.assertEquals("should return an error when importing conflicting content types",
                             1,
                             workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType3,
                                                                                                         contentTypes3,
-                                                                                                        null))).size());
+                                                                                                        null,
+                                                                                                        true))).size());
 
         String contentType7 = "contentType6";
         String workerType4 = "workerType4";
@@ -135,6 +146,7 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
                             1,
                             workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType4,
                                                                                                         contentTypes7,
-                                                                                                        null))).size());
+                                                                                                        null,
+                                                                                                        true))).size());
     }
 }

@@ -21,10 +21,10 @@ package fr.cnes.regards.modules.workermanager.domain.config;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
-
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+
 import java.util.Set;
 
 /**
@@ -45,6 +45,8 @@ public class WorkerConfig {
     public static final String CONTENT_TYPE_OUT_NAME = "content_type_out";
 
     public static final String TABLE_CONTENT_TYPE_NAME = "ta_worker_conf_content_types_in";
+
+    public static final String KEEP_ERRORS_COLUMN_NAME = "keep_errors";
 
     /**
      * List of Content Types treatable by this worker
@@ -72,11 +74,21 @@ public class WorkerConfig {
     @Nullable
     private String contentTypeOutput;
 
-    public static WorkerConfig build(String type, Set<String> contentTypesIn, String contentTypeOut) {
+    /**
+     * Indicate if worker response in error must be stored in worker-manager database or not
+     */
+    @Column(name = KEEP_ERRORS_COLUMN_NAME)
+    private boolean keepErrors = true;
+
+    public static WorkerConfig build(String type,
+                                     Set<String> contentTypesIn,
+                                     String contentTypeOut,
+                                     boolean keepErrors) {
         WorkerConfig workerConfig = new WorkerConfig();
         workerConfig.workerType = type;
         workerConfig.contentTypeInputs.addAll(contentTypesIn);
         workerConfig.contentTypeOutput = contentTypeOut;
+        workerConfig.keepErrors = keepErrors;
         return workerConfig;
     }
 
@@ -105,6 +117,10 @@ public class WorkerConfig {
         this.contentTypeInputs.addAll(contentTypeInputs);
     }
 
+    public boolean isKeepErrors() {
+        return keepErrors;
+    }
+
     @Nullable
     public String getContentTypeOutput() {
         return contentTypeOutput;
@@ -114,7 +130,11 @@ public class WorkerConfig {
         this.contentTypeOutput = contentTypeOutput;
     }
 
+    public void setKeepErrors(boolean keepErrors) {
+        this.keepErrors = keepErrors;
+    }
+
     public WorkerConfigDto toDto() {
-        return new WorkerConfigDto(this.workerType, this.contentTypeInputs, this.contentTypeOutput);
+        return new WorkerConfigDto(this.workerType, this.contentTypeInputs, this.contentTypeOutput, this.keepErrors);
     }
 }

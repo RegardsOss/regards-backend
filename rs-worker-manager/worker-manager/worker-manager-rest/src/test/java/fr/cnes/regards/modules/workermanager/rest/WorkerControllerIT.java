@@ -76,9 +76,18 @@ public class WorkerControllerIT extends AbstractRegardsIT {
     public void retrieveWorkerList() {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Save configuration used by this test
-        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentTypes1, null),
-                                                                new WorkerConfigDto(workerType2, contentTypes2, null),
-                                                                new WorkerConfigDto(workerType3, contentTypes3, null)));
+        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1,
+                                                                                    contentTypes1,
+                                                                                    null,
+                                                                                    true),
+                                                                new WorkerConfigDto(workerType2,
+                                                                                    contentTypes2,
+                                                                                    null,
+                                                                                    true),
+                                                                new WorkerConfigDto(workerType3,
+                                                                                    contentTypes3,
+                                                                                    null,
+                                                                                    true)));
 
         String workerId1 = UUID.randomUUID().toString();
         String workerId2 = UUID.randomUUID().toString();

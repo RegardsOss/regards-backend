@@ -18,15 +18,24 @@
  */
 package fr.cnes.regards.modules.workermanager.service.requests;
 
+import fr.cnes.regards.modules.workercommon.dto.WorkerResponseStatus;
+import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerResponseEvent;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
+import fr.cnes.regards.modules.workermanager.domain.config.WorkflowConfig;
 import fr.cnes.regards.modules.workermanager.domain.database.LightRequest;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.cache.AbstractWorkerManagerServiceUtilsIT;
+import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
+import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigService;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +44,8 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Théo Lasserre
@@ -42,6 +53,15 @@ import java.util.List;
 @ContextConfiguration(classes = { RequestServiceIT.Config.class })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_service_it" })
 public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsIT {
+
+    @MockBean
+    private WorkerConfigService workerConfigService;
+
+    @MockBean
+    private WorkerConfigCacheService workerConfigCacheService;
+
+    @MockBean
+    private WorkflowService workflowService;
 
     @Configuration
     public static class Config {
@@ -182,4 +202,198 @@ public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsIT {
         Assert.assertEquals("Error searching a collection of requestId", 2, requests.getTotalElements());
     }
 
+    @Test
+    public void test_requests_success_well_deleted() {
+        // GIVEN worker requests, with response on success
+        String requestId = "requestId10";
+        WorkerResponseEvent workerResponseEvent = new WorkerResponseEvent();
+        workerResponseEvent.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
+        workerResponseEvent.setStatus(WorkerResponseStatus.SUCCESS);
+        List<Request> request = requestRepository.findByRequestIdIn(List.of(requestId));
+        Assert.assertFalse(request.isEmpty());
+        // WHEN
+        requestService.handleWorkersResponses(List.of(workerResponseEvent));
+        // THEN associated request has been deleted
+        request = requestRepository.findByRequestIdIn(List.of(requestId));
+        Assert.assertTrue(request.isEmpty());
+    }
+
+    @Test
+    public void test_requests_error_not_deleted() {
+        // GIVEN worker requests, with response on success
+        String requestId = "requestId10";
+        String contentType = "contentType1";
+        WorkerResponseEvent workerResponseEvent = new WorkerResponseEvent();
+        workerResponseEvent.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
+        workerResponseEvent.setStatus(WorkerResponseStatus.ERROR);
+
+        WorkerConfig workerConf = new WorkerConfig();
+        workerConf.setWorkerType(contentType);
+        // keepErrors is by default to true
+        Mockito.when(workerConfigService.search(Mockito.anyList())).thenReturn(List.of(workerConf));
+        Mockito.when(workerConfigCacheService.getWorkerType(Mockito.any())).thenReturn(Optional.of("contentType1"));
+        // WHEN
+        requestService.handleWorkersResponses(List.of(workerResponseEvent));
+        // THEN associated request has not been deleted
+        List<Request> request = requestRepository.findByRequestIdIn(List.of(requestId));
+        Assert.assertFalse(request.isEmpty());
+    }
+
+    @Test
+    public void test_requests_error_deleted_with_worker_config_not_keep_error() {
+        // GIVEN worker requests, with response on success
+        String requestId = "requestId10";
+        String contentType = "contentType1";
+        WorkerResponseEvent workerResponseEvent = new WorkerResponseEvent();
+        workerResponseEvent.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
+        workerResponseEvent.setStatus(WorkerResponseStatus.ERROR);
+
+        WorkerConfig workerConf = new WorkerConfig();
+        workerConf.setContentTypeInputs(Set.of(contentType));
+        workerConf.setKeepErrors(false);
+        // keepErrors is by default to true
+        Mockito.when(workerConfigService.search(Mockito.anyList())).thenReturn(List.of(workerConf));
+        Mockito.when(workerConfigCacheService.getWorkerType(Mockito.any())).thenReturn(Optional.of("contentType1"));
+        // WHEN
+        requestService.handleWorkersResponses(List.of(workerResponseEvent));
+        // THEN associated request has not been deleted
+        List<Request> request = requestRepository.findByRequestIdIn(List.of(requestId));
+        Assert.assertTrue(request.isEmpty());
+    }
+
+    @Test
+    public void test_requests_error_are_keeped_with_workflow_configured_to_keep_errors() {
+        // GIVEN worker requests, with response on success
+        String requestId = "requestId10";
+        String contentType = "contentType1";
+        WorkerResponseEvent workerResponseEvent = new WorkerResponseEvent();
+        workerResponseEvent.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
+        workerResponseEvent.setStatus(WorkerResponseStatus.ERROR);
+        List<Request> request = requestRepository.findByRequestIdIn(List.of(requestId));
+        Assert.assertFalse(request.isEmpty());
+
+        WorkflowConfig workflowConfig = new WorkflowConfig(contentType, null, true);
+        Mockito.when(workflowService.findWorkflowByType(Mockito.any())).thenReturn(Optional.of(workflowConfig));
+        // WHEN
+        requestService.handleWorkersResponses(List.of(workerResponseEvent));
+        // THEN associated request has been deleted
+        request = requestRepository.findByRequestIdIn(List.of(requestId));
+        Assert.assertFalse(request.isEmpty());
+    }
+
+    @Test
+    public void test_requests_error_well_deleted_with_workflow_configured_to_not_keep_errors() {
+        // GIVEN worker requests, with response on success
+        String requestId = "requestId10";
+        String contentType = "contentType1";
+        WorkerResponseEvent workerResponseEvent = new WorkerResponseEvent();
+        workerResponseEvent.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
+        workerResponseEvent.setStatus(WorkerResponseStatus.ERROR);
+        List<Request> request = requestRepository.findByRequestIdIn(List.of(requestId));
+        Assert.assertFalse(request.isEmpty());
+
+        WorkflowConfig workflowConfig = new WorkflowConfig(contentType, null, false);
+        Mockito.when(workflowService.findWorkflowByType(Mockito.any())).thenReturn(Optional.of(workflowConfig));
+        // WHEN
+        requestService.handleWorkersResponses(List.of(workerResponseEvent));
+        // THEN associated request has been deleted
+        request = requestRepository.findByRequestIdIn(List.of(requestId));
+        Assert.assertTrue(request.isEmpty());
+    }
+
+    @Test
+    public void test_requests_error_well_deleted_with_workflow_configured_to_not_keep_errors_with_other_success_request() {
+        // GIVEN worker requests, with response on success
+        String requestIdError = "requestId10";
+        String requestIdSuccess = "requestId20";
+        String contentType = "contentType1";
+        WorkerResponseEvent workerResponseEvent = new WorkerResponseEvent();
+        workerResponseEvent.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestIdError);
+        workerResponseEvent.setStatus(WorkerResponseStatus.ERROR);
+        WorkerResponseEvent workerResponseEvent2 = new WorkerResponseEvent();
+        workerResponseEvent2.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestIdSuccess);
+        workerResponseEvent2.setStatus(WorkerResponseStatus.SUCCESS);
+        List<Request> requests = requestRepository.findByRequestIdIn(List.of(requestIdError, requestIdSuccess));
+        Assert.assertEquals(2, requests.size());
+
+        WorkflowConfig workflowConfig = new WorkflowConfig(contentType, null, false);
+        Mockito.when(workflowService.findWorkflowByType(Mockito.any())).thenReturn(Optional.of(workflowConfig));
+        // WHEN
+        requestService.handleWorkersResponses(List.of(workerResponseEvent, workerResponseEvent2));
+        // THEN associated requests has been deleted
+        requests = requestRepository.findByRequestIdIn(List.of(requestIdError, requestIdSuccess));
+        Assert.assertEquals(0, requests.size());
+    }
+
+    @Test
+    public void test_requests_error_well_deleted_with_workflow_configured_to_keep_errors_with_other_success_request() {
+        // GIVEN worker requests, with response on success
+        String requestIdError = "requestId10";
+        String requestIdSuccess = "requestId20";
+        String contentType = "contentType1";
+        WorkerResponseEvent workerResponseEvent = new WorkerResponseEvent();
+        workerResponseEvent.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestIdError);
+        workerResponseEvent.setStatus(WorkerResponseStatus.ERROR);
+        WorkerResponseEvent workerResponseEvent2 = new WorkerResponseEvent();
+        workerResponseEvent2.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestIdSuccess);
+        workerResponseEvent2.setStatus(WorkerResponseStatus.SUCCESS);
+        List<Request> requests = requestRepository.findByRequestIdIn(List.of(requestIdError, requestIdSuccess));
+        Assert.assertEquals(2, requests.size());
+
+        WorkflowConfig workflowConfig = new WorkflowConfig(contentType, null, true);
+        Mockito.when(workflowService.findWorkflowByType(Mockito.any())).thenReturn(Optional.of(workflowConfig));
+        // WHEN
+        requestService.handleWorkersResponses(List.of(workerResponseEvent, workerResponseEvent2));
+        // THEN associated requests has been deleted
+        requests = requestRepository.findByRequestIdIn(List.of(requestIdError, requestIdSuccess));
+        Assert.assertEquals(1, requests.size());
+    }
+
+    @Test
+    public void test_requests_success_well_deleted_with_workflow_configured_to_keep_errors() {
+        // GIVEN worker requests, with response on success
+        String requestId = "requestId10";
+        String contentType = "contentType1";
+        WorkerResponseEvent workerResponseEvent = new WorkerResponseEvent();
+        workerResponseEvent.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
+        workerResponseEvent.setStatus(WorkerResponseStatus.SUCCESS);
+        List<Request> request = requestRepository.findByRequestIdIn(List.of(requestId));
+        Assert.assertFalse(request.isEmpty());
+
+        WorkflowConfig workflowConfig = new WorkflowConfig(contentType, null, true);
+        Mockito.when(workflowService.findWorkflowByType(Mockito.any())).thenReturn(Optional.of(workflowConfig));
+        // WHEN
+        requestService.handleWorkersResponses(List.of(workerResponseEvent));
+        // THEN associated request has been deleted
+        request = requestRepository.findByRequestIdIn(List.of(requestId));
+        Assert.assertTrue(request.isEmpty());
+    }
+
+    @Test
+    public void test_request_error_with_workflow_and_worker_config_not_keep_errors() {
+        // GIVEN worker requests, with response on success
+        String requestId = "requestId10";
+        String contentType = "contentType1";
+        WorkerResponseEvent workerResponseEvent = new WorkerResponseEvent();
+        workerResponseEvent.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
+        workerResponseEvent.setStatus(WorkerResponseStatus.SUCCESS);
+        List<Request> request = requestRepository.findByRequestIdIn(List.of(requestId));
+        Assert.assertFalse(request.isEmpty());
+
+        // configure workflow config
+        WorkflowConfig workflowConfig = new WorkflowConfig(contentType, null, true);
+        Mockito.when(workflowService.findWorkflowByType(Mockito.any())).thenReturn(Optional.of(workflowConfig));
+        // configure worker config
+        WorkerConfig workerConf = new WorkerConfig();
+        workerConf.setWorkerType(contentType);
+        workerConf.setKeepErrors(false);
+        // keepErrors is by default to true
+        Mockito.when(workerConfigService.search(Mockito.anyList())).thenReturn(List.of(workerConf));
+        Mockito.when(workerConfigCacheService.getWorkerType(Mockito.any())).thenReturn(Optional.of("contentType1"));
+        // WHEN
+        requestService.handleWorkersResponses(List.of(workerResponseEvent));
+        // THEN associated request has been deleted
+        request = requestRepository.findByRequestIdIn(List.of(requestId));
+        Assert.assertTrue(request.isEmpty());
+    }
 }

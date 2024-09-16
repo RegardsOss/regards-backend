@@ -45,11 +45,14 @@ public class WorkflowConfigDto {
     @Valid
     private final List<WorkflowStepDto> steps;
 
-    public WorkflowConfigDto(String workflowType, List<WorkflowStepDto> steps) {
+    private final boolean keepErrors;
+
+    public WorkflowConfigDto(String workflowType, List<WorkflowStepDto> steps, boolean keepErrors) {
         Assert.notNull(workflowType, "workflowType is mandatory");
         Assert.notEmpty(steps, "at least one step is expected");
         this.workflowType = workflowType;
         this.steps = steps;
+        this.keepErrors = keepErrors;
     }
 
     public String getWorkflowType() {
@@ -80,5 +83,9 @@ public class WorkflowConfigDto {
     @Override
     public String toString() {
         return "WorkflowConfigDto{" + "workflowType='" + workflowType + '\'' + ", steps=" + steps + '}';
+    }
+
+    public boolean isKeepErrors() {
+        return keepErrors;
     }
 }
