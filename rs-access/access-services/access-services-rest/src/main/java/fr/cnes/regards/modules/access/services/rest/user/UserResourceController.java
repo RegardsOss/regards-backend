@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.accessrights.client.IUserResourceClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
  *
  * @author Marc Sordi
  */
+@Tag(name = "User resource controller")
 @RestController
 @RequestMapping(UserResourceController.TYPE_MAPPING)
 public class UserResourceController implements IResourceController<ResourcesAccess> {
