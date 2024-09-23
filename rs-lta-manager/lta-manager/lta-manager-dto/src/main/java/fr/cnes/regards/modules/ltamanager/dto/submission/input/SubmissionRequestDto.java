@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.ltamanager.dto.submission.input;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -28,7 +29,6 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.util.Assert;
 
-import jakarta.annotation.Nullable;
 import java.beans.ConstructorProperties;
 import java.util.List;
 import java.util.Map;
@@ -99,8 +99,9 @@ public class SubmissionRequestDto {
     @Size(max = 255, message = "storePath length is limited to 255 characters.")
     @Pattern(regexp = "^[\\w\\/\\-_:]*$",
              message = "storePath must only contain alphanumeric characters and the following characters [/-_:].")
-    @Schema(description = "Path to manually define the destination location for files on archival system. If null, the storePath will be built from the lta-manager "
-                          + "configuration.", nullable = true, example = "/2024/1/15/lta-product-100")
+    @Schema(description =
+                "Path to manually define the destination location for files on archival system. If null, the storePath will be built from the lta-manager "
+                + "configuration.", nullable = true, example = "/2024/1/15/lta-product-100")
     private String storePath;
 
     @Nullable
@@ -117,11 +118,11 @@ public class SubmissionRequestDto {
     // owner is set after the construction of the request
     private String owner;
 
-    @GsonIgnore
+    @JsonIgnore
     @Schema(description = "Origin request app_id in amqp message (header property of amqp message)", hidden = true)
     private String originRequestAppId;
 
-    @GsonIgnore
+    @JsonIgnore
     @Schema(description = "Origin request priority in amqp message (header property of amqp message", hidden = true)
     private Integer originRequestPriority;
 

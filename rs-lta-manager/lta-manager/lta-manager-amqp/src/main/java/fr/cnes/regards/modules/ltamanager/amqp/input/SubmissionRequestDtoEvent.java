@@ -18,8 +18,13 @@
  */
 package fr.cnes.regards.modules.ltamanager.amqp.input;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.event.*;
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
@@ -35,7 +40,7 @@ import java.util.Optional;
  *
  * @author Iliana Ghazali
  **/
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class SubmissionRequestDtoEvent extends SubmissionRequestDto implements ISubscribable, IMessagePropertiesAware {
 
     /**
@@ -45,10 +50,11 @@ public class SubmissionRequestDtoEvent extends SubmissionRequestDto implements I
     @GsonIgnore
     private MessageProperties messageProperties;
 
-    public SubmissionRequestDtoEvent(String correlationId,
-                                     String productId,
-                                     String datatype,
-                                     List<ProductFileDto> files) {
+    @JsonCreator
+    public SubmissionRequestDtoEvent(@JsonProperty("correlationId") String correlationId,
+                                     @JsonProperty("productId") String productId,
+                                     @JsonProperty("datatype") String datatype,
+                                     @JsonProperty("files") List<ProductFileDto> files) {
         super(correlationId, productId, datatype, files);
     }
 

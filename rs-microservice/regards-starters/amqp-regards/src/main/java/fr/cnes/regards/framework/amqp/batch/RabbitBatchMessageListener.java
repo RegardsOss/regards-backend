@@ -29,7 +29,8 @@ import fr.cnes.regards.framework.amqp.batch.dto.BatchMessageErrorType;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RetryProperties;
-import fr.cnes.regards.framework.amqp.converter.Gson2JsonMessageConverter;
+import fr.cnes.regards.framework.amqp.event.EventUtils;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.exception.InvalidMessageException;
 import fr.cnes.regards.framework.amqp.exception.MissingTenantException;
 import fr.cnes.regards.framework.amqp.exception.UnprocessableBatchException;
@@ -55,6 +56,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Batch listener to handle AMQP messages received from multiple tenants.
@@ -156,7 +158,6 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         Multimap<String, Message> messagesByTenant = ArrayListMultimap.create();
         BatchErrorResponse batchErrorResponse = new BatchErrorResponse();
         for (Message message : messages) {
-            setDefaultHeaders(message);
             String tenant = message.getMessageProperties().getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
             // Check tenant
             if (tenant == null || tenant.isEmpty()) {
@@ -193,6 +194,25 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
         for (Message message : messages) {
             try {
                 // Convert message
+
+                // If the message type can be retrieved from the handler, use it to generate headers :
+                // REGARDS_TYPE_HEADER is used to get an object of this type after the deserialization
+                // REGARDS_CONVERTER_HEADER is used to select which converter to use (JACKSON or GSON).
+                // If the message type cannot be retrieved from the handler, use the already set headers. If they
+                // are not sufficient, the deserialization will fail.
+
+                Map<String, Object> headers = message.getMessageProperties().getHeaders();
+                if (this.batchHandler.getMType() != null) {
+                    headers.put(AmqpConstants.REGARDS_TYPE_HEADER, this.batchHandler.getMType().getName());
+                    headers.put(AmqpConstants.REGARDS_CONVERTER_HEADER,
+                                EventUtils.getMessageConverter(this.batchHandler.getMType()).toString());
+                } else {
+                    // If the converter is not specified, use Gson by default
+                    if (message.getMessageProperties().getHeader(AmqpConstants.REGARDS_CONVERTER_HEADER) == null) {
+                        headers.put(AmqpConstants.REGARDS_CONVERTER_HEADER, JsonMessageConverter.GSON.toString());
+                    }
+                }
+
                 BatchMessage batchMessage = BatchMessage.buildConvertedBatchMessage(message,
                                                                                     messageConverter.fromMessage(message));
                 convertedMessages.add(batchMessage);
@@ -380,10 +400,6 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                 LOGGER.error("Fail to acknowledge processed message", e);
             }
         });
-    }
-
-    private void setDefaultHeaders(Message message) {
-        Gson2JsonMessageConverter.setDefaultHeaders(message, batchHandler);
     }
 
     private void executeInTransaction(Runnable transactionalFunction, String tenant) {

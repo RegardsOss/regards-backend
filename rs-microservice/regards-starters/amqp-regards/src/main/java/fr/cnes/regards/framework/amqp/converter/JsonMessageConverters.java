@@ -65,6 +65,12 @@ public class JsonMessageConverters implements MessageConverter {
 
     @Override
     public Message toMessage(Object object, MessageProperties messageProperties) throws MessageConversionException {
+        // If the converter is not specified, use Gson by default
+        if (messageProperties.getHeader(AmqpConstants.REGARDS_CONVERTER_HEADER) == null) {
+            messageProperties.getHeaders()
+                             .put(AmqpConstants.REGARDS_CONVERTER_HEADER, JsonMessageConverter.GSON.toString());
+        }
+
         return selectConverter(object, messageProperties).toMessage(object, messageProperties);
     }
 
@@ -80,6 +86,9 @@ public class JsonMessageConverters implements MessageConverter {
 
         String tenant = messageProperties.getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
         String type = messageProperties.getHeader(AmqpConstants.REGARDS_TYPE_HEADER);
+        if (type == null) {
+            type = messageProperties.getHeader(AmqpConstants.REGARDS_TYPE_HEADER_LEGACY);
+        }
         String runtimeTenant = runtimeTenantResolver.getTenant();
 
         // Check if tenant already set and match!
@@ -147,13 +156,9 @@ public class JsonMessageConverters implements MessageConverter {
             converterType = messageProperties.getHeader(CONVERTER_TYPE_HEADER);
         }
         if (converterType == null) {
-            String message = "Cannot determine JSON converter type, falling back to GSON";
-            LOGGER.trace(message);
-            converterType = JsonMessageConverter.GSON.toString();
-            // FIXME remove above behavior only enabled for compatibility and uncomment following lines
-            //            String errorMessage = "Cannot determine JSON converter type";
-            //            LOGGER.error(errorMessage);
-            //            throw new MessageConversionException(errorMessage);
+            String errorMessage = "Cannot determine JSON converter type";
+            LOGGER.error(errorMessage);
+            throw new MessageConversionException(errorMessage);
         }
 
         try {

@@ -34,6 +34,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -44,8 +45,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 
 /**
  * Controller defining REST entry point for search history management.
@@ -79,14 +78,14 @@ public class SearchHistoryController implements IResourceController<SearchHistor
      */
     @Operation(summary = "Retrieve search history page",
                description = "Retrieve search history page using account email and module id")
-    @ApiResponses(value = { @ApiResponse(responseCode = "201",
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
                                          description = "Search history page was successfully retrieved. Returns "
                                                        + "SearchHistoryDto page"),
                             @ApiResponse(responseCode = "403",
                                          description = "The endpoint is not accessible for the user.",
                                          content = { @Content(mediaType = "application/html") }) })
     @GetMapping
-    @ResourceAccess(description = "Retrieve the search history of a given user and a given module",
+    @ResourceAccess(description = "Endpoint to retrieve the search history of a given user and a given module",
                     role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<PagedModel<EntityModel<SearchHistoryDto>>> retrieveSearchHistory(
         @RequestParam(value = "accountEmail") final String accountEmail,
@@ -105,7 +104,7 @@ public class SearchHistoryController implements IResourceController<SearchHistor
     @Operation(summary = "Create a search history element.",
                description = "Create and save a search history from a search history dto, "
                              + "an account email and a module id")
-    @ApiResponses(value = { @ApiResponse(responseCode = "201",
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
                                          description = "The searh history element was successfully saved. Returns "
                                                        + "SearchHistoryDto."),
                             @ApiResponse(responseCode = "403",
@@ -115,8 +114,7 @@ public class SearchHistoryController implements IResourceController<SearchHistor
                                          description = "The search history dto syntax is incorrect.",
                                          content = { @Content(mediaType = "application/json") }) })
     @PostMapping
-    @ResponseBody
-    @ResourceAccess(description = "Create a new search history element", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Endpoint to create a new search history element", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<EntityModel<SearchHistoryDto>> createSearchHistory(
         @Valid @RequestBody final SearchHistoryDto searchHistoryDto,
         @RequestParam(value = "accountEmail") final String accountEmail,
@@ -128,15 +126,14 @@ public class SearchHistoryController implements IResourceController<SearchHistor
 
     @Operation(summary = "Update a search history element.",
                description = "Update search history element using its id.")
-    @ApiResponses(value = { @ApiResponse(responseCode = "201",
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
                                          description = "The searh history element was successfully updated. Returns "
                                                        + "SearchHistoryDto."),
                             @ApiResponse(responseCode = "403",
                                          description = "The endpoint is not accessible for the user.",
                                          content = { @Content(mediaType = "application/html") }) })
     @PutMapping("/{searchHistoryId}")
-    @ResponseBody
-    @ResourceAccess(description = "Update a search history element", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Endpoint to update a search history element", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<EntityModel<SearchHistoryDto>> updateSearchHistory(
         @PathVariable("searchHistoryId") final Long searchHistoryId,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Search history config to be processed",
@@ -149,14 +146,13 @@ public class SearchHistoryController implements IResourceController<SearchHistor
 
     @Operation(summary = "Delete a search history element.",
                description = "Delete search history element using its id.")
-    @ApiResponses(value = { @ApiResponse(responseCode = "201",
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
                                          description = "The searh history element was successfully deleted"),
                             @ApiResponse(responseCode = "403",
                                          description = "The endpoint is not accessible for the user.",
                                          content = { @Content(mediaType = "application/html") }) })
     @DeleteMapping("/{searchHistoryId}")
-    @ResponseBody
-    @ResourceAccess(description = "Delete a search history element", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Endpoint to delete a search history element", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<EntityModel<Void>> deleteSearchHistory(
         @PathVariable("searchHistoryId") final Long searchHistoryId) throws EntityException {
         searchHistoryService.deleteSearchHistory(searchHistoryId);

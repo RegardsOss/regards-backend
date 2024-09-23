@@ -16,17 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.geojson.serializers;
+package fr.cnes.regards.framework.geojson.modules;
 
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import fr.cnes.regards.framework.geojson.deserializers.DeserializerMimeType;
+import fr.cnes.regards.framework.geojson.serializers.SerializerMimeType;
 import org.springframework.util.MimeType;
 
 /**
+ * Module to help Jackson serialize and deserialize spring MimeType
+ *
  * @author Sébastien Binda
  **/
 public class MimeTypeSerializerModule extends SimpleModule {
@@ -41,9 +44,21 @@ public class MimeTypeSerializerModule extends SimpleModule {
                                                       BeanDescription desc,
                                                       JsonSerializer<?> serializer) {
                 if (MimeType.class.isAssignableFrom(desc.getBeanClass())) {
-                    return new SerializerMimeType((JsonSerializer<Object>) serializer);
+                    return new SerializerMimeType();
                 }
                 return serializer;
+            }
+        });
+        context.addBeanDeserializerModifier(new BeanDeserializerModifier() {
+
+            @Override
+            public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config,
+                                                          BeanDescription beanDesc,
+                                                          JsonDeserializer<?> deserializer) {
+                if (MimeType.class.isAssignableFrom(beanDesc.getBeanClass())) {
+                    return new DeserializerMimeType();
+                }
+                return deserializer;
             }
         });
     }

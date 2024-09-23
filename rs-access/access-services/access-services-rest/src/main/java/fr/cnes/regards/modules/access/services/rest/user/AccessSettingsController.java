@@ -33,6 +33,10 @@ import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
 import jakarta.validation.Valid;
@@ -42,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,6 +64,7 @@ import static fr.cnes.regards.modules.access.services.rest.user.utils.Try.handle
  *
  * @author Sébastien Binda
  */
+@Tag(name = "Access settings controller")
 @RestController
 @RequestMapping(path = AccessSettingsController.REQUEST_MAPPING_ROOT)
 public class AccessSettingsController implements IResourceController<DynamicTenantSettingDto> {
@@ -99,9 +105,12 @@ public class AccessSettingsController implements IResourceController<DynamicTena
     @Value("${spring.application.name}")
     private String appName;
 
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieves the settings managing the access requests", role = DefaultRole.EXPLOIT)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieves the settings managing the access requests",
+                    role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Retrieves the settings", description = "Retrieves the settings managing the access requests")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Returns the settings managing the access requests") })
     public ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAccessSettings() throws ModuleException {
         return toResponse(Validation.combine(Try.run(() -> FeignSecurityManager.asUser(authenticationResolver.getUser(),
                                                                                        RoleAuthority.getSysRole(appName)))
@@ -130,9 +139,12 @@ public class AccessSettingsController implements IResourceController<DynamicTena
                                     .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK)));
     }
 
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.PUT, path = NAME_PATH)
-    @ResourceAccess(description = "Updates the setting managing the access requests", role = DefaultRole.PROJECT_ADMIN)
+    @PutMapping(value = NAME_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to update the setting managing the access requests",
+                    role = DefaultRole.PROJECT_ADMIN)
+    @Operation(summary = "Update the settings", description = "Update the setting managing the access requests")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Returns the setting managing the access requests") })
     public ResponseEntity<EntityModel<DynamicTenantSettingDto>> updateAccessSettings(
         @PathVariable(name = "name") String name, @Valid @RequestBody DynamicTenantSettingDto dynamicTenantSettingDto)
         throws ModuleException {

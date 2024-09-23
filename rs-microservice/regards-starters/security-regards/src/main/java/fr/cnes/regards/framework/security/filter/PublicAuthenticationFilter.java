@@ -28,9 +28,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Set;
 
@@ -72,19 +74,34 @@ public class PublicAuthenticationFilter extends OncePerRequestFilter {
         // If not "Bearer" Authorization and no OPTIONS request => generate PUBLIC token
         if (((authHeader == null) || !authHeader.startsWith(HttpConstants.BEARER))
             && !CorsFilter.OPTIONS_REQUEST_TYPE.equals(request.getMethod())) {
-            // Try to retrieve target tenant from request
-            String tenant = request.getHeader(HttpConstants.SCOPE);
-            if (Strings.isNullOrEmpty(tenant) && request.getParameter(HttpConstants.SCOPE) != null) {
-                tenant = request.getParameter(HttpConstants.SCOPE);
+            String tenant = extractScope(request);
+            if (tenant != null) {
+                // Add authorization header
+                CustomHttpServletRequest customRequest = new CustomHttpServletRequest(request);
+                addPublicAuthorizationHeader(tenant, customRequest);
+                filterChain.doFilter(customRequest, response);
+            } else {
+                final String message = String.format("[REGARDS PUBLIC FILTER] Missing 'scope' header or param %s@%s",
+                                                     request.getServletPath(),
+                                                     request.getMethod());
+                LOGGER.error(message);
+                response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             }
-            // Add authorization header
-            CustomHttpServletRequest customRequest = new CustomHttpServletRequest(request);
-            addPublicAuthorizationHeader(tenant, customRequest);
-            filterChain.doFilter(customRequest, response);
         } else {
             // Nothing to do
             filterChain.doFilter(request, response);
         }
+    }
+
+    @Nullable
+    private static String extractScope(HttpServletRequest request) {
+        // Try to retrieve target tenant from request
+        String tenant = request.getHeader(HttpConstants.SCOPE);
+        if (Strings.isNullOrEmpty(tenant) && request.getParameter(HttpConstants.SCOPE) != null) {
+            // get tenant from request header
+            tenant = request.getParameter(HttpConstants.SCOPE);
+        }
+        return tenant;
     }
 
     @Override

@@ -95,6 +95,12 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
     }
 
     @Override
+    public ProcessPluginConfigurationRightsDTO findByBusinessIdNullable(UUID processBusinessId) {
+        RightsPluginConfiguration rights = findEntityByBusinessIdNullable(processBusinessId);
+        return rights != null ? RightsPluginConfiguration.toDto(rights) : null;
+    }
+
+    @Override
     public ProcessPluginConfigurationRightsDTO update(UUID processBusinessId,
                                                       ProcessPluginConfigurationRightsDTO rightsDto)
         throws ModuleException {
@@ -196,6 +202,10 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
                                                                                        "Rights for plugin with UUID "
                                                                                        + processBusinessId
                                                                                        + " not found"));
+    }
+
+    private RightsPluginConfiguration findEntityByBusinessIdNullable(UUID processBusinessId) {
+        return rightsPluginConfigRepo.findByPluginConfigurationBusinessId(processBusinessId.toString()).getOrNull();
     }
 
     public static class DeleteAttemptOnUsedProcessException extends Exception {

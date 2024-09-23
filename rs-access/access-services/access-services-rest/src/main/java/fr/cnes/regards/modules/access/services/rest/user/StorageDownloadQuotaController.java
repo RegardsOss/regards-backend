@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.vavr.control.Try;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ import java.util.function.Supplier;
 
 import static fr.cnes.regards.modules.storage.client.IStorageDownloadQuotaRestClient.*;
 
+@Tag(name = "Storage download quota controller")
 @RestController
 public class StorageDownloadQuotaController {
 

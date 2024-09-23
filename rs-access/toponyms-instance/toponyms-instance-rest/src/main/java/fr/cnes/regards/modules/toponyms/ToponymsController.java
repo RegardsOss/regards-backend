@@ -32,7 +32,11 @@ import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
 import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
 import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 import fr.cnes.regards.modules.toponyms.service.ToponymsService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -55,6 +59,7 @@ import java.util.Optional;
  *
  * @author Sébastien Binda
  */
+@Tag(name = "Toponyms controller")
 @RestController
 @RequestMapping(ToponymsRestConfiguration.ROOT_MAPPING)
 public class ToponymsController implements IResourceController<ToponymDTO> {
@@ -86,9 +91,10 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
      *
      * @return {@link ToponymDTO}s
      */
-    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Endpoint to retrieve all toponyms with pagination", role = DefaultRole.PUBLIC)
+    @Operation(summary = "Get all toponyms", description = "Retrieve a page containing all toponyms")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns all toponyms with pagination") })
     public ResponseEntity<PagedModel<EntityModel<ToponymDTO>>> find(
         @SortDefault(sort = "label", direction = Sort.Direction.ASC) Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<ToponymDTO> assembler) throws EntityNotFoundException {
@@ -106,11 +112,10 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
      * @param simplified True for simplified geometry (minimize size)
      * @return {@link ToponymDTO}
      */
-    @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID,
-                    method = RequestMethod.GET,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve one toponym by his identifier", role = DefaultRole.PUBLIC)
+    @GetMapping(value = ToponymsRestConfiguration.TOPONYM_ID, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieve one toponym by its identifier", role = DefaultRole.PUBLIC)
+    @Operation(summary = "Get toponym", description = "Retrieve one toponym by its identifier")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the toponym") })
     public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
                                                        @RequestParam(required = false) Boolean simplified)
         throws EntityNotFoundException {
@@ -134,12 +139,14 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
      *
      * @return {@link ToponymDTO}s
      */
-    @RequestMapping(value = ToponymsRestConfiguration.SEARCH,
-                    method = RequestMethod.GET,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
+    @GetMapping(value = ToponymsRestConfiguration.SEARCH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.",
                     role = DefaultRole.PUBLIC)
+    @Operation(summary = "Search toponyms",
+               description = "Search for toponyms. Geometries are not retrieved and list"
+                             + " content is limited to 100 entities.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Returns the list of toponyms with pagination") })
     public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = false) String partialLabel,
                                                                 @RequestParam(required = false, defaultValue = "en")
                                                                 String locale) throws EntityNotFoundException {
@@ -166,8 +173,9 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
      * @return toponymDTO
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to add a toponym", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Endpoint to add a not visible toponym.", role = DefaultRole.REGISTERED_USER)
+    @Operation(summary = "Register a toponym", description = "Add a not visible toponym.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Returns the created toponym") })
     public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson)
         throws ModuleException, JsonProcessingException {
         ToponymDTO toponymDTO = this.service.generateNotVisibleToponym(toponymGeoJson.getFeature(),

@@ -10,6 +10,10 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.ConfigurationDTO;
 import fr.cnes.regards.modules.configuration.domain.UIConfiguration;
 import fr.cnes.regards.modules.configuration.service.IUIConfigurationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
@@ -24,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
  *
  * @author Kevin Marchois
  */
+@Tag(name = "UI configuration controller")
 @RestController
 @RequestMapping("/configuration")
 public class UIConfigurationController implements IResourceController<ConfigurationDTO> {
@@ -43,12 +48,12 @@ public class UIConfigurationController implements IResourceController<Configurat
      *
      * @return {@link UIConfiguration}
      */
-    @RequestMapping(value = APPLICATION_ID_PATH,
-                    method = RequestMethod.GET,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve Configuration for the given applicationId",
+    @GetMapping(value = APPLICATION_ID_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieve the UI configuration for the given application identifier",
                     role = DefaultRole.PUBLIC)
+    @Operation(summary = "Get the UI configuration",
+               description = "Retrieve the UI configuration for the given application identifier")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the UI configuration") })
     public HttpEntity<EntityModel<ConfigurationDTO>> retrieveConfiguration(
         @PathVariable("applicationId") final String applicationId) {
         String conf;
@@ -67,11 +72,10 @@ public class UIConfigurationController implements IResourceController<Configurat
      *
      * @return {@link UIConfiguration}
      */
-    @RequestMapping(value = APPLICATION_ID_PATH,
-                    method = RequestMethod.POST,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to add a Configuration", role = DefaultRole.ADMIN)
+    @PostMapping(value = APPLICATION_ID_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to add a new UI configuration", role = DefaultRole.ADMIN)
+    @Operation(summary = "Register a new UI configuration", description = "Add a new UI configuration")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the created UI configuration") })
     public HttpEntity<EntityModel<ConfigurationDTO>> addConfiguration(
         @PathVariable("applicationId") final String applicationId, @Valid @RequestBody ConfigurationDTO toAdd) {
         final String conf = configurationService.addConfiguration(toAdd.getConfiguration(), applicationId);
@@ -85,11 +89,10 @@ public class UIConfigurationController implements IResourceController<Configurat
      *
      * @return {@link UIConfiguration}
      */
-    @RequestMapping(value = APPLICATION_ID_PATH,
-                    method = RequestMethod.PUT,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to update a Configuration", role = DefaultRole.ADMIN)
+    @PutMapping(value = APPLICATION_ID_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to update an UI Configuration", role = DefaultRole.ADMIN)
+    @Operation(summary = "Update an UI configuration", description = "Update an UI configuration")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the updated UI configuration") })
     public HttpEntity<EntityModel<ConfigurationDTO>> updateConfiguration(
         @PathVariable("applicationId") final String applicationId, @Valid @RequestBody ConfigurationDTO toAdd) {
         String conf;

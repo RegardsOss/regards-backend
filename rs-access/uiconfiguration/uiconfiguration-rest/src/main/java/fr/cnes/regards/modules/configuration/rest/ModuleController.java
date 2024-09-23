@@ -30,7 +30,11 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.Module;
 import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.service.IModuleService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -51,6 +55,7 @@ import org.springframework.web.bind.annotation.*;
  *
  * @author Sébastien Binda
  */
+@Tag(name = "IHM Module controller")
 @RestController
 @RequestMapping(ModuleController.ROOT_MAPPING)
 public class ModuleController implements IResourceController<Module> {
@@ -72,9 +77,11 @@ public class ModuleController implements IResourceController<Module> {
      *
      * @return {@link UILayout}
      */
-    @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve an IHM module for given application", role = DefaultRole.PUBLIC)
+    @GetMapping(value = MODULE_ID_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieve an UI module for a given application",
+                    role = DefaultRole.PUBLIC)
+    @Operation(summary = "Retrieve IHM module", description = "Retrieve an UI module for a given application.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the IHM module") })
     public HttpEntity<EntityModel<Module>> retrieveModule(@PathVariable("applicationId") String applicationId,
                                                           @PathVariable("moduleId") Long moduleId)
         throws EntityNotFoundException {
@@ -89,9 +96,10 @@ public class ModuleController implements IResourceController<Module> {
      *
      * @return {@link UILayout}
      */
-    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve IHM modules for given application", role = DefaultRole.PUBLIC)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieve UI modules for a given application", role = DefaultRole.PUBLIC)
+    @Operation(summary = "Retrieve UI modules", description = "Retrieve UI modules for a given application.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns UI modules") })
     public HttpEntity<PagedModel<EntityModel<Module>>> retrieveModules(
         @PathVariable("applicationId") String applicationId,
         @RequestParam(value = "active", required = false) String onlyActive,
@@ -109,10 +117,11 @@ public class ModuleController implements IResourceController<Module> {
      *
      * @return {@link Module}
      */
-    @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to save a new UI module for a given application",
                     role = DefaultRole.PROJECT_ADMIN)
+    @Operation(summary = "Register an UI module", description = "Save a new UI module for a given application")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the saved module") })
     public HttpEntity<EntityModel<Module>> saveModule(@PathVariable("applicationId") String applicationId,
                                                       @Valid @RequestBody Module module) throws EntityInvalidException {
 
@@ -127,10 +136,12 @@ public class ModuleController implements IResourceController<Module> {
      *
      * @return {@link Module}
      */
-    @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
+    @PutMapping(value = MODULE_ID_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to update an UI module by its identifier for a given application",
                     role = DefaultRole.PROJECT_ADMIN)
+    @Operation(summary = "Update a UI module",
+               description = "Update an UI module by its identifier for a given application")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the updated UI module") })
     public HttpEntity<EntityModel<Module>> updateModule(@PathVariable("applicationId") String applicationId,
                                                         @PathVariable("moduleId") Long moduleId,
                                                         @Valid @RequestBody Module module) throws EntityException {
@@ -148,12 +159,12 @@ public class ModuleController implements IResourceController<Module> {
      *
      * @return {@link Module}
      */
-    @RequestMapping(value = MODULE_ID_MAPPING,
-                    method = RequestMethod.DELETE,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
+    @DeleteMapping(value = MODULE_ID_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to delete an UI module by its identifier for a given application",
                     role = DefaultRole.PROJECT_ADMIN)
+    @Operation(summary = "Delete an UI module",
+               description = "Delete an UI module by its identifier for a given application")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the status") })
     public HttpEntity<EntityModel<Void>> deleteModule(@PathVariable("applicationId") String applicationId,
                                                       @PathVariable("moduleId") Long moduleId)
         throws EntityNotFoundException {
