@@ -64,6 +64,13 @@ public class FileLocationDto {
         return fileArchiveStatus;
     }
 
+    /**
+     * Method for the legacy storage where the archive status is just a boolean (STORED / TO_STORE)
+     */
+    public boolean isPendingActionRemaining() {
+        return FileArchiveStatus.TO_STORE.equals(fileArchiveStatus);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
