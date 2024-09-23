@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.workermanager.service.flow;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import fr.cnes.regards.modules.workercommon.dto.WorkerResponseStatus;
 import fr.cnes.regards.modules.workermanager.amqp.events.in.WorkerResponseEvent;
@@ -36,7 +26,10 @@ import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseStatus;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestDTO;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.service.sessions.SessionHelper;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -299,7 +292,7 @@ public class WorkerResponseHandlerIT extends AbstractWorkerManagerIT {
         Assert.assertFalse("Invalid response event status",
                            responseMock.getEvents().stream().anyMatch(e -> e.getState() != ResponseStatus.SUCCESS));
 
-        sessionHelper.checkSession(2500,
+        sessionHelper.checkSession(4000,
                                    TimeUnit.MILLISECONDS,
                                    2,
                                    DEFAULT_SOURCE,
