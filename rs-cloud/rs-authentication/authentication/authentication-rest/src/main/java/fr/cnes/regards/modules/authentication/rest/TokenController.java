@@ -22,18 +22,14 @@ import com.google.common.base.Strings;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.authentication.domain.data.Authentication;
-import fr.cnes.regards.modules.authentication.domain.dto.ServiceProviderDto;
 import fr.cnes.regards.modules.authentication.service.oauth2.Oauth2AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -81,22 +77,13 @@ public class TokenController {
     @ResourceAccess(role = DefaultRole.PUBLIC, description = "Oauth2 authentication endpoint.")
     @PostMapping(path = PATH_TOKEN, consumes = { MediaType.ALL_VALUE })
     public ResponseEntity<Authentication> postAccessToken(
-        @Deprecated @RequestParam Map<String, String> requestParameters,
-        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication credentials.",
-                                                              content = @Content(schema = @Schema(implementation = ServiceProviderDto.class)))
-        @RequestBody(required = false) MultiValueMap<String, String> bodyParams) {
-
-        Optional<UserAuthentication> userAuthenticationOpt = Optional.empty();
-        if (bodyParams != null) {
-            UserAuthentication inUserAuthentication = new UserAuthentication(bodyParams.getFirst("username"),
-                                                                             bodyParams.getFirst("password"),
-                                                                             bodyParams.getFirst("scope"),
-                                                                             bodyParams.getFirst("grant_type"));
-            userAuthenticationOpt = Optional.ofNullable(inUserAuthentication);
-        }
+        @Deprecated @RequestParam(required = false) Map<String, String> requestParameters,
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication credentials.")
+        @RequestBody(required = false) UserAuthentication userAuthenticationOpt) {
         // requestParameters map may or may not contain all user authentication properties.
         // If not, userAuthentication must contain these properties
-        UserAuthentication userAuthentication = mergeUserAuthentication(requestParameters, userAuthenticationOpt);
+        UserAuthentication userAuthentication = mergeUserAuthentication(requestParameters,
+                                                                        Optional.ofNullable(userAuthenticationOpt));
 
         return getResponse(oauth2AuthenticationService.doAuthentication(userAuthentication.username(),
                                                                         userAuthentication.password(),

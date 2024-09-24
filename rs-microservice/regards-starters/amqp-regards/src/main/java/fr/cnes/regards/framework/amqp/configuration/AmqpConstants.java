@@ -34,7 +34,17 @@ public final class AmqpConstants {
 
     public static final String REGARDS_CONVERTER_HEADER = REGARDS_HEADER_NS + "converter";
 
-    public static final String REGARDS_TYPE_HEADER = REGARDS_HEADER_NS + "type";
+    /**
+     * Header necessary for Jackson deserialization, in order to harmonize the process, it's used for both Jackson
+     * and Gson
+     */
+    public static final String REGARDS_TYPE_HEADER = "__TypeId__";
+
+    /**
+     * Legacy header for Gson deserialization, it's kept to be able to deserialize old messages after an update of
+     * regards, but will be removed at some point.
+     */
+    public static final String REGARDS_TYPE_HEADER_LEGACY = REGARDS_HEADER_NS + "type";
 
     /**
      * Request headers

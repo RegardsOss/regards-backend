@@ -49,6 +49,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
@@ -68,13 +69,17 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -89,6 +94,7 @@ import static java.util.stream.Collectors.toList;
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  */
+@Tag(name = "Project users controller")
 @RestController
 @RequestMapping(ProjectUsersController.TYPE_MAPPING)
 public class ProjectUsersController implements IResourceController<ProjectUserReadDto> {
@@ -157,7 +163,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @param filters   search parameters
      * @return a {@link List} of {@link ProjectUserReadDto}
      */
-    @PostMapping(SEARCH_USERS_PATH)
+    @PostMapping(value = SEARCH_USERS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get users of the project",
                description = "Return a page of users of the project matching criterias.")
     @ApiResponses(value = { @ApiResponse(responseCode = "200",
@@ -185,8 +191,13 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @param assembler assembler info
      * @return The {@link List} of all {@link ProjectUserReadDto}s with status {@link UserStatus#WAITING_ACCESS}
      */
-    @GetMapping(PENDINGACCESSES)
-    @ResourceAccess(description = "Retrieves the list of access request", role = DefaultRole.PROJECT_ADMIN)
+    @GetMapping(value = PENDINGACCESSES, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieves the list of users with a pending access request",
+                    role = DefaultRole.PROJECT_ADMIN)
+    @Operation(summary = "Get a list of users",
+               description = "Retrieve a page containing a list of users with a pending access request")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "All users of the project with a pending access request were retrieved.") })
     public ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> retrieveAccessRequestList(
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<ProjectUserReadDto> assembler) throws ModuleException {
@@ -202,8 +213,11 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @param userId The {@link ProjectUserReadDto}'s <code>id</code>
      * @return a {@link ProjectUserReadDto}
      */
-    @GetMapping(USER_ID_RELATIVE_PATH)
-    @ResourceAccess(description = "retrieve the project user and only display  metadata", role = DefaultRole.EXPLOIT)
+    @GetMapping(value = USER_ID_RELATIVE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieve the project user metadata by its identifier",
+                    role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Get a project user", description = "Retrieve the project user metadata by its identifier")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "The user metadata were retrieved.") })
     public ResponseEntity<EntityModel<ProjectUserReadDto>> retrieveProjectUser(@PathVariable("user_id") Long userId)
         throws ModuleException {
         return toResponse(Try.of(() -> projectUsersClient.retrieveProjectUser(userId))
@@ -225,9 +239,13 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      *
      * @return a {@link ProjectUserReadDto}
      */
-    @GetMapping("/myuser")
-    @ResourceAccess(description = "retrieve the current authenticated project user and only display  metadata",
+    @GetMapping(value = "/myuser", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieve the current authenticated project user metadata",
                     role = DefaultRole.REGISTERED_USER)
+    @Operation(summary = "Get the current project user metadata",
+               description = "Retrieve the current authenticated project user metadata")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Returns the current authenticated project user") })
     public ResponseEntity<EntityModel<ProjectUserReadDto>> retrieveCurrentProjectUser() throws ModuleException {
         return combineProjectUserThenQuotaCalls(projectUsersClient::retrieveCurrentProjectUser,
                                                 storageClient::getCurrentQuotas,
@@ -240,8 +258,11 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @param userEmail The {@link ProjectUserReadDto}'s <code>id</code>
      * @return a {@link ProjectUserReadDto}
      */
-    @GetMapping("/email/{user_email}")
-    @ResourceAccess(description = "retrieve the project user and only display  metadata", role = DefaultRole.EXPLOIT)
+    @GetMapping(value = "/email/{user_email}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieve the project user metadata by its email",
+                    role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Get the project user", description = "Retrieve the project user metadata by its emaila")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the project user") })
     public ResponseEntity<EntityModel<ProjectUserReadDto>> retrieveProjectUserByEmail(
         @PathVariable("user_email") String userEmail) throws ModuleException {
         return combineProjectUserThenQuotaCalls(() -> projectUsersClient.retrieveProjectUserByEmail(userEmail), () -> {
@@ -250,8 +271,12 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         }, this::toResource);
     }
 
-    @GetMapping("/email/{user_email}/admin")
-    @ResourceAccess(description = "tell if user has role admin", role = DefaultRole.PUBLIC)
+    @GetMapping(value = "/email/{user_email}/admin", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to check if user has administrator role", role = DefaultRole.PUBLIC)
+    @Operation(summary = "Check the role of user",
+               description = "Check if the user with the given email has administrator role")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "True if the user has an administrator role, false otherwise") })
     public ResponseEntity<Boolean> isAdmin(@PathVariable("user_email") String userEmail) {
         return projectUsersClient.isAdmin(userEmail);
     }
@@ -263,8 +288,10 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @param updatedProjectUser The new {@link ProjectUserReadDto}
      * @return void
      */
-    @PutMapping(USER_ID_RELATIVE_PATH)
-    @ResourceAccess(description = "update the project user", role = DefaultRole.EXPLOIT)
+    @PutMapping(value = USER_ID_RELATIVE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to update the project user", role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Update the project user", description = "Update the project user with the given identifier")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Return the updated project user") })
     public ResponseEntity<EntityModel<ProjectUserReadDto>> updateProjectUser(@PathVariable("user_id") Long userId,
                                                                              @RequestBody
                                                                              ProjectUserUpdateDto updatedProjectUser)
@@ -286,8 +313,13 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @param updatedProjectUser The new {@link ProjectUserReadDto}
      * @return void
      */
-    @PutMapping("/myuser")
-    @ResourceAccess(description = "Update the current authenticated project user", role = DefaultRole.REGISTERED_USER)
+    @PutMapping(value = "/myuser", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to update the currently authenticated project user",
+                    role = DefaultRole.REGISTERED_USER)
+    @Operation(summary = "Update the current project user",
+               description = "Update the currently authenticated project user")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Returns the currently authenticated project user") })
     public ResponseEntity<EntityModel<ProjectUserReadDto>> updateCurrentProjectUser(
         @RequestBody ProjectUserUpdateDto updatedProjectUser) throws ModuleException {
         String userEmail = authenticationResolver.getUser();
@@ -304,12 +336,14 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @param projectUserCreateDto A Dto containing all information for creating the account/project user and sending the activation link
      * @return the passed Dto
      */
-    @PostMapping
-    @ResourceAccess(description = "Create a user of project by bypassing registration process (Administrator feature)",
-                    role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<ProjectUserReadDto>> createUser(@Valid @RequestBody
-                                                                      ProjectUserCreateDto projectUserCreateDto)
-        throws ModuleException {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to create a project user by bypassing the registration process "
+                                  + "(Administrator feature)", role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Create a project user",
+               description = "Create a project user by bypassing the registration process (Administrator feature)")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the created project user") })
+    public ResponseEntity<EntityModel<ProjectUserReadDto>> createUser(
+        @Valid @RequestBody ProjectUserCreateDto projectUserCreateDto) throws ModuleException {
         String email = projectUserCreateDto.getEmail();
         DownloadQuotaLimitsDto limits = new DownloadQuotaLimitsDto(email,
                                                                    projectUserCreateDto.getMaxQuota(),
@@ -340,7 +374,8 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @return void
      */
     @DeleteMapping(USER_ID_RELATIVE_PATH)
-    @ResourceAccess(description = "remove the project user", role = DefaultRole.EXPLOIT)
+    @ResourceAccess(description = "Endpoint to remove the project user", role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Delete the project user", description = "Delete the project user with the given identifier")
     public ResponseEntity<Void> removeProjectUser(@PathVariable("user_id") Long userId) throws ModuleException {
         String errorMessage = String.format("User %s could no be retrieved from admin service", userId);
         try {
@@ -361,7 +396,6 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
             LOGGER.error(e.getMessage(), e);
             throw new ModuleException(errorMessage);
         }
-
     }
 
     /**
@@ -373,9 +407,14 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @param assembler assembler info
      * @return The {@link List} of {@link ProjectUserReadDto} wrapped in an {@link ResponseEntity}
      */
-    @GetMapping(ROLES_ROLE_ID)
-    @ResourceAccess(description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_id",
-                    role = DefaultRole.ADMIN)
+    @GetMapping(value = ROLES_ROLE_ID, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieve the list of project users with the specified role identifier "
+                                  + "or a parent role", role = DefaultRole.ADMIN)
+    @Operation(summary = "Get the list of project users",
+               description = "Retrieve a page of project users with the specified role identifier or a parent role")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Returns the list of project users with "
+                                                       + "the specified role or a parent role") })
     public ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> retrieveRoleProjectUserList(
         @PathVariable("role_id") Long roleId,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -395,9 +434,13 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @param assembler assembler info
      * @return The {@link List} of {@link ProjectUserReadDto} wrapped in an {@link ResponseEntity}
      */
-    @GetMapping("/roles")
-    @ResourceAccess(description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_name",
-                    role = DefaultRole.ADMIN)
+    @GetMapping(value = "/roles", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieve the list of project users with the specified role name "
+                                  + "or a parent role", role = DefaultRole.ADMIN)
+    @Operation(summary = "Get the list of project users",
+               description = "Retrieve a page containing the list of project users with the specified role name "
+                             + "or a parent role")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the list of project users") })
     public ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> retrieveRoleProjectUsersList(
         @RequestParam("role_name") String role,
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -408,8 +451,9 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         }, pageable, assembler);
     }
 
-    @GetMapping("/email/{email}/verification/resend")
+    @GetMapping(value = "/email/{email}/verification/resend")
     @ResourceAccess(description = "Send a new verification email for a user creation", role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Valid a user creation", description = "Send a new verification email for a user creation")
     public ResponseEntity<Void> sendVerificationEmail(@PathVariable("email") String email) {
         projectUsersClient.sendVerificationEmail(email);
         return ResponseEntity.ok().build();

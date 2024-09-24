@@ -77,22 +77,18 @@ public class CreateNotificationRequestEventVisitor
 
     @Override
     public Optional<NotificationRequestEvent> visitDeletionRequest(FeatureDeletionRequest deletionRequest) {
-        NotificationActionEventMetadata metadata = new NotificationActionEventMetadata(FeatureManagementAction.ALREADY_DELETED,
+        FeatureManagementAction action = deletionRequest.isAlreadyDeleted() ? FeatureManagementAction.ALREADY_DELETED :
+            FeatureManagementAction.DELETED;
+        NotificationActionEventMetadata metadata = new NotificationActionEventMetadata(action,
                                                                                        deletionRequest.getSourceToNotify(),
                                                                                        deletionRequest.getSessionToNotify());
-        if (deletionRequest.isAlreadyDeleted()) {
-            return Optional.of(new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify())
-                                                                .getAsJsonObject(),
-                                                            gson.toJsonTree(metadata).getAsJsonObject(),
-                                                            deletionRequest.getRequestId(),
-                                                            deletionRequest.getRequestOwner()));
-        } else {
-            return Optional.of(new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify())
-                                                                .getAsJsonObject(),
-                                                            gson.toJsonTree(metadata).getAsJsonObject(),
-                                                            deletionRequest.getRequestId(),
-                                                            deletionRequest.getRequestOwner()));
-        }
+
+
+        return Optional.of(new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify())
+                                                            .getAsJsonObject(),
+                                                        gson.toJsonTree(metadata).getAsJsonObject(),
+                                                        deletionRequest.getRequestId(),
+                                                        deletionRequest.getRequestOwner()));
     }
 
     @Override

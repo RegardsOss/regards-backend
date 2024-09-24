@@ -34,6 +34,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -53,6 +54,7 @@ import org.springframework.web.bind.annotation.*;
  *
  * @author Sébastien Binda
  */
+@Tag(name = "Theme controller")
 @RestController
 @RequestMapping(ThemeController.ROOT_MAPPING)
 public class ThemeController implements IResourceController<Theme> {
@@ -72,9 +74,10 @@ public class ThemeController implements IResourceController<Theme> {
      *
      * @return {@link UILayout}
      */
-    @RequestMapping(value = THEME_ID_MAPPING, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve an IHM theme", role = DefaultRole.PUBLIC)
+    @GetMapping(value = THEME_ID_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to retrieve an IHM theme by its identifier", role = DefaultRole.PUBLIC)
+    @Operation(summary = "Get an UI theme", description = "Retrieve an UI theme by its identifier")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the UI theme") })
     public HttpEntity<EntityModel<Theme>> retrieveTheme(@PathVariable("themeId") Long themeId)
         throws EntityNotFoundException {
         return new ResponseEntity<>(toResource(service.retrieveTheme(themeId)), HttpStatus.OK);
@@ -100,9 +103,10 @@ public class ThemeController implements IResourceController<Theme> {
      *
      * @return {@link Theme}
      */
-    @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to save a new HMI Theme", role = DefaultRole.PROJECT_ADMIN)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to save a new UI theme", role = DefaultRole.PROJECT_ADMIN)
+    @Operation(summary = "Register UI theme", description = "Save a new UI theme")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Return the new UI theme") })
     public HttpEntity<EntityModel<Theme>> saveTheme(@Valid @RequestBody Theme theme) {
         return new ResponseEntity<>(toResource(service.saveTheme(theme)), HttpStatus.OK);
     }
@@ -112,9 +116,10 @@ public class ThemeController implements IResourceController<Theme> {
      *
      * @return {@link Theme}
      */
-    @RequestMapping(value = THEME_ID_MAPPING, method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to update an HMI theme", role = DefaultRole.PROJECT_ADMIN)
+    @PutMapping(value = THEME_ID_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to update an UI theme", role = DefaultRole.PROJECT_ADMIN)
+    @Operation(summary = "Update UI theme", description = "Update an UI theme")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Return the updated UI theme") })
     public HttpEntity<EntityModel<Theme>> updateTheme(@PathVariable("themeId") Long themeId,
                                                       @Valid @RequestBody Theme theme) throws EntityException {
         if (!theme.getId().equals(themeId)) {
@@ -128,11 +133,10 @@ public class ThemeController implements IResourceController<Theme> {
      *
      * @return {@link Theme}
      */
-    @RequestMapping(value = THEME_ID_MAPPING,
-                    method = RequestMethod.DELETE,
-                    produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to delete a theme", role = DefaultRole.PROJECT_ADMIN)
+    @DeleteMapping(value = THEME_ID_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResourceAccess(description = "Endpoint to delete an UI theme by its identifier", role = DefaultRole.PROJECT_ADMIN)
+    @Operation(summary = "Delete UI theme", description = "Delete an UI theme by its identifier")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Return the status") })
     public HttpEntity<EntityModel<Void>> deleteTheme(@PathVariable("themeId") Long themeId)
         throws EntityNotFoundException {
         service.deleteTheme(themeId);

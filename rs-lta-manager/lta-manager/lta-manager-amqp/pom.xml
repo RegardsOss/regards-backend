@@ -62,5 +62,9 @@
             <groupId>fr.cnes.regards.modules.ltamanager</groupId>
             <artifactId>lta-manager-dto</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-dto</artifactId>
+        </dependency>
     </dependencies>
 </project>

@@ -98,8 +98,19 @@ public class ProcessingModuleManager extends AbstractModuleManager<Void> {
                    .findFirst()
                    .ifPresent(pc -> {
                        try {
-                           processService.create(new ProcessPluginConfigurationRightsDTO(pc, process.getRights()));
-                       } catch (EntityNotFoundException e) {
+                           // create process only if not already exists
+                           UUID uuid = UUID.fromString(process.getPluginConfBid());
+                           ProcessPluginConfigurationRightsDTO existingProcess = processService.findByBusinessIdNullable(
+                               uuid);
+                           ProcessPluginConfigurationRightsDTO processPluginConf = new ProcessPluginConfigurationRightsDTO(
+                               pc,
+                               process.getRights());
+                           if (existingProcess == null) {
+                               processService.create(processPluginConf);
+                           } else {
+                               processService.update(uuid, processPluginConf);
+                           }
+                       } catch (ModuleException e) {
                            LOGGER.error(e.getMessage(), e);
                            importErrors.add(e.getMessage());
                        }

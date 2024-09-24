@@ -26,15 +26,11 @@ import org.springframework.util.MimeType;
 import java.io.IOException;
 
 /**
+ * Jackson serializer for Spring MimeType properties.
+ *
  * @author Sébastien Binda
  **/
 public class SerializerMimeType extends JsonSerializer<MimeType> {
-
-    private final JsonSerializer<Object> defaultSerializer;
-
-    public SerializerMimeType(JsonSerializer<Object> serializer) {
-        defaultSerializer = serializer;
-    }
 
     @Override
     public void serialize(MimeType mimeType, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)

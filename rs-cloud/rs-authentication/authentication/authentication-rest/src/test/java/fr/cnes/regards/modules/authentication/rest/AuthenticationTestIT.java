@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.authentication.rest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -146,8 +147,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
 
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
                                                   .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + invalidBasicString)
-                                                  .header(HttpHeaders.CONTENT_TYPE,
-                                                          MediaType.APPLICATION_JSON_VALUE)
+                                                  .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                                                   .param(GRANT_TYPE, PASSWORD)
                                                   .param(SCOPE, "scope1")
                                                   .param(USER_NAME, "name1")
@@ -215,6 +215,75 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
                                           .andExpect(MockMvcResultMatchers.jsonPath("$.role").exists())
                                           .andExpect(MockMvcResultMatchers.jsonPath("$.token_type").exists())
                                           .andExpect(MockMvcResultMatchers.jsonPath("$.expires_in").exists());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * Test the Oauth2 authentication process with payload. Get a valid token.
+     */
+    @Requirement("REGARDS_DSL_SYS_SEC_100")
+    @Purpose("Test the Oauth2 authentication process with payload. Get a valid token.")
+    @Test
+    public void testAuthenticateWithPayload() {
+        try {
+            String basicString = String.format("%s:%s", basicUserName, basicPassword);
+            basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
+            TokenController.UserAuthentication userAuthentication = new TokenController.UserAuthentication(null,
+                                                                                                           AuthenticationTestConfiguration.VALID_PASSWORD,
+                                                                                                           "PROJECT",
+                                                                                                           PASSWORD);
+            String userAuthenticationAsString = new ObjectMapper().writeValueAsString(userAuthentication);
+            ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
+                                                                         .header(HttpHeaders.AUTHORIZATION,
+                                                                                 BASIC_AUTH + basicString)
+                                                                         .header(HttpHeaders.CONTENT_TYPE,
+                                                                                 MediaType.APPLICATION_JSON_VALUE)
+                                                                         .param(USER_NAME, "test@regards.fr")
+                                                                         .param(SCOPE, "PROJECT")
+                                                                         .content(userAuthenticationAsString))
+                                          .andExpect(MockMvcResultMatchers.status().isOk())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.access_token").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.email").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.scope").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.tenant").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.sub").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.role").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.token_type").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.expires_in").exists());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    /**
+     * Test the Oauth2 authentication process with payload and without scope. Should fail.
+     */
+    @Requirement("REGARDS_DSL_SYS_SEC_100")
+    @Purpose("Test the Oauth2 authentication process with payload and without scope. Should fail")
+    @Test
+    public void testAuthenticateWithPayloadAndMissingScope() {
+        try {
+            String basicString = String.format("%s:%s", basicUserName, basicPassword);
+            basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
+            TokenController.UserAuthentication userAuthentication = new TokenController.UserAuthentication(null,
+                                                                                                           AuthenticationTestConfiguration.VALID_PASSWORD,
+                                                                                                           "PROJECT",
+                                                                                                           PASSWORD);
+            String userAuthenticationAsString = new ObjectMapper().writeValueAsString(userAuthentication);
+            ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
+                                                                         .header(HttpHeaders.AUTHORIZATION,
+                                                                                 BASIC_AUTH + basicString)
+                                                                         .header(HttpHeaders.CONTENT_TYPE,
+                                                                                 MediaType.APPLICATION_JSON_VALUE)
+                                                                         .param(USER_NAME, "test@regards.fr")
+                                                                         .content(userAuthenticationAsString))
+                                          .andExpect(MockMvcResultMatchers.status().isUnauthorized());
 
         } catch (Exception e) {
             e.printStackTrace();

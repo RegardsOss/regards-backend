@@ -53,17 +53,26 @@
     </developers>
 
     <dependencies>
-        <dependency>
-            <groupId>org.glassfish.expressly</groupId>
-            <artifactId>expressly</artifactId>
-        </dependency>
+        <!-- Module -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>amqp-regards</artifactId>
         </dependency>
+
+        <!-- Regards -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>geojson-regards-jackson</artifactId>
+        </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>multitenant-regards-starter</artifactId>
+        </dependency>
+
+        <!-- Cots -->
+        <dependency>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -76,6 +85,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-actuator-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <!-- Tests -->

@@ -30,6 +30,10 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.access.services.client.cache.CacheableServiceAggregatorClient;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,8 +45,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -55,6 +57,7 @@ import java.util.stream.StreamSupport;
  *
  * @author Xavier-Alexandre Brochard
  */
+@Tag(name = "Access search controller")
 @RestController
 @RequestMapping(path = AccessSearchController.ROOT_PATH)
 public class AccessSearchController {
@@ -106,9 +109,14 @@ public class AccessSearchController {
      */
     @RequestMapping(path = SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description =
-                        "Perform an OpenSearch request on all indexed data, regardless of the type. The return "
-                        + "objects can be any mix of collection, dataset, dataobject and document. Injects applicable "
+                        "Endpoint to perform an OpenSearch request on all indexed data, regardless of the type. The "
+                        + "return objects can be any mix of collection, dataset, dataobject and document. Injects applicable "
                         + "UI Services and Catalog Services.", role = DefaultRole.PUBLIC)
+    @Operation(summary = "Search products, datasets and collections from catalogue",
+               description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return "
+                             + "objects can be any mix of collection, dataset, dataobject and document. Injects applicable "
+                             + "UI Services and Catalog Services.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Data in JSON format") })
     public ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
         JsonObject entities = searchClient.searchAll(allParams).getBody();
@@ -127,8 +135,12 @@ public class AccessSearchController {
      */
     @RequestMapping(path = COLLECTIONS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description =
-                        "Perform an OpenSearch request on collections. Injects applicable UI Services and Catalog "
-                        + "Services.", role = DefaultRole.PUBLIC)
+                        "Endpoint to perform an OpenSearch request on collections. Injects applicable UI Services and "
+                        + "Catalog Services.", role = DefaultRole.PUBLIC)
+    @Operation(summary = "Search collections from catalogue",
+               description = "Perform an OpenSearch request on collections. Injects applicable UI Services and Catalog "
+                             + "Services.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Data in JSON format") })
     public ResponseEntity<JsonObject> searchCollections(@RequestParam MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
         JsonObject entities = searchClient.searchCollections(allParams).getBody();
@@ -146,8 +158,12 @@ public class AccessSearchController {
      */
     @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description =
-                        "Perform an OpenSearch request on datasets. Injects applicable UI Services and Catalog "
-                        + "Services.", role = DefaultRole.PUBLIC)
+                        "Endpoint to perform an OpenSearch request on datasets. Injects applicable UI Services and "
+                        + "Catalog Services.", role = DefaultRole.PUBLIC)
+    @Operation(summary = "Search datasets from catalogue",
+               description = "Perform an OpenSearch request on datasets. Injects applicable UI Services and Catalog "
+                             + "Services.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Data in JSON format") })
     public ResponseEntity<JsonObject> searchDatasets(@RequestParam MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
         JsonObject entities = searchClient.searchDatasets(allParams).getBody();
@@ -164,8 +180,13 @@ public class AccessSearchController {
      * @return the search result with services injected
      */
     @RequestMapping(path = DATAOBJECTS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(description = "Perform an OpenSearch request on dataobjects. Only return required facets. Injects "
-                                  + "applicable UI Services and Catalog Services.", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Endpoint to perform an OpenSearch request on dataobjects. Only return required "
+                                  + "facets. Injects applicable UI Services and Catalog Services.",
+                    role = DefaultRole.PUBLIC)
+    @Operation(summary = "Search products from catalogue",
+               description = "Perform an OpenSearch request on dataobjects. Only return required facets. Injects "
+                             + "applicable UI Services and Catalog Services.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Data in JSON format") })
     public ResponseEntity<JsonObject> searchDataobjects(@RequestParam MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {
         JsonObject entities = searchClient.searchDataObjects(allParams).getBody();
@@ -183,10 +204,13 @@ public class AccessSearchController {
      * @return the search result with services injected
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
-    @ResourceAccess(description =
-                        "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes,"
-                        + " but will return the associated datasets. Injects applicable UI Services and Catalog Services.",
+    @ResourceAccess(description = "Endpoint to perform an joined OpenSearch request. The search will be performed on "
+                                  + "dataobjects attributes, but will return the associated datasets. Injects applicable UI Services and Catalog Services.",
                     role = DefaultRole.PUBLIC)
+    @Operation(summary = "Search for catalogue datasets using data objects criteria",
+               description = "Perform an joined OpenSearch request. The search will be performed on dataobjects "
+                             + "attributes, but will return the associated datasets. Injects applicable UI Services and Catalog Services.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Data in JSON format") })
     public ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(
         @RequestParam MultiValueMap<String, String> allParams)
         throws HttpClientErrorException, HttpServerErrorException {

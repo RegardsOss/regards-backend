@@ -35,9 +35,9 @@ import java.util.Map;
  *
  * @author Thomas GUILLOU
  */
-class GenericGeometryDeserializer<T extends IGeometry> extends JsonDeserializer<T> {
+public class GenericGeometryDeserializer<T extends IGeometry> extends JsonDeserializer<T> {
 
-    private final Map<String, Class<?>> jsonPropertyNameToClass;
+    protected final Map<String, Class<?>> jsonPropertyNameToClass;
 
     public GenericGeometryDeserializer() {
         jsonPropertyNameToClass = new HashMap<>() {

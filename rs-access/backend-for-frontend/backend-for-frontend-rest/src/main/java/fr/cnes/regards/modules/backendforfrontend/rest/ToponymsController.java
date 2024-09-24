@@ -28,6 +28,10 @@ import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
 import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
 import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJsonDTO;
 import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +50,7 @@ import java.util.List;
  *
  * @author Sébastien Binda
  */
+@Tag(name = "Toponyms controller")
 @RestController
 @RequestMapping(path = ToponymsRestConfiguration.ROOT_MAPPING)
 public class ToponymsController {
@@ -56,7 +61,7 @@ public class ToponymsController {
     private IToponymsClient client;
 
     /**
-     * Authentication
+     * Authentication resolver
      */
     @Autowired
     private IAuthenticationResolver authenticationResolver;
@@ -67,16 +72,10 @@ public class ToponymsController {
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
-    /**
-     * Endpoint to retrieve one toponym by his identifier
-     *
-     * @param businessId Unique identifier of toponym to search for
-     * @param simplified True for simplified geometry (minimize size)
-     * @return {@link ToponymDTO}
-     */
     @GetMapping(value = ToponymsRestConfiguration.TOPONYM_ID, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve one toponym by his identifier", role = DefaultRole.PUBLIC)
+    @Operation(summary = "Get toponym", description = "Retrieve one toponym by its identifier")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the toponym") })
     public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
                                                        @RequestParam(required = false) Boolean simplified)
         throws HttpClientErrorException, HttpServerErrorException {
@@ -92,15 +91,13 @@ public class ToponymsController {
         }
     }
 
-    /**
-     * Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.
-     *
-     * @return {@link ToponymDTO}s
-     */
     @GetMapping(value = ToponymsRestConfiguration.SEARCH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.",
                     role = DefaultRole.PUBLIC)
+    @Operation(summary = "Search toponyms",
+               description = "Search for toponyms. Geometries are not retrieved and list"
+                             + " content is limited to 100 entities.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the list of toponyms") })
     public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = false) String partialLabel,
                                                                 @RequestParam(required = false) String locale) {
         FeignSecurityManager.asInstance();
@@ -119,8 +116,9 @@ public class ToponymsController {
     }
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @ResourceAccess(description = "Endpoint to add a not visible toponym.", role = DefaultRole.REGISTERED_USER)
+    @Operation(summary = "Register a toponym", description = "Endpoint to add a not visible toponym.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns the created toponym") })
     public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(
         @RequestBody ToponymGeoJsonDTO toponymGeoJsonDTO) throws HttpClientErrorException, HttpServerErrorException {
         FeignSecurityManager.asInstance();
