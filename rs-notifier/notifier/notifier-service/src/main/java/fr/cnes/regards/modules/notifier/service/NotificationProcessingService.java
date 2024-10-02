@@ -274,9 +274,9 @@ public class NotificationProcessingService {
             }
 
             // Delete all successful requests
-            notificationRequestRepository.deleteByRequestIdIn(successRequests.stream()
-                                                                             .map(NotificationRequest::getId)
-                                                                             .toList());
+            notificationRequestRepository.deleteByIdIn(successRequests.stream()
+                                                                      .map(NotificationRequest::getId)
+                                                                      .toList());
             // Update state to ERROR for all completed request in error
             if (!errorRequests.isEmpty()) {
                 notificationRequestRepository.updateState(NotificationState.ERROR,

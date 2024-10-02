@@ -136,7 +136,7 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
 
     @Modifying
     @Query("DELETE FROM NotificationRequest nr WHERE nr.id IN (?1)")
-    void deleteByRequestIdIn(List<Long> requestIds);
+    void deleteByIdIn(List<Long> ids);
 
     @Modifying
     @Query(value =
