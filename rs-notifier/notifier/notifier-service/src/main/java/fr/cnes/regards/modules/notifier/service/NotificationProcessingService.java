@@ -28,7 +28,6 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.domain.NotificationRequest;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
@@ -274,9 +273,9 @@ public class NotificationProcessingService {
             }
 
             // Delete all successful requests
-            notificationRequestRepository.deleteByRequestIdIn(successRequests.stream()
-                                                                             .map(NotificationRequest::getId)
-                                                                             .toList());
+            notificationRequestRepository.deleteByIdIn(successRequests.stream()
+                                                                      .map(NotificationRequest::getId)
+                                                                      .toList());
             // Update state to ERROR for all completed request in error
             if (!errorRequests.isEmpty()) {
                 notificationRequestRepository.updateState(NotificationState.ERROR,

@@ -1344,7 +1344,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                })
                .doAnswer((InvocationOnMock::callRealMethod))
                .when(notificationRegistrationService)
-               .handleRetryRequestsConcurrent(beingRetriedEvents);
+               .handleRetryOrIgnoreRequestsConcurrent(beingRetriedEvents);
         // There is no good candidate to wait for scheduleNotificationJobs, in handleRetryRequestsConcurrent, to end its execution so we can only use notificationRepo.saveAll
         // as we cannot call abstract method with invocation::callRealMethod, we bypass the spy by calling the real method from the real bean
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!           WARNING           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1709,7 +1709,7 @@ public class NotificationServiceIT extends AbstractNotificationMultitenantServic
                })
                .doAnswer((InvocationOnMock::callRealMethod))
                .when(notificationRegistrationService)
-               .handleRetryRequestsConcurrent(beingRetriedEvents);
+               .handleRetryOrIgnoreRequestsConcurrent(beingRetriedEvents);
         notificationRegistrationService.registerNotificationRequests(beingRetriedEvents);
         // As we are simulating actions so that requests are being retried while recipientR1_1 is being processed, requests should be in state GRANTED(retry on rule to match)
         List<NotificationRequest> processedWhileRetriedRequests = notificationRequestRepository.findAllById(beingRetried.stream()
