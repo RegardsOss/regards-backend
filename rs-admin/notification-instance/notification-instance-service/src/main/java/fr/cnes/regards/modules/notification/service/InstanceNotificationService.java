@@ -21,11 +21,13 @@ package fr.cnes.regards.modules.notification.service;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.NotificationLightCustomNativeQueryRepository;
+import fr.cnes.regards.modules.notification.dao.NotificationReadAuthorizer;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationLight;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
@@ -63,13 +65,17 @@ public class InstanceNotificationService implements IInstanceNotificationService
      */
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    private final NotificationReadAuthorizer notificationReadAuthorizer;
+
     private final NotificationLightCustomNativeQueryRepository notificationLightCustomNativeQueryRepository;
 
     public InstanceNotificationService(INotificationRepository notificationRepository,
                                        ApplicationEventPublisher applicationEventPublisher,
+                                       NotificationReadAuthorizer notificationReadAuthorizer,
                                        NotificationLightCustomNativeQueryRepository notificationLightCustomNativeQueryRepository) {
         this.notificationRepository = notificationRepository;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.notificationReadAuthorizer = notificationReadAuthorizer;
         this.notificationLightCustomNativeQueryRepository = notificationLightCustomNativeQueryRepository;
     }
 
@@ -102,7 +108,8 @@ public class InstanceNotificationService implements IInstanceNotificationService
 
     @Override
     @RegardsTransactional
-    public Notification retrieveNotification(Long pId) throws EntityNotFoundException {
+    public Notification retrieveNotification(Long pId) throws ModuleException {
+        notificationReadAuthorizer.checkAuthorization();
         Optional<Notification> notifOpt = notificationRepository.findById(pId);
         if (!notifOpt.isPresent()) {
             throw new EntityNotFoundException(pId.toString(), Notification.class);
@@ -132,9 +139,9 @@ public class InstanceNotificationService implements IInstanceNotificationService
     }
 
     @Override
-    public Page<NotificationLight> findAllOrderByDateDesc(SearchNotificationParameters filters,
-                                                          int page,
-                                                          int pageSize) {
+    public Page<NotificationLight> findAllOrderByDateDesc(SearchNotificationParameters filters, int page, int pageSize)
+        throws ModuleException {
+        notificationReadAuthorizer.checkAuthorization();
         return notificationLightCustomNativeQueryRepository.findAll(filters, null, null, page, pageSize);
     }
 

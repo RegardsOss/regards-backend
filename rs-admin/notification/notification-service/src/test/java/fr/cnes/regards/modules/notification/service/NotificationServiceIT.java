@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -66,7 +67,7 @@ import java.util.List;
 public class NotificationServiceIT extends AbstractMultitenantServiceIT {
 
     @Autowired
-    private NotificationService notificationService;
+    protected NotificationService notificationService;
 
     @Autowired
     private IRoleService roleService;
@@ -78,7 +79,7 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     private IAuthenticationResolver authResolver;
 
     @Autowired
-    private INotificationRepository notificationRepository;
+    protected INotificationRepository notificationRepository;
 
     @MockBean
     private IAccessGroupClient accessGroupClient;
@@ -107,16 +108,15 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     }
 
     @Test
-    public void test_retrieve_notif_to_send() {
+    public void test_retrieve_notif_to_send() throws ModuleException {
         int nbNotifs = 60;
         // Given
         for (int i = 0; i < nbNotifs; i++) {
             notificationService.createNotification(new NotificationDtoBuilder("message",
-                                                                                                   "title",
-                                                                                                   NotificationLevel.INFO,
-                                                                                                   "moi").toRolesAndUsers(
-                Sets.newHashSet(DefaultRole.EXPLOIT.toString()),
-                Sets.newHashSet("jeanclaude")));
+                                                                              "title",
+                                                                              NotificationLevel.INFO,
+                                                                              "moi").toRolesAndUsers(Sets.newHashSet(
+                DefaultRole.EXPLOIT.toString()), Sets.newHashSet("jeanclaude")));
         }
 
         Page<Notification> toSend = notificationService.retrieveNotificationsToSend(PageRequest.of(0, 10));
@@ -127,7 +127,7 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     }
 
     @Test
-    public void test_find_all() throws InterruptedException {
+    public void test_find_all() throws InterruptedException, ModuleException {
         // Given
         OffsetDateTime lastNotificationDate = null;
         for (int i = 0; i < 50; i++) {
@@ -184,7 +184,7 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     }
 
     @Test
-    public void test_find_all_as_instance() {
+    public void test_find_all_as_instance() throws ModuleException {
         // Given
         for (int i = 0; i < 50; i++) {
             notificationService.createNotification(new NotificationDtoBuilder("message",

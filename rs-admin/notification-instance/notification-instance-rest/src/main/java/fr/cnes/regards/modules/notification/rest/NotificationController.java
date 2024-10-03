@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -140,7 +141,7 @@ public class NotificationController implements IResourceController<Notification>
                                                               content = @Content(schema = @Schema(implementation = SearchNotificationParameters.class)))
         @Parameter(description = "Filter criterias of notifications") @RequestBody SearchNotificationParameters filters,
         @PageableQueryParam Pageable pageable,
-        @Parameter(hidden = true) PagedResourcesAssembler<NotificationLight> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<NotificationLight> assembler) throws ModuleException {
         if (!pageable.getSort().isEmpty()) {
             LOGGER.warn("Request to retrieve notifications contains a sort option, nevertheless custom sorting is "
                         + "not implemented yet. This endpoint always returns notification sort by date descending.");
@@ -204,7 +205,7 @@ public class NotificationController implements IResourceController<Notification>
     @ResourceAccess(description = "Define the endpoint for retrieving a notification",
                     role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Notification> retrieveNotification(@PathVariable("notification_id") Long id)
-        throws EntityNotFoundException {
+        throws ModuleException {
         Notification notification = notificationService.retrieveNotification(id);
         return new ResponseEntity<>(notification, HttpStatus.OK);
     }

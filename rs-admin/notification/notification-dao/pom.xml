@@ -58,6 +58,10 @@
             <groupId>fr.cnes.regards.modules.notification</groupId>
             <artifactId>notification-domain</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
         <!-- Tests dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
