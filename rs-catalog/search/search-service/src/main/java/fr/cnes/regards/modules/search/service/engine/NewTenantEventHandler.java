@@ -34,6 +34,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -83,8 +84,10 @@ public class NewTenantEventHandler implements ApplicationListener<ApplicationRea
                 runtimeTenantResolver.forceTenant(tenant);
                 try {
                     lockingTaskExecutors.executeWithLock(initLegacySearchEngine,
-                                                         new LockConfiguration(SEARCH_ENGINE_LOCK_NAME,
-                                                                               Instant.now().plusSeconds(30)));
+                                                         new LockConfiguration(Instant.now(),
+                                                                               SEARCH_ENGINE_LOCK_NAME,
+                                                                               Duration.ofSeconds(30),
+                                                                               Duration.ZERO));
                 } catch (Throwable e) {
                     LOGGER.error(e.getMessage(), e);
                 }
@@ -102,8 +105,10 @@ public class NewTenantEventHandler implements ApplicationListener<ApplicationRea
             runtimeTenantResolver.forceTenant(tenant);
             try {
                 lockingTaskExecutors.executeWithLock(initLegacySearchEngine,
-                                                     new LockConfiguration(SEARCH_ENGINE_LOCK_NAME,
-                                                                           Instant.now().plusSeconds(30)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           SEARCH_ENGINE_LOCK_NAME,
+                                                                           Duration.ofSeconds(30),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 LOGGER.error(e.getMessage(), e);
             }

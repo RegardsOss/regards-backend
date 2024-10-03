@@ -50,6 +50,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -79,6 +80,11 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     public static final String SESSION_OWNER_PARMETER_NAME = "sessionOwner";
 
     public static final String SESSION_PARMETER_NAME = "session";
+
+    /**
+     * Scheduler lock timeout.
+     */
+    private static final long COPY_LOCK_TIME_TO_LIVE_IN_SECONDS = 60;
 
     @Autowired
     private IPublisher publisher;
@@ -205,8 +211,10 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     public void run() {
         try {
             lockingTaskExecutors.executeWithLock(publishCopyFilesCopyEventTask,
-                                                 new LockConfiguration(FileCopyRequestService.COPY_REQUEST_CREATOR_LOCK,
-                                                                       Instant.now().plusSeconds(300)));
+                                                 new LockConfiguration(Instant.now(),
+                                                                       FileCopyRequestService.COPY_REQUEST_CREATOR_LOCK,
+                                                                       Duration.ofSeconds(COPY_LOCK_TIME_TO_LIVE_IN_SECONDS),
+                                                                       Duration.ZERO));
         } catch (Throwable e) {
             logger.error("[COPY JOB] Error creating copy requests");
             logger.error(e.getMessage(), e);

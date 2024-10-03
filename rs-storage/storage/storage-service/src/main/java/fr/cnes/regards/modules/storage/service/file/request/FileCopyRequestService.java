@@ -54,6 +54,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -76,6 +77,8 @@ public class FileCopyRequestService {
     public static final String COPY_PROCESS_LOCK = "copy-requests-lock";
 
     public static final String COPY_REQUEST_CREATOR_LOCK = "copy-requests-creator-lock";
+
+    private static final long COPY_LOCK_TIME_TO_LIVE_IN_SECONDS = 60;
 
     @Autowired
     private IFileCopyRequestRepository copyRepository;
@@ -252,8 +255,10 @@ public class FileCopyRequestService {
                                                                      copyRepository,
                                                                      reqGrpService,
                                                                      status),
-                                                 new LockConfiguration(COPY_PROCESS_LOCK,
-                                                                       Instant.now().plusSeconds(1200)));
+                                                 new LockConfiguration(Instant.now(),
+                                                                       COPY_PROCESS_LOCK,
+                                                                       Duration.ofSeconds(COPY_LOCK_TIME_TO_LIVE_IN_SECONDS),
+                                                                       Duration.ZERO));
         } catch (Throwable e) {
             LOGGER.trace("[FILES COPY REQUEST SERVICE] Copy process delayed. A copy process is already running.", e);
         }

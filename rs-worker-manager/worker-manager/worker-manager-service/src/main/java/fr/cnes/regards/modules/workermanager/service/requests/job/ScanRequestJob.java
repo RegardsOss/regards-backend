@@ -48,7 +48,7 @@ public class ScanRequestJob extends AbstractJob<Void> {
      */
     public static final String FILTERS = "filters";
 
-    public static final Long MAX_TASK_WAIT_DURING_JOB = 1200L; // In second
+    public static final Long MAX_TASK_WAIT_DURING_JOB = 60L; // In second
 
     @Autowired
     private RequestScanService requestScanService;

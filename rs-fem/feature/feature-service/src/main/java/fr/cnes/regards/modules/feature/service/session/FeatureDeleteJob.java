@@ -11,6 +11,7 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +22,8 @@ public class FeatureDeleteJob extends AbstractJob<Void> {
     private static final String SOURCE_NAME_PARAM = "sourceName";
 
     private static final String SESSION_NAME_PARAM = "sessionName";
+
+    private static final long LOCK_TIME_TOLIVE_IN_SECONDS = 60;
 
     private String sourceName;
 
@@ -51,8 +54,10 @@ public class FeatureDeleteJob extends AbstractJob<Void> {
         logger.trace("[{}] FeatureDeleteJob starts for source {}", jobInfoId, sourceName);
         try {
             lockingTaskExecutors.executeWithLock(deleteTask,
-                                                 new LockConfiguration(FeatureTaskScheduler.DELETE_REQUEST_LOCK,
-                                                                       Instant.now().plusSeconds(300)));
+                                                 new LockConfiguration(Instant.now(),
+                                                                       FeatureTaskScheduler.DELETE_REQUEST_LOCK,
+                                                                       Duration.ofSeconds(LOCK_TIME_TOLIVE_IN_SECONDS),
+                                                                       Duration.ZERO));
         } catch (Throwable throwable) {
             logger.error("Error during deletion job process", throwable);
         }

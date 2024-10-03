@@ -33,6 +33,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
@@ -85,9 +86,10 @@ public class SipBodyDeletetionScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, SchedulerConstant.SIP_BODY_DELETION_REQUESTS);
                 lockingTaskExecutors.executeWithLock(sipDeletionTask,
-                                                     new LockConfiguration(SchedulerConstant.SIP_BODY_DELETION_REQUEST_LOCK,
-                                                                           Instant.now()
-                                                                                  .plusSeconds(SchedulerConstant.MAX_TASK_DELAY)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           SchedulerConstant.SIP_BODY_DELETION_REQUEST_LOCK,
+                                                                           Duration.ofSeconds(SchedulerConstant.MAX_TASK_DELAY),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(SchedulerConstant.SIP_BODY_DELETION_REQUESTS,
                                       SchedulerConstant.SIP_BODY_DELETION_TITLE,

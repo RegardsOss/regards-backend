@@ -34,6 +34,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 
@@ -124,8 +125,10 @@ public class JobInfoTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 lockingTaskExecutors.executeWithLock(taskToRun,
-                                                     new LockConfiguration(lockName,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           lockName,
+                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(taskName, taskTitle, e);
             } finally {

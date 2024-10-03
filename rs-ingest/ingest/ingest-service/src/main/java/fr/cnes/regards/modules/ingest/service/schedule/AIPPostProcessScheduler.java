@@ -34,6 +34,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.*;
@@ -83,8 +84,10 @@ public class AIPPostProcessScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, POST_PROCESS_REQUESTS);
                 lockingTaskExecutors.executeWithLock(postProcessTask,
-                                                     new LockConfiguration(POST_PROCESS_REQUEST_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           POST_PROCESS_REQUEST_LOCK,
+                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(POST_PROCESS_REQUESTS, POST_PROCESS_TITLE, e);
             } finally {

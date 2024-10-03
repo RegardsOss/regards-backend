@@ -50,6 +50,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
@@ -70,7 +71,7 @@ public class RequestScanService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestScanService.class);
 
-    private static final Long MAX_TASK_WAIT_DURING_SCHEDULE = 30L; // In second
+    private static final Long MAX_TASK_WAIT_DURING_SCHEDULE = 60L; // In second
 
     private static final int DEFAULT_SCAN_PAGE_SIZE = 400;
 
@@ -136,8 +137,10 @@ public class RequestScanService {
     public void scanUsingFilters(SearchRequestParameters filters, RequestStatus newStatus, Long lockAtMostUntilSec)
         throws Throwable {
         lockingTaskExecutors.executeWithLock(new RequestScanTask(this, filters, newStatus, lockingTaskExecutors),
-                                             new LockConfiguration(RequestScanService.REQUEST_SCAN_LOCK,
-                                                                   Instant.now().plusSeconds(lockAtMostUntilSec)));
+                                             new LockConfiguration(Instant.now(),
+                                                                   RequestScanService.REQUEST_SCAN_LOCK,
+                                                                   Duration.ofSeconds(lockAtMostUntilSec),
+                                                                   Duration.ZERO));
     }
 
     /**

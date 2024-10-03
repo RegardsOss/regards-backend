@@ -19,16 +19,23 @@
 package fr.cnes.regards.framework.jpa.multitenant.lock;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import net.javacrumbs.shedlock.core.*;
+import net.javacrumbs.shedlock.core.DefaultLockingTaskExecutor;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskResult;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskWithResult;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+import net.javacrumbs.shedlock.support.KeepAliveLockProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 
 /**
  * Service to get a shared lock in database before running a given {@link Task}.
@@ -39,8 +46,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LockingTaskExecutors implements ILockingTaskExecutors {
 
+    @Value("${regards.shedlock.scheduler.thread.pool.size:1}")
+    private int schedulerThreadPoolSize;
+
     /**
-     * List of {@link LockingTaskExecutor} for execution action with lock.
+     * Map of tenant with {@link LockingTaskExecutor} for execution action with lock.
      */
     protected final Map<String, LockingTaskExecutor> taskExecutors = new ConcurrentHashMap<>();
 
@@ -62,8 +72,20 @@ public class LockingTaskExecutors implements ILockingTaskExecutors {
 
     @Override
     public void registerLockingTaskExecutor(String tenant, DataSource datasource) {
-        LockProvider lockProvider = new JdbcTemplateLockProvider(datasource);
-        taskExecutors.put(tenant, new DefaultLockingTaskExecutor(lockProvider));
+        JdbcTemplateLockProvider.Configuration configurationJdbcTemplateLockProvider = JdbcTemplateLockProvider.Configuration.builder()
+                                                                                                                             .withJdbcTemplate(
+                                                                                                                                 new JdbcTemplate(
+                                                                                                                                     datasource))
+                                                                                                                             // Use db time to avoid time de-synchronization between instances
+                                                                                                                             .usingDbTime()
+                                                                                                                             .build();
+        JdbcTemplateLockProvider jdbcTemplateLockProvider = new JdbcTemplateLockProvider(
+            configurationJdbcTemplateLockProvider);
+
+        taskExecutors.put(tenant,
+                          new DefaultLockingTaskExecutor(new KeepAliveLockProvider(jdbcTemplateLockProvider,
+                                                                                   Executors.newScheduledThreadPool(
+                                                                                       schedulerThreadPoolSize))));
     }
 
     @Override

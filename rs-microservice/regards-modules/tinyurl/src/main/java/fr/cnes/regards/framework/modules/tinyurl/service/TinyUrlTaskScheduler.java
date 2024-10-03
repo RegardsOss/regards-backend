@@ -32,6 +32,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -85,8 +86,10 @@ public class TinyUrlTaskScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, PURGE_TINYURL);
                 lockingTaskExecutors.executeWithLock(purgeTask,
-                                                     new LockConfiguration(PURGE_TINYURL_LOCK,
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           PURGE_TINYURL_LOCK,
+                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(PURGE_TINYURL, PURGE_TINYURL, e);
             } finally {

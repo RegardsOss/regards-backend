@@ -70,6 +70,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -87,6 +88,8 @@ import java.util.stream.Collectors;
 public class FileDeletionRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionRequestService.class);
+
+    private static final long DELETION_LOCK_TIME_TO_LIVE_IN_SECONDS = 60;
 
     private final IFileDeletetionRequestRepository fileDeletionRequestRepo;
 
@@ -256,10 +259,11 @@ public class FileDeletionRequestService {
                                                                                                                jobList,
                                                                                                                fileDeletionRequestRepo,
                                                                                                                self),
-                                                                                          new LockConfiguration(
-                                                                                              FilesDeletionEvent.DELETION_LOCK,
-                                                                                              Instant.now()
-                                                                                                     .plusSeconds(30)));
+                                                                                          new LockConfiguration(Instant.now(),
+                                                                                                                FilesDeletionEvent.DELETION_LOCK,
+                                                                                                                Duration.ofSeconds(
+                                                                                                                    DELETION_LOCK_TIME_TO_LIVE_IN_SECONDS),
+                                                                                                                Duration.ZERO));
             if (result.wasExecuted() && (result.getResult() != null)) {
                 jobList = result.getResult();
             } else if (!result.wasExecuted()) {

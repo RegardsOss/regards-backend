@@ -30,6 +30,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.validation.Errors;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -88,9 +89,10 @@ public class SessionAgentEventHandler
             lockingTaskExecutors.executeWithLock(new CreateSnapshotProcessTask(sessionAgentHandlerService,
                                                                                sources,
                                                                                lockingTaskExecutors),
-                                                 new LockConfiguration(SNAPSHOT_CREATE_LOCK,
-                                                                       Instant.now()
-                                                                              .plusSeconds(MAX_TASK_WAIT_DURING_SCHEDULE)));
+                                                 new LockConfiguration(Instant.now(),
+                                                                       SNAPSHOT_CREATE_LOCK,
+                                                                       Duration.ofSeconds(MAX_TASK_WAIT_DURING_SCHEDULE),
+                                                                       Duration.ZERO));
         } catch (Throwable e) {
             if (retryError) {
                 createMissingSnapshotProcessesTask(sources, false);

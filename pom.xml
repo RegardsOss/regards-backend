@@ -120,7 +120,7 @@
         <io.netty.version>4.1.73.Final</io.netty.version>
         <com.mchange.c3p0.version>0.9.5.2</com.mchange.c3p0.version>
         <org.mockftpserver.version>2.7.1</org.mockftpserver.version>
-        <schedlock.version>4.8.0</schedlock.version>
+        <schedlock.version>5.10.2</schedlock.version>
         <net.sf.expectit.expectit-core.version>0.9.0</net.sf.expectit.expectit-core.version>
         <wiremock.version>2.27.2</wiremock.version>
         <com.jcraft.jsch.version>0.1.55</com.jcraft.jsch.version>

@@ -36,6 +36,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
@@ -117,8 +118,10 @@ public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
                     traceScheduling(tenant, getType());
                     try {
                         lockingTaskExecutors.executeWithLock(getDumpTask(),
-                                                             new LockConfiguration(getLockName(),
-                                                                                   Instant.now().plusSeconds(60L)));
+                                                             new LockConfiguration(Instant.now(),
+                                                                                   getLockName(),
+                                                                                   Duration.ofSeconds(60L),
+                                                                                   Duration.ZERO));
                     } catch (Throwable e) {
                         handleSchedulingError(getType(), getNotificationTitle(), e);
                     } finally {

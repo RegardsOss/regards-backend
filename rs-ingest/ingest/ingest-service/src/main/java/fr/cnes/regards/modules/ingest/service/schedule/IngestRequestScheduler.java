@@ -35,6 +35,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.*;
@@ -100,9 +101,10 @@ public class IngestRequestScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, INGEST_REQUEST_CREATE);
                 lockingTaskExecutors.executeWithLock(createIngestRequestTask,
-                                                     new LockConfiguration(INGEST_REQUEST_CREATE_LOCK,
-                                                                           Instant.now()
-                                                                                  .plusSeconds(schedlockTimoutSeconds)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           INGEST_REQUEST_CREATE_LOCK,
+                                                                           Duration.ofSeconds(schedlockTimoutSeconds),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(INGEST_REQUEST_CREATE, INGEST_REQUEST_CREATE_LOCK, e);
             } finally {

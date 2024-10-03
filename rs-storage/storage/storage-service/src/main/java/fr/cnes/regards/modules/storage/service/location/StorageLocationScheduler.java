@@ -33,6 +33,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -54,6 +55,8 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageLocationScheduler.class);
 
     private static final String FILE_LOCATION_SCHEDULER_LOCK = "file_location_schedule_lock";
+
+    private static final long FILE_LOCATION_LOCK_TIME_TO_LIVE_IN_SECONDS = 60;
 
     private static final String DEFAULT_INITIAL_DELAY = "10000";
 
@@ -139,7 +142,10 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, actionLabel);
                 lockingTaskExecutors.executeWithLock(task,
-                                                     new LockConfiguration(lockId, Instant.now().plusSeconds(120)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           lockId,
+                                                                           Duration.ofSeconds(FILE_LOCATION_LOCK_TIME_TO_LIVE_IN_SECONDS),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(actionLabel, schedulerTitle, e);
             } finally {

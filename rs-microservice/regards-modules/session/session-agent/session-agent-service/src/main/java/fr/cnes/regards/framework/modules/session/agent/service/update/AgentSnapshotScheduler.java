@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -91,8 +92,12 @@ public class AgentSnapshotScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, SNAPSHOT_PROCESS);
                 lockingTaskExecutors.executeWithLock(snapshotProcessTask,
-                                                     new LockConfiguration(microserviceName + "_session-agent-snapshot",
-                                                                           Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           microserviceName
+                                                                           + "_session"
+                                                                           + "-agent-snapshot",
+                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(SNAPSHOT_PROCESS, SNAPSHOT_PROCESS_TITLE, e);
             } finally {

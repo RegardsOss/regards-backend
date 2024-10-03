@@ -33,6 +33,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -87,8 +88,10 @@ public class JobTaskScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, DEAD_JOB_CLEANING);
                 lockingTaskExecutors.executeWithLock(clean_task,
-                                                     new LockConfiguration(JOB_CLEAN_LOCK,
-                                                                           Instant.now().plusSeconds(60)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           JOB_CLEAN_LOCK,
+                                                                           Duration.ofSeconds(60),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(DEAD_JOB_CLEANING, NOTIFICATION_TITLE, e);
             } finally {

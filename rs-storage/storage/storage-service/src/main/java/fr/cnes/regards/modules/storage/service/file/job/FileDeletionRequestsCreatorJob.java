@@ -37,6 +37,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
@@ -68,6 +69,8 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
 
     @Autowired
     private ILockingTaskExecutors lockingTaskExecutors;
+
+    private static final long DELETION_LOCK_TIME_TO_LIVE_IN_SECONDS = 60;
 
     /**
      * The job parameters as a map
@@ -132,8 +135,10 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
     public void run() {
         try {
             lockingTaskExecutors.executeWithLock(publishFilesDeletionEventsTask,
-                                                 new LockConfiguration(FilesDeletionEvent.DELETION_LOCK,
-                                                                       Instant.now().plusSeconds(300)));
+                                                 new LockConfiguration(Instant.now(),
+                                                                       FilesDeletionEvent.DELETION_LOCK,
+                                                                       Duration.ofSeconds(DELETION_LOCK_TIME_TO_LIVE_IN_SECONDS),
+                                                                       Duration.ZERO));
         } catch (Throwable e) {
             logger.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
             logger.error(e.getMessage(), e);

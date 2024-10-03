@@ -35,6 +35,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 
 import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.*;
@@ -89,9 +90,10 @@ public class RequestPendingScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, UNLOCK_ACTIONS);
                 lockingTaskExecutors.executeWithLock(unlockRequestsTask,
-                                                     new LockConfiguration(UNLOCK_REQ_SCHEDULER_LOCK,
-                                                                           Instant.now()
-                                                                                  .plusSeconds(schedlockTimoutSeconds)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           UNLOCK_REQ_SCHEDULER_LOCK,
+                                                                           Duration.ofSeconds(schedlockTimoutSeconds),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(UNLOCK_ACTIONS, UNLOCK_TITLE, e);
             } finally {

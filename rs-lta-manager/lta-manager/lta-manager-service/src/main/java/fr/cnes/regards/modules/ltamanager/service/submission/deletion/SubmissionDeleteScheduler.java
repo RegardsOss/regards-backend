@@ -32,6 +32,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
@@ -86,8 +87,10 @@ public class SubmissionDeleteScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, DELETE_EXPIRED_REQUESTS);
                 lockingTaskExecutors.executeWithLock(new DeleteTask(),
-                                                     new LockConfiguration(DELETE_EXPIRED_REQ_SCHEDULER_LOCK,
-                                                                           Instant.now().plusSeconds(120)));
+                                                     new LockConfiguration(Instant.now(),
+                                                                           DELETE_EXPIRED_REQ_SCHEDULER_LOCK,
+                                                                           Duration.ofSeconds(120),
+                                                                           Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(DELETE_EXPIRED_REQUESTS, DELETE_EXPIRED_REQUESTS, e);
             } finally {
