@@ -19,6 +19,8 @@
  */
 package fr.cnes.regards.modules.ingest.dto;
 
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Size;
 import java.time.OffsetDateTime;
@@ -36,23 +38,33 @@ import java.util.Set;
  */
 public class IngestMetadataDto {
 
+    @Schema(description = "Name of the sip submission session owner.", example = "Jean")
     private String sessionOwner;
 
+    @Schema(description = "Name of the sip submission session.",example = "Submissions of 2024-08-01")
     private String session;
 
+    @Schema(description = "Ingest chain label to be used to process SIPs.", example = "DefaultIngestChain")
     private String ingestChain;
 
+    @Schema(description = "Versioning mode.", example = "INC_VERSION", defaultValue = "INC_VERSION")
     private VersioningMode versioningMode = VersioningMode.INC_VERSION;
 
+    @Schema(description = "Storage locations where to store files from contentInformation.")
     private List<StorageDto> storages;
 
+    @Schema(description = "Request submission date.", example = "2024-08-01 01:00:00")
     private OffsetDateTime submissionDate;
 
+    @ArraySchema(schema = @Schema(description = "Category to add to generated AIP or empty.", example = "January-2024"))
     private Set<String> categories;
 
+    @Schema(description = "Replace error requests with same providerId.", example = "false")
     private Boolean replaceErrors = Boolean.FALSE;
 
     @Size(max = 128)
+    @Schema(description = "Name of the data model from rs-dam service to validate SIP. If null no validation is done.",
+            example = "DataModel01")
     private String model;
 
     public String getSessionOwner() {

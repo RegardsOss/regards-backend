@@ -19,6 +19,7 @@
  */
 package fr.cnes.regards.framework.oais.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
@@ -32,10 +33,12 @@ import jakarta.validation.constraints.NotNull;
 public class RepresentationInformationDto {
 
     @Valid
+    @Schema(description = "File semantic information")
     private SemanticDto semantic;
 
     @NotNull(message = "At least syntax is required in optional representation information")
     @Valid
+    @Schema(description = "File syntax information")
     private SyntaxDto syntax;
 
     /**

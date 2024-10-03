@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.geojson;
 
 import fr.cnes.regards.framework.geojson.geometry.*;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 
 /**
@@ -37,6 +38,7 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
     /**
      * ID MUST be a {@link String} or a {@link Number}
      */
+    @Schema(description = "Provider identifier for the submitted product.", example = "RawProduct_001")
     protected ID id;
 
     /**
@@ -53,14 +55,18 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
      * </ul>
      */
     @Valid
+    @Schema(description = "Information package geometry in GeoJSON RFC 7946 Format.",
+            example = "{\"type\": \"Point\", \"coordinates\": [125.6, 10.1]}")
     protected IGeometry geometry = IGeometry.unlocated();
 
     /**
      * Same as geometry but normalized (see crawler) to be used on a cylindric project.
      */
+    @Schema(hidden = true)
     private IGeometry normalizedGeometry = IGeometry.unlocated();
 
     @Valid
+    @Schema(description = "Information package properties")
     protected P properties;
 
     public AbstractFeature() {

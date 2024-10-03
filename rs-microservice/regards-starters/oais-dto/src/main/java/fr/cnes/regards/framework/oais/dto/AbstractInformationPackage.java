@@ -139,6 +139,7 @@ import java.util.List;
 public class AbstractInformationPackage<ID> extends AbstractFeature<InformationPackageProperties, ID> {
 
     @NotNull(message = "Information package type is required")
+    @Schema(description = "Information package type.")
     private EntityType ipType;
 
     public AbstractInformationPackage() {
@@ -154,6 +155,7 @@ public class AbstractInformationPackage<ID> extends AbstractFeature<InformationP
     }
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @Schema(description = "Information package history.")
     public List<EventDto> getHistory() {
         return properties.getPdi().getProvenanceInformation().getHistory();
     }
@@ -163,6 +165,7 @@ public class AbstractInformationPackage<ID> extends AbstractFeature<InformationP
      *
      * @return last event occurred to this aip
      */
+    @Schema(hidden = true)
     public EventDto getLastEvent() {
         List<EventDto> history = getHistory();
         if (history.isEmpty()) {
@@ -172,6 +175,7 @@ public class AbstractInformationPackage<ID> extends AbstractFeature<InformationP
         }
     }
 
+    @Schema(hidden = true)
     public EventDto getSubmissionEvent() {
         return getHistory().stream()
                 .filter(e -> EventType.SUBMISSION.name().equals(e.getType()))

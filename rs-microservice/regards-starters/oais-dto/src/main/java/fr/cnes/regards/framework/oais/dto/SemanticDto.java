@@ -19,11 +19,13 @@
  */
 package fr.cnes.regards.framework.oais.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
 public class SemanticDto {
 
     @NotNull(message = "Description is required in optional semantic object")
+    @Schema(description = "Short description of file content")
     private String description;
 
     public String getDescription() {

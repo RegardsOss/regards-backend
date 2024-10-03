@@ -19,12 +19,15 @@
  */
 package fr.cnes.regards.framework.oais.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.Assert;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 
@@ -37,6 +40,8 @@ public class OAISDataObjectLocationDto {
     /**
      * Storage identifier may be null, so the file is directly accessible through FILE or HTTP URL protocol
      */
+    @Schema(description = "Storage location name or null if file is not stored yet.",
+            example = "Local", nullable = true)
     private String storage;
 
     /**
@@ -45,11 +50,14 @@ public class OAISDataObjectLocationDto {
     @NotNull(message = URL_REQUIRED)
     @Pattern(regexp = "\\b[a-zA-Z1-9]+://?[-a-zA-Z0-9+&@#/%'?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%'=~_|]",
              message = "URl should respect URL format from RFC 1738")
+    @Schema(description = "Url of the file", example = "file:/products/2024/data_file.raw")
     private String url;
 
     /**
      * Optional path identifying the base directory where is store the file
      */
+    @Schema(description = "Required store path on the target storage location or null to let storage service handle "
+                          + "path.")
     private String storePath;
 
     /**

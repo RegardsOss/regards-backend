@@ -20,9 +20,12 @@
 package fr.cnes.regards.modules.ingest.dto;
 
 import fr.cnes.regards.framework.urn.DataType;
-import org.springframework.lang.Nullable;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,19 +43,25 @@ public class StorageDto {
      * To use a plugin from storage, this identifier must match a plugin configuration business identifier.
      */
     @NotBlank(message = MISSING_STORAGE_ERROR)
+    @Schema(description = "Identifier of this storage location configuration from storage microservice.", example = "Local")
     private String pluginBusinessId;
 
     /**
      * Optional path identifying the base directory in which to store related files
      */
+    @Nullable
+    @Schema(description = "Sub-path where to store file(s) on this storage location.")
     private String storePath;
 
     /**
      * List of data object types accepted by this storage location (when storing AIPs)
      */
+    @ArraySchema(schema = @Schema(description = "File type to store on this storage location or empty to "
+                                                + "store all data types on this storage location."))
     private Set<DataType> targetTypes = new HashSet<>();
 
     @Nullable
+    @Schema(description = "Constraint on files size to store in this storage location (minimal value, maximum value).")
     private StorageSize size;
 
     public StorageDto() {

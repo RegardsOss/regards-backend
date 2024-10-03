@@ -22,6 +22,7 @@ package fr.cnes.regards.framework.oais.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.Sets;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
@@ -102,14 +103,17 @@ public class PreservationDescriptionInformationDto {
      */
     @NotNull(message = "Context information is required")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @Schema(description = "Additional properties of package context information key/value.")
     private InformationPackageMapDto contextInformation = new InformationPackageMapDto();
 
     @NotNull(message = "Reference information is required")
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @Schema(description = "Additional properties of package reference information key/value.")
     private final ConcurrentMap<String, String> referenceInformation = new ConcurrentHashMap<>();
 
     @NotNull(message = "Provenance information is required")
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = ProvenanceInformationDto.class)
+    @Schema(description = "Package provenance information")
     private ProvenanceInformationDto provenanceInformation = new ProvenanceInformationDto();
 
     @NotNull(message = "Fixity information is required")

@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
 import fr.cnes.regards.framework.oais.dto.validator.CheckSIP;
 import fr.cnes.regards.framework.oais.dto.validator.CheckSIPId;
 import fr.cnes.regards.framework.urn.EntityType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -48,6 +49,7 @@ import java.security.MessageDigest;
  * @author Marc Sordi
  * @author mnguyen0
  */
+@Schema(description ="SIP (Submission Information Package")
 @CheckSIP(message = "The SIP must be sent either by reference or by value")
 @CheckSIPId(message = "The SIP identifier is required")
 public class SIPDto extends AbstractInformationPackage<String> {
@@ -57,6 +59,7 @@ public class SIPDto extends AbstractInformationPackage<String> {
     /**
      * ref : extension attribute for SIP passed by reference. Should be null if SIP passed by value.
      */
+    @Schema(description = "Used to provide SIP content in a json formated file.")
     @Valid
     private SIPReference ref;
 

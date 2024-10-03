@@ -19,6 +19,8 @@
  */
 package fr.cnes.regards.modules.ingest.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.Objects;
 
 /**
@@ -26,8 +28,10 @@ import java.util.Objects;
  */
 public class StorageSize {
 
+    @Schema(description = "Minimal file size in bytes to store files in this storage location.")
     private Integer min;
 
+    @Schema(description = "Maximal file size in bytes to store files in this storage location.")
     private Integer max;
 
     public StorageSize(Integer min, Integer max) {

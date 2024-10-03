@@ -20,6 +20,7 @@
 package fr.cnes.regards.framework.oais.dto;
 
 import fr.cnes.regards.framework.urn.DataType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
@@ -71,10 +72,12 @@ public class ContentInformationDto {
 
     @Valid
     @NotNull(message = "A representation information is required in content information")
+    @Schema(description = "File display mode metadata.")
     private RepresentationInformationDto representationInformation;
 
     @NotNull(message = "A data object is required in content information")
     @Valid
+    @Schema(description = "File information.")
     private OAISDataObjectDto dataObject;
 
     public OAISDataObjectDto getDataObject() {
