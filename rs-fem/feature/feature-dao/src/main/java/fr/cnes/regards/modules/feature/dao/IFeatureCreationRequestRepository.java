@@ -67,7 +67,7 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
 
     /**
      * Native query to retrieve creation requests information with :
-     * - No other creation request with the same providerId in running states
+     * - No other creation request with the same providerId at the given step
      * Those verification are made to avoid processing two create request on the same product at the same time.
      */
     @Query(value = """
@@ -93,7 +93,7 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
           NOT EXISTS(
             SELECT 1 FROM t_feature_request req
             WHERE
-              req.step = 'LOCAL_SCHEDULED'
+              req.step != :step
               AND req.provider_id = request.provider_id
               AND req.request_type = 'CREATION'
             LIMIT 1
