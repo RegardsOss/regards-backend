@@ -48,7 +48,11 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTaskScheduler.class);
 
-    public static final Long MAX_TASK_DELAY = 60L; // In second
+    private static final long LOCK_TIME_TOLIVE_IN_SECONDS = 60;
+
+    private static final String DEFAULT_INITIAL_DELAY = "30000";
+
+    private static final String DEFAULT_SCHEDULING_DELAY = "3000";
 
     private static final String NOTIFICATION_TITLE = "Feature scheduling";
 
@@ -71,10 +75,6 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
     private static final String NOTIFICATION_REQUEST_LOCK = "scheduleFNotification";
 
     private static final String NOTIFICATION_REQUESTS = "FEATURE NOTIFICATION REQUESTS";
-
-    private static final String DEFAULT_INITIAL_DELAY = "30000";
-
-    private static final String DEFAULT_SCHEDULING_DELAY = "3000";
 
     private static final String LOG_FORMAT = "[{}] {} {} scheduled in {} ms";
 
@@ -159,10 +159,12 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, CREATE_REQUESTS);
+
                 lockingTaskExecutors.executeWithLock(createTask,
                                                      new LockConfiguration(Instant.now(),
                                                                            CREATE_REQUEST_LOCK,
-                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ofSeconds(
+                                                                               LOCK_TIME_TOLIVE_IN_SECONDS),
                                                                            Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(CREATE_REQUESTS, NOTIFICATION_TITLE, e);
@@ -179,10 +181,12 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, UPDATE_REQUESTS);
+
                 lockingTaskExecutors.executeWithLock(updateTask,
                                                      new LockConfiguration(Instant.now(),
                                                                            UPDATE_REQUEST_LOCK,
-                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ofSeconds(
+                                                                               LOCK_TIME_TOLIVE_IN_SECONDS),
                                                                            Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(UPDATE_REQUESTS, NOTIFICATION_TITLE, e);
@@ -199,10 +203,12 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, DELETE_REQUESTS);
+
                 lockingTaskExecutors.executeWithLock(deleteTask,
                                                      new LockConfiguration(Instant.now(),
                                                                            DELETE_REQUEST_LOCK,
-                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ofSeconds(
+                                                                               LOCK_TIME_TOLIVE_IN_SECONDS),
                                                                            Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(DELETE_REQUESTS, NOTIFICATION_TITLE, e);
@@ -219,10 +225,12 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, COPY_REQUESTS);
+
                 lockingTaskExecutors.executeWithLock(copyTask,
                                                      new LockConfiguration(Instant.now(),
                                                                            COPY_REQUEST_LOCK,
-                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ofSeconds(
+                                                                               LOCK_TIME_TOLIVE_IN_SECONDS),
                                                                            Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(COPY_REQUESTS, NOTIFICATION_TITLE, e);
@@ -241,10 +249,12 @@ public class FeatureTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, NOTIFICATION_REQUESTS);
+
                 lockingTaskExecutors.executeWithLock(notificationRequestHandlingTask,
                                                      new LockConfiguration(Instant.now(),
                                                                            NOTIFICATION_REQUEST_LOCK,
-                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ofSeconds(
+                                                                               LOCK_TIME_TOLIVE_IN_SECONDS),
                                                                            Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(NOTIFICATION_REQUESTS, NOTIFICATION_TITLE, e);

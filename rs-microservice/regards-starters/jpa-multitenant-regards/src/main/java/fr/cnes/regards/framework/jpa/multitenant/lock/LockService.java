@@ -59,6 +59,9 @@ public class LockService {
     @Value("${regards.lock.cache.capacity:100000}")
     private int cacheCapacity;
 
+    /**
+     * Map of tenant with {@link JdbcLockRegistry} for execution task with lock.
+     */
     private final Map<String, JdbcLockRegistry> lockRegistryMap;
 
     @Autowired
@@ -74,10 +77,13 @@ public class LockService {
     public void registerLockRegistry(String tenant, DataSource dataSource) {
         DefaultLockRepository lockRepository = new DefaultLockRepository(dataSource);
         lockRepository.setPrefix(LOCK_PREFIX);
-        lockRepository.setTimeToLive(lockTimeToLiveInSeconds*1000);
+        // Keep the lock very long time
+        lockRepository.setTimeToLive(lockTimeToLiveInSeconds * 1000);
         lockRepository.afterPropertiesSet();
+
         JdbcLockRegistry lockRegistry = new JdbcLockRegistry(lockRepository);
         lockRegistry.setCacheCapacity(cacheCapacity);
+
         lockRegistryMap.put(tenant, lockRegistry);
     }
 
@@ -91,12 +97,13 @@ public class LockService {
     /**
      * Run synchronously the given {@link LockServiceTask} with the given lock.
      * The process will wait for the lock to be free to run the task.
+     * If the lock is still not free after the given time {@link lockTryTimeoutInSeconds} (very long time for the
+     * waiting), stop trying and return false.
      */
     public <T> LockServiceResponse<T> runWithLock(String lockName, LockServiceTask process)
-            throws InterruptedException {
+        throws InterruptedException {
         return tryRunWithLock(lockName, process, lockTryTimeoutInSeconds, TimeUnit.SECONDS);
     }
-
 
     /**
      * Try to run synchronously the given {@link LockServiceTask} with the given lock.
@@ -112,12 +119,14 @@ public class LockService {
                                                      TimeUnit timeUnit) throws InterruptedException {
         JdbcLockRegistry lockRegistry = lockRegistryMap.get(runtimeTenantResolver.getTenant());
         LOGGER.debug("Getting lock {} for task {}", lockName, process.getClass().getSimpleName());
+
         Lock lock = lockRegistry.obtain(lockName);
         boolean lockAcquired = lock.tryLock(timeToWait, timeUnit);
         if (!lockAcquired) {
             LOGGER.warn("Unable to acquire lock {} for task {}", lockName, process.getClass().getSimpleName());
             return new LockServiceResponse<>(false);
         }
+
         return runProcess(lockName, process, lock);
     }
 
@@ -131,11 +140,13 @@ public class LockService {
     public <T> LockServiceResponse<T> tryRunWithLock(String lockName, LockServiceTask<T> process) {
         JdbcLockRegistry lockRegistry = lockRegistryMap.get(runtimeTenantResolver.getTenant());
         LOGGER.debug("Getting lock {} for task {}", lockName, process.getClass().getSimpleName());
+
         Lock lock = lockRegistry.obtain(lockName);
         boolean lockAcquired = lock.tryLock();
         if (!lockAcquired) {
             return new LockServiceResponse<>(false);
         }
+
         return runProcess(lockName, process, lock);
     }
 

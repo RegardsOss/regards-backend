@@ -48,19 +48,19 @@ public class FeatureUpdateDisseminationScheduler extends AbstractTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdateDisseminationScheduler.class);
 
-    private static final String NOTIFICATION_TITLE = "Feature update dissemination scheduling";
+    private static final long LOCK_TIME_TOLIVE_IN_SECONDS = 60;
 
     private static final String DEFAULT_INITIAL_DELAY = "30000";
 
     private static final String DEFAULT_SCHEDULING_DELAY = "2000";
+
+    private static final String NOTIFICATION_TITLE = "Feature update dissemination scheduling";
 
     private static final String LOG_FORMAT = "[{}] {} {} scheduled in {} ms";
 
     private static final String UPDATE_FEATURE_DISSEMINATION_LOCK = "scheduleFeatureDisseminationUpdate";
 
     private static final String UPDATE_REQUESTS = "FEATURE UPDATE DISSEMINATION REQUESTS";
-
-    private static final long MAX_TASK_DELAY = 180;
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -94,10 +94,12 @@ public class FeatureUpdateDisseminationScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, UPDATE_REQUESTS);
+
                 lockingTaskExecutors.executeWithLock(updateFeatureDisseminationTask,
                                                      new LockConfiguration(Instant.now(),
                                                                            UPDATE_FEATURE_DISSEMINATION_LOCK,
-                                                                           Duration.ofSeconds(MAX_TASK_DELAY),
+                                                                           Duration.ofSeconds(
+                                                                               LOCK_TIME_TOLIVE_IN_SECONDS),
                                                                            Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(UPDATE_REQUESTS, NOTIFICATION_TITLE, e);
