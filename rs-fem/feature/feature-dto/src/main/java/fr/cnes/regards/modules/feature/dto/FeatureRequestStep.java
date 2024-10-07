@@ -26,9 +26,6 @@ package fr.cnes.regards.modules.feature.dto;
  */
 public enum FeatureRequestStep {
 
-    // Not granted before db persist
-    LOCAL_DENIED(false, false),
-
     // Request processing is delayed to handle concurrent asynchronous update
     // Manager waits for a configurable delay before scheduling feature update job.
     LOCAL_DELAYED(false, false),
