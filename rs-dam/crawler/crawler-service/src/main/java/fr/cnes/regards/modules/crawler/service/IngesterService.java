@@ -97,8 +97,6 @@ public class IngesterService implements IHandler<PluginConfEvent> {
      */
     private boolean consumeOnlyMode = false;
 
-    private CrawlerService crawlerService;
-
     @EventListener
     public void handleApplicationReadyEvent(ModelJsonReadyEvent event) {
         subscriber.subscribeTo(PluginConfEvent.class, this);
@@ -227,9 +225,9 @@ public class IngesterService implements IHandler<PluginConfEvent> {
                         // Force status to error
                         datasourceIngestion.setStatus(IngestionStatus.ERROR);
                         // Add startup restart message
-                        String stackTrace = datasourceIngestion.getStackTrace() != null ? String.format("%s%n%s",
-                                                                                                        datasourceIngestion.getStackTrace(),
-                                                                                                        errorMessage) : errorMessage;
+                        String stackTrace = datasourceIngestion.getStackTrace() != null ?
+                            String.format("%s%n%s", datasourceIngestion.getStackTrace(), errorMessage) :
+                            errorMessage;
                         datasourceIngestion.setStackTrace(stackTrace);
                         // Update next planed date to now in order to force crawling restart.
                         datasourceIngestion.setNextPlannedIngestDate(OffsetDateTime.now());
@@ -248,7 +246,8 @@ public class IngesterService implements IHandler<PluginConfEvent> {
             e.printStackTrace(new PrintWriter(sw));
             dsIngestionService.setError(dsId, sw.toString());
         } catch (IOException e1) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error(e1.getMessage(), e1);
+            dsIngestionService.setError(dsId, e.getMessage());
         }
     }
 

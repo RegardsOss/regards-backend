@@ -51,6 +51,7 @@ import java.io.StringWriter;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -93,6 +94,8 @@ public class DatasourceIngestionService {
 
     private final ExecutorService threadPoolExecutor = Executors.newFixedThreadPool(1);
 
+    private final List<DatasourceIdAndErrorCause> datasourcesBlockedInStarted = new ArrayList<>();
+
     public void updateAndCleanTenantDatasourceIngestions() {
         String currentTenant = runtimeTenantResolver.getTenant();
         // First, check if all existing datasource plugins are managed
@@ -102,7 +105,12 @@ public class DatasourceIngestionService {
                                                                            .collect(Collectors.toMap(DatasourceIngestion::getId,
                                                                                                      Function.identity()));
 
-        // Find all datasource plugins less inactive ones => find all ACTIVE datasource plugins
+        // Set all the data sources that couldn't previously be marked as error to this state
+        List<DatasourceIdAndErrorCause> datasourcesToSetInError = new ArrayList<>(datasourcesBlockedInStarted);
+        datasourcesBlockedInStarted.clear();
+        datasourcesToSetInError.forEach(ds -> setError(ds.id, ds.cause));
+
+        // Find all datasource plugins except inactive ones => find all ACTIVE datasource plugins
         List<PluginConfiguration> pluginConfs = pluginService.getPluginConfigurationsByType(IDataSourcePlugin.class)
                                                              .stream()
                                                              .filter(PluginConfiguration::isActive)
@@ -122,6 +130,7 @@ public class DatasourceIngestionService {
                        .filter(id -> !pluginService.exists(id))
                        .map(id -> this.planDatasourceDataObjectsDeletion(currentTenant, id))
                        .forEach(dsIngestionRepos::deleteById);
+
         // For previously ingested datasources, compute next planned ingestion date
         pluginConfs.forEach(pluginConf -> {
             try {
@@ -199,20 +208,27 @@ public class DatasourceIngestionService {
     }
 
     public void setError(String dsIngestionId, String cause) {
-        Optional<DatasourceIngestion> oDsIngestion = dsIngestionRepos.findById(dsIngestionId);
-        if (oDsIngestion.isPresent()) {
-            DatasourceIngestion dsIngestion = oDsIngestion.get();
-            // Set Status to Error... (and status date)
-            dsIngestion.setStatus(IngestionStatus.ERROR);
-            // and log stack trace into database
-            String stackTrace = dsIngestion.getStackTrace() == null ?
-                cause :
-                dsIngestion.getStackTrace() + "\n" + cause;
-            dsIngestion.setStackTrace(stackTrace);
-            dsIngestion.setNextPlannedIngestDate(null);
-            sendNotificationSummary(dsIngestionRepos.save(dsIngestion));
-        } else {
-            LOGGER.warn("Unable to find datasource with id {} to set error={}", dsIngestionId, cause);
+        try {
+            Optional<DatasourceIngestion> oDsIngestion = dsIngestionRepos.findById(dsIngestionId);
+            if (oDsIngestion.isPresent()) {
+                DatasourceIngestion dsIngestion = oDsIngestion.get();
+                // Set Status to Error... (and status date)
+                dsIngestion.setStatus(IngestionStatus.ERROR);
+                // and log stack trace into database
+                String stackTrace = dsIngestion.getStackTrace() == null ?
+                    cause :
+                    dsIngestion.getStackTrace() + "\n" + cause;
+                dsIngestion.setStackTrace(stackTrace);
+                dsIngestion.setNextPlannedIngestDate(null);
+                dsIngestion = dsIngestionRepos.save(dsIngestion);
+                sendNotificationSummary(dsIngestion);
+            } else {
+                LOGGER.warn("Unable to find datasource with id {} to set error={}", dsIngestionId, cause);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Database error while attempting to set datasource with id {} ingestion to ERROR state. "
+                         + "The update will be retried later. Initial error is {}.", dsIngestionId, cause, e);
+            datasourcesBlockedInStarted.add(new DatasourceIdAndErrorCause(dsIngestionId, cause));
         }
     }
 
@@ -289,7 +305,7 @@ public class DatasourceIngestionService {
      * @throws ModuleException                          from {@link fr.cnes.regards.framework.modules.plugins.service.PluginService#getPlugin(String, IPluginParam...)}
      */
     @Transactional(noRollbackFor = { ModuleException.class, NotAvailablePluginConfigurationException.class })
-    private void updatePlannedDate(DatasourceIngestion dsIngestion)
+    public void updatePlannedDate(DatasourceIngestion dsIngestion)
         throws ModuleException, NotAvailablePluginConfigurationException {
         int refreshRate = ((IDataSourcePlugin) pluginService.getPlugin(dsIngestion.getId())).getRefreshRate();
         // Take into account ONLY data source with null nextPlannedIngestDate
@@ -358,5 +374,10 @@ public class DatasourceIngestionService {
                     dsIngestion.getInErrorObjectsCount()), title, NotificationLevel.INFO, DefaultRole.PROJECT_ADMIN);
             }
         }
+    }
+
+    private record DatasourceIdAndErrorCause(String id,
+                                             String cause) {
+
     }
 }
