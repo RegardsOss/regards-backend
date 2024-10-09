@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.file.packager.domain;
 
+import com.google.common.base.Strings;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
@@ -49,13 +51,16 @@ public class FileInBuildingPackage {
     @ConfigIgnore
     private Long id;
 
-    @Column(name = "storage_request_id")
+    @Column(name = "storage_request_id", nullable = false)
     private Long storageRequestId;
 
+    @Column(nullable = false)
     private String storage;
 
+    @Column(nullable = false)
     private String checksum;
 
+    @Column(nullable = false)
     private String filename;
 
     /**
@@ -63,41 +68,54 @@ public class FileInBuildingPackage {
      * null if the file is not yet associated to a package.
      */
     @GsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "package_id", foreignKey = @ForeignKey(name = "fk_acq_file_id"), updatable = false)
+    @ManyToOne()
+    @JoinColumn(name = "package_id", foreignKey = @ForeignKey(name = "fk_acq_file_id"))
     private PackageReference packageReference;
 
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private FileInBuildingPackageStatus status;
 
-    @Column(name = "last_update_date")
+    @Column(name = "last_update_date", nullable = false)
     private OffsetDateTime lastUpdateDate;
 
-    @Column(name = "store_parent_path")
-    private String storeParentPath;
+    @Column(name = "storage_subdirectory", nullable = false)
+    private String storageSubdirectory;
 
-    @Column(name = "store_parent_url")
-    private String storeParentUrl;
+    @Column(name = "final_archive_parent_url", nullable = false)
+    private String finalArchiveParentUrl;
+
+    @Column(name = "file_cache_path", nullable = false)
+    private String fileCachePath;
 
     @Column(name = "keep_in_cache_until_date")
+    @Nullable
     private OffsetDateTime keepInCacheUntilDate;
 
+    @Column(nullable = false)
     private Long fileSize;
+
+    @Column(name = "error_cause")
+    @Nullable
+    private String errorCause;
 
     public FileInBuildingPackage(Long storageRequestId,
                                  String storage,
                                  String checksum,
                                  String filename,
-                                 String storeParentPath,
-                                 String storeParentUrl,
+                                 String storageSubdirectory,
+                                 String finalArchiveParentUrl,
+                                 String fileCachePath,
                                  Long fileSize) {
         this.storageRequestId = storageRequestId;
         this.storage = storage;
         this.checksum = checksum;
         this.filename = filename;
+        this.fileCachePath = fileCachePath;
         this.fileSize = fileSize;
         this.status = FileInBuildingPackageStatus.WAITING_PACKAGE;
-        this.storeParentPath = storeParentPath;
-        this.storeParentUrl = storeParentUrl;
+        this.storageSubdirectory = storageSubdirectory;
+        this.finalArchiveParentUrl = finalArchiveParentUrl;
         this.lastUpdateDate = OffsetDateTime.now();
     }
 
@@ -137,12 +155,16 @@ public class FileInBuildingPackage {
         return lastUpdateDate;
     }
 
-    public String getStoreParentPath() {
-        return storeParentPath;
+    public String getStorageSubdirectory() {
+        return storageSubdirectory;
     }
 
-    public String getStoreParentUrl() {
-        return storeParentUrl;
+    public String getFinalArchiveParentUrl() {
+        return finalArchiveParentUrl;
+    }
+
+    public String getFileCachePath() {
+        return fileCachePath;
     }
 
     public OffsetDateTime getKeepInCacheUntilDate() {
@@ -151,6 +173,11 @@ public class FileInBuildingPackage {
 
     public Long getFileSize() {
         return fileSize;
+    }
+
+    @Nullable
+    public String getErrorCause() {
+        return errorCause;
     }
 
     public void setLastUpdateDate(OffsetDateTime lastUpdateDate) {
@@ -167,6 +194,19 @@ public class FileInBuildingPackage {
 
     public void setStatus(FileInBuildingPackageStatus status) {
         this.status = status;
+    }
+
+    public void setErrorCause(@Nullable String errorCause) {
+        this.errorCause = errorCause;
+    }
+
+    public void updateStatus(FileInBuildingPackageStatus status, @Nullable String errorCause) {
+        this.setStatus(status);
+        this.setLastUpdateDate(OffsetDateTime.now());
+
+        if (!Strings.isNullOrEmpty(errorCause)) {
+            this.setErrorCause(errorCause);
+        }
     }
 
     @Override
@@ -191,16 +231,22 @@ public class FileInBuildingPackage {
                + status
                + ", lastUpdateDate="
                + lastUpdateDate
-               + ", storeParentPath='"
-               + storeParentPath
+               + ", storageSubdirectory='"
+               + storageSubdirectory
                + '\''
-               + ", storeParentUrl='"
-               + storeParentUrl
+               + ", finalArchiveParentUrl='"
+               + finalArchiveParentUrl
+               + '\''
+               + ", fileCachePath='"
+               + fileCachePath
                + '\''
                + ", keepInCacheUntilDate="
                + keepInCacheUntilDate
                + ", fileSize="
                + fileSize
+               + ", errorCause='"
+               + errorCause
+               + '\''
                + '}';
     }
 
@@ -213,17 +259,21 @@ public class FileInBuildingPackage {
             return false;
         }
         FileInBuildingPackage that = (FileInBuildingPackage) o;
-        return Objects.equals(id, that.id) || (Objects.equals(storageRequestId, that.storageRequestId)
-                                               && Objects.equals(storage, that.storage)
-                                               && Objects.equals(checksum, that.checksum)
-                                               && Objects.equals(filename, that.filename)
-                                               && Objects.equals(packageReference, that.packageReference)
-                                               && status == that.status
-                                               && Objects.equals(lastUpdateDate, that.lastUpdateDate)
-                                               && Objects.equals(storeParentPath, that.storeParentPath)
-                                               && Objects.equals(storeParentUrl, that.storeParentUrl)
-                                               && Objects.equals(keepInCacheUntilDate, that.keepInCacheUntilDate)
-                                               && Objects.equals(fileSize, that.fileSize));
+        return Objects.equals(id, that.id)
+               && Objects.equals(storageRequestId, that.storageRequestId)
+               && Objects.equals(storage,
+                                 that.storage)
+               && Objects.equals(checksum, that.checksum)
+               && Objects.equals(filename, that.filename)
+               && Objects.equals(packageReference, that.packageReference)
+               && status == that.status
+               && Objects.equals(lastUpdateDate, that.lastUpdateDate)
+               && Objects.equals(storageSubdirectory, that.storageSubdirectory)
+               && Objects.equals(finalArchiveParentUrl, that.finalArchiveParentUrl)
+               && Objects.equals(fileCachePath, that.fileCachePath)
+               && Objects.equals(keepInCacheUntilDate, that.keepInCacheUntilDate)
+               && Objects.equals(fileSize, that.fileSize)
+               && Objects.equals(errorCause, that.errorCause);
     }
 
     @Override
@@ -236,9 +286,11 @@ public class FileInBuildingPackage {
                             packageReference,
                             status,
                             lastUpdateDate,
-                            storeParentPath,
-                            storeParentUrl,
+                            storageSubdirectory,
+                            finalArchiveParentUrl,
+                            fileCachePath,
                             keepInCacheUntilDate,
-                            fileSize);
+                            fileSize,
+                            errorCause);
     }
 }

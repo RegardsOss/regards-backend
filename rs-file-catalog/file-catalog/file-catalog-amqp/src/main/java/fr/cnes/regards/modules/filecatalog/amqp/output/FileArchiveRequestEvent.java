@@ -35,9 +35,17 @@ public class FileArchiveRequestEvent extends FileArchiveRequestDto implements IS
                                    String storage,
                                    String checksum,
                                    String fileName,
-                                   String currentFileParentPath,
+                                   String storageSubDirectory,
                                    String finalArchiveParentUrl,
+                                   String fileCachePath,
                                    long fileSize) {
-        super(storageRequestId, storage, checksum, fileName, currentFileParentPath, finalArchiveParentUrl, fileSize);
+        super(storageRequestId,
+              storage,
+              checksum,
+              fileName,
+              storageSubDirectory,
+              finalArchiveParentUrl,
+              fileCachePath,
+              fileSize);
     }
 }

@@ -37,7 +37,8 @@ import java.util.List;
 /**
  * Handler for {@link FileArchiveRequestEvent} sent from file-catalog to file-packager in order to request the packaging of a small file.
  * For each message, the handler will save one {@link FileInBuildingPackage} in database that will be processed by
- * the scheduler WIP
+ * the scheduler {@link fr.cnes.regards.modules.file.packager.service.scheduler.FilePackagingScheduler
+ * FilePackagingScheduler}.
  *
  * @author Thibaud Michaudel
  **/
@@ -73,7 +74,7 @@ public class FileArchiveRequestEventHandler
     public void handleBatch(List<FileArchiveRequestEvent> messages) {
         LOGGER.debug("[FileArchiveRequestEvent HANDLER] {} file archive requests received", messages.size());
         long start = System.currentTimeMillis();
-        
+
         filePackagerService.createNewFilesInBuildingPackage(messages);
 
         LOGGER.info("[FileArchiveRequestEvent EVENT HANDLER] {} file archive requests handled in {} ms",

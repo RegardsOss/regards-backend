@@ -36,10 +36,17 @@ public class FileArchiveRequestDto {
     /**
      * Where the file is currently stored locally (before it is packaged and sent to the destination storage).
      */
-    private final String currentFileParentPath;
+    private final String fileCachePath;
 
     /**
-     * Url where the package will be stored in the destination storage.
+     * The subdirectory where the archive containing the file will be stored on the storage (this path does not
+     * contain the host, bucket, root path ...)
+     */
+    private final String storageSubDirectory;
+
+    /**
+     * Url where the package will be stored in the destination storage (this path contains the host, bucket, root
+     * path ... and the subdirectory)
      */
     private final String finalArchiveParentUrl;
 
@@ -51,13 +58,15 @@ public class FileArchiveRequestDto {
                                  String storage,
                                  String checksum,
                                  String fileName,
-                                 String currentFileParentPath,
+                                 String storageSubDirectory,
                                  String finalArchiveParentUrl,
+                                 String fileCachePath,
                                  long fileSize) {
         this.storage = storage;
         this.checksum = checksum;
         this.fileName = fileName;
-        this.currentFileParentPath = currentFileParentPath;
+        this.fileCachePath = fileCachePath;
+        this.storageSubDirectory = storageSubDirectory;
         this.finalArchiveParentUrl = finalArchiveParentUrl;
         this.fileSize = fileSize;
         this.fileStorageRequestId = fileStorageRequestId;
@@ -75,8 +84,8 @@ public class FileArchiveRequestDto {
         return fileName;
     }
 
-    public String getCurrentFileParentPath() {
-        return currentFileParentPath;
+    public String getFileCachePath() {
+        return fileCachePath;
     }
 
     public String getFinalArchiveParentUrl() {
@@ -89,6 +98,10 @@ public class FileArchiveRequestDto {
 
     public long getFileStorageRequestId() {
         return fileStorageRequestId;
+    }
+
+    public String getStorageSubDirectory() {
+        return storageSubDirectory;
     }
 
     @Override
@@ -104,7 +117,7 @@ public class FileArchiveRequestDto {
                + fileName
                + '\''
                + ", storeParentPath='"
-               + currentFileParentPath
+               + fileCachePath
                + '\''
                + ", storeParentUrl='"
                + finalArchiveParentUrl
@@ -131,7 +144,7 @@ public class FileArchiveRequestDto {
                                  that.storage)
                && Objects.equals(checksum, that.checksum)
                && Objects.equals(fileName, that.fileName)
-               && Objects.equals(currentFileParentPath, that.currentFileParentPath)
+               && Objects.equals(fileCachePath, that.fileCachePath)
                && Objects.equals(finalArchiveParentUrl, that.finalArchiveParentUrl);
     }
 
@@ -140,7 +153,7 @@ public class FileArchiveRequestDto {
         return Objects.hash(storage,
                             checksum,
                             fileName,
-                            currentFileParentPath,
+                            fileCachePath,
                             finalArchiveParentUrl,
                             fileSize,
                             fileStorageRequestId);

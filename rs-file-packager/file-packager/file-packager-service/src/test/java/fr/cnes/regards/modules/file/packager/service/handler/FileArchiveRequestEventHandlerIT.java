@@ -38,6 +38,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * Test for {@link FileArchiveRequestEventHandler}
+ *
  * @author Thibaud Michaudel
  **/
 @ActiveProfiles({ "nojobs", "noscheduler", "test" })
@@ -66,6 +68,7 @@ public class FileArchiveRequestEventHandlerIT extends AbstractMultitenantService
         String storage = "storage";
         String storeParentPath = "/packager/parent/path/";
         String storeParentUrl = "https://glacier.com/bucket/";
+        String storageSubDirectory = "";
         long storageRequestId1 = 1L;
         String checksum1 = "2ab4490f51d06597dc9f7a967996080f";
         String fileName1 = "file1.txt";
@@ -77,16 +80,18 @@ public class FileArchiveRequestEventHandlerIT extends AbstractMultitenantService
                                                                                        storage,
                                                                                        checksum1,
                                                                                        fileName1,
-                                                                                       storeParentPath,
+                                                                                       storageSubDirectory,
                                                                                        storeParentUrl,
+                                                                                       storeParentPath,
                                                                                        100L);
 
         FileArchiveRequestEvent fileArchiveRequestEvent2 = new FileArchiveRequestEvent(storageRequestId2,
                                                                                        storage,
                                                                                        checksum2,
                                                                                        fileName2,
-                                                                                       storeParentPath,
+                                                                                       storageSubDirectory,
                                                                                        storeParentUrl,
+                                                                                       storeParentPath,
                                                                                        100L);
         fileArchiveRequestEventHandler.handleBatch(List.of(fileArchiveRequestEvent1, fileArchiveRequestEvent2));
 
@@ -108,8 +113,8 @@ public class FileArchiveRequestEventHandlerIT extends AbstractMultitenantService
         Assertions.assertEquals(storageRequestId1, file1.getStorageRequestId());
         Assertions.assertEquals(checksum1, file1.getChecksum());
         Assertions.assertEquals(fileName1, file1.getFilename());
-        Assertions.assertEquals(storeParentPath, file1.getStoreParentPath());
-        Assertions.assertEquals(storeParentUrl, file1.getStoreParentUrl());
+        Assertions.assertEquals(storageSubDirectory, file1.getStorageSubdirectory());
+        Assertions.assertEquals(storeParentUrl, file1.getFinalArchiveParentUrl());
         Assertions.assertEquals(FileInBuildingPackageStatus.WAITING_PACKAGE, file1.getStatus());
 
         Optional<FileInBuildingPackage> oFile2 = files.stream()
@@ -123,8 +128,8 @@ public class FileArchiveRequestEventHandlerIT extends AbstractMultitenantService
         Assertions.assertEquals(storage, file2.getStorage());
         Assertions.assertEquals(checksum2, file2.getChecksum());
         Assertions.assertEquals(fileName2, file2.getFilename());
-        Assertions.assertEquals(storeParentPath, file2.getStoreParentPath());
-        Assertions.assertEquals(storeParentUrl, file2.getStoreParentUrl());
+        Assertions.assertEquals(storageSubDirectory, file2.getStorageSubdirectory());
+        Assertions.assertEquals(storeParentUrl, file2.getFinalArchiveParentUrl());
         Assertions.assertEquals(FileInBuildingPackageStatus.WAITING_PACKAGE, file2.getStatus());
 
     }

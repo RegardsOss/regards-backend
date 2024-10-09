@@ -19,9 +19,25 @@
 package fr.cnes.regards.modules.file.packager.domain;
 
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
+import java.time.OffsetDateTime;
+import java.util.Objects;
+
 /**
+ * Entity that represent a package.
+ * A package is associated to multiple {@link FileInBuildingPackage} and will be used to create an archive containing
+ * all the files.
+ * The {@link #status} attribute inform on the current step of the process :
+ * {@link PackageReferenceStatus#BUILDING BUILDING} ->
+ * {@link PackageReferenceStatus#TO_STORE TO_STORE} ->
+ * {@link PackageReferenceStatus#STORE_IN_PROGRESS} ->
+ * {@link PackageReferenceStatus#STORED}
+ * <p/>
+ * Once stored, the entity will not be deleted (unless the files inside are deleted) as it will be used to retrieve
+ * the archive during the restoration process.
+ *
  * @author Thibaud Michaudel
  **/
 @Entity
@@ -34,5 +50,144 @@ public class PackageReference {
     @ConfigIgnore
     private Long id;
 
-    // WIP
+    @Column(name = "storage_subidrectory", nullable = false)
+    private String storageSubdirectory;
+
+    @Column(name = "creation_date", nullable = false)
+    private OffsetDateTime creationDate;
+
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private PackageReferenceStatus status;
+
+    @Column(name = "store_correlation_id")
+    @Nullable
+    private String storeCorrelationId;
+
+    @Column(name = "error_cause")
+    @Nullable
+    private String errorCause;
+
+    @Column(name = "storage", nullable = false)
+    private String storage;
+
+    @Column(name = "size", nullable = false)
+    private Long size;
+
+    public PackageReference(String storage, String storageSubdirectory) {
+        this.storageSubdirectory = storageSubdirectory;
+        this.storage = storage;
+        this.creationDate = OffsetDateTime.now();
+        this.status = PackageReferenceStatus.BUILDING;
+        size = 0L;
+    }
+
+    public PackageReference() {
+
+    }
+
+    public void addFileSize(Long sizeToAdd) {
+        size += sizeToAdd;
+    }
+
+    public void setStatus(PackageReferenceStatus status) {
+        this.status = status;
+    }
+
+    public void setStoreCorrelationId(String storeCorrelationId) {
+        this.storeCorrelationId = storeCorrelationId;
+    }
+
+    public void setErrorCause(String errorCause) {
+        this.errorCause = errorCause;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getStorageSubdirectory() {
+        return storageSubdirectory;
+    }
+
+    public OffsetDateTime getCreationDate() {
+        return creationDate;
+    }
+
+    public PackageReferenceStatus getStatus() {
+        return status;
+    }
+
+    public String getStoreCorrelationId() {
+        return storeCorrelationId;
+    }
+
+    public String getErrorCause() {
+        return errorCause;
+    }
+
+    public String getStorage() {
+        return storage;
+    }
+
+    public Long getSize() {
+        return size;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        PackageReference that = (PackageReference) o;
+        return Objects.equals(id, that.id)
+               && Objects.equals(storageSubdirectory, that.storageSubdirectory)
+               && Objects.equals(creationDate, that.creationDate)
+               && status == that.status
+               && Objects.equals(storeCorrelationId, that.storeCorrelationId)
+               && Objects.equals(errorCause, that.errorCause)
+               && Objects.equals(storage, that.storage)
+               && Objects.equals(size, that.size);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id,
+                            storageSubdirectory,
+                            creationDate,
+                            status,
+                            storeCorrelationId,
+                            errorCause,
+                            storage,
+                            size);
+    }
+
+    @Override
+    public String toString() {
+        return "PackageReference{"
+               + "id="
+               + id
+               + ", storageSubdirectory='"
+               + storageSubdirectory
+               + '\''
+               + ", creationDate="
+               + creationDate
+               + ", status="
+               + status
+               + ", storeCorrelationId='"
+               + storeCorrelationId
+               + '\''
+               + ", errorCause='"
+               + errorCause
+               + '\''
+               + ", storage='"
+               + storage
+               + '\''
+               + ", size="
+               + size
+               + '}';
+    }
 }

@@ -19,6 +19,9 @@
 package fr.cnes.regards.modules.file.packager.dao;
 
 import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackage;
+import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackageStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
@@ -28,4 +31,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  **/
 public interface FileInBuildingPackageRepository extends JpaRepository<FileInBuildingPackage, Long> {
 
+    Page<FileInBuildingPackage> findByStatusOrderByStorageAscStorageSubdirectoryAsc(FileInBuildingPackageStatus status,
+                                                                                    Pageable page);
 }

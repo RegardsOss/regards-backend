@@ -19,38 +19,10 @@
 package fr.cnes.regards.modules.file.packager.domain;
 
 /**
- * Status of a {@link FileInBuildingPackage}
+ * Statuts of {@link PackageReference}
  *
  * @author Thibaud Michaudel
  **/
-public enum FileInBuildingPackageStatus {
-    /**
-     * The file is waiting to be associated with a package
-     */
-    WAITING_PACKAGE,
-
-    /**
-     * The file has been associated to a package that is still in construction
-     */
-    BUILDING,
-
-    /**
-     * There was an error during the file association to a package
-     */
-    BUILDING_ERROR,
-
-    /**
-     * The package is stored and the local file can now be deleted
-     */
-    TO_LOCAL_DELETE,
-
-    /**
-     * The file is being deleted
-     */
-    DELETING,
-
-    /**
-     * There was an error during the file deletion
-     */
-    DELETION_ERROR
+public enum PackageReferenceStatus {
+    BUILDING, TO_STORE, STORE_IN_PROGRESS, STORED, STORE_ERROR
 }
