@@ -35,7 +35,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -67,6 +69,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     private final Set<String> noSecurityRoutes;
 
     private final AntPathMatcher staticPathMatcher = new AntPathMatcher();
+
+    private final RequestAttributeSecurityContextRepository repository = new RequestAttributeSecurityContextRepository();
 
     public JWTAuthenticationFilter(final AuthenticationManager authenticationManager,
                                    IRuntimeTenantResolver runtimeTenantResolver,
@@ -131,6 +135,9 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
                 LOGGER.debug("[REGARDS JWT FILTER] Access granted");
 
+                // Save SecurityContext for ASYNC dispatch (Use for StreamingResponseBody) since Spring Security 6
+                this.repository.saveContext(SecurityContextHolder.getContext(), request, response);
+                
                 // Continue the filtering chain
                 filterChain.doFilter(request, response);
             }
