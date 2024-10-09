@@ -39,6 +39,8 @@ public interface IModelService {
 
     Model createModel(Model model, boolean allowUpdate) throws ModuleException;
 
+    Model createModel(Model pModel, boolean allowUpdate) throws ModuleException;
+
     Model getModel(Long id) throws ModuleException;
 
     Model getModelByName(String modelName) throws ModuleException;
