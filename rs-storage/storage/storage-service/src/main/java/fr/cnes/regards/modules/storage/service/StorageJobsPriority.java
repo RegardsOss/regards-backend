@@ -20,24 +20,25 @@ package fr.cnes.regards.modules.storage.service;
 
 /**
  * Centralize the storage jobs priorities.
+ * Higher priorities will be run first
  *
  * @author Sébastien Binda
  */
 public final class StorageJobsPriority {
 
-    public static final int FILE_CACHE_JOB = 30;
+    public static final int FILE_COPY_JOB = 30;
 
-    public static final int FILE_STORAGE_JOB = 40;
+    public static final int FILE_DELETION_JOB = 40;
 
-    public static final int FILE_DELETION_JOB = 60;
+    public static final int FILE_STORAGE_JOB = 50;
 
-    public static final int FILE_COPY_JOB = 80;
+    public static final int FILE_CACHE_JOB = 60;
 
     public static final int CACHE_VERIFICATION = 90;
 
     public static final int CACHE_PURGE = 100;
 
-    public static final int STORAGE_PERIODIC_ACTION_JOB = 150;
+    public static final int STORAGE_PERIODIC_ACTION_JOB = 110;
 
     private StorageJobsPriority() {
     }

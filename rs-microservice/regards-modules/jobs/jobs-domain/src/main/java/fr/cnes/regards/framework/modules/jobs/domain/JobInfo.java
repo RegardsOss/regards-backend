@@ -52,7 +52,7 @@ public class JobInfo {
     private UUID id;
 
     /**
-     * Job priority
+     * Job priority (higher priority jobs will be run first)
      */
     @Column(name = "priority")
     private Integer priority = 0;
