@@ -87,8 +87,8 @@
             <artifactId>tenant-settings-service</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.modules.fileaccess</groupId>
-            <artifactId>file-access-dto</artifactId>
+            <groupId>fr.cnes.regards.modules.filecatalog</groupId>
+            <artifactId>file-catalog-dto</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.filecatalog</groupId>

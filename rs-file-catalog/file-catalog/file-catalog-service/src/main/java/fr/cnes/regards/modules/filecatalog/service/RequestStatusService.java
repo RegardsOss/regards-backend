@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.filecatalog.service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
 import fr.cnes.regards.modules.filecatalog.dao.IFileDeletionRequestRepository;
 import fr.cnes.regards.modules.filecatalog.dao.IFileStorageRequestAggregationRepository;
@@ -72,7 +73,7 @@ public class RequestStatusService {
         // Delayed storage request if a deletion requests already exists or another storage request is already running for the same file to store
         if (deletionReqRepo.existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(storage,
                                                                                        checksum,
-                                                                                       StorageRequestStatus.RUNNING_STATUS)
+                                                                                       FileRequestStatus.RUNNING_STATUS)
             || fileStorageRequestAggregationRepository.existsByStorageAndMetaInfoChecksumAndStatusIn(storage,
                                                                                                      checksum,
                                                                                                      toDelayStatusList)) {

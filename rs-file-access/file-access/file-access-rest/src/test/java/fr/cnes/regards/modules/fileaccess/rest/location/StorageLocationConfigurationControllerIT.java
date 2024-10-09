@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.fileaccess.domain.StorageLocationConfiguration;
 import fr.cnes.regards.modules.fileaccess.dto.StorageLocationConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.fileaccess.rest.StorageLocationConfigurationController;
-import fr.cnes.regards.modules.fileaccess.rest.plugin.SimpleOnlineDataStorage;
+import fr.cnes.regards.modules.fileaccess.rest.plugin.TestSimpleOnlineDataStorage;
 import fr.cnes.regards.modules.fileaccess.service.StorageLocationConfigurationService;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -227,12 +227,12 @@ public class StorageLocationConfigurationControllerIT extends AbstractRegardsTra
     // ---------------------
 
     private PluginConfiguration getPluginConfig(String name) throws IOException {
-        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(TestSimpleOnlineDataStorage.class);
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(TestSimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                                                                            STORAGE_PATH),
-                                                        IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN,
+                                                        IPluginParam.build(TestSimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN,
                                                                            "error.*"),
-                                                        IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN,
+                                                        IPluginParam.build(TestSimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN,
                                                                            "delErr.*"));
         return new PluginConfiguration(pluginMetadata.getPluginId(),
                                        name,

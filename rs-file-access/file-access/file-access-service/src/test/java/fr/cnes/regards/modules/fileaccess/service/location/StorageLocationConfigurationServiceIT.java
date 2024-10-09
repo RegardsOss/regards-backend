@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.fileaccess.dao.IStorageLocationConfigurationRepos
 import fr.cnes.regards.modules.fileaccess.domain.StorageLocationConfiguration;
 import fr.cnes.regards.modules.fileaccess.service.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.fileaccess.service.plugin.SimpleNearlineDataStorage;
-import fr.cnes.regards.modules.fileaccess.service.plugin.SimpleOnlineDataStorage;
+import fr.cnes.regards.modules.fileaccess.service.plugin.TestSimpleOnlineDataStorage;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -125,11 +125,11 @@ public class StorageLocationConfigurationServiceIT extends AbstractMultitenantSe
 
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleNearlineDataStorage.class);
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(TestSimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                                                                            baseStorageLocation.toString()),
-                                                        IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN,
+                                                        IPluginParam.build(TestSimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN,
                                                                            "error.*"),
-                                                        IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN,
+                                                        IPluginParam.build(TestSimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN,
                                                                            "delErr.*"));
         PluginConfiguration pluginConfiguration = new PluginConfiguration(label,
                                                                           parameters,
@@ -142,7 +142,7 @@ public class StorageLocationConfigurationServiceIT extends AbstractMultitenantSe
     private PluginConfiguration getSimpleOnlinePluginConf(String label) throws IOException, URISyntaxException {
         URL baseStorageLocation = new URL("file", "", Paths.get(BASE_STORAGE_LOCATION).toFile().getAbsolutePath());
 
-        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(TestSimpleOnlineDataStorage.class);
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SimpleNearlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                                                                            baseStorageLocation.toString()),

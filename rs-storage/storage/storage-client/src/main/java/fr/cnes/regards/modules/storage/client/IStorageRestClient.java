@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FileAvailabilityStatusDto;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FilesAvailabilityRequestDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
-import fr.cnes.regards.modules.fileaccess.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.domain.FileLocation;
 import fr.cnes.regards.modules.filecatalog.domain.FileReference;
 import fr.cnes.regards.modules.filecatalog.domain.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.filecatalog.service.request.FileDeletionRequestService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

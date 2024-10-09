@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.fileaccess.dto.CopyFilesParametersDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
-import fr.cnes.regards.modules.fileaccess.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.rest.plugin.SimpleOnlineDataStorage;

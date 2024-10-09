@@ -23,9 +23,9 @@ import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
 import fr.cnes.regards.modules.filecatalog.domain.FileLocation;
 import fr.cnes.regards.modules.filecatalog.domain.FileReference;
+import jakarta.persistence.*;
 import org.springframework.util.Assert;
 
-import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 /**
@@ -62,7 +62,6 @@ public class FileDeletionRequest {
 
     @JoinColumn(name = "file_reference", foreignKey = @ForeignKey(name = "fk_t_file_deletion_request_t_file_reference"))
     @OneToOne
-    @MapsId
     private FileReference fileReference;
 
     @Column(name = "force_delete")
@@ -98,17 +97,20 @@ public class FileDeletionRequest {
                                String groupId,
                                String sessionOwner,
                                String session) {
-        this(null,
-             groupId,
-             null,
-             fileReference.getLocation().getStorage(),
-             fileReference,
-             forceDelete,
-             null,
-             OffsetDateTime.now(),
-             null,
-             sessionOwner,
-             session);
+        super();
+        Assert.notNull(fileReference, "File reference to delete cannot be null");
+        Assert.notNull(fileReference.getId(), "File reference to delete identifier cannot be null");
+        Assert.notNull(fileReference.getLocation(), "Unable to delete a file with no location");
+        Assert.notNull(fileReference.getLocation().getStorage(), "Unable to delete a file with no location storage.");
+
+        this.groupId = groupId;
+        this.storage = fileReference.getLocation().getStorage();
+        this.fileReference = fileReference;
+        this.forceDelete = forceDelete;
+        this.sessionOwner = sessionOwner;
+        this.session = session;
+        this.creationDate = OffsetDateTime.now();
+
     }
 
     private FileDeletionRequest(Long id,
@@ -122,11 +124,6 @@ public class FileDeletionRequest {
                                 String jobId,
                                 String sessionOwner,
                                 String session) {
-        Assert.notNull(fileReference, "File reference to delete cannot be null");
-        Assert.notNull(fileReference.getId(), "File reference to delete identifier cannot be null");
-        Assert.notNull(fileReference.getLocation(), "Unable to delete a file with no location");
-        Assert.notNull(fileReference.getLocation().getStorage(), "Unable to delete a file with no location storage.");
-
         this.id = id;
         this.groupId = groupId;
         this.status = status;

@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.fileaccess.dto;
+package fr.cnes.regards.modules.filecatalog.dto;
+
+import fr.cnes.regards.modules.fileaccess.dto.StorageLocationConfigurationDto;
 
 /**
  * @author sbinda
@@ -65,6 +67,7 @@ public class StorageLocationDto {
     /**
      * Indicates if at least one copy request  associated to this storage location is running
      */
+    //FIXME: to delete when rs-storage microservice migration will be completed
     private boolean copyRunning = false;
 
     /**
@@ -131,6 +134,15 @@ public class StorageLocationDto {
         return this;
     }
 
+    public StorageLocationDto withRunningProcessesInformation(boolean storageRunning,
+                                                              boolean deletionRunning,
+                                                              boolean pendingActionRunning) {
+        this.storageRunning = storageRunning;
+        this.deletionRunning = deletionRunning;
+        this.pendingActionRunning = pendingActionRunning;
+        return this;
+    }
+
     public String getName() {
         return name;
     }
@@ -181,5 +193,38 @@ public class StorageLocationDto {
 
     public boolean isPendingActionRemaining() {
         return pendingActionRemaining;
+    }
+
+    @Override
+    public String toString() {
+        return "StorageLocationDto{"
+               + "configuration="
+               + configuration
+               + ", name='"
+               + name
+               + '\''
+               + ", nbFilesStored="
+               + nbFilesStored
+               + ", nbDeletionError="
+               + nbDeletionError
+               + ", nbStorageError="
+               + nbStorageError
+               + ", nbFilesStoredWithPendingActionRemaining="
+               + nbFilesStoredWithPendingActionRemaining
+               + ", totalStoredFilesSizeKo="
+               + totalStoredFilesSizeKo
+               + ", storageRunning="
+               + storageRunning
+               + ", deletionRunning="
+               + deletionRunning
+               + ", copyRunning="
+               + copyRunning
+               + ", pendingActionRunning="
+               + pendingActionRunning
+               + ", pendingActionRemaining="
+               + pendingActionRemaining
+               + ", allowsPhysicalDeletion="
+               + allowsPhysicalDeletion
+               + '}';
     }
 }

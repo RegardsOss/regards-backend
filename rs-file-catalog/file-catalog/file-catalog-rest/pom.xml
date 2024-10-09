@@ -53,6 +53,13 @@
     </developers>
 
     <dependencies>
+        <!-- Module -->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.filecatalog</groupId>
+            <artifactId>file-catalog-service</artifactId>
+        </dependency>
+
+        <!-- Regards -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>module-regards-starter</artifactId>
@@ -69,15 +76,16 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>swagger-regards-starter</artifactId>
         </dependency>
-        <!-- Module dependencies -->
-        <dependency>
-            <groupId>fr.cnes.regards.modules.filecatalog</groupId>
-            <artifactId>file-catalog-service</artifactId>
-        </dependency>
+
         <!-- Test -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+            <artifactId>jobs-dao</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -28,8 +28,8 @@ import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropert
 import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
-import fr.cnes.regards.modules.fileaccess.dto.StorageLocationDto;
 import fr.cnes.regards.modules.fileaccess.dto.StorageType;
+import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.dao.IStorageLocationRepository;

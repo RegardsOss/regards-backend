@@ -38,9 +38,17 @@ import java.util.Set;
  **/
 public interface IFileStorageRequestAggregationRepository extends JpaRepository<FileStorageRequestAggregation, Long> {
 
+    // --------
+    //  SEARCH
+    // --------
+
     boolean existsByStorageAndMetaInfoChecksumAndStatusIn(String storage,
                                                           String checksum,
                                                           Set<StorageRequestStatus> runningStatus);
+
+    boolean existsByStorageAndStatusIn(String storageId, Set<StorageRequestStatus> status);
+
+    Page<FileStorageRequestAggregation> findAllByStorage(String storage, Pageable page);
 
     Page<FileStorageRequestAggregation> findByStatus(StorageRequestStatus delayed, Pageable page);
 
@@ -48,7 +56,7 @@ public interface IFileStorageRequestAggregationRepository extends JpaRepository<
     Set<String> findStoragesByStatus(@Param("status") StorageRequestStatus status);
 
     Set<FileStorageRequestAggregation> findByMetaInfoChecksumAndStorage(String checksum, String storage);
-    
+
     Page<FileStorageRequestAggregation> findAllByStorageAndStatus(String storage,
                                                                   StorageRequestStatus status,
                                                                   Pageable page);
@@ -62,6 +70,11 @@ public interface IFileStorageRequestAggregationRepository extends JpaRepository<
 
     Page<FileStorageRequestAggregation> findAllByStatusOrderByStorageAscMetaInfoChecksumAsc(StorageRequestStatus status,
                                                                                             Pageable page);
+
+    Page<FileStorageRequestAggregation> findByStatusAndSessionOwnerAndSession(StorageRequestStatus status,
+                                                                              String source,
+                                                                              String session,
+                                                                              Pageable pageToRequest);
 
     /**
      * This request searches for storage requests matching the following conditions:
@@ -83,6 +96,12 @@ public interface IFileStorageRequestAggregationRepository extends JpaRepository<
         + "HAVING MIN(t.status) < 2 ")
     Page<RequestAndMaxStatus> findRequestChecksumToHandle(@Param("storage") String storage, Pageable page);
 
+    Long countByStorageAndStatus(String storage, StorageRequestStatus status);
+
+    // --------
+    //  UPDATE
+    // --------
+
     @Query("UPDATE FileStorageRequestAggregation fr SET fr.status = :status WHERE fr.id IN :ids")
     @Modifying
     void updateStatusByIdIn(@Param("status") StorageRequestStatus status, @Param("ids") List<Long> ids);
@@ -94,8 +113,16 @@ public interface IFileStorageRequestAggregationRepository extends JpaRepository<
                                                     @Param("storage") String storage,
                                                     @Param("checksums") List<String> checksums);
 
+    // --------
+    //  DELETE
+    // --------
+
     @Query(value = "DELETE FROM t_file_storage_request WHERE status = :#{#status.ordinal()}", nativeQuery = true)
     @Modifying
     void deleteAllByStatus(@Param("status") StorageRequestStatus status);
+
+    void deleteByStorage(String storageLocationId);
+
+    void deleteByStorageAndStatus(String storageLocationId, StorageRequestStatus status);
 
 }

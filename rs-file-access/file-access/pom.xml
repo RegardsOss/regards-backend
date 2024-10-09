@@ -49,6 +49,7 @@
         <module>file-access-dto</module>
         <module>file-access-dao</module>
         <module>file-access-rest</module>
+        <module>file-access-client</module>
         <module>file-access-amqp</module>
         <module>file-access-service</module>
     </modules>

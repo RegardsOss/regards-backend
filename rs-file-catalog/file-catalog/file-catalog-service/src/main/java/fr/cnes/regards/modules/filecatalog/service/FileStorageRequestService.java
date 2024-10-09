@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
 import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.input.FileStorageMetaInfoDto;
@@ -44,6 +45,7 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -91,6 +93,9 @@ public class FileStorageRequestService {
     private final IFileReferenceRepository fileReferenceRepository;
 
     private final IPublisher publisher;
+
+    @Value("${regards.file.catalog.requests.retry.page:1000}")
+    private int pageRetrySize;
 
     public FileStorageRequestService(RequestStatusService requestStatusService,
                                      FileReferenceRequestService fileReferenceRequestService,
@@ -570,4 +575,133 @@ public class FileStorageRequestService {
                                      boolean notifyActionRemainingToAdmin) {
 
     }
+
+    @MultitenantTransactional(readOnly = true)
+    public Long count(String storage, StorageRequestStatus status) {
+        return fileStorageRequestAggregationRepository.countByStorageAndStatus(storage, status);
+    }
+
+    @MultitenantTransactional(readOnly = true)
+    public boolean isStorageRunning(String storageId) {
+        return fileStorageRequestAggregationRepository.existsByStorageAndStatusIn(storageId,
+                                                                                  Sets.newHashSet(StorageRequestStatus.GRANTED,
+                                                                                                  StorageRequestStatus.TO_HANDLE,
+                                                                                                  StorageRequestStatus.DELAYED));
+    }
+
+    /**
+     * Delete all requests for the given storage identifier
+     */
+    @MultitenantTransactional
+    public void deleteByStorage(String storageLocationId, Optional<StorageRequestStatus> status) {
+        decrementSessionBeforeDeletion(storageLocationId, status);
+        if (status.isPresent()) {
+            fileStorageRequestAggregationRepository.deleteByStorageAndStatus(storageLocationId, status.get());
+        } else {
+            fileStorageRequestAggregationRepository.deleteByStorage(storageLocationId);
+        }
+    }
+
+    /**
+     * Decrement session counts before deletion of storage requests.
+     *
+     * @param storageLocationId storage identifier of requests to delete
+     * @param status            Optional status of requests to delete
+     */
+    private void decrementSessionBeforeDeletion(String storageLocationId, Optional<StorageRequestStatus> status) {
+        Pageable page = PageRequest.ofSize(100);
+        Page<FileStorageRequestAggregation> pageRequests;
+        do {
+            if (status.isPresent()) {
+                pageRequests = fileStorageRequestAggregationRepository.findAllByStorageAndStatus(storageLocationId,
+                                                                                                 status.get(),
+                                                                                                 page);
+            } else {
+                pageRequests = fileStorageRequestAggregationRepository.findAllByStorage(storageLocationId, page);
+            }
+            pageRequests.stream().forEach(r -> {
+                sessionNotifier.decrementStoreRequests(r.getSessionOwner(), r.getSession());
+                if (r.getStatus() == StorageRequestStatus.ERROR) {
+                    sessionNotifier.decrementErrorRequests(r.getSessionOwner(), r.getSession());
+                }
+            });
+            page = page.next();
+        } while (pageRequests.hasNext());
+    }
+
+    /**
+     * Retry errors requests (Storage and Deletion) for the given storage by setting the request status to TO_HANDLE
+     * (instead of ERROR).
+     */
+    public void retryErrorsByStorage(String storage, FileRequestType type) {
+        Pageable pageToRequest = PageRequest.of(0, pageRetrySize, Sort.by("id"));
+
+        if (type.equals(FileRequestType.STORAGE)) {
+            // Retry all storage requests in error
+            Page<FileStorageRequestAggregation> storageReqPage;
+            do {
+                storageReqPage = fileStorageRequestAggregationRepository.findAllByStorageAndStatus(storage,
+                                                                                                   StorageRequestStatus.ERROR,
+                                                                                                   pageToRequest);
+                List<FileStorageRequestAggregation> storageReqList = storageReqPage.getContent();
+                Map<SessionAndOwner, List<FileStorageRequestAggregation>> requestMap = storageReqList.stream()
+                                                                                                     .collect(Collectors.groupingBy(
+                                                                                                         request -> new SessionAndOwner(
+                                                                                                             request.getSession(),
+                                                                                                             request.getSessionOwner())));
+                // update all requests status and decrement errors to the session agent
+                requestMap.forEach((key, value) -> retry(value, key.sessionOwner(), key.session()));
+            } while (storageReqPage.hasNext());
+        }
+
+        // Retry all deletion requests in error
+        // FIXME TODO NeoStorage Lot 4
+    }
+
+    public void retryErrorsBySourceAndSession(String sessionOwner, String session) {
+        Pageable pageToRequest = PageRequest.of(0, pageRetrySize, Sort.by("id"));
+
+        // Retry all storage requests in error
+        Page<FileStorageRequestAggregation> storageReqPage;
+        do {
+            storageReqPage = fileStorageRequestAggregationRepository.findByStatusAndSessionOwnerAndSession(
+                StorageRequestStatus.ERROR,
+                sessionOwner,
+                session,
+                pageToRequest);
+            List<FileStorageRequestAggregation> storageReqList = storageReqPage.getContent();
+            // update all requests status and decrement errors to the session agent
+            if (!storageReqList.isEmpty()) {
+                this.retry(storageReqList, sessionOwner, session);
+            }
+        } while (storageReqPage.hasNext());
+
+        // Retry all deletion requests in error
+        // FIXME TODO NeoStorage Lot 4
+    }
+
+    /**
+     * Update all {@link FileStorageRequestAggregation} in error status to change status to {@link FileRequestStatus#TO_DO} or
+     * {@link FileRequestStatus#DELAYED}.
+     */
+    private void retry(List<FileStorageRequestAggregation> requestList, String sessionOwner, String session) {
+        int nbRequests = requestList.size();
+        for (FileStorageRequestAggregation request : requestList) {
+            // reset status
+            request.setStatus(requestStatusService.getNewStatus(request, Optional.empty()));
+            request.setErrorCause(null);
+        }
+        // save changes in database
+        this.fileStorageRequestAggregationRepository.saveAll(requestList);
+        // decrement error requests
+        this.sessionNotifier.decrementErrorRequests(sessionOwner, session, nbRequests);
+        // notify running requests to the session agent
+        this.sessionNotifier.incrementRunningRequests(sessionOwner, session, nbRequests);
+    }
+
+    private record SessionAndOwner(String sessionOwner,
+                                   String session) {
+
+    }
+
 }

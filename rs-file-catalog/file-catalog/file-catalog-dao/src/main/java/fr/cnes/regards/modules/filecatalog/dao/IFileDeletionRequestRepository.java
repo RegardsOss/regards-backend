@@ -18,9 +18,13 @@
  */
 package fr.cnes.regards.modules.filecatalog.dao;
 
-import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.filecatalog.domain.request.FileDeletionRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Set;
 
@@ -31,7 +35,30 @@ import java.util.Set;
  */
 public interface IFileDeletionRequestRepository extends JpaRepository<FileDeletionRequest, Long> {
 
+    // --------
+    //  SEARCH
+    // --------
+
     boolean existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(String storage,
                                                                        String checksum,
-                                                                       Set<StorageRequestStatus> runningStatus);
+                                                                       Set<FileRequestStatus> runningStatus);
+
+    @Query("select storage from FileDeletionRequest where status = :status")
+    Set<String> findStoragesByStatus(@Param("status") FileRequestStatus status);
+
+    Page<FileDeletionRequest> findByStorageAndStatusAndIdGreaterThan(String storage,
+                                                                     FileRequestStatus status,
+                                                                     Long maxId,
+                                                                     Pageable page);
+
+    Long countByStorageAndStatus(String storage, FileRequestStatus status);
+
+    // --------
+    //  DELETE
+    // --------
+
+    void deleteByStorage(String storageLocationId);
+
+    void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus fileRequestStatus);
+
 }

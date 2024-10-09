@@ -1,3 +1,5 @@
+-- Create t_file_storage_request table
+
 CREATE TABLE IF NOT EXISTS t_file_storage_request (
                                                       id                   INT8 NOT NULL,
                                                       creation_date        TIMESTAMP,
@@ -99,7 +101,7 @@ CREATE TABLE IF NOT EXISTS t_file_deletion_request (
     force_delete   BOOL,
     group_id       VARCHAR(128) NOT NULL,
     job_id         VARCHAR(255),
-    status         INT8 NOT NULL,
+    status         VARCHAR(64) NOT NULL,
     storage        VARCHAR(128) NOT NULL,
     session_owner  VARCHAR(128),
     session_name   VARCHAR(128),
@@ -114,6 +116,9 @@ CREATE INDEX IF NOT EXISTS idx_file_deletion_grp
 
 CREATE INDEX IF NOT EXISTS idx_file_deletion_request
     ON t_file_deletion_request (storage);
+
+CREATE INDEX idx_file_deletion_request_storage_status_id
+    ON t_file_deletion_request (storage, status, id);
 
 CREATE TABLE IF NOT EXISTS ta_storage_request_group_ids (
                                                             file_storage_request_id INT8 NOT NULL,
@@ -136,6 +141,8 @@ ALTER TABLE ta_storage_request_group_ids
 CREATE SEQUENCE IF NOT EXISTS seq_file_reference START 1 INCREMENT 50;
 
 CREATE SEQUENCE IF NOT EXISTS seq_file_storage_request START 1 INCREMENT 50;
+
+CREATE SEQUENCE IF NOT EXISTS seq_file_deletion START 1 INCREMENT 50;
 
 CREATE TABLE IF NOT EXISTS t_request_result_info (
                                                      id                 INT8 NOT NULL,
@@ -174,3 +181,23 @@ CREATE TABLE t_request_group (
 CREATE INDEX idx_t_request_group ON t_request_group (id);
 
 CREATE SEQUENCE seq_request_group START WITH 1 INCREMENT 50;
+
+-- Create t_storage_location table
+
+CREATE TABLE IF NOT EXISTS t_storage_location (
+                                              id int8 NOT NULL,
+                                              last_update_date timestamp without time zone,
+                                              name varchar(128),
+                                              nb_ref_files int8,
+                                              total_size_ko int8,
+                                              nb_ref_pending int8 DEFAULT 0,
+                                              pending_action_remaining boolean DEFAULT false NOT NULL,
+                                              PRIMARY KEY (id)
+);
+
+ALTER TABLE ONLY t_storage_location
+    ADD CONSTRAINT uk_t_storage_location_name UNIQUE (name);
+
+CREATE INDEX IF NOT EXISTS idx_storage_location ON t_storage_location USING btree (name);
+
+CREATE SEQUENCE seq_storage_location START 1 INCREMENT 50;

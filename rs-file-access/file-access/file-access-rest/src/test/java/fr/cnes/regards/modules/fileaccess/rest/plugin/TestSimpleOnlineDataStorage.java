@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.fileaccess.service.plugin;
+package fr.cnes.regards.modules.fileaccess.rest.plugin;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -41,15 +41,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Test plugin for service module
+ * Test plugin for rest module
  *
  * @author Binda sébastien
  */
@@ -61,7 +59,7 @@ import java.util.regex.Pattern;
         license = "GPLv3",
         owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
+public class TestSimpleOnlineDataStorage implements IOnlineStorageLocation {
 
     /**
      * Plugin parameter name of the storage base location as a string
@@ -72,9 +70,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
 
     public static final String HANDLE_DELETE_ERROR_FILE_PATTERN = "delete_error_file_pattern";
 
-    public static final String ALLOW_PHYSICAL_DELETION = "allow";
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleOnlineDataStorage.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestSimpleOnlineDataStorage.class);
 
     private final String doNotHandlePattern = "doNotHandle.*";
 
@@ -102,12 +98,6 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
                      label = "Delete Error file pattern")
     private String deleteErrorFilePattern;
 
-    @PluginParameter(name = ALLOW_PHYSICAL_DELETION,
-                     description = "allowPhysicalDeletion",
-                     label = "allowPhysicalDeletion",
-                     defaultValue = "true")
-    private Boolean allowPhysicalDeletion;
-
     /**
      * Plugin init method
      */
@@ -128,7 +118,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     public void store(FileStorageWorkingSubset workingSubset, IStorageProgressManager progressManager) {
         // because we use a parallel stream, we need to get the tenant now and force it before each doStore call
         String tenant = runtimeTenantResolver.getTenant();
-        workingSubset.getFileReferenceRequests().forEach(fileRefRequestDto -> {
+        workingSubset.getFileReferenceRequests().stream().forEach(fileRefRequestDto -> {
             runtimeTenantResolver.forceTenant(tenant);
             doStore(progressManager, fileRefRequestDto);
         });
@@ -149,6 +139,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
         if (Pattern.matches(doNotHandlePattern, fileName)) {
             // Do nothing to test not handled files
             LOGGER.info("File {} ignored for storage", fileName);
+            return;
         } else if (Pattern.matches(errorFilePattern, fileName)) {
             progressManager.storageFailed(fileRefRequestDto, "Specific error generated for tests");
         } else {
@@ -159,16 +150,26 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
                 directory = fileRefRequestDto.getSubDirectory();
             }
             String storedUrl = String.format("%s%s",
-                                             Paths.get(baseStorageLocationAsString),
-                                             Paths.get("/", directory, fileRefRequestDto.getMetaInfo().getChecksum()));
+                                             baseStorageLocationAsString,
+                                             Paths.get("/", directory, fileRefRequestDto.getMetaInfo().getChecksum())
+                                                  .toString());
+
             try {
-                if (!Files.exists(Paths.get(storedUrl).getParent())) {
+                String originFilePath = new URL(fileRefRequestDto.getOriginUrl()).getPath();
+                if (Files.notExists(Paths.get(storedUrl).getParent())) {
                     Files.createDirectories(Paths.get(storedUrl).getParent());
                 }
-                if (!Files.exists(Paths.get(storedUrl))) {
-                    Files.createFile(Paths.get(storedUrl));
+                if (Files.notExists(Paths.get(originFilePath))) {
+                    progressManager.storageFailed(fileRefRequestDto,
+                                                  String.format(
+                                                      "Origine file %s to store does not exists or is not readable.",
+                                                      fileRefRequestDto.getOriginUrl()));
+                } else {
+                    if (Files.notExists(Paths.get(storedUrl))) {
+                        Files.copy(Paths.get(originFilePath), Paths.get(storedUrl));
+                    }
+                    progressManager.storageSucceed(fileRefRequestDto, new URL("file", null, storedUrl), 1024L);
                 }
-                progressManager.storageSucceed(fileRefRequestDto, new URL("file", null, storedUrl), 1024L);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
                 progressManager.storageFailed(fileRefRequestDto, e.getMessage());
@@ -190,17 +191,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
             if (Pattern.matches(deleteErrorFilePattern, fileName)) {
                 progressManager.deletionFailed(request, "Test deletion failure");
             } else {
-                try {
-                    // Do file deletion if exists
-                    Path fileToDelete;
-                    fileToDelete = Paths.get((new URL(request.getFileReference().getLocation().getUrl())).getPath());
-                    if (Files.exists(fileToDelete)) {
-                        Files.delete(fileToDelete);
-                    }
-                } catch (IOException e) {
-                    // Nothing to do
-                }
-                progressManager.deletionSucceedWithPendingAction(request);
+                progressManager.deletionSucceed(request);
             }
         });
     }
@@ -226,7 +217,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
 
     @Override
     public boolean allowPhysicalDeletion() {
-        return allowPhysicalDeletion;
+        return true;
     }
 
     @Override
@@ -234,13 +225,4 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
         return true;
     }
 
-    @Override
-    public Optional<Path> getRootPath() {
-        return Optional.of(Paths.get(baseStorageLocationAsString));
-    }
-
-    @Override
-    public boolean hasPeriodicAction() {
-        return true;
-    }
 }

@@ -55,22 +55,26 @@
     <dependencies>
         <!-- Module -->
         <dependency>
-            <groupId>fr.cnes.regards.modules.filecatalog</groupId>
-            <artifactId>file-catalog-dao</artifactId>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>module-regards</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.filecatalog</groupId>
-            <artifactId>file-catalog-domain</artifactId>
+            <artifactId>file-catalog-dao</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.modules.filecatalog</groupId>
             <artifactId>file-catalog-amqp</artifactId>
         </dependency>
 
-        <!-- Regards -->
+        <!-- Regards-->
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>module-regards</artifactId>
+            <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+            <artifactId>file-access-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+            <artifactId>file-access-amqp</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.session.session-agent</groupId>
@@ -85,10 +89,6 @@
             <artifactId>jobs-domain</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.modules.fileaccess</groupId>
-            <artifactId>file-access-amqp</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.modules.templates</groupId>
             <artifactId>templates-service</artifactId>
         </dependency>
@@ -100,6 +100,17 @@
             <groupId>fr.cnes.regards.modules.fileaccess</groupId>
             <artifactId>file-access-dto</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>hateoas-regards</artifactId>
+        </dependency>
+
+        <!-- External -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
@@ -115,6 +126,10 @@
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+            <artifactId>plugins-domain</artifactId>
         </dependency>
     </dependencies>
 </project>

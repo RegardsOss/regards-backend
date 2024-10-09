@@ -1867,6 +1867,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+                <artifactId>file-access-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.fileaccess</groupId>
                 <artifactId>file-access-amqp</artifactId>
                 <version>${revision}</version>
             </dependency>

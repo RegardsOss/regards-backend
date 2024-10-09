@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.filecatalog.domain.*;
 import fr.cnes.regards.modules.filecatalog.domain.request.FileDeletionRequest;
+import fr.cnes.regards.modules.filecatalog.service.request.FileDeletionRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

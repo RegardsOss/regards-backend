@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantService
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.input.FileStorageRequestReadyToProcessDto;
 import fr.cnes.regards.modules.filecatalog.dao.IFileReferenceRepository;
@@ -496,23 +497,31 @@ public class FileStorageRequestIT extends AbstractMultitenantServiceIT {
         Mockito.verify(publisher, Mockito.times(2)).publish(argumentCaptor.capture());
         List<List<FileStorageRequestReadyToProcessEvent>> allValues = argumentCaptor.getAllValues();
         Assertions.assertEquals(2, allValues.size(), "There should be two batches of events as there are two storages");
-        List<FileStorageRequestReadyToProcessEvent> events = allValues.get(0);
-        Assertions.assertEquals(2,
-                                events.size(),
-                                "There should be two events in the first batch as there are two new files");
-        Assertions.assertTrue(events.stream()
-                                    .map(FileStorageRequestReadyToProcessDto::getChecksum)
-                                    .anyMatch(checksum -> checksum.equals("1aaaabcdefabcdefabcdefabcdefabcd")),
-                              "The event is not the expected one");
-        Assertions.assertTrue(events.stream()
-                                    .map(FileStorageRequestReadyToProcessDto::getChecksum)
-                                    .anyMatch(checksum -> checksum.equals("2aaaabcdefabcdefabcdefabcdefabcd")),
-                              "The event is not the expected one");
-        events = allValues.get(1);
-        Assertions.assertEquals(1, events.size(), "There should be one event in the second batch");
+        List<FileStorageRequestReadyToProcessEvent> eventsBatch1;
+        List<FileStorageRequestReadyToProcessEvent> eventsBatch2;
+
+        if (allValues.get(0).size() == 1 && allValues.get(1).size() == 2) {
+            eventsBatch1 = allValues.get(0);
+            eventsBatch2 = allValues.get(1);
+        } else if (allValues.get(1).size() == 1 && allValues.get(0).size() == 2) {
+            eventsBatch1 = allValues.get(1);
+            eventsBatch2 = allValues.get(0);
+        } else {
+            Assertions.fail("There should be a batch with 2 messages and a batch with one message");
+            return;
+        }
+
         Assertions.assertEquals("1aaaabcdefabcdefabcdefabcdefabcd",
-                                events.get(0).getChecksum(),
+                                eventsBatch1.get(0).getChecksum(),
                                 "The first checksum doesn't match the expected one");
+        Assertions.assertTrue(eventsBatch2.stream()
+                                          .map(FileStorageRequestReadyToProcessDto::getChecksum)
+                                          .anyMatch(checksum -> checksum.equals("1aaaabcdefabcdefabcdefabcdefabcd")),
+                              "The event is not the expected one");
+        Assertions.assertTrue(eventsBatch2.stream()
+                                          .map(FileStorageRequestReadyToProcessDto::getChecksum)
+                                          .anyMatch(checksum -> checksum.equals("2aaaabcdefabcdefabcdefabcdefabcd")),
+                              "The event is not the expected one");
     }
 
     @Test
@@ -701,6 +710,48 @@ public class FileStorageRequestIT extends AbstractMultitenantServiceIT {
 
         oFoundRequest = fileStorageRequestAggregationRepository.findById(request4.getId());
         Assertions.assertTrue(oFoundRequest.isEmpty(), "The request4 should have been deleted");
+    }
+
+    @Test
+    public void test_retry_request() {
+        // Given
+        FileStorageRequestAggregation request = createNewFileStorageRequest(1, 1, 1, StorageRequestStatus.ERROR);
+        request.setErrorCause("Error !!");
+
+        request = fileStorageRequestAggregationRepository.save(request);
+
+        // When
+        fileStorageRequestService.retryErrorsByStorage("storage1", FileRequestType.STORAGE);
+
+        // Then
+        Optional<FileStorageRequestAggregation> oRequest = fileStorageRequestAggregationRepository.findById(request.getId());
+        Assertions.assertTrue(oRequest.isPresent(), "The request should still exist");
+        request = oRequest.get();
+        Assertions.assertEquals(StorageRequestStatus.TO_HANDLE,
+                                request.getStatus(),
+                                "The request should no be in TO_HANDLE status");
+        Assertions.assertNull(request.getErrorCause(), "There should be no error");
+    }
+
+    @Test
+    public void test_retry_by_session() {
+        // Given
+        FileStorageRequestAggregation request = createNewFileStorageRequest(1, 1, 1, StorageRequestStatus.ERROR);
+        request.setErrorCause("Error !!");
+
+        request = fileStorageRequestAggregationRepository.save(request);
+
+        // When
+        fileStorageRequestService.retryErrorsBySourceAndSession("sessionOwner", "session");
+
+        // Then
+        Optional<FileStorageRequestAggregation> oRequest = fileStorageRequestAggregationRepository.findById(request.getId());
+        Assertions.assertTrue(oRequest.isPresent(), "The request should still exist");
+        request = oRequest.get();
+        Assertions.assertEquals(StorageRequestStatus.TO_HANDLE,
+                                request.getStatus(),
+                                "The request should no be in TO_HANDLE status");
+        Assertions.assertNull(request.getErrorCause(), "There should be no error");
     }
 
     private static FileStorageRequestAggregation createNewFileStorageRequest(int storage,
