@@ -56,7 +56,7 @@ public class AgentSnapshotJobService {
 
     private static final String LOG_HEADER = "[AGENT SNAPSHOT SCHEDULER] >>>";
 
-    public static final int JOB_PRIORITY = 1000;
+    public static final int JOB_PRIORITY = 0;
 
     private final int snapshotPropertyPageSize;
 

@@ -140,27 +140,18 @@ public class AccessRightFilter implements IAccessRightFilter {
         throws AccessRightFilterException {
 
         Set<String> accessGroupNames = getUserAccessGroups();
-        if (accessGroupNames != null) {
-
-            List<ICriterion> searchCriterion = new ArrayList<>();
-
-            searchCriterion.add(getSecurityCriterion(accessGroupNames, addDataFileAccessRights));
-
-            // Add security filter
-            ICriterion groupCriterion = ICriterion.in(StaticProperties.GROUPS,
-                                                      StringMatchType.KEYWORD,
-                                                      accessGroupNames);
-            searchCriterion.add(groupCriterion);
-
-            // Add user criterion (theoretically, userCriterion should not be null at this point but...)
-            if ((userCriterion != null) && !userCriterion.equals(ICriterion.all())) {
-                searchCriterion.add(userCriterion);
-            }
-
-            // Build the final "and" criterion
-            return ICriterion.and(searchCriterion);
+        // If no groups associated to the current logged user, only returns the provided criterion
+        if (accessGroupNames == null) {
+            return userCriterion;
         }
-        return userCriterion;
+
+        ICriterion accessRightCriterion = getSecurityCriterion(accessGroupNames, addDataFileAccessRights);
+        // Add user criterion (theoretically, userCriterion should not be null at this point but...)
+        if ((userCriterion != null) && !userCriterion.equals(ICriterion.all())) {
+            return ICriterion.and(accessRightCriterion, userCriterion);
+        }
+
+        return accessRightCriterion;
     }
 
     /**

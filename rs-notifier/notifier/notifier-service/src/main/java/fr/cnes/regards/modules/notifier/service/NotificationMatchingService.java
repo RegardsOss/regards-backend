@@ -154,8 +154,7 @@ public class NotificationMatchingService {
             IRuleMatcher rulePlugin = getPlugin(rule.getRulePlugin().getBusinessId(), pluginCache);
             // check if the  element match with the rule
             ruleMatched = rulePlugin.match(notificationRequest.getMetadata(), notificationRequest.getPayload());
-        } catch (ModuleException | PluginMetadataNotFoundRuntimeException |
-                 PluginUtilsRuntimeException e) {
+        } catch (ModuleException | PluginMetadataNotFoundRuntimeException | PluginUtilsRuntimeException e) {
             // exception from rule plugin instantiation
             LOGGER.error(String.format("Error while get plugin with id %S", rule.getRulePlugin().getBusinessId()), e);
             // we do not set notification request in error so that we can later handle recipients that could be matched

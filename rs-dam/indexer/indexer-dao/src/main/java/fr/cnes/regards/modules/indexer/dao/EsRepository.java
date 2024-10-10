@@ -1458,9 +1458,7 @@ public class EsRepository implements IEsRepository {
      */
     private SearchSourceBuilder createSourceBuilder4Agg(ICriterion criterion, int from, int size) {
         // Use filter instead of "direct" query (in theory, quickest because no score is computed)
-        QueryBuilder critBuilder = QueryBuilders.boolQuery()
-                                                .must(QueryBuilders.matchAllQuery())
-                                                .filter(criterion.accept(CRITERION_VISITOR));
+        QueryBuilder critBuilder = QueryBuilders.constantScoreQuery(criterion.accept(CRITERION_VISITOR));
         // Only return hits information
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder().query(critBuilder);
         searchSourceBuilder.from(from);
@@ -2104,9 +2102,7 @@ public class EsRepository implements IEsRepository {
             }
             filterBuilder = filterBuilder.must(QueryBuilders.multiMatchQuery(value, fields));
 
-            QueryBuilder queryBuilder = QueryBuilders.boolQuery()
-                                                     .must(QueryBuilders.matchAllQuery())
-                                                     .filter(filterBuilder);
+            QueryBuilder queryBuilder = QueryBuilders.constantScoreQuery(filterBuilder);
             SearchSourceBuilder builder = new SearchSourceBuilder().query(queryBuilder)
                                                                    .from((int) pageRequest.getOffset())
                                                                    .size(pageRequest.getPageSize());

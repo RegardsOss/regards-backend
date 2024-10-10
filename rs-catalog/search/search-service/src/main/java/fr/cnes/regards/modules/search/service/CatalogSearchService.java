@@ -571,6 +571,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             throw new IllegalArgumentException(errorMessage);
         }
     }
+
     @Override
     public <T extends IIndexable> ParsedDateHistogram getDateHistogram(SearchKey<?, T> searchKey,
                                                                        String propertyPath,
@@ -625,7 +626,8 @@ public class CatalogSearchService implements ICatalogSearchService {
                                                                                                               attributePath)
                                                                                                           .calendarInterval(
                                                                                                               dateHistogramInterval)
-                                                                                                          .timeZone(zoneId));
+                                                                                                          .timeZone(
+                                                                                                              zoneId));
 
             searchRequests.put(key, new AggregationSearchContext<>(searchKey, tmpCriterion, aggregationBuilders, 0));
         });
@@ -652,20 +654,11 @@ public class CatalogSearchService implements ICatalogSearchService {
         Map<Boolean, List<UniformResourceName>> urnGroupedByLast = urns.stream()
                                                                        .collect(Collectors.groupingBy(
                                                                            UniformResourceName::isLast));
-        try {
-            ICriterion criterion = accessRightFilter.addAccessRights(null);
-            criterion = addCriterionForUrns(urnGroupedByLast, true, criterion, "virtualId");
-            criterion = addCriterionForUrns(urnGroupedByLast, false, criterion, "ipId");
-            FacetPage<DataObject> results = search(criterion,
-                                                   SearchType.DATAOBJECTS,
-                                                   null,
-                                                   Pageable.ofSize(urns.size()));
-            return results.getContent();
-        } catch (AccessRightFilterException e) {
-            LOGGER.error("You do not have access to any data object", e);
-            throw new EntityOperationForbiddenException("You do not have access to any data object : "
-                                                        + e.getMessage());
-        }
+        ICriterion criterion = addCriterionForUrns(urnGroupedByLast, true, null, "virtualId");
+        criterion = addCriterionForUrns(urnGroupedByLast, false, criterion, "ipId");
+        FacetPage<DataObject> results = search(criterion, SearchType.DATAOBJECTS, null, Pageable.ofSize(urns.size()));
+        return results.getContent();
+
     }
 
     private static ICriterion addCriterionForUrns(Map<Boolean, List<UniformResourceName>> urnGroupedByLast,

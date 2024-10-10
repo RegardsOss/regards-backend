@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.oais.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
@@ -33,12 +34,15 @@ public class EventDto {
     /**
      * Custom event type
      */
+    @Schema(description = "Event type.", example = "Creation")
     private String type;
 
     @NotBlank
+    @Schema(description = "Event description.", example = "package creation")
     private String comment;
 
     @NotNull
+    @Schema(description = "Event submission date.", example = "2024-12-23 05:00:00")
     private OffsetDateTime date;
 
     public String getComment() {

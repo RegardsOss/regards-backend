@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.notifier.service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -102,10 +103,21 @@ public class NotificationRegistrationService {
         if (!events.isEmpty()) {
 
             long startTime = System.currentTimeMillis();
+            // first : ignore all duplicated events in current batch
+            Map<Boolean, List<? extends NotificationRequestEvent>> eventsGroupedByDuplicated = findDuplicatedNotifEvents(
+                events);
+            List<? extends NotificationRequestEvent> duplicatedEvents = eventsGroupedByDuplicated.get(true);
+            List<? extends NotificationRequestEvent> notDuplicatedEvents = eventsGroupedByDuplicated.get(false);
+            if (!duplicatedEvents.isEmpty()) {
+                LOGGER.warn(
+                    "Some notification event are duplicated in same batch. REGARDS keep the first and ignore others."
+                    + " Id duplicated : {}",
+                    duplicatedEvents.stream().map(AbstractRequestEvent::getRequestId).toList());
+            }
 
-            // first handle retry by identifying NRE with the same requestId as one request with recipient in error
+            // handle retry by identifying NRE with the same requestId as one request with recipient in error
             LOGGER.debug("Starting RETRY");
-            Set<NotificationRequestEvent> notRetryEvents = handleRetryRequests(events);
+            Set<NotificationRequestEvent> notRetryEvents = handleRetryOrIgnoreRequests(notDuplicatedEvents);
             LOGGER.debug("Ending RETRY in {} ms", System.currentTimeMillis() - startTime);
 
             // then check validity
@@ -118,7 +130,8 @@ public class NotificationRegistrationService {
                                                                                     rules))
                                                                                 .flatMap(Optional::stream)
                                                                                 .collect(Collectors.toSet());
-                notificationRequestRepository.saveAll(notificationToRegister);
+                List<NotificationRequest> notificationRequests = notificationRequestRepository.saveAll(
+                    notificationToRegister);
                 LOGGER.debug("------------->>> {} notifications registered", notificationToRegister.size());
             } catch (ExecutionException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -196,20 +209,26 @@ public class NotificationRegistrationService {
         }
     }
 
-    public Set<NotificationRequestEvent> handleRetryRequests(List<? extends NotificationRequestEvent> events) {
+    public Set<NotificationRequestEvent> handleRetryOrIgnoreRequests(List<? extends NotificationRequestEvent> events) {
         try {
-            return self.handleRetryRequestsConcurrent(events);
+            return self.handleRetryOrIgnoreRequestsConcurrent(events);
         } catch (ObjectOptimisticLockingFailureException e) {
             LOGGER.trace(OPTIMIST_LOCK_LOG_MSG, e);
             // we retry until it succeed because if it does not succeed on first time it is most likely because of
             // another scheduled method that would then most likely happen at next invocation because execution delays are fixed
-            return handleRetryRequests(events);
+            return handleRetryOrIgnoreRequests(events);
         }
     }
 
+    /**
+     * If event.requestId already exists in database :
+     * Retry requests with one of the following condition :
+     * <li>There are errors in previous notification attempt </li>
+     * <li>There are rules to match remaining </li>
+     * Else, remove it from batch, the request will not be processed (just logged warn)
+     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Set<NotificationRequestEvent> handleRetryRequestsConcurrent(List<? extends NotificationRequestEvent> events) {
-
+    public Set<NotificationRequestEvent> handleRetryOrIgnoreRequestsConcurrent(List<? extends NotificationRequestEvent> events) {
         Map<String, ? extends NotificationRequestEvent> eventsPerRequestId = events.stream()
                                                                                    .collect(Collectors.toMap(
                                                                                        NotificationRequestEvent::getRequestId,
@@ -257,9 +276,13 @@ public class NotificationRegistrationService {
                                                      knownRequest.getRequestOwner(),
                                                      NotificationState.GRANTED,
                                                      knownRequest.getRequestDate()));
-                // Remove this requestId from map so that we can later reconstruct the collection of event still to be handled
-                eventsPerRequestId.put(knownRequest.getRequestId(), null);
+            } else {
+                LOGGER.warn("Notification request with request-id {} already exists (database id {}), REGARDS skip it",
+                            knownRequest.getRequestId(),
+                            knownRequest.getId());
             }
+            // Remove this requestId from map so that we can later reconstruct the collection of event still to be handled
+            eventsPerRequestId.put(knownRequest.getRequestId(), null);
         }
         if (!toScheduleRequests.isEmpty()) {
             notificationRequestRepository.updateState(NotificationState.TO_SCHEDULE_BY_RECIPIENT,
@@ -280,6 +303,36 @@ public class NotificationRegistrationService {
             nbRequestRetriedForRecipientError,
             nbRequestRetriedForRulesError);
         return eventsPerRequestId.values().stream().filter(Objects::nonNull).collect(Collectors.toSet());
+    }
+
+    /**
+     * Split notification list to two list : it separates duplicated events and non-duplicated events.
+     * Only the second occurrence of a same notification will be in the duplicated list. The first occurrence is non-duplicated.
+     * </br>
+     * The key is true for duplicated list and false for non-duplicated list.
+     */
+    private Map<Boolean, List<? extends NotificationRequestEvent>> findDuplicatedNotifEvents(List<? extends NotificationRequestEvent> events) {
+        List<String> allIds = new ArrayList<>();
+        List<Integer> indexOfNotifDuplicated = new ArrayList<>();
+        for (int i = 0; i < events.size(); i++) {
+            NotificationRequestEvent event = events.get(i);
+            String requestId = event.getRequestId();
+            if (allIds.contains(requestId)) {
+                indexOfNotifDuplicated.add(i);
+            } else {
+                allIds.add(requestId);
+            }
+        }
+        List<? extends NotificationRequestEvent> duplicatedEvents = indexOfNotifDuplicated.stream()
+                                                                                          .map(events::get)
+                                                                                          .collect(Collectors.toList());
+        List<? extends NotificationRequestEvent> notDuplicatedEvents = events.stream()
+                                                                             .filter(ev -> !duplicatedEvents.contains(ev))
+                                                                             .toList();
+        Map<Boolean, List<? extends NotificationRequestEvent>> eventsGroupedByDuplicated = new HashMap<>();
+        eventsGroupedByDuplicated.put(true, duplicatedEvents);
+        eventsGroupedByDuplicated.put(false, notDuplicatedEvents);
+        return eventsGroupedByDuplicated;
     }
 
     /**

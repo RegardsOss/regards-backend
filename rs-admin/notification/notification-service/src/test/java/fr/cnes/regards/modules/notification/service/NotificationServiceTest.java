@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.notification.service;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -31,6 +32,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.NotificationLightCustomNativeQueryRepository;
+import fr.cnes.regards.modules.notification.dao.NotificationReadAuthorizer;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationMode;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
@@ -155,6 +157,11 @@ public class NotificationServiceTest {
     private IRoleService roleService;
 
     /**
+     * Authorize or not notification read
+     */
+    private NotificationReadAuthorizer notificationReadAuthorizer;
+
+    /**
      * Do some setup before each test
      */
     @Before
@@ -217,6 +224,7 @@ public class NotificationServiceTest {
         authenticationResolver = Mockito.mock(IAuthenticationResolver.class);
         notificationRepository = Mockito.mock(INotificationRepository.class);
         roleService = Mockito.mock(IRoleService.class);
+        notificationReadAuthorizer = Mockito.mock(NotificationReadAuthorizer.class);
 
         // Instanciate the tested service
         notificationService = new NotificationService(notificationRepository,
@@ -224,6 +232,7 @@ public class NotificationServiceTest {
                                                       Mockito.mock(ApplicationEventPublisher.class),
                                                       authenticationResolver,
                                                       notificationLightCustomNativeQueryRepository,
+                                                      notificationReadAuthorizer,
                                                       NotificationMode.MULTITENANT);
     }
 
@@ -279,7 +288,7 @@ public class NotificationServiceTest {
      */
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system fails when trying to retrieve a non existing notification.")
-    public void retrieveNotificationNotFound() throws EntityNotFoundException {
+    public void retrieveNotificationNotFound() throws ModuleException {
         // Define expected
         Long id = 0L;
 
@@ -300,7 +309,7 @@ public class NotificationServiceTest {
     @Requirement("REGARDS_DSL_DAM_SET_530")
     @Requirement("REGARDS_DSL_DAM_SET_540")
     @Purpose("Check that the system allows to retrieve a notification.")
-    public void retrieveNotification() throws EntityNotFoundException {
+    public void retrieveNotification() throws ModuleException {
         // Define expected
         Long id = 0L;
         Notification expected = new Notification();
@@ -413,7 +422,7 @@ public class NotificationServiceTest {
     @Test
     @Requirement("REGARDS_DSL_CMP_ARC_150")
     @Purpose("Check that the system allows to retrieve only notifications which should be sent.")
-    public void retrieveNotificationsToSend() {
+    public void retrieveNotificationsToSend() throws ModuleException {
         // Define expected
         List<Notification> expected = new ArrayList<>();
         expected.add(new Notification());

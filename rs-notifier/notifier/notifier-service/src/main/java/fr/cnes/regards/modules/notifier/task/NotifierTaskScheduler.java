@@ -62,11 +62,13 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
 
     private static final String NOTIFICATION_CHECK_COMPLETED = "NOTIFICATION CHECK COMPLETED";
 
+    private static final String NOTIFICATION_MATCHING = "NOTIFICATION MATCHING";
+
     private static final String DEFAULT_INITIAL_DELAY = "30000";
 
     private static final String DEFAULT_SCHEDULING_DELAY = "3000";
 
-    private static final String NOTIFICATION_MATCHING = "NOTIFICATION MATCHING";
+    private static final long LOCK_TIME_TOLIVE_IN_SECONDS = 60;
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -172,11 +174,14 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, type);
+
                 lockingTaskExecutors.executeWithLock(task,
                                                      new LockConfiguration(Instant.now(),
                                                                            lock,
-                                                                           Duration.ofSeconds(300),
+                                                                           Duration.ofSeconds(
+                                                                               LOCK_TIME_TOLIVE_IN_SECONDS),
                                                                            Duration.ZERO));
+
             } catch (Throwable e) {
                 handleSchedulingError(type, NOTIFICATION_TITLE, e);
             } finally {

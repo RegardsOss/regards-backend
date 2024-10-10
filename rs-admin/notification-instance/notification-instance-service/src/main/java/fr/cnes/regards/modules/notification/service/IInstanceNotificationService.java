@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.notification.service;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationLight;
@@ -51,7 +52,7 @@ public interface IInstanceNotificationService {
      * @return The {@link Notification}
      * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
-    Notification retrieveNotification(Long pId) throws EntityNotFoundException;
+    Notification retrieveNotification(Long pId) throws ModuleException;
 
     /**
      * Update the {@link Notification#getStatus()}
@@ -74,7 +75,8 @@ public interface IInstanceNotificationService {
     /**
      * Retrieve the pages {@link List} of all (@link {@link NotificationLight}s filtered by given properties
      */
-    Page<NotificationLight> findAllOrderByDateDesc(SearchNotificationParameters filters, int page, int pageSize);
+    Page<NotificationLight> findAllOrderByDateDesc(SearchNotificationParameters filters, int page, int pageSize)
+        throws ModuleException;
 
     /**
      * Delete all notifications that match filters

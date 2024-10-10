@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.oais.dto.sip;
 
 import fr.cnes.regards.framework.oais.dto.validator.ValidSIPChecksum;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -30,6 +31,7 @@ import java.security.MessageDigest;
 @ValidSIPChecksum(message = "The sip checksum is not valid for this algorithm")
 public class SIPReference {
 
+    @Schema(description = "URL of the json file containing SIP.")
     @NotNull(message = "SIP reference URL is required")
     private URL url;
 
@@ -39,6 +41,7 @@ public class SIPReference {
     /**
      * All available {@link MessageDigest} algorithm
      */
+    @Schema(description = "Checksum algorithm of the json file containing SIP.")
     @NotBlank(message = "SIP reference algorithm is required")
     @HandledMessageDigestAlgorithm
     private String algorithm;

@@ -19,6 +19,7 @@
  */
 package fr.cnes.regards.framework.oais.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.lang.Nullable;
 
 import jakarta.validation.constraints.NotNull;
@@ -42,7 +43,7 @@ public class ProvenanceInformationDto {
     /**
      * The history
      */
-    @NotNull
+    @Schema(description = "Package history information.")
     private final List<EventDto> history = new ArrayList<>();
 
     /**
@@ -166,6 +167,8 @@ public class ProvenanceInformationDto {
         addEvent(type, comment, OffsetDateTime.now());
     }
 
+    @Schema(description = "URN of the origin package. Used to link the package with an existing package on an other "
+                          + "catalog.")
     public String getOriginUrn() {
         return (String) getAdditional().get(ORIGIN_URN);
     }

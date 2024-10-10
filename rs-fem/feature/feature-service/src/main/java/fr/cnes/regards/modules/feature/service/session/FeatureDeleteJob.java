@@ -23,6 +23,8 @@ public class FeatureDeleteJob extends AbstractJob<Void> {
 
     private static final String SESSION_NAME_PARAM = "sessionName";
 
+    private static final long LOCK_TIME_TOLIVE_IN_SECONDS = 60;
+
     private String sourceName;
 
     private String sessionName;
@@ -54,7 +56,7 @@ public class FeatureDeleteJob extends AbstractJob<Void> {
             lockingTaskExecutors.executeWithLock(deleteTask,
                                                  new LockConfiguration(Instant.now(),
                                                                        FeatureTaskScheduler.DELETE_REQUEST_LOCK,
-                                                                       Duration.ofSeconds(300),
+                                                                       Duration.ofSeconds(LOCK_TIME_TOLIVE_IN_SECONDS),
                                                                        Duration.ZERO));
         } catch (Throwable throwable) {
             logger.error("Error during deletion job process", throwable);

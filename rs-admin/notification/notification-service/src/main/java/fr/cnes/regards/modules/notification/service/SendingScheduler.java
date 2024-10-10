@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.notification.domain.Notification;
@@ -89,7 +90,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
      * Find all notifications which should be sent daily and send them with the sending strategy
      */
     @Scheduled(cron = "${regards.notification.cron.daily}")
-    public void sendDaily() {
+    public void sendDaily() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -104,7 +105,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
      * Find all notifications which should be sent weekly and send them with the sending strategy
      */
     @Scheduled(cron = "${regards.notification.cron.weekly}")
-    public void sendWeekly() {
+    public void sendWeekly() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -119,7 +120,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
      * Find all notifications which should be sent weekly and send them with the sending strategy
      */
     @Scheduled(cron = "${regards.notification.cron.monthly}")
-    public void sendMonthly() {
+    public void sendMonthly() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -134,7 +135,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
      * Find all notifications which have a custom sending frequency and send them with the sending strategy if need be
      */
     @Scheduled(cron = "${regards.notification.cron.daily}")
-    public void sendCustom() {
+    public void sendCustom() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -165,7 +166,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
      *
      * @param filter The filter with which filter the project users
      */
-    private void filterAndSend(Predicate<NotificationUserSetting> filter) {
+    private void filterAndSend(Predicate<NotificationUserSetting> filter) throws ModuleException {
         // With the stream of unsent notifications
         notificationService.retrieveNotificationsToSend(PageRequest.of(0, 10)).getContent().forEach(notification -> {
             // Build the list of recipients

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.notification.service;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -29,6 +30,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.NotificationLightCustomNativeQueryRepository;
+import fr.cnes.regards.modules.notification.dao.NotificationReadAuthorizer;
 import fr.cnes.regards.modules.notification.domain.*;
 import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
 import org.slf4j.Logger;
@@ -76,6 +78,8 @@ public class NotificationService implements INotificationService {
      */
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    private final NotificationReadAuthorizer notificationReadAuthorizer;
+
     /**
      * Notification mode:
      */
@@ -91,11 +95,13 @@ public class NotificationService implements INotificationService {
                                ApplicationEventPublisher applicationEventPublisher,
                                IAuthenticationResolver authenticationResolver,
                                NotificationLightCustomNativeQueryRepository notificationLightCustomNativeQueryRepository,
+                               NotificationReadAuthorizer notificationReadAuthorizer,
                                @Value("${regards.notification.mode:MULTITENANT}") NotificationMode notificationMode) {
         super();
         this.notificationRepository = notificationRepository;
         this.roleService = roleService;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.notificationReadAuthorizer = notificationReadAuthorizer;
         this.notificationMode = notificationMode;
         this.authenticationResolver = authenticationResolver;
         this.notificationLightCustomNativeQueryRepository = notificationLightCustomNativeQueryRepository;
@@ -151,21 +157,22 @@ public class NotificationService implements INotificationService {
     }
 
     @Override
-    @MultitenantTransactional
-    public Notification retrieveNotification(Long pId) throws EntityNotFoundException {
-        Optional<Notification> notificationOpt = notificationRepository.findById(pId);
+    @MultitenantTransactional(readOnly = true)
+    public Notification retrieveNotification(Long id) throws ModuleException {
+        notificationReadAuthorizer.checkAuthorization();
+        Optional<Notification> notificationOpt = notificationRepository.findById(id);
         if (notificationOpt.isEmpty()) {
-            throw new EntityNotFoundException(pId.toString(), Notification.class);
+            throw new EntityNotFoundException(id.toString(), Notification.class);
         }
         return notificationOpt.get();
     }
 
     @Override
     @MultitenantTransactional
-    public Notification updateNotificationStatus(Long pId, NotificationStatus pStatus) throws EntityNotFoundException {
-        Optional<Notification> notifOpt = notificationRepository.findById(pId);
+    public Notification updateNotificationStatus(Long id, NotificationStatus pStatus) throws EntityNotFoundException {
+        Optional<Notification> notifOpt = notificationRepository.findById(id);
         if (notifOpt.isEmpty()) {
-            throw new EntityNotFoundException(pId.toString(), Notification.class);
+            throw new EntityNotFoundException(id.toString(), Notification.class);
         }
         Notification notification = notifOpt.get();
         notification.setStatus(pStatus);
@@ -174,16 +181,17 @@ public class NotificationService implements INotificationService {
 
     @Override
     @MultitenantTransactional
-    public void deleteNotification(Long pId) throws EntityNotFoundException {
-        if (!notificationRepository.existsById(pId)) {
-            throw new EntityNotFoundException(pId.toString(), Notification.class);
+    public void deleteNotification(Long id) throws EntityNotFoundException {
+        if (!notificationRepository.existsById(id)) {
+            throw new EntityNotFoundException(id.toString(), Notification.class);
         }
-        notificationRepository.deleteById(pId);
+        notificationRepository.deleteById(id);
     }
 
     @Override
     @MultitenantTransactional(readOnly = true)
-    public Page<Notification> retrieveNotificationsToSend(Pageable page) {
+    public Page<Notification> retrieveNotificationsToSend(Pageable page) throws ModuleException {
+        notificationReadAuthorizer.checkAuthorization();
         return notificationRepository.findByStatus(NotificationStatus.UNREAD, page);
     }
 
@@ -216,8 +224,9 @@ public class NotificationService implements INotificationService {
      * @see fr.cnes.regards.modules.notification.service.INotificationService#countUnreadNotifications()
      */
     @Override
-    @MultitenantTransactional
-    public Long countUnreadNotifications() {
+    @MultitenantTransactional(readOnly = true)
+    public Long countUnreadNotifications() throws ModuleException {
+        notificationReadAuthorizer.checkAuthorization();
         if (notificationMode == NotificationMode.MULTITENANT) {
             return notificationRepository.countByStatus(NotificationStatus.UNREAD.toString(),
                                                         authenticationResolver.getUser(),
@@ -231,8 +240,9 @@ public class NotificationService implements INotificationService {
      * @see fr.cnes.regards.modules.notification.service.INotificationService#countReadNotifications()
      */
     @Override
-    @MultitenantTransactional
-    public Long countReadNotifications() {
+    @MultitenantTransactional(readOnly = true)
+    public Long countReadNotifications() throws ModuleException {
+        notificationReadAuthorizer.checkAuthorization();
         if (notificationMode == NotificationMode.MULTITENANT) {
             return notificationRepository.countByStatus(NotificationStatus.READ.toString(),
                                                         authenticationResolver.getUser(),
@@ -246,9 +256,9 @@ public class NotificationService implements INotificationService {
      * Retrieve a notification light page matching filter and ordered by date
      */
     @Override
-    public Page<NotificationLight> findAllOrderByDateDesc(SearchNotificationParameters filters,
-                                                          int page,
-                                                          int pageSize) {
+    public Page<NotificationLight> findAllOrderByDateDesc(SearchNotificationParameters filters, int page, int pageSize)
+        throws ModuleException {
+        notificationReadAuthorizer.checkAuthorization();
         return notificationLightCustomNativeQueryRepository.findAll(filters,
                                                                     authenticationResolver.getUser(),
                                                                     authenticationResolver.getRole(),

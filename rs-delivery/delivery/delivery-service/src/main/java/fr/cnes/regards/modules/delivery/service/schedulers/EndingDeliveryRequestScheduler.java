@@ -90,8 +90,10 @@ public class EndingDeliveryRequestScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, LOCK_NAME);
+
                 lockService.runWithLock(LOCK_NAME,
                                         new EndingDeliveryTask(endingDeliveryService, finishedRequestsPageSize));
+
             } catch (InterruptedException e) {
                 handleSchedulingError(LOCK_NAME, LOCK_NAME, e);
             } finally {

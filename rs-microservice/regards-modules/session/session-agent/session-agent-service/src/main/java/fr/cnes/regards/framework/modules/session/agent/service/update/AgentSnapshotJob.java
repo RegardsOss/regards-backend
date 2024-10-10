@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -52,10 +51,6 @@ public class AgentSnapshotJob extends AbstractJob<Void> {
     /**
      * Services
      */
-
-    @Autowired
-    protected IJobInfoService jobInfoService;
-
     @Autowired
     private AgentSnapshotService agentSnapshotService;
 

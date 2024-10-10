@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 import fr.cnes.regards.framework.geojson.coordinates.Position;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -341,6 +342,15 @@ public interface IGeometry {
         return polygon(toPolygonCoordinates(positions(positions)));
     }
 
+    @Schema(description = "Geometry object type",
+            allowableValues = { "Unlocated",
+                                "Point",
+                                "MultiPoint",
+                                "LineString",
+                                "MultiLineString",
+                                "Polygon",
+                                "MultiPolygon",
+                                "GeometryCollection" })
     String getType();
 
     void setCrs(String crs);

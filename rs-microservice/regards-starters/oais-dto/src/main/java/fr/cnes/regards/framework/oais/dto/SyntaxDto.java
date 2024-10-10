@@ -19,27 +19,34 @@
  */
 package fr.cnes.regards.framework.oais.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
 import jakarta.validation.constraints.NotNull;
 
 public class SyntaxDto {
 
+    @Schema(description = "Short description of file syntax", example = "Scientific raw data")
     private String description;
 
     @NotNull(message = "Mime type is required in syntax object")
+    @Schema(description = "File MimeType", example = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     private MimeType mimeType;
 
+    @Schema(description = "File name")
     private String name;
 
     /**
      * Height of the file (only for image files) in pixels
      */
+    @Schema(description = "File height in pixels if file is an image", example = "180")
     private Double height;
 
     /**
      * Width of the file (only for image files) in pixels
      */
+    @Schema(description = "File width in pixels if file is an image", example = "180")
     private Double width;
 
     public String getDescription() {

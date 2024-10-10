@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.notifier.service.plugin;
 
 import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.utils.parser.JsonObjectMatchVisitor;
 import fr.cnes.regards.framework.utils.parser.RuleParser;
@@ -40,24 +41,32 @@ public class LuceneRuleMatcher implements IRuleMatcher {
     @PluginParameter(name = METADATA_RULE_NAME, label = "lucene expression to match", optional = true)
     private String metadataRule;
 
+    IRule computedPayloadRule = null;
+
+    IRule computedMetadataRule = null;
+
     @Override
     public boolean match(JsonObject metadata, JsonObject payload) {
-        return match(metadata, metadataRule) && match(payload, payloadRule);
+        return match(metadata, computedMetadataRule) && match(payload, computedPayloadRule);
     }
 
-    private boolean match(JsonObject jsonObject, String luceneRule) {
-        if (luceneRule == null) {
+    @PluginInit
+    public void init() throws QueryNodeException {
+        // Parse rule(s)
+        if (payloadRule != null) {
+            computedPayloadRule = RULE_PARSER.parse(payloadRule, "defaultField");
+        }
+        if (metadataRule != null) {
+            computedMetadataRule = RULE_PARSER.parse(metadataRule, "defaultField");
+        }
+    }
+
+    private boolean match(JsonObject jsonObject, IRule computedLuceneRule) {
+        if (computedLuceneRule == null) {
             return true;
         }
-        try {
-            // Parse rule(s)
-            IRule rule = RULE_PARSER.parse(luceneRule, "defaultField");
-            // Visit rule(s) to check if notification matches!
-            JsonObjectMatchVisitor visitor = new JsonObjectMatchVisitor(jsonObject);
-            return rule.accept(visitor);
-        } catch (QueryNodeException e) {
-            LOGGER.error(String.format("Lucene rule %s could not be parsed because of syntax issues", luceneRule), e);
-            return false;
-        }
+        // Visit rule(s) to check if notification matches!
+        JsonObjectMatchVisitor visitor = new JsonObjectMatchVisitor(jsonObject);
+        return computedLuceneRule.accept(visitor);
     }
 }

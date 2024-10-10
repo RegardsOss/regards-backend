@@ -28,10 +28,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
-import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
+import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -60,10 +57,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.time.ZoneOffset;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -549,6 +544,57 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureCreationRequestRepo.count());
         assertEquals(properties.getMaxBulkSize().intValue(), infos.getGranted().size());
         assertEquals(0, infos.getDenied().size());
+    }
+
+    @Test
+    public void test_schedule_request_when_other_request_with_same_providerid_is_running() {
+        // Given
+        int cpt = 0;
+        for (FeatureRequestStep step : FeatureRequestStep.values()) {
+            FeatureCreationRequest request = new FeatureCreationRequest();
+            request.setFeatureEntity(null);
+            request.setRequestId(UUID.randomUUID().toString());
+            request.setRequestOwner("request_owner0");
+            request.setState(RequestState.GRANTED);
+            request.setRegistrationDate(OffsetDateTime.of(2022, 11, 9, 14, 30, 30, 0, ZoneOffset.UTC));
+            request.setRequestDate(OffsetDateTime.of(2022, 11, 9, 14, 30, 30, 0, ZoneOffset.UTC));
+            request.setStep(step);
+            request.setPriority(PriorityLevel.NORMAL);
+            request.setProviderId(String.format("provider_id%d", cpt));
+            request.setMetadata(new FeatureCreationMetadataEntity().build("session_owner0",
+                                                                          "session0",
+                                                                          new ArrayList<>(),
+                                                                          false));
+            featureCreationRequestRepo.save(request);
+            cpt++;
+        }
+
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(cpt + 1, true, false);
+        cpt = 0;
+        for (FeatureCreationRequestEvent event : events) {
+            event.getFeature().setId(String.format("provider_id%d", cpt));
+            cpt++;
+        }
+
+        this.featureCreationService.registerRequests(events);
+
+        // When schedule requests
+        // Then :
+        //  - new request is scheduled (the additional one which does not exist with same providerId)
+        //  - request created in LOCAL_DELAYED status can be schedule too. There is two requests with same providerId
+        //  in LOCAL_DELAYED status, only one is scheduled.
+        Assert.assertEquals(2, this.featureCreationService.scheduleRequests());
+
+        // Then count requests
+        Assert.assertEquals(1 + Arrays.stream(FeatureRequestStep.values()).count() * 2,
+                            this.featureCreationRequestRepo.count());
+
+        // Then only three requests are in LOCAL_SCHEDULED state :
+        // two scheduled by the scheduler and one already in LOCAL_SCHEDULED step.
+        Assert.assertEquals(3,
+                            this.featureCreationRequestRepo.findByStep(FeatureRequestStep.LOCAL_SCHEDULED,
+                                                                       Pageable.ofSize(10)).getTotalElements());
+
     }
 
     @Test

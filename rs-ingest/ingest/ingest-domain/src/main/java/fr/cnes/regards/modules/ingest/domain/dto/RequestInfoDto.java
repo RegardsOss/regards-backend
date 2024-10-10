@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.domain.dto;
 
+import io.swagger.v3.oas.annotations.StringToClassMapItem;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.SchemaProperty;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -34,17 +39,25 @@ public class RequestInfoDto {
     /**
      * Mapping between SIP id and request id
      */
+    @Schema(description = "Map of key/value where key is the SIP generated URN and value is the request correlation "
+                          + "id.", example = "{ \"URN:SIP:DATA:xxxxxxx:V1\": \"119\", "
+                                             + "\"URN:SIP:DATA:yyyyyyyy:V1\": \"120\" }")
     private final ConcurrentMap<String, String> granted = new ConcurrentHashMap<>();
 
     /**
      * Mapping between SIP id and denied reason
      */
+    @Schema(description = "Map of key/value where key is the SIP providerId and value is deny reason message.",
+            example = "{\"providerId_001\" : \"SIP malformed\"}")
     private final ConcurrentMap<String, String> denied = new ConcurrentHashMap<>();
 
+    @Schema(description = "Global status message.")
     private List<String> messages;
 
+    @Schema(description = "Owner of the submission requests session", example = "Jean")
     private String sessionOwner;
 
+    @Schema(description = "Session of the submission requests", example = "Products of January 2024")
     private String session;
 
     public static RequestInfoDto build(String sessionOwner, String session, String... messages) {

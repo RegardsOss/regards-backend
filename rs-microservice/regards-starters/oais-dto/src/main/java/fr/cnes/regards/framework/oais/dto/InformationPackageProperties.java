@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.urn.DataType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.lang.Nullable;
@@ -148,6 +149,7 @@ public class InformationPackageProperties {
      * Can be empty for metadata only information packages like datasets and collections.
      */
     @Valid
+    @Schema(description = "Package associated files.")
     private List<ContentInformationDto> contentInformations;
 
     /**
@@ -156,11 +158,14 @@ public class InformationPackageProperties {
     @NotNull(message = "Preservation description information is required")
     @Valid
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = PreservationDescriptionInformationDto.class)
+    @Schema(description = "Preservation Description Information.")
     private PreservationDescriptionInformationDto pdi = new PreservationDescriptionInformationDto();
 
     /**
      * The descriptive information
      */
+    @Schema(description = "A group key/value containing all specific information about the package.", example =
+        "{\"property1\":\"value1\"}")
     private InformationPackageMapDto descriptiveInformation;
 
     /**

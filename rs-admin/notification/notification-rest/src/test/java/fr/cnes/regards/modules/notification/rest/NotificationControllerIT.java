@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.notification.rest;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
@@ -110,7 +111,7 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    public void testCreateNotification() throws EntityNotFoundException {
+    public void testCreateNotification() throws ModuleException {
         String roleName = DefaultRole.PROJECT_ADMIN.name();
         NotificationDTO notif = new NotificationDtoBuilder("Lets test",
                                                            "test",

@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -42,6 +43,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,8 +56,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -155,7 +155,7 @@ public class NotificationController implements IResourceController<Notification>
                                                               content = @Content(schema = @Schema(implementation = SearchNotificationParameters.class)))
         @Parameter(description = "Filter criteria of notifications") @RequestBody SearchNotificationParameters filters,
         @PageableQueryParam Pageable pageable,
-        @Parameter(hidden = true) PagedResourcesAssembler<NotificationLight> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<NotificationLight> assembler) throws ModuleException {
         if (!pageable.getSort().isEmpty()) {
             LOGGER.warn("Request to retrieve notifications contains a sort option, nevertheless custom sorting is "
                         + "not implemented yet. This endpoint always returns notification sort by date descending.");
@@ -226,7 +226,7 @@ public class NotificationController implements IResourceController<Notification>
     @ResourceAccess(description = "Define the endpoint for retrieving a notification",
                     role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Notification> retrieveNotification(@PathVariable("notification_id") Long id)
-        throws EntityNotFoundException {
+        throws ModuleException {
         Notification notification = notificationService.retrieveNotification(id);
         return new ResponseEntity<>(notification, HttpStatus.OK);
     }
@@ -293,7 +293,7 @@ public class NotificationController implements IResourceController<Notification>
 
     @RequestMapping(value = SUMMARY_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve summary infos about notifications", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<NotificationSummary> summary() throws EntityNotFoundException {
+    public ResponseEntity<NotificationSummary> summary() throws ModuleException {
         Long unReads = notificationService.countUnreadNotifications();
         Long reads = notificationService.countReadNotifications();
         return new ResponseEntity<>(new NotificationSummary(unReads, reads), HttpStatus.OK);

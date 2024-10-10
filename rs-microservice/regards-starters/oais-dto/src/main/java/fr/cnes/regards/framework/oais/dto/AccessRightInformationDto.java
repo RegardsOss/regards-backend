@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.oais.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
@@ -29,11 +30,13 @@ import java.time.OffsetDateTime;
  */
 public class AccessRightInformationDto {
 
+    @Schema(description = "Information package license.")
     private String licence;
 
-    @NotNull
+    @Schema(description = "Information package access rights description.")
     private String dataRights;
 
+    @Schema(description = "Information package release date.")
     private OffsetDateTime publicReleaseDate;
 
     public String getDataRights() {

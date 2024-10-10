@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.notification.service;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationLight;
@@ -52,7 +53,7 @@ public interface INotificationService {
      * @return The {@link Notification}
      * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
-    Notification retrieveNotification(Long pId) throws EntityNotFoundException;
+    Notification retrieveNotification(Long pId) throws ModuleException;
 
     /**
      * Update the {@link Notification}
@@ -84,7 +85,7 @@ public interface INotificationService {
      *
      * @return The list of notifications
      */
-    Page<Notification> retrieveNotificationsToSend(Pageable page);
+    Page<Notification> retrieveNotificationsToSend(Pageable page) throws ModuleException;
 
     /**
      * Gather the list of recipients on a notification
@@ -99,17 +100,18 @@ public interface INotificationService {
      *
      * @return long
      */
-    Long countUnreadNotifications();
+    Long countUnreadNotifications() throws ModuleException;
 
     /**
      * Counter number of read notifications for current user
      *
      * @return long
      */
-    Long countReadNotifications();
+    Long countReadNotifications() throws ModuleException;
 
     /**
      * Retrieve a {@link NotificationLight} page matching filter and ordered by date
      */
-    Page<NotificationLight> findAllOrderByDateDesc(SearchNotificationParameters filters, int page, int pageSize);
+    Page<NotificationLight> findAllOrderByDateDesc(SearchNotificationParameters filters, int page, int pageSize)
+        throws ModuleException;
 }
