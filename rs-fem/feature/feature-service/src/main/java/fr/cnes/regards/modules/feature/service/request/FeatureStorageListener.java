@@ -27,9 +27,11 @@ import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
+import org.hibernate.exception.LockAcquisitionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.EnableRetry;
@@ -58,6 +60,9 @@ public class FeatureStorageListener implements IStorageRequestListener {
 
     @Autowired
     private IFeatureCopyService featureCopyService;
+
+    @Value("${regards.feature.storage.listener.max.lock.exception.retry:10}")
+    private int MAX_LOCK_RETRY;
 
     @Override
     public void onRequestGranted(Set<RequestInfo> requests) {
@@ -130,7 +135,9 @@ public class FeatureStorageListener implements IStorageRequestListener {
     }
 
     @Override
-    @Retryable(value = { OptimisticLockingFailureException.class }, maxAttempts = 10, backoff = @Backoff(delay = 1000))
+    @Retryable(value = { OptimisticLockingFailureException.class, LockAcquisitionException.class },
+               maxAttempts = 10,
+               backoff = @Backoff(delay = 1000))
     public void onReferenceSuccess(Set<RequestInfo> requests) {
         this.featureRequestService.handleStorageSuccess(requests.stream()
                                                                 .flatMap(r -> r.getSuccessRequests().stream())
@@ -145,7 +152,9 @@ public class FeatureStorageListener implements IStorageRequestListener {
     }
 
     @Override
-    @Retryable(value = { OptimisticLockingFailureException.class }, maxAttempts = 10, backoff = @Backoff(delay = 1000))
+    @Retryable(value = { OptimisticLockingFailureException.class, LockAcquisitionException.class },
+               maxAttempts = 10,
+               backoff = @Backoff(delay = 1000))
     public void onStoreSuccess(Set<RequestInfo> requests) {
         this.featureRequestService.handleStorageSuccess(requests.stream()
                                                                 .flatMap(r -> r.getSuccessRequests().stream())
@@ -161,7 +170,19 @@ public class FeatureStorageListener implements IStorageRequestListener {
 
     @Recover
     public void recoverOptimisticRetries(Exception e, Set<RequestInfo> requests) {
-        LOGGER.error("Too many retries for optimistic lock. Optimistic lock is maybe not the right solution here", e);
+        LOGGER.error("Too many retries for optimistic lock. Optimistic lock is maybe not the right solution here. "
+                     + "Request are now considered as storage error. Retry requests later.", e);
+        List<RequestResultInfoDto> simulatedErrors = requests.stream()
+                .flatMap(r -> r.getSuccessRequests().stream())
+                .map(r -> RequestResultInfoDto.build(r.getGroupId(),
+                                                     r.getRequestChecksum(),
+                                                     r.getRequestStorage(),
+                                                     r.getRequestStorePath(),
+                                                     r.getRequestOwners(),
+                                                     r.getResultFile(),
+                                                     "Internal error cause by too much concurrency. Please retry "
+                                                     + "request later")).toList();
+        this.featureRequestService.handleStorageError(simulatedErrors);
     }
 
 }

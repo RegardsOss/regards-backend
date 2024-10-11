@@ -49,7 +49,10 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
+import fr.cnes.regards.modules.feature.service.request.FeatureRequestService;
+import fr.cnes.regards.modules.feature.service.request.FeatureStorageListener;
 import fr.cnes.regards.modules.feature.service.request.FeatureUpdateDisseminationService;
+import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
@@ -58,6 +61,7 @@ import fr.cnes.regards.modules.notifier.dto.out.Recipient;
 import fr.cnes.regards.modules.notifier.dto.out.RecipientStatus;
 import org.assertj.core.util.Lists;
 import org.awaitility.Awaitility;
+import org.hibernate.exception.LockAcquisitionException;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -67,6 +71,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -90,6 +96,7 @@ import static org.junit.Assert.*;
                                    "regards.amqp.enabled=true",
                                    "regards.feature.max.bulk.size=50",
                                    "regards.feature.delay.before.processing=0",
+                                   "regards.feature.storage.lister.max.lock.exception.retry=1",
                                    "regards.feature.metrics.enabled=true" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
@@ -116,12 +123,16 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
     @Autowired
     private IJobInfoRepository jobInfoRepository;
 
+    @SpyBean
+    private FeatureRequestService featureRequestService;
+
     private boolean isToNotify;
 
     @Override
     public void doInit() {
         // initialize notification
         this.isToNotify = initDefaultNotificationSettings();
+        Mockito.reset(featureRequestService);
     }
 
     @Test
@@ -653,6 +664,11 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
     }
 
     @Test
+    public void test_update_with_optimistic_lock() throws InterruptedException {
+        updateFeaturesFiles(5, 0, true, null, true, true);
+    }
+
+    @Test
     @Purpose("Check update request on a feature with new files locations when storage error occurs")
     public void test_update_with_new_files_and_replace_mode() throws InterruptedException {
         updateFeaturesFiles(5, 2, true, FeatureFileUpdateMode.REPLACE);
@@ -667,7 +683,16 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
     private void updateFeaturesFiles(int nbSuccess,
                                      int nbErrors,
                                      boolean updateNewFile,
-                                     FeatureFileUpdateMode fileUpdateMode) throws InterruptedException {
+                                     FeatureFileUpdateMode fileUpdateMode
+                                     ) throws InterruptedException {
+        updateFeaturesFiles(nbSuccess, nbErrors, updateNewFile, fileUpdateMode, false, false);
+    }
+
+    private void updateFeaturesFiles(int nbSuccess,
+                                     int nbErrors,
+                                     boolean updateNewFile,
+                                     FeatureFileUpdateMode fileUpdateMode,boolean useMockStorageAmqp,
+                                     boolean simulateStorageListenerLockException) throws InterruptedException {
         int nbFeatures = nbSuccess + nbErrors;
         int timeout = 10_000 + (nbFeatures * 100);
         // Init a feature
@@ -680,7 +705,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         this.featureCreationService.scheduleRequests();
         waitFeature(nbFeatures, null, timeout);
 
-        mockStorageHelper.mockStorageResponses(featureCreationRequestRepo, nbFeatures, 0);
+        mockStorageHelper.mockStorageResponses(featureCreationRequestRepo, nbFeatures, 0,useMockStorageAmqp);
         mockNotificationSuccess();
         List<FeatureEntity> features = featureRepo.findAll();
         Assert.assertNotNull(features);
@@ -724,7 +749,18 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         List<FeatureEntity> allFeaturesBeforeStorageResponse = featureRepo.findAll();
 
         // Simulate response from storage
-        mockStorageHelper.mockStorageResponses(featureUpdateRequestRepo, nbSuccess, nbErrors);
+        if (simulateStorageListenerLockException) {
+            Mockito.doThrow(LockAcquisitionException.class).when(featureRequestService).handleStorageSuccess(Mockito.any());
+        }
+        mockStorageHelper.mockStorageResponses(featureUpdateRequestRepo, nbSuccess, nbErrors, useMockStorageAmqp);
+        if (useMockStorageAmqp) {
+            if (simulateStorageListenerLockException) {
+                waitForStep(featureUpdateRequestRepo, FeatureRequestStep.REMOTE_STORAGE_ERROR, nbFeatures, timeout);
+                return;
+            } else {
+                waitForStep(featureUpdateRequestRepo, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, nbFeatures, timeout);
+            }
+        }
 
         List<FeatureEntity> allFeaturesAfterStorageResponse = featureRepo.findAll();
         // Find feature updated by checking the lastUpdate field
