@@ -486,19 +486,17 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
             }
         }
 
-        if (!requests.isEmpty()) {
-            // If notification are not active, creation is ended and requests can be deleted. Else, we need to wait for
-            // notification response status.
-            if (!isNotificationActive) {
-                doOnTerminated(requests);
-                featureCreationRequestRepo.deleteByUrnIn(requests.stream()
-                                                                 .map(AbstractFeatureRequest::getUrn)
-                                                                 .collect(Collectors.toSet()));
-                requests.forEach(em::detach);
-                LOGGER.trace("------------->>> {} creation requests deleted in {} ms",
-                             requests.size(),
-                             System.currentTimeMillis() - startSuccessProcess);
-            }
+        // If notification are not active, creation is ended and requests can be deleted. Else, we need to wait for
+        // notification response status.
+        if (!isNotificationActive && !requests.isEmpty()) {
+            doOnTerminated(requests);
+            featureCreationRequestRepo.deleteByUrnIn(requests.stream()
+                                                             .map(AbstractFeatureRequest::getUrn)
+                                                             .collect(Collectors.toSet()));
+            requests.forEach(em::detach);
+            LOGGER.trace("------------->>> {} creation requests deleted in {} ms",
+                         requests.size(),
+                         System.currentTimeMillis() - startSuccessProcess);
         }
         LOGGER.trace("------------->>> {} creation requests have been successfully handled in {} ms",
                      requests.size(),

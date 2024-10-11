@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
+import fr.cnes.regards.modules.feature.domain.AbstractFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IUrnVersionByProvider;
@@ -34,6 +35,8 @@ import org.springframework.stereotype.Repository;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Repository to handle access to {@link FeatureEntity} entities.
@@ -80,8 +83,34 @@ public interface IFeatureEntityRepository
 
     Page<ILightFeatureEntity> findBySessionOwnerAndSession(String sessionOwner, String session, Pageable pageable);
 
+
+    /**
+     * Filter from provided {@link FeatureUniformResourceName} urns all products that are waiting from an acknowledgment
+     * on their dissemination
+     */
+    default Set<FeatureUniformResourceName> findFeatureUrnWaitingBlockingDissemination(Set<FeatureUniformResourceName> urns) {
+        return findWaitingBlockingDissemination(urns)
+                                      .stream()
+                                      .map(AbstractFeatureEntity::getUrn)
+                                      .collect(Collectors.toSet());
+    }
+    /**
+     * Get all features having a running and blocking dissemination among provided urns
+     * Be careful, this method do not fetch dissemination infos!
+     */
+    @Query("""
+        SELECT feature FROM FeatureEntity feature
+        WHERE EXISTS (
+            SELECT 1 FROM FeatureDisseminationInfo fdi
+            WHERE fdi.featureId = feature.id
+            AND fdi.ackDate is NULL
+            AND fdi.blocking is TRUE
+        )
+        AND feature.urn in (:urns)
+        """)
+    List<FeatureEntity> findWaitingBlockingDissemination(@Param("urns") Set<FeatureUniformResourceName> urns);
+
     @Modifying
     @Query(value = "truncate table t_feature CASCADE", nativeQuery = true)
     void deleteAll();
-
 }
