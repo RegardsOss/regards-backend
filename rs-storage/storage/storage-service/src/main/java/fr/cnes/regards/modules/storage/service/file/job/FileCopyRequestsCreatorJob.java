@@ -81,6 +81,11 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     public static final String SESSION_PARMETER_NAME = "session";
 
+    /**
+     * Scheduler lock timeout.
+     */
+    private static final long COPY_LOCK_TIME_TO_LIVE_IN_SECONDS = 60;
+
     @Autowired
     private IPublisher publisher;
 
@@ -208,7 +213,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             lockingTaskExecutors.executeWithLock(publishCopyFilesCopyEventTask,
                                                  new LockConfiguration(Instant.now(),
                                                                        FileCopyRequestService.COPY_REQUEST_CREATOR_LOCK,
-                                                                       Duration.ofSeconds(300),
+                                                                       Duration.ofSeconds(COPY_LOCK_TIME_TO_LIVE_IN_SECONDS),
                                                                        Duration.ZERO));
         } catch (Throwable e) {
             logger.error("[COPY JOB] Error creating copy requests");

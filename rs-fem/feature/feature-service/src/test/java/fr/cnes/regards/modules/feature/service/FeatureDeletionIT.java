@@ -574,14 +574,11 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         featureWithDisseminationRepository.save(featureEntity);
 
         // When
-        featureDeletionService.scheduleRequests();
+        Assert.assertEquals(0L,featureDeletionService.scheduleRequests());
 
-        Set<FeatureDeletionRequest> featureDeletionRequests;
-        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
-            runtimeTenantResolver.forceTenant(getDefaultTenant());
-            return !featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
-                                                          OffsetDateTime.now().plusDays(1)).isEmpty();
-        });
+        // Then
+        Assert.assertEquals(1L, featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
+                                                                  OffsetDateTime.now().plusDays(1)).size());
     }
 
     @Test
@@ -603,14 +600,11 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         featureWithDisseminationRepository.save(featureEntity);
 
         // When
-        featureDeletionService.scheduleRequests();
+        Assert.assertEquals(0L,featureDeletionService.scheduleRequests());
 
-        Set<FeatureDeletionRequest> featureDeletionRequests;
-        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
-            runtimeTenantResolver.forceTenant(getDefaultTenant());
-            return !featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
-                                                          OffsetDateTime.now().plusDays(1)).isEmpty();
-        });
+        // Then
+        Assert.assertEquals(1L, featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
+                                                                      OffsetDateTime.now().plusDays(1)).size());
     }
 
     // ---------------------

@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -39,7 +40,7 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
 
     Set<FeatureDeletionRequest> findByGroupIdIn(Set<String> groupId);
 
-    @Query("select fdr from FeatureDeletionRequest fdr where fdr.step = :step and fdr.requestDate <= :now")
+    @Query("SELECT fdr FROM FeatureDeletionRequest fdr WHERE fdr.step = :step and fdr.requestDate <= :now")
     Set<FeatureDeletionRequest> findByStep(@Param("step") FeatureRequestStep step,
                                            @Param("now") OffsetDateTime offsetDateTime);
 
@@ -51,7 +52,9 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
                                                      @Param("urns") Collection<FeatureUniformResourceName> urns,
                                                      @Param("now") OffsetDateTime offsetDateTime);
 
-    @Query("   select fdr from FeatureDeletionRequest fdr where fdr.step in (:steps) and fdr.requestDate <= :now")
+    @Query("""
+        SELECT fdr FROM FeatureDeletionRequest fdr WHERE fdr.step IN (:steps) AND fdr.requestDate <= :now
+        """)
     Set<FeatureDeletionRequest> findByStepIn(@Param("steps") Collection<FeatureRequestStep> steps,
                                              @Param("now") OffsetDateTime offsetDateTime);
 
@@ -69,11 +72,22 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
                                         Pageable.ofSize(size));
     }
 
+    /**
+     * A deletion request can be scheduled only if the product is fully created. Thtat means :
+     * - No creation request with same urn exists
+     * - No dissemination update request exists with same urn. Indeed, after creation request is done the request is
+     * deleted and the dissemination update requested are created. Product is fully created when dissemination info
+     * update are done.
+     */
     @Query("""
         SELECT request FROM FeatureDeletionRequest request
         WHERE NOT EXISTS (
             SELECT fcr.urn FROM FeatureCreationRequest fcr
             WHERE fcr.urn = request.urn
+        )
+        AND NOT EXISTS (
+            SELECT fudr.urn FROM FeatureUpdateDisseminationRequest fudr
+            WHERE fudr.urn = request.urn
         )
         AND request.step = :step
         AND request.registrationDate <= :delay
@@ -85,4 +99,12 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
                                                           @Param("delay") OffsetDateTime delay,
                                                           Pageable pageLimit);
 
+    @Modifying
+    @Query("""
+            UPDATE FeatureDeletionRequest fdr
+            SET step = :step
+            WHERE urn in (:urns)
+        """)
+    void updateStepByUrn(@Param("step") FeatureRequestStep step,
+                         @Param("urns") Collection<FeatureUniformResourceName> urns);
 }

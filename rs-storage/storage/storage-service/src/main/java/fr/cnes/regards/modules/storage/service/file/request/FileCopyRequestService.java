@@ -78,6 +78,8 @@ public class FileCopyRequestService {
 
     public static final String COPY_REQUEST_CREATOR_LOCK = "copy-requests-creator-lock";
 
+    private static final long COPY_LOCK_TIME_TO_LIVE_IN_SECONDS = 60;
+
     @Autowired
     private IFileCopyRequestRepository copyRepository;
 
@@ -255,7 +257,7 @@ public class FileCopyRequestService {
                                                                      status),
                                                  new LockConfiguration(Instant.now(),
                                                                        COPY_PROCESS_LOCK,
-                                                                       Duration.ofSeconds(1200),
+                                                                       Duration.ofSeconds(COPY_LOCK_TIME_TO_LIVE_IN_SECONDS),
                                                                        Duration.ZERO));
         } catch (Throwable e) {
             LOGGER.trace("[FILES COPY REQUEST SERVICE] Copy process delayed. A copy process is already running.", e);

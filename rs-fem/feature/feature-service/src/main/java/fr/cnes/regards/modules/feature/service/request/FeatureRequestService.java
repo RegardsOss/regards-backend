@@ -104,33 +104,28 @@ public class FeatureRequestService implements IFeatureRequestService {
         RequestsInfo info = RequestsInfo.build(0L);
         switch (type) {
             case COPY:
-                results = featureCopyService.findRequests(filters, updatedPage)
-                                            .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                results = featureCopyService.findRequests(filters, updatedPage).map(AbstractFeatureRequest::toDTO);
                 info = featureCopyService.getInfo(filters);
                 break;
             case CREATION:
-                results = featureCreationService.findRequests(filters, updatedPage)
-                                                .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                results = featureCreationService.findRequests(filters, updatedPage).map(AbstractFeatureRequest::toDTO);
                 info = featureCreationService.getInfo(filters);
                 break;
             case DELETION:
-                results = featureDeletionService.findRequests(filters, updatedPage)
-                                                .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                results = featureDeletionService.findRequests(filters, updatedPage).map(AbstractFeatureRequest::toDTO);
                 info = featureDeletionService.getInfo(filters);
                 break;
             case NOTIFICATION:
                 results = featureNotificationService.findRequests(filters, updatedPage)
-                                                    .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                                                    .map(AbstractFeatureRequest::toDTO);
                 info = featureNotificationService.getInfo(filters);
                 break;
             case SAVE_METADATA:
-                results = featureMetadataService.findRequests(filters, updatedPage)
-                                                .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                results = featureMetadataService.findRequests(filters, updatedPage).map(AbstractFeatureRequest::toDTO);
                 info = featureMetadataService.getInfo(filters);
                 break;
             case UPDATE:
-                results = featureUpdateService.findRequests(filters, updatedPage)
-                                              .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                results = featureUpdateService.findRequests(filters, updatedPage).map(AbstractFeatureRequest::toDTO);
                 info = featureUpdateService.getInfo(filters);
                 break;
             default:
@@ -216,7 +211,8 @@ public class FeatureRequestService implements IFeatureRequestService {
         if (!updateRequests.isEmpty()) {
             // Retrieve features to update associated to storage responses
             List<FeatureEntity> featuresToUpdate = featureRepo.findCompleteByUrnIn(updateRequests.stream()
-                                                                                                 .map(r -> r.getUrn())
+                                                                                                 .map(
+                                                                                                     FeatureUpdateRequest::getUrn)
                                                                                                  .collect(Collectors.toSet()));
             for (FeatureEntity f : featuresToUpdate) {
                 // Associate Feature to FeatureUpdaterRequest thanks to feature urn
@@ -304,16 +300,14 @@ public class FeatureRequestService implements IFeatureRequestService {
         List<FeatureUniformResourceName> missingUrns = requests.stream()
                                                                .map(FeatureRequestDTO::getUrn)
                                                                .filter(Objects::nonNull)
-                                                               .collect(Collectors.toList());
+                                                               .toList();
         if (!missingUrns.isEmpty()) {
             List<IProviderIdByUrn> providerIds = abstractFeatureRequestRepo.findFeatureProviderIdFromRequestUrns(
                 missingUrns);
-            requests.forEach(r -> {
-                providerIds.stream()
-                           .filter(i -> i.getUrn().equals(r.getUrn()))
-                           .findFirst()
-                           .ifPresent(i -> r.setProviderId(i.getProviderId()));
-            });
+            requests.forEach(r -> providerIds.stream()
+                                             .filter(i -> i.getUrn().equals(r.getUrn()))
+                                             .findFirst()
+                                             .ifPresent(i -> r.setProviderId(i.getProviderId())));
         }
     }
 
@@ -327,7 +321,7 @@ public class FeatureRequestService implements IFeatureRequestService {
             Sort newSort = Sort.by(page.getSort()
                                        .stream()
                                        .map(s -> mapDtoAttributeSortOrderToEntitySortOrder(s, type))
-                                       .filter(s -> s != null)
+                                       .filter(Objects::nonNull)
                                        .toList());
             newPage = PageRequest.of(page.getPageNumber(), page.getPageSize(), newSort);
         }
@@ -344,18 +338,14 @@ public class FeatureRequestService implements IFeatureRequestService {
         switch (dtoAttributeName) {
             case FeatureRequestDTO.PROVIDER_ID_FIELD_NAME -> {
                 return AbstractRequest.getProviderIdProperty(type)
-                                      .map(property -> dtoAttributeSortOrder.withProperty(property))
+                                      .map(dtoAttributeSortOrder::withProperty)
                                       .orElse(null);
             }
             case FeatureRequestDTO.SESSION_FIELD_NAME -> {
-                return AbstractRequest.getSessionProperty(type)
-                                      .map(property -> dtoAttributeSortOrder.withProperty(property))
-                                      .orElse(null);
+                return AbstractRequest.getSessionProperty(type).map(dtoAttributeSortOrder::withProperty).orElse(null);
             }
             case FeatureRequestDTO.SOURCE_FIELD_NAME -> {
-                return AbstractRequest.getSourceProperty(type)
-                                      .map(property -> dtoAttributeSortOrder.withProperty(property))
-                                      .orElse(null);
+                return AbstractRequest.getSourceProperty(type).map(dtoAttributeSortOrder::withProperty).orElse(null);
             }
             default -> {
                 return dtoAttributeSortOrder;

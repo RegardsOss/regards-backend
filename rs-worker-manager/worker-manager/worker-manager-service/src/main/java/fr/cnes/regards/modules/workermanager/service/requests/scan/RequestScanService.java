@@ -59,6 +59,14 @@ import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionsRequestsInfo;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * This service scans requests and changes their status {@link RequestStatus} as fast as possible
  *
@@ -72,7 +80,7 @@ public class RequestScanService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestScanService.class);
 
-    private static final Long MAX_TASK_WAIT_DURING_SCHEDULE = 30L; // In second
+    private static final Long MAX_TASK_WAIT_DURING_SCHEDULE = 60L; // In second
 
     private static final int DEFAULT_SCAN_PAGE_SIZE = 400;
 

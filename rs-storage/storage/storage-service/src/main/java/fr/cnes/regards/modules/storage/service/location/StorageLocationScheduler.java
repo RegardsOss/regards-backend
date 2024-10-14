@@ -56,6 +56,8 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
 
     private static final String FILE_LOCATION_SCHEDULER_LOCK = "file_location_schedule_lock";
 
+    private static final long FILE_LOCATION_LOCK_TIME_TO_LIVE_IN_SECONDS = 60;
+
     private static final String DEFAULT_INITIAL_DELAY = "10000";
 
     private static final String DEFAULT_DELAY = "3600000";
@@ -142,7 +144,7 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
                 lockingTaskExecutors.executeWithLock(task,
                                                      new LockConfiguration(Instant.now(),
                                                                            lockId,
-                                                                           Duration.ofSeconds(120),
+                                                                           Duration.ofSeconds(FILE_LOCATION_LOCK_TIME_TO_LIVE_IN_SECONDS),
                                                                            Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(actionLabel, schedulerTitle, e);

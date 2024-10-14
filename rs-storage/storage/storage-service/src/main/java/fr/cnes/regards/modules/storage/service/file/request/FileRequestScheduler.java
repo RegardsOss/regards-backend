@@ -70,6 +70,8 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
 
     private static final String DEFAULT_SCHEDULING_DELAY = "1000";
 
+    private static final long UPDATE_LOCK_TIME_TO_LIVE_IN_SECONDS = 60;
+
     @Autowired
     private ITenantResolver tenantResolver;
 
@@ -140,7 +142,7 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
                 lockingTaskExecutors.executeWithLock(handleRequestsTask,
                                                      new LockConfiguration(Instant.now(),
                                                                            STORAGE_LOCK,
-                                                                           Duration.ofSeconds(1200),
+                                                                           Duration.ofSeconds(UPDATE_LOCK_TIME_TO_LIVE_IN_SECONDS),
                                                                            Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(STORAGE_ACTIONS, STORAGE_TITLE, e);
