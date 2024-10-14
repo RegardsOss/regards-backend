@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import fr.cnes.regards.modules.notifier.dto.out.Recipient;
+import org.hibernate.exception.LockAcquisitionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -194,7 +195,9 @@ public class FeatureUpdateDisseminationService {
     }
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
-    @Retryable(value = { OptimisticLockingFailureException.class }, maxAttempts = 10, backoff = @Backoff(delay = 1000))
+    @Retryable(value = { OptimisticLockingFailureException.class, LockAcquisitionException.class },
+               maxAttempts = 10,
+               backoff = @Backoff(delay = 1000))
     public void handleFeatureUpdateDisseminationRequests(Page<FeatureUpdateDisseminationRequest> results) {
         SessionFeatureDisseminationInfos sessionInfos = new SessionFeatureDisseminationInfos();
 
@@ -203,7 +206,7 @@ public class FeatureUpdateDisseminationService {
         // Retrieve all blocked requests associated to the update features in one request to avoid one request per
         // request
         List<AbstractFeatureRequest> blockedRequests = abstractFeatureRequestRepository.findAllByUrnInAndStep(
-            featureEntities.stream().map(FeatureEntity::getUrn).collect(Collectors.toList()),
+            featureEntities.stream().map(FeatureEntity::getUrn).toList(),
             FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION);
         // Update features recipients
         for (FeatureEntity featureEntity : featureEntities) {
@@ -230,9 +233,11 @@ public class FeatureUpdateDisseminationService {
     }
 
     @Recover
-    public void recoverOptimisticRetries(Exception e, Page<FeatureUpdateDisseminationRequest> results) {
+    public void recoverOptimisticRetries(Exception e, Page<FeatureUpdateDisseminationRequest> results)
+        throws Exception {
         LOGGER.error("[FEATURE UPDATE DISSEMINATION] Too many retries for optimistic lock. Optimistic lock is maybe "
                      + "not the right solution here", e);
+        throw e;
     }
 
     private List<FeatureEntity> getFeatureEntities(Page<FeatureUpdateDisseminationRequest> results) {

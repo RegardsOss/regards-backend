@@ -486,19 +486,17 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
             }
         }
 
-        if (!requests.isEmpty()) {
-            // If notification are not active, creation is ended and requests can be deleted. Else, we need to wait for
-            // notification response status.
-            if (!isNotificationActive) {
-                doOnTerminated(requests);
-                featureCreationRequestRepo.deleteByUrnIn(requests.stream()
-                                                                 .map(AbstractFeatureRequest::getUrn)
-                                                                 .collect(Collectors.toSet()));
-                requests.forEach(em::detach);
-                LOGGER.trace("------------->>> {} creation requests deleted in {} ms",
-                             requests.size(),
-                             System.currentTimeMillis() - startSuccessProcess);
-            }
+        // If notification are not active, creation is ended and requests can be deleted. Else, we need to wait for
+        // notification response status.
+        if (!isNotificationActive && !requests.isEmpty()) {
+            doOnTerminated(requests);
+            featureCreationRequestRepo.deleteByUrnIn(requests.stream()
+                                                             .map(AbstractFeatureRequest::getUrn)
+                                                             .collect(Collectors.toSet()));
+            requests.forEach(em::detach);
+            LOGGER.trace("------------->>> {} creation requests deleted in {} ms",
+                         requests.size(),
+                         System.currentTimeMillis() - startSuccessProcess);
         }
         LOGGER.trace("------------->>> {} creation requests have been successfully handled in {} ms",
                      requests.size(),
@@ -534,8 +532,15 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
         LOGGER.trace("------------->>> {} feature saved in {} ms", entities.size(), System.currentTimeMillis() - start);
 
-        // Set 'last' to false for all previous versions
+        // compute the list of previous features providerID that will be kept (override mode disabled)
+        List<String> featureNotOverride = requests.stream()
+                                                  .filter(r -> !r.getMetadata().isOverride())
+                                                  .map(FeatureCreationRequest::getProviderId)
+                                                  .toList();
+        // Set 'last' to false for all previous versions when previous version wont be removed later
+        //FIXME should not perform an update on the previous version here like this in the context of override=false
         Set<String> previousUrns = entities.stream()
+                                           .filter(entity -> featureNotOverride.contains(entity.getProviderId()))
                                            .map(FeatureEntity::getPreviousVersionUrn)
                                            .filter(Objects::nonNull)
                                            .map(FeatureUniformResourceName::toString)

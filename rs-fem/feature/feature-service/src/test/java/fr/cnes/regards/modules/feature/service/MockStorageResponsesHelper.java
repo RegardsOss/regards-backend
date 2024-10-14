@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.service;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureCreationRequestRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
@@ -33,7 +34,10 @@ import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import fr.cnes.regards.modules.fileaccess.dto.FileLocationDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileGroupRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
 import org.assertj.core.util.Lists;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -52,6 +56,8 @@ import java.util.stream.Collectors;
 @Component
 public class MockStorageResponsesHelper {
 
+    private final IPublisher publisher;
+
     private FeatureConfigurationProperties properties;
 
     private IFeatureRequestService featureRequestService;
@@ -63,11 +69,12 @@ public class MockStorageResponsesHelper {
     public MockStorageResponsesHelper(FeatureConfigurationProperties properties,
                                       IFeatureCreationRequestRepository featureCreationRequestRepo,
                                       IFeatureUpdateRequestRepository featureUpdateRequestRepo,
-                                      IFeatureRequestService featureRequestService) {
+                                      IFeatureRequestService featureRequestService, IPublisher publisher) {
         this.properties = properties;
         this.featureRequestService = featureRequestService;
         this.featureUpdateRequestRepo = featureUpdateRequestRepo;
         this.featureCreationRequestRepo = featureCreationRequestRepo;
+        this.publisher = publisher;
     }
 
     /**
@@ -75,7 +82,7 @@ public class MockStorageResponsesHelper {
      * Including reference and storage requests.
      */
     public void mockFeatureCreationStorageSuccess() {
-        mockStorageResponses(featureCreationRequestRepo, Optional.empty(), null, true);
+        doMockStorageResponses(featureCreationRequestRepo, Optional.empty(), null, true, false);
     }
 
     /**
@@ -83,19 +90,24 @@ public class MockStorageResponsesHelper {
      * Including reference and storage requests.
      */
     public void mockFeatureUpdateStorageSuccess() {
-        mockStorageResponses(featureUpdateRequestRepo, Optional.empty(), null, true);
+        doMockStorageResponses(featureUpdateRequestRepo, Optional.empty(), null, true, false);
+    }
+
+    public void mockStorageResponses(IAbstractFeatureRequestRepository repo, int nbSuccess, int nbErrors){
+        mockStorageResponses(repo, nbSuccess, nbErrors, false);
     }
 
     /**
      * Mock storage responses success with some errors for all feature creation request in database.
      * Including reference and storage requests.
      */
-    public void mockStorageResponses(IAbstractFeatureRequestRepository repo, int nbSuccess, int nbErrors) {
+    public void mockStorageResponses(IAbstractFeatureRequestRepository repo, int nbSuccess, int nbErrors,
+                                     boolean useAmqpResponses) {
         if (nbSuccess > 0) {
-            mockStorageResponses(repo, Optional.of(nbSuccess), null, true);
+            doMockStorageResponses(repo, Optional.of(nbSuccess), null, true,useAmqpResponses);
         }
         if (nbErrors > 0) {
-            mockStorageResponses(repo, Optional.of(nbErrors), null, false);
+            doMockStorageResponses(repo, Optional.of(nbErrors), null, false,useAmqpResponses);
         }
     }
 
@@ -104,7 +116,7 @@ public class MockStorageResponsesHelper {
      * Including reference and storage requests.
      */
     public void mockFeatureCreationStorageSuccess(Optional<Integer> nbRequestsToMock) {
-        mockStorageResponses(featureCreationRequestRepo, nbRequestsToMock, null, true);
+        doMockStorageResponses(featureCreationRequestRepo, nbRequestsToMock, null, true, false);
     }
 
     /**
@@ -112,13 +124,14 @@ public class MockStorageResponsesHelper {
      * Including reference and storage requests.
      */
     public void mockFeatureCreationStorageSuccess(Collection<String> groupIds) {
-        mockStorageResponses(featureCreationRequestRepo, Optional.empty(), groupIds, true);
+        doMockStorageResponses(featureCreationRequestRepo, Optional.empty(), groupIds, true,false);
     }
 
-    private void mockStorageResponses(IAbstractFeatureRequestRepository repo,
+    private void doMockStorageResponses(IAbstractFeatureRequestRepository repo,
                                       Optional<Integer> nbRequestsToMock,
                                       Collection<String> groupIds,
-                                      boolean success) {
+                                      boolean success,
+                                      boolean useAmqpResponses) {
         int pageSize = properties.getMaxBulkSize();
         if (nbRequestsToMock.isPresent() && nbRequestsToMock.get() < pageSize) {
             pageSize = nbRequestsToMock.get();
@@ -141,9 +154,9 @@ public class MockStorageResponsesHelper {
                                                    .collect(Collectors.toList());
             }
             if (success) {
-                mockStorageSuccess(requestsToHandle);
+                mockStorageSuccess(requestsToHandle,useAmqpResponses);
             } else {
-                mockStorageError(requestsToHandle);
+                mockStorageError(requestsToHandle,useAmqpResponses);
             }
             handled += fcrPage.getSize();
         } while (fcrPage.hasNext() && handled < nbRequestsToMock.orElse(Integer.MAX_VALUE));
@@ -226,34 +239,62 @@ public class MockStorageResponsesHelper {
                                           errorCause);
     }
 
-    private void mockStorageSuccess(Collection<AbstractFeatureRequest> featureRequestsPage) {
+    private void mockStorageSuccess(Collection<AbstractFeatureRequest> featureRequestsPage, boolean useAmqpResponses) {
+        if (useAmqpResponses) {
+            mockStorageEvents(featureRequestsPage, FileGroupRequestStatus.SUCCESS);
+        } else {
+            // mock rs-storage response success for file storage
+            Set<RequestResultInfoDto> requestsInfo = Sets.newHashSet();
+            featureRequestsPage.forEach(featureRequest -> {
+                if (featureRequest instanceof FeatureCreationRequest) {
+                    requestsInfo.addAll(this.toStorageRequestInfoResponse((FeatureCreationRequest) featureRequest,
+                                                                          true));
+                } else if (featureRequest instanceof FeatureUpdateRequest) {
+                    requestsInfo.addAll(this.toStorageRequestInfoResponse((FeatureUpdateRequest) featureRequest, true));
+                }
+            });
+
+            // simulate storage response
+            featureRequestService.handleStorageSuccess(requestsInfo);
+        }
+    }
+
+    private void mockStorageEvents(Collection<AbstractFeatureRequest> featureRequestsPage,
+                                   FileGroupRequestStatus status) {
         // mock rs-storage response success for file storage
-        Set<RequestResultInfoDto> requestsInfo = Sets.newHashSet();
+        List<FileRequestsGroupEvent>  events = new ArrayList<>();
         featureRequestsPage.forEach(featureRequest -> {
+            Set<RequestResultInfoDto> requestsInfo = Sets.newHashSet();
             if (featureRequest instanceof FeatureCreationRequest) {
                 requestsInfo.addAll(this.toStorageRequestInfoResponse((FeatureCreationRequest) featureRequest, true));
             } else if (featureRequest instanceof FeatureUpdateRequest) {
                 requestsInfo.addAll(this.toStorageRequestInfoResponse((FeatureUpdateRequest) featureRequest, true));
             }
+            events.add(new FileRequestsGroupEvent(featureRequest.getGroupId(), FileRequestType.STORAGE,
+                                                  status, Set.of(), requestsInfo,"success"));
         });
 
         // simulate storage response
-        featureRequestService.handleStorageSuccess(requestsInfo);
+        publisher.publish(events);
     }
 
-    private void mockStorageError(Collection<AbstractFeatureRequest> featureRequestsPage) {
-        // mock rs-storage response success for file storage
-        Set<RequestResultInfoDto> requestsInfo = Sets.newHashSet();
-        featureRequestsPage.forEach(featureRequest -> {
-            if (featureRequest instanceof FeatureCreationRequest) {
-                requestsInfo.addAll(toStorageRequestInfoResponse((FeatureCreationRequest) featureRequest, false));
-            } else if (featureRequest instanceof FeatureUpdateRequest) {
-                requestsInfo.addAll(toStorageRequestInfoResponse((FeatureUpdateRequest) featureRequest, false));
-            }
-        });
+    private void mockStorageError(Collection<AbstractFeatureRequest> featureRequestsPage, boolean useAmqpResponses) {
+        if (useAmqpResponses) {
+            mockStorageEvents(featureRequestsPage, FileGroupRequestStatus.ERROR);
+        } else {
+            // mock rs-storage response success for file storage
+            Set<RequestResultInfoDto> requestsInfo = Sets.newHashSet();
+            featureRequestsPage.forEach(featureRequest -> {
+                if (featureRequest instanceof FeatureCreationRequest) {
+                    requestsInfo.addAll(toStorageRequestInfoResponse((FeatureCreationRequest) featureRequest, false));
+                } else if (featureRequest instanceof FeatureUpdateRequest) {
+                    requestsInfo.addAll(toStorageRequestInfoResponse((FeatureUpdateRequest) featureRequest, false));
+                }
+            });
 
-        // simulate storage response
-        featureRequestService.handleStorageError(requestsInfo);
+            // simulate storage response
+            featureRequestService.handleStorageError(requestsInfo);
+        }
     }
 
 }

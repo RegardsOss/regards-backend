@@ -54,4 +54,5 @@ public interface IFeatureEntityWithDisseminationRepository
 
     @EntityGraph(attributePaths = { "disseminationsInfo" }, type = EntityGraph.EntityGraphType.LOAD)
     List<FeatureEntity> findAll();
+
 }

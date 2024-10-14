@@ -89,6 +89,8 @@ public class FileDeletionRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionRequestService.class);
 
+    private static final long DELETION_LOCK_TIME_TO_LIVE_IN_SECONDS = 60;
+
     private final IFileDeletetionRequestRepository fileDeletionRequestRepo;
 
     private final IPluginService pluginService;
@@ -260,7 +262,7 @@ public class FileDeletionRequestService {
                                                                                           new LockConfiguration(Instant.now(),
                                                                                                                 FilesDeletionEvent.DELETION_LOCK,
                                                                                                                 Duration.ofSeconds(
-                                                                                                                    30),
+                                                                                                                    DELETION_LOCK_TIME_TO_LIVE_IN_SECONDS),
                                                                                                                 Duration.ZERO));
             if (result.wasExecuted() && (result.getResult() != null)) {
                 jobList = result.getResult();

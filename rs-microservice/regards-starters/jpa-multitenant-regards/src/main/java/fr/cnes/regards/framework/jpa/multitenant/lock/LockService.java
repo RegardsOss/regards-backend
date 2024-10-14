@@ -123,7 +123,7 @@ public class LockService {
         Lock lock = lockRegistry.obtain(lockName);
         boolean lockAcquired = lock.tryLock(timeToWait, timeUnit);
         if (!lockAcquired) {
-            LOGGER.warn("Unable to acquire lock {} for task {}", lockName, process.getClass().getSimpleName());
+            LOGGER.info("Unable to acquire lock {} for task {}. Another replica already uses it.", lockName, process.getClass().getSimpleName());
             return new LockServiceResponse<>(false);
         }
 

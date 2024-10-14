@@ -70,6 +70,8 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
     @Autowired
     private ILockingTaskExecutors lockingTaskExecutors;
 
+    private static final long DELETION_LOCK_TIME_TO_LIVE_IN_SECONDS = 60;
+
     /**
      * The job parameters as a map
      */
@@ -135,7 +137,7 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
             lockingTaskExecutors.executeWithLock(publishFilesDeletionEventsTask,
                                                  new LockConfiguration(Instant.now(),
                                                                        FilesDeletionEvent.DELETION_LOCK,
-                                                                       Duration.ofSeconds(300),
+                                                                       Duration.ofSeconds(DELETION_LOCK_TIME_TO_LIVE_IN_SECONDS),
                                                                        Duration.ZERO));
         } catch (Throwable e) {
             logger.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");

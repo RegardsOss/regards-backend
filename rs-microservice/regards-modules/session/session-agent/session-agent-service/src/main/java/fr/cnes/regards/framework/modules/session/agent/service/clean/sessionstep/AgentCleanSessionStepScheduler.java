@@ -95,6 +95,7 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, CLEAN_SESSION_STEPS);
+                
                 lockingTaskExecutors.executeWithLock(cleanProcessTask,
                                                      new LockConfiguration(Instant.now(),
                                                                            microserviceName + "_clean-session-steps",

@@ -19,12 +19,14 @@
 package fr.cnes.regards.modules.feature.service.abort;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.modules.feature.dao.FeatureCopyRequestSpecificationsBuilder;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.service.request.FeatureRequestService;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
@@ -119,6 +121,14 @@ public class FeatureRequestAbortService {
         long nbAbortedRequests = 0;
         long nbRequestsToAbort = 0;
 
+        // If the payload do not contain a criteria on the GRANTED request state, replace the existing criterias by GRANTED
+        if (searchParameters == null) {
+            searchParameters = new SearchFeatureRequestParameters();
+        }
+        if (searchParameters.getStates() == null || searchParameters.getStates().getValues() == null
+            || !searchParameters.getStates().getValues().contains(RequestState.GRANTED)) {
+            searchParameters.withStatesIncluded(List.of(RequestState.GRANTED));
+        }
         if (STEPS_CORRELATION_TABLE.containsKey(requestType)) {
             Pageable page = PageRequest.of(0, nbRequestsToAbortPerPage);
             Page<FeatureRequestDTO> requestsPage;

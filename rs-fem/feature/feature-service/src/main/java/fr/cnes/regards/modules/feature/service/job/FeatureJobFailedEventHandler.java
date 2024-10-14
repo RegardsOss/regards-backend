@@ -97,6 +97,8 @@ public class FeatureJobFailedEventHandler implements IHandler<JobEvent>, Applica
                 featureRequestService.updateRequestStateAndStep(requestIds,
                                                                 RequestState.ERROR,
                                                                 FeatureRequestStep.LOCAL_ERROR);
+                // Fixme - retrieve the error from the job and attach it to every request
+                // if the request do not contain the error
             }
         }
     }
