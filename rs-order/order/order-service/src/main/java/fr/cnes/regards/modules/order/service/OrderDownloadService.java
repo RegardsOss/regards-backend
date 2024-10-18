@@ -154,7 +154,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         // A multiset to manage multi-occurrences of files with same name
         Multiset<String> fileNamesInZip = HashMultiset.create();
         List<Pair<OrderDataFile, String>> downloadErrorFiles = new ArrayList<>();
-
+        boolean zipCreationFailed = false;
         try (ZipArchiveOutputStream zos = new ZipArchiveOutputStream(os)) {
             zos.setEncoding("ASCII");
             zos.setCreateUnicodeExtraFields(ZipArchiveOutputStream.UnicodeExtraFieldPolicy.NOT_ENCODEABLE);
@@ -181,19 +181,22 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
             zos.finish();
         } catch (IOException | RuntimeException e) {
             LOGGER.error("Cannot create ZIP file.", e);
+            zipCreationFailed = true;
         }
-        // Set statuses of all downloaded files
-        availableFiles.forEach(f -> f.setState(FileState.DOWNLOADED));
-        // Set statuses of all not downloaded files
-        downloadErrorFiles.forEach(f -> f.getLeft().setState(FileState.DOWNLOAD_ERROR));
-        // use one set to save everybody
-        availableFiles.addAll(downloadErrorFiles.stream().map(Pair::getLeft).toList());
-        dataFileService.save(availableFiles);
+        if (!zipCreationFailed) {
+            // Set statuses of all downloaded files
+            availableFiles.forEach(f -> f.setState(FileState.DOWNLOADED));
+            // Set statuses of all not downloaded files
+            downloadErrorFiles.forEach(f -> f.getLeft().setState(FileState.DOWNLOAD_ERROR));
+            // use one set to save everybody
+            availableFiles.addAll(downloadErrorFiles.stream().map(Pair::getLeft).toList());
+            dataFileService.save(availableFiles);
 
-        processingEventSender.sendDownloadedFilesNotification(availableFiles);
+            processingEventSender.sendDownloadedFilesNotification(availableFiles);
 
-        // Don't forget to manage user order jobs (maybe order is in waitingForUser state)
-        orderJobService.manageUserOrderStorageFilesJobInfos(orderOwner);
+            // Don't forget to manage user order jobs (maybe order is in waitingForUser state)
+            orderJobService.manageUserOrderStorageFilesJobInfos(orderOwner);
+        }
     }
 
     /**
