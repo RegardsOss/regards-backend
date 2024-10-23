@@ -42,8 +42,8 @@ public interface ToponymsRepository extends JpaRepository<Toponym, String>, JpaS
 
     @Query(value =
                "select bid, label, label_fr, public.ST_Simplify(geom, ?2,true) as geom, copyright, description, visible,"
-               + "creation_date, expiration_date, author, project from {h-schema}t_toponyms where bid = ?1",
-           nativeQuery = true)
+               + "creation_date, expiration_date, author, project, bounding_box from {h-schema}t_toponyms where bid = "
+               + "?1", nativeQuery = true)
     Optional<Toponym> findOneSimplified(String businessId, double tolerance);
 
     Page<Toponym> findByVisible(boolean visible, Pageable page);

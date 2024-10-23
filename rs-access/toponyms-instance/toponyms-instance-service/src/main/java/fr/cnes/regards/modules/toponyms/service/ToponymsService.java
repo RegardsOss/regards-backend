@@ -196,6 +196,7 @@ public class ToponymsService {
                                               t.getCopyright(),
                                               t.getDescription(),
                                               t.isVisible(),
+                                              t.getBoundingBox(),
                                               t.getToponymMetadata()))
                    .collect(Collectors.toList());
     }
@@ -258,6 +259,7 @@ public class ToponymsService {
                                                                       null,
                                                                       null,
                                                                       false,
+                                                                      "",
                                                                       metadata)), sampling);
             }
         }
@@ -278,6 +280,7 @@ public class ToponymsService {
                                 t.getCopyright(),
                                 t.getDescription(),
                                 t.isVisible(),
+                                t.getBoundingBox(),
                                 t.getToponymMetadata());
     }
 

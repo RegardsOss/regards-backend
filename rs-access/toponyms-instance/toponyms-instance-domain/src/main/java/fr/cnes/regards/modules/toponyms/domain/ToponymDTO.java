@@ -65,6 +65,11 @@ public class ToponymDTO {
     private boolean visible;
 
     /**
+     * Bouding box
+     */
+    private String boundingBox;
+
+    /**
      * Toponym metadata
      */
     @Embedded
@@ -85,6 +90,7 @@ public class ToponymDTO {
                                    String copyright,
                                    String description,
                                    boolean visible,
+                                   String boundingBox,
                                    ToponymMetadata toponymMetadata) {
         ToponymDTO dto = new ToponymDTO();
         dto.setBusinessId(businessId);
@@ -94,6 +100,7 @@ public class ToponymDTO {
         dto.setCopyright(copyright);
         dto.setDescription(description);
         dto.setVisible(visible);
+        dto.setBoundingBox(boundingBox);
         dto.setToponymMetadata(toponymMetadata);
         return dto;
     }
@@ -152,6 +159,14 @@ public class ToponymDTO {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public String getBoundingBox() {
+        return boundingBox;
+    }
+
+    public void setBoundingBox(String boundingBox) {
+        this.boundingBox = boundingBox;
     }
 
     public ToponymMetadata getToponymMetadata() {

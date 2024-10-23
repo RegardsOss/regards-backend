@@ -53,7 +53,7 @@ public class TemporaryToponymsCleanServiceIT extends AbstractRegardsIT {
                 toponymMetaData.setExpirationDate(OffsetDateTime.now().plusDays(20));
             }
             String name = "ToponymTest " + i;
-            notVisibleToponyms.add(new Toponym(name, name, name, null, null, null, false, toponymMetaData));
+            notVisibleToponyms.add(new Toponym(name, name, name, null, null, null, false, "", toponymMetaData));
         }
         return this.toponymsRepository.saveAll(notVisibleToponyms);
     }

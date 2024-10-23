@@ -67,6 +67,9 @@ public class Toponym {
     @Column(name = "visible")
     private boolean visible;
 
+    @Column(name = "bounding_box")
+    private String boundingBox;
+
     @Embedded
     private ToponymMetadata toponymMetadata;
 
@@ -77,6 +80,7 @@ public class Toponym {
                    String copyright,
                    String description,
                    boolean visible,
+                   String boundingBox,
                    ToponymMetadata toponymMetadata) {
         this.businessId = businessId;
         this.label = label;
@@ -85,6 +89,7 @@ public class Toponym {
         this.copyright = copyright;
         this.description = description;
         this.visible = visible;
+        this.boundingBox = boundingBox;
         this.toponymMetadata = toponymMetadata;
     }
 
@@ -142,6 +147,14 @@ public class Toponym {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public String getBoundingBox() {
+        return boundingBox;
+    }
+
+    public void setBoundingBox(String boundingBox) {
+        this.boundingBox = boundingBox;
     }
 
     public void setToponymMetadata(ToponymMetadata toponymMetadata) {

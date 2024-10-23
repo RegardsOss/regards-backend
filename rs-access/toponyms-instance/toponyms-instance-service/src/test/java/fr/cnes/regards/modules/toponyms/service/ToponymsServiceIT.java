@@ -226,7 +226,7 @@ public class ToponymsServiceIT extends AbstractRegardsIT {
                                                            currentDateTime.plusDays(this.defaultExpiration),
                                                            "test_user",
                                                            "test_project");
-            notVisibleToponyms.add(new Toponym(name, name, name, null, name, null, false, metadata));
+            notVisibleToponyms.add(new Toponym(name, name, name, null, name, null, false, "", metadata));
         }
         return this.toponymRepo.saveAll(notVisibleToponyms);
     }
