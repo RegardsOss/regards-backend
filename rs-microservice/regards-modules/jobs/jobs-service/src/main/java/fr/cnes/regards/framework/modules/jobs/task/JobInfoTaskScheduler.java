@@ -90,6 +90,16 @@ public class JobInfoTaskScheduler extends AbstractTaskScheduler {
         jobInfoService.updatePendingJobsToBeTriggered(currentDateTime, poolSize);
     };
 
+    /**
+     * Requeue jobs locked in TO_BE_RUN status for too long.
+     * This can happen if service reboot or crash during job scheduling.
+     */
+    private final LockingTaskExecutor.Task triggerRequeueLockedJobTask = () -> {
+        lockingTaskExecutors.assertLocked();
+        LOGGER.debug("[{}] Running requeue locked jobs task", INSTANCE_RANDOM_ID);
+        jobInfoService.requeueOldToBeRunJobs();
+    };
+
     private final LockingTaskExecutor.Task cleanDeletableJobsTask = () -> {
         lockingTaskExecutors.assertLocked();
         LOGGER.debug("[{}] Running clean deletable jobs task", INSTANCE_RANDOM_ID);
@@ -103,6 +113,18 @@ public class JobInfoTaskScheduler extends AbstractTaskScheduler {
     @Scheduled(fixedDelayString = "${regards.jobs.trigger.update.rate.ms:60000}")
     public void triggerPendingJobs() {
         runScheduledTask(triggerPendingJobTask,
+                         UPDATE_PENDING_TRIGGER_JOBS_LOCK,
+                         UPDATE_PENDING_TRIGGER_JOBS,
+                         UPDATE_PENDING_TRIGGER_JOBS_TITLE);
+    }
+
+    /**
+     * Periodically check if pending jobs have to be triggered (only if a trigger timestamp is present).
+     * Change the job status to QUEUED if the trigger date is expired in order to launch the job execution.
+     */
+    @Scheduled(fixedDelayString = "${regards.jobs.trigger.requeue.locked.rate.ms:600000}")
+    public void requeueLockedJobTask() {
+        runScheduledTask(triggerRequeueLockedJobTask,
                          UPDATE_PENDING_TRIGGER_JOBS_LOCK,
                          UPDATE_PENDING_TRIGGER_JOBS,
                          UPDATE_PENDING_TRIGGER_JOBS_TITLE);

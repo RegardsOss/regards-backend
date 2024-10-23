@@ -79,6 +79,9 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     @Value("${regards.jobs.slot.number:3}")
     private int timeSlotNumber;
 
+    @Value("${regards.jobs.toberun.expiration.hours:60}")
+    public int toBeRunExpirationMinutes;
+
     @Autowired
     private IPublisher publisher;
 
@@ -314,6 +317,20 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     @Transactional(propagation = Propagation.NEVER)
     public void updateLastJobsPingDate() {
         lastJobPingDate = OffsetDateTime.now();
+    }
+
+    @Override
+    public void requeueOldToBeRunJobs() {
+        OffsetDateTime tooOldDate = OffsetDateTime.now().minusMinutes(toBeRunExpirationMinutes);
+        List<JobInfo> jobInfos = jobInfoRepository.findAllByStatusStatusAndStatusStatusDateLessThan(JobStatus.TO_BE_RUN,
+                                                                                                         tooOldDate,
+                                                                                                         Pageable.ofSize(
+                                                                                                             100));
+        if (!jobInfos.isEmpty()) {
+            LOGGER.warn("Requeue {} jobs in TO_BE_RUN status for too long.", jobInfos.size());
+            jobInfos.forEach(jobInfo -> jobInfo.updateStatus(JobStatus.QUEUED));
+            jobInfoRepository.saveAll(jobInfos);
+        }
     }
 
 }

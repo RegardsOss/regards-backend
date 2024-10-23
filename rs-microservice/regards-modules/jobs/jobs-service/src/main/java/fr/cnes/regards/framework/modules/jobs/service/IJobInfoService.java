@@ -172,4 +172,9 @@ public interface IJobInfoService {
      */
     void updateLastJobsPingDate();
 
+    /**
+     * In some error cases, jobs can be locked in TO_BE_RUN status.
+     * This method allows to requeue those jobs.
+     */
+    void requeueOldToBeRunJobs();
 }

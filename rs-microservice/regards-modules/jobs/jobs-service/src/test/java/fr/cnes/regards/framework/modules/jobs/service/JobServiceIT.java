@@ -193,6 +193,35 @@ public class JobServiceIT {
     }
 
     @Test
+    public void testLockedToBeRun() {
+
+        // Given a Job is created with TO_BE_RUN status
+        JobInfo jobInfo = jobServiceJobCreator.createWaitJob(1L, 1, 10);
+        jobInfo = jobInfoService.createAsPending(jobInfo);
+        jobInfo.updateStatus(JobStatus.TO_BE_RUN);
+        jobInfo.getStatus().forceStatusDate(OffsetDateTime.now().minusMinutes(58));
+        jobInfo = jobInfoRepos.save(jobInfo);
+        Assert.assertEquals(0L, jobInfoRepos.countByStatusStatusIn(JobStatus.QUEUED).longValue());
+        Assert.assertEquals(1L, jobInfoRepos.countByStatusStatusIn(JobStatus.TO_BE_RUN).longValue());
+
+        // When running requeue locked
+        jobInfoService.requeueOldToBeRunJobs();
+
+        // Then the job is still in TO_BE_RUN status as the status date is not too old
+        Assert.assertEquals(1L, jobInfoRepos.countByStatusStatusIn(JobStatus.TO_BE_RUN).longValue());
+
+        // When running requeue locked after job status date is outdated
+        jobInfo.getStatus().forceStatusDate(OffsetDateTime.now().minusMinutes(65));
+        jobInfoRepos.save(jobInfo);
+        jobInfoService.requeueOldToBeRunJobs();
+
+        // Then the job is updated with QUEUED status
+        Assert.assertEquals(0L, jobInfoRepos.countByStatusStatusIn(JobStatus.TO_BE_RUN).longValue());
+        Assert.assertEquals(1L, jobInfoRepos.countByStatusStatusIn(JobStatus.QUEUED).longValue());
+
+    }
+
+    @Test
     public void testPendingTrigger() {
         OffsetDateTime triggerDate = OffsetDateTime.now();
         JobInfo jobToBeTriggered = jobInfoService.createPendingTriggerJob(jobServiceJobCreator.createWaitJob(1L, 1, 10),

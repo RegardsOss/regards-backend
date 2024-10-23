@@ -55,6 +55,14 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
      */
     List<JobInfo> findAllByStatusStatus(JobStatus status);
 
+    /**
+     * @param status the {@link JobStatus} to used for the request
+     * @return a list of {@link JobInfo}
+     */
+    List<JobInfo> findAllByStatusStatusAndStatusStatusDateLessThan(JobStatus status,
+                                                                   OffsetDateTime statusDateLimit,
+                                                                   Pageable pageable);
+
     // Do not use entity graph it makes max computation into memory
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @QueryHints({ @QueryHint(name = "jakarta.persistence.lock.timeout", value = UPGRADE_SKIPLOCKED) })

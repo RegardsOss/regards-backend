@@ -147,6 +147,10 @@ public class JobStatusInfo implements Observer {
         return statusDate;
     }
 
+    public void forceStatusDate(OffsetDateTime dateTime) {
+        this.statusDate = dateTime;
+    }
+
     public String getStackTrace() {
         return stackTrace;
     }
