@@ -59,8 +59,6 @@ public class ProductController implements IResourceController<Product> {
 
     public static final String PRODUCT_PATH = "/{productId}";
 
-    public static final String RELAUNCH_ERRORS_PATH = "/{acquisitionChain}/{session}/relaunch";
-
     public static final String REQUEST_PARAM_STATE = "state";
 
     public static final String REQUEST_PARAM_SIP_STATE = "sipState";

@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import fr.cnes.regards.modules.filecatalog.service.location.StorageLocationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -64,7 +65,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     public static final String RETRY = "/retry/{type}";
 
-    public static final String RETRY_SESSION = "/retry/{source}/{session}";
+    public static final String RETRY_SESSION = "/retry";
 
     public static final String RUN_PERIODIC_ACTION_PATH = "/periodic-actions/run";
 
@@ -260,15 +261,15 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @param session name of the session
      * @return Void
      */
-    @GetMapping(path = RETRY_SESSION)
+    @PostMapping(path = RETRY_SESSION)
     @Operation(summary = "Retry file requests in error state for a source and session",
                description = "Retry all file requests that are in an error state for the specified source and session.")
     @ApiResponse(responseCode = "200",
                  description = "File requests in error state for the given source and session were retried successfully.")
-    @ResourceAccess(description = "Retry all files requests in error state for a given source and session",
+    @ResourceAccess(description = "Endpoint to retry all files requests in error state for a given source and session",
                     role = DefaultRole.ADMIN)
-    public ResponseEntity<Void> retryErrorsBySourceAndSession(@PathVariable(name = "source") String source,
-                                                              @PathVariable(name = "session") String session) {
+    public ResponseEntity<Void> retryErrorsBySourceAndSession(@Parameter(description = "Source name to retry") @RequestParam(name = "source") String source,
+                                                              @Parameter(description = "Session name to retry") @RequestParam(name = "session") String session) {
         storageLocationService.retryErrorsBySourceAndSession(source, session);
         return new ResponseEntity<>(HttpStatus.OK);
     }
