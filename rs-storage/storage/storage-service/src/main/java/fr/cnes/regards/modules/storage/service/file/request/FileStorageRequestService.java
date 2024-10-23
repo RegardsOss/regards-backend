@@ -69,6 +69,7 @@ import fr.cnes.regards.modules.storage.service.template.StorageTemplatesConf;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
 import jakarta.annotation.Nullable;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -231,8 +232,8 @@ public class FileStorageRequestService {
      * same file with identical checksum and storage location.
      */
     private boolean isIdenticalRequest(FileStorageRequestDto requestDto, FileStorageRequestAggregation request) {
-        return request.getMetaInfo().getChecksum().equals(requestDto.getChecksum()) && request.getStorage()
-                                                                                              .equals(requestDto.getStorage());
+        return StringUtils.equals(request.getMetaInfo().getChecksum(), requestDto.getChecksum())
+               && StringUtils.equals(request.getStorage(), requestDto.getStorage());
     }
 
     /**

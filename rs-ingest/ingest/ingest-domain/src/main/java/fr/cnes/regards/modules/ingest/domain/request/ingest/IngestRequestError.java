@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.ingest.domain.request.ingest;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.Objects;
+
 /**
  * Information class for ingest request in error
  *
@@ -61,4 +63,22 @@ public class IngestRequestError {
         return requestStorage;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        IngestRequestError that = (IngestRequestError) o;
+        return storageType == that.storageType
+               && Objects.equals(requestFileChecksum, that.requestFileChecksum)
+               && Objects.equals(requestStorage, that.requestStorage);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(storageType, requestFileChecksum, requestStorage);
+    }
 }
