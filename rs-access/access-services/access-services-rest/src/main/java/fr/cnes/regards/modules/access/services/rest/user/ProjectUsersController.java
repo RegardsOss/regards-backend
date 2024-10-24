@@ -113,6 +113,8 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
 
     public static final String ACCESSRIGHTS_CLIENT = "accessrights-client";
 
+    public static final String STORAGE_CLIENT = "storage-client";
+
     private final IProjectUsersClient projectUsersClient;
 
     private final IStorageRestClient storageClient;
@@ -544,23 +546,34 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                                                                                              Supplier<ResponseEntity<EntityModel<ProjectUser>>> projectUsersCall,
                                                                                              Function<ProjectUserReadDto, EntityModel<ProjectUserReadDto>> resourceMapper)
         throws ModuleException {
-        return toResponse(Try.ofSupplier(quotaLimitsCall)
-                             .andFinally(FeignSecurityManager::reset)
-                             .map(unit -> {
-                                 FeignSecurityManager.asUser(authenticationResolver.getUser(),
-                                                             RoleAuthority.getSysRole(appName));
-                                 return storageClient.getCurrentQuotas(userEmail);
-                             })
-                             .andFinally(FeignSecurityManager::reset)
-                             .transform(ignoreStorageQuotaErrors)
-                             .combine(Try.ofSupplier(projectUsersCall)
-                                         .andFinally(FeignSecurityManager::reset)
-                                         .transform(handleClientFailure(ACCESSRIGHTS_CLIENT))
-                                         .map(EntityModel::getContent))
-                             .ap(ProjectUserReadDto::new)
-                             .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
-                             .map(resourceMapper)
-                             .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK)));
+
+        // Try to update storage quota
+        Validation<ComposableClientException, UserCurrentQuotasDto> updateStorage = Try.ofSupplier(quotaLimitsCall)
+                                                                     .andFinally(FeignSecurityManager::reset)
+                                                                     .map(unit -> {
+                                                                         FeignSecurityManager.asUser(
+                                                                             authenticationResolver.getUser(),
+                                                                             RoleAuthority.getSysRole(appName));
+                                                                         return storageClient.getCurrentQuotas(userEmail);
+                                                                     })
+                                                                     .andFinally(FeignSecurityManager::reset)
+                                                                                       .transform(handleClientFailure(STORAGE_CLIENT));
+
+        if (updateStorage.isValid()) {
+            Validation<ComposableClientException, ProjectUser> updateAdmin = Try.ofSupplier(projectUsersCall)
+                                                                                .andFinally(FeignSecurityManager::reset)
+                                                                                .transform(handleClientFailure(
+                                                                                    ACCESSRIGHTS_CLIENT))
+                                                                                .map(EntityModel::getContent);
+            return toResponse(updateStorage.combine(updateAdmin)
+                                  .ap(ProjectUserReadDto::new)
+                                  .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
+                                  .map(resourceMapper)
+                                  .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK)));
+        } else {
+            LOGGER.error("Unable to update rs-storage quota.", updateStorage.getError().getCause());
+            throw new ModuleException("Unable to update rs-storage quota.");
+        }
     }
 
     private <V> V toResponse(Validation<ModuleException, V> v) throws ModuleException {
