@@ -189,8 +189,8 @@ public class FileReferenceRequestService {
                             file,
                             sessionOwner,
                             session,
-                            String.format("The new file %s and the new file %s both reference the same url %s, but "
-                                          + "their checksums don't match.",
+                            String.format("The new file %s and the existing file %s both reference the same url %s, "
+                                          + "but their checksums don't match.",
                                           file.getChecksum(),
                                           oFileRefSameUrl.get().getMetaInfo().getChecksum(),
                                           file.getUrl()));
