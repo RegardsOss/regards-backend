@@ -33,4 +33,6 @@ public interface FileInBuildingPackageRepository extends JpaRepository<FileInBui
 
     Page<FileInBuildingPackage> findByStatusOrderByStorageAscStorageSubdirectoryAsc(FileInBuildingPackageStatus status,
                                                                                     Pageable page);
+
+    Page<FileInBuildingPackage> findByPackageReferenceId(Long packageId, Pageable page);
 }

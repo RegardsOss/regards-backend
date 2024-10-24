@@ -20,25 +20,37 @@ package fr.cnes.regards.modules.file.packager.service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.framework.utils.file.ZipUtils;
 import fr.cnes.regards.modules.file.packager.dao.FileInBuildingPackageRepository;
 import fr.cnes.regards.modules.file.packager.dao.PackageReferenceRepository;
 import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackage;
 import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackageStatus;
 import fr.cnes.regards.modules.file.packager.domain.PackageReference;
 import fr.cnes.regards.modules.file.packager.domain.PackageReferenceStatus;
+import fr.cnes.regards.modules.file.packager.service.utils.FileStorageRequestReadyToProcessEventFactory;
+import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FileArchiveResponseEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileArchiveRequestEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Service for file packaging.
@@ -57,7 +69,12 @@ import java.util.*;
  *     <li>The scheduler {@link fr.cnes.regards.modules.file.packager.service.scheduler.FilePackagingScheduler
  *      FilePackagingScheduler} will close package that are too old even if they're not full </li> using the method
  *      {@link #closeOldPackages()}
- *     <li>WIP To be continued ...</li>
+ *     <li>The scheduler {TODO} will launch a
+ *     {@link fr.cnes.regards.modules.file.packager.service.job.StoreCompletePackageJob StoreCompletePackageJob} for
+ *     all closed packages. The package will be updated and a {@link FileStorageRequestReadyToProcessEvent} will be
+ *     sent to file-access to store the created archive using the method {@link #storeCompletePackage}.
+ *     To be continued ...
+ *     </li>
  * </ul>
  *
  * @author Thibaud Michaudel
@@ -78,6 +95,15 @@ public class FilePackagerService {
 
     @Value("${regards.file.packager.archive.max.age.in.hours:24}")
     private int maxArchiveAgeInHours;
+
+    @Value("${regards.file.packager.store.complete.package.job.page.size:100}")
+    private int pageSize;
+
+    /**
+     * This directory must be accessible by both file-packager and file-access.
+     */
+    @Value("${regards.file.packager.archive.directory:/archive}")
+    private String archiveDirectory;
 
     private final DateTimeFormatter archiveNameFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 
@@ -127,6 +153,67 @@ public class FilePackagerService {
 
         // Associate the files
         filePackageMap.forEach((key, value) -> associateFilesToPackage(key.storage(), key.path(), value));
+    }
+
+    @MultitenantTransactional
+    public void storeCompletePackage(Long packageId, String storageSubdirectory, String creationDate, String storage) {
+        Path archivePath = Path.of(archiveDirectory, storageSubdirectory, creationDate + ".zip");
+
+        // Delete archive if it exists (because this job was run earlier and failed)
+        try {
+            Files.deleteIfExists(archivePath);
+        } catch (IOException e) {
+            throw new RuntimeException("Error while deleting the existing archive", e);
+        }
+
+        try {
+            Files.createDirectories(archivePath.getParent());
+            // Create the archive and add the files
+            try (FileOutputStream fileOutputStream = new FileOutputStream(archivePath.toFile());
+                ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
+                addFilesToArchive(packageId, zipOutputStream);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error while adding files to the archive", e);
+        }
+
+        // Compute archive checksum
+        String checksum;
+        try {
+            checksum = ChecksumUtils.computeHexChecksum(archivePath, "MD5");
+        } catch (NoSuchAlgorithmException | IOException e) {
+            throw new RuntimeException("Error while computing archive checksum", e);
+        }
+
+        // Send the storage request to file-access
+        FileStorageRequestReadyToProcessEvent archiveStorageRequest = FileStorageRequestReadyToProcessEventFactory.createPackageRequestEvent(
+            packageId,
+            storageSubdirectory,
+            storage,
+            checksum,
+            archivePath);
+        publisher.publish(archiveStorageRequest);
+
+        // Update the archive in database
+        packageReferenceRepository.updatePackageChecksum(packageId, checksum);
+    }
+
+    private void addFilesToArchive(Long packageId, ZipOutputStream zipOutputStream) {
+        Pageable page = PageRequest.of(0, pageSize);
+        do {
+            Page<FileInBuildingPackage> filesInPackage = fileInBuildingPackageRepository.findByPackageReferenceId(
+                packageId,
+                page);
+            boolean filesAdded = ZipUtils.addFilesToArchive(zipOutputStream,
+                                                            filesInPackage.getContent()
+                                                                          .stream()
+                                                                          .map(fileInPackage -> new File(fileInPackage.getFileCachePath()))
+                                                                          .toList());
+            if (!filesAdded) {
+                throw new RuntimeException("Error while adding files to the archive, files were not added");
+            }
+            page = filesInPackage.nextPageable();
+        } while (page.isPaged());
     }
 
     /**
@@ -219,6 +306,14 @@ public class FilePackagerService {
     @MultitenantTransactional
     public void closeOldPackages() {
         packageReferenceRepository.closeAllOldPackages(OffsetDateTime.now().minusHours(maxArchiveAgeInHours));
+    }
+
+    /**
+     * Set given error and {@link PackageReferenceStatus#STORE_ERROR} to the package with the given id
+     */
+    @MultitenantTransactional
+    public void setPackageError(Long packageId, String error) {
+        packageReferenceRepository.updatePackageError(packageId, error);
     }
 
     private record StorageAndPath(String storage,

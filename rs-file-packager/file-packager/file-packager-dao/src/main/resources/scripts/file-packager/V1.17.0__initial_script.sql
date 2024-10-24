@@ -6,9 +6,9 @@ CREATE TABLE IF NOT EXISTS t_package_reference
     storage_subidrectory VARCHAR(255) NOT NULL,
     creation_date        TIMESTAMP NOT NULL,
     status               VARCHAR(50) NOT NULL,
-    store_correlation_id VARCHAR(255),
     error_cause          VARCHAR(255),
     storage              VARCHAR(255) NOT NULL,
+    checksum             VARCHAR(255),
     size INT8,
     PRIMARY KEY(id)
 );

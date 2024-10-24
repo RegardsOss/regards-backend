@@ -287,5 +287,4 @@ public class FilePackagingSchedulerIT extends AbstractMultitenantServiceIT {
                                 oldPackage.getStatus(),
                                 "The young package should not have been closed");
     }
-
 }

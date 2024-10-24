@@ -60,9 +60,9 @@ public class PackageReference {
     @Enumerated(EnumType.STRING)
     private PackageReferenceStatus status;
 
-    @Column(name = "store_correlation_id")
+    @Column(name = "checksum")
     @Nullable
-    private String storeCorrelationId;
+    private String checksum;
 
     @Column(name = "error_cause")
     @Nullable
@@ -94,8 +94,8 @@ public class PackageReference {
         this.status = status;
     }
 
-    public void setStoreCorrelationId(String storeCorrelationId) {
-        this.storeCorrelationId = storeCorrelationId;
+    public void setChecksum(String storeCorrelationId) {
+        this.checksum = storeCorrelationId;
     }
 
     public void setErrorCause(String errorCause) {
@@ -118,8 +118,8 @@ public class PackageReference {
         return status;
     }
 
-    public String getStoreCorrelationId() {
-        return storeCorrelationId;
+    public String getChecksum() {
+        return checksum;
     }
 
     public String getErrorCause() {
@@ -135,6 +135,32 @@ public class PackageReference {
     }
 
     @Override
+    public String toString() {
+        return "PackageReference{"
+               + "id="
+               + id
+               + ", storageSubdirectory='"
+               + storageSubdirectory
+               + '\''
+               + ", creationDate="
+               + creationDate
+               + ", status="
+               + status
+               + ", checksum='"
+               + checksum
+               + '\''
+               + ", errorCause='"
+               + errorCause
+               + '\''
+               + ", storage='"
+               + storage
+               + '\''
+               + ", size="
+               + size
+               + '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -147,7 +173,7 @@ public class PackageReference {
                && Objects.equals(storageSubdirectory, that.storageSubdirectory)
                && Objects.equals(creationDate, that.creationDate)
                && status == that.status
-               && Objects.equals(storeCorrelationId, that.storeCorrelationId)
+               && Objects.equals(checksum, that.checksum)
                && Objects.equals(errorCause, that.errorCause)
                && Objects.equals(storage, that.storage)
                && Objects.equals(size, that.size);
@@ -155,39 +181,6 @@ public class PackageReference {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id,
-                            storageSubdirectory,
-                            creationDate,
-                            status,
-                            storeCorrelationId,
-                            errorCause,
-                            storage,
-                            size);
-    }
-
-    @Override
-    public String toString() {
-        return "PackageReference{"
-               + "id="
-               + id
-               + ", storageSubdirectory='"
-               + storageSubdirectory
-               + '\''
-               + ", creationDate="
-               + creationDate
-               + ", status="
-               + status
-               + ", storeCorrelationId='"
-               + storeCorrelationId
-               + '\''
-               + ", errorCause='"
-               + errorCause
-               + '\''
-               + ", storage='"
-               + storage
-               + '\''
-               + ", size="
-               + size
-               + '}';
+        return Objects.hash(id, storageSubdirectory, creationDate, status, checksum, errorCause, storage, size);
     }
 }

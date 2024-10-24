@@ -72,7 +72,19 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>module-regards</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+            <artifactId>jobs-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>file-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.fileaccess</groupId>
+            <artifactId>file-access-amqp</artifactId>
+        </dependency>
+        
         <!-- Test dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

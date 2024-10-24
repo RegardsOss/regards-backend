@@ -164,4 +164,16 @@ public class ZipUtils {
             return false;
         }
     }
+
+    /**
+     * Add filse to the given zip stream
+     */
+    public static boolean addFilesToArchive(ZipOutputStream zipOutputStream, List<File> files) {
+        for (File file : files) {
+            if (!addFileToArchive(zipOutputStream, file)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

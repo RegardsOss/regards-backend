@@ -54,4 +54,26 @@ public interface PackageReferenceRepository extends JpaRepository<PackageReferen
         updateOldPackagesStatus(oldestDate, PackageReferenceStatus.TO_STORE);
     }
 
+    /**
+     * Set given checksum to the package with the given id
+     */
+    @Modifying
+    @Query("UPDATE PackageReference p SET p.checksum = :checksum WHERE p.id = :id")
+    void updatePackageChecksum(@Param("id") Long id, @Param("checksum") String checksum);
+
+    /**
+     * Set given error and status to the package with the given id
+     */
+    @Modifying
+    @Query("UPDATE PackageReference p SET p.status = :status, p.errorCause = :error WHERE p.id = :id")
+    void updatePackageStatus(@Param("id") Long id,
+                             @Param("error") String error,
+                             @Param("status") PackageReferenceStatus status);
+
+    /**
+     * Set given error and {@link PackageReferenceStatus#STORE_ERROR} to the package with the given id
+     */
+    default void updatePackageError(Long id, String error) {
+        updatePackageStatus(id, error, PackageReferenceStatus.STORE_ERROR);
+    }
 }
