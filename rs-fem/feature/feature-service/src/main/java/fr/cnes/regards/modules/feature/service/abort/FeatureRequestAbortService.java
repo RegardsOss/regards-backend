@@ -19,14 +19,13 @@
 package fr.cnes.regards.modules.feature.service.abort;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.feature.dao.FeatureCopyRequestSpecificationsBuilder;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
-import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
+import fr.cnes.regards.modules.feature.service.FeatureDeletionService;
 import fr.cnes.regards.modules.feature.service.request.FeatureRequestService;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
@@ -41,10 +40,10 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static fr.cnes.regards.modules.feature.dto.FeatureRequestStep.*;
@@ -83,7 +82,9 @@ public class FeatureRequestAbortService {
         Map.of(REMOTE_NOTIFICATION_REQUESTED,
                REMOTE_NOTIFICATION_ERROR,
                REMOTE_STORAGE_DELETION_REQUESTED,
-               REMOTE_STORAGE_ERROR));
+               REMOTE_STORAGE_ERROR,
+               WAITING_BLOCKING_DISSEMINATION,
+               LOCAL_ERROR));
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureRequestAbortService.class);
 
@@ -97,14 +98,22 @@ public class FeatureRequestAbortService {
 
     private final int abortDelayInHours;
 
+    private final FeatureDeletionService featureDeletionService;
+
+    private final int abortMaxPageLoopCount;
+
     public FeatureRequestAbortService(FeatureRequestService featureRequestService,
                                       FeatureSessionNotifier featureSessionNotifier,
                                       @Value("${regards.feature.abort.page.size:1000}") int nbRequestsToAbortPerPage,
-                                      @Value("${regards.feature.abort.delay.hours:1}") int abortDelayInHours) {
+                                      @Value("${regards.feature.abort.delay.hours:1}") int abortDelayInHours,
+                                      @Value("${regards.fem.requests.abort.max.page:50}") int abortMaxPageLoopCount,
+                                      FeatureDeletionService featureDeletionService) {
         this.featureRequestService = featureRequestService;
         this.featureSessionNotifier = featureSessionNotifier;
         this.nbRequestsToAbortPerPage = nbRequestsToAbortPerPage;
         this.abortDelayInHours = abortDelayInHours;
+        this.abortMaxPageLoopCount = abortMaxPageLoopCount;
+        this.featureDeletionService = featureDeletionService;
     }
 
     /**
@@ -120,72 +129,75 @@ public class FeatureRequestAbortService {
         OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC);
         long nbAbortedRequests = 0;
         long nbRequestsToAbort = 0;
+        int loopCount = 0;
 
-        // If the payload do not contain a criteria on the GRANTED request state, replace the existing criterias by GRANTED
-        if (searchParameters == null) {
-            searchParameters = new SearchFeatureRequestParameters();
-        }
-        if (searchParameters.getStates() == null || searchParameters.getStates().getValues() == null
-            || !searchParameters.getStates().getValues().contains(RequestState.GRANTED)) {
-            searchParameters.withStatesIncluded(List.of(RequestState.GRANTED));
-        }
         if (STEPS_CORRELATION_TABLE.containsKey(requestType)) {
+            // First update search parameters to ensure selected cancelable requests
+            searchParameters = updateSearchParametersForAbort(searchParameters, requestType);
+            // Loop on each cancelable requests page, with a number of loop limit
             Pageable page = PageRequest.of(0, nbRequestsToAbortPerPage);
             Page<FeatureRequestDTO> requestsPage;
             boolean hasNext;
             do {
                 requestsPage = featureRequestService.findAll(requestType, searchParameters, page);
+                if (nbRequestsToAbort == 0) {
+                    // Retrieve count of all requests found on first call.
+                    nbRequestsToAbort = requestsPage.getTotalElements();
+                }
                 if (requestsPage.hasContent()) {
-                    nbAbortedRequests += forceErrorStateAndStep(filterRequestsThatCanBeAborted(requestsPage.getContent(),
-                                                                                               start), requestType);
+                    nbAbortedRequests += forceErrorStateAndStep(requestsPage.getContent(), requestType);
                 }
                 hasNext = requestsPage.hasNext();
-                if (hasNext) {
-                    page = requestsPage.nextPageable();
-                }
-            } while (hasNext);
-            nbRequestsToAbort = requestsPage.getTotalElements();
+                loopCount++;
+            } while (hasNext && loopCount < abortMaxPageLoopCount);
         } else {
             LOGGER.warn("Cannot abort requests because the request type '{}' cannot be aborted. Valid abort types : "
                         + "{}.", requestType, STEPS_CORRELATION_TABLE.keySet());
         }
 
-        LOGGER.info("Aborted {} feature requests / {} requested in {} ms",
+        LOGGER.info("Aborted {} feature requests / {} requested in {} ms with {} page loop",
                     nbAbortedRequests,
                     nbRequestsToAbort,
-                    start.until(OffsetDateTime.now(), ChronoUnit.MILLIS));
+                    start.until(OffsetDateTime.now(), ChronoUnit.MILLIS),
+                    loopCount);
         return RequestHandledResponse.build(nbRequestsToAbort,
                                             nbAbortedRequests,
                                             getGlobalResponseMessage(nbRequestsToAbort, nbAbortedRequests));
     }
 
-    /**
-     * Filter out all requests that cannot be aborted according to their states and registration dates.
-     *
-     * @param requestsToBeAborted requests retrieved from the database according to the provided search parameters.
-     * @param start               starting time of the service transaction.
-     */
-    private Map<FeatureRequestStep, Set<FeatureRequestDTO>> filterRequestsThatCanBeAborted(List<FeatureRequestDTO> requestsToBeAborted,
-                                                                                           OffsetDateTime start) {
-        Predicate<FeatureRequestDTO> validAbortPredicate = requestDto -> {
-            OffsetDateTime requestRegistrationDate = requestDto.getRegistrationDate();
-            boolean isValidAbortState = requestDto.getState() == RequestState.GRANTED
-                                        && requestRegistrationDate.plusHours(abortDelayInHours).isBefore(start);
-            if (!isValidAbortState) {
-                LOGGER.warn("Cannot abort request with id '{}' because the state '{}' and/or the minimal required "
-                            + "delay '{}' compared to current time '{}' are not valid.",
-                            requestDto.getId(),
-                            requestDto.getState(),
-                            requestRegistrationDate.plusHours(abortDelayInHours),
-                            start);
-            }
-            return isValidAbortState;
-        };
-        return requestsToBeAborted.stream()
-                                  .filter(validAbortPredicate)
-                                  .collect(Collectors.groupingBy(FeatureRequestDTO::getStep,
-                                                                 Collectors.mapping(featureDto -> featureDto,
-                                                                                    Collectors.toSet())));
+    private SearchFeatureRequestParameters updateSearchParametersForAbort(SearchFeatureRequestParameters searchParameters,
+                                                                          FeatureRequestTypeEnum requestType) {
+        // If the payload do not contain a criteria on the GRANTED request state, replace the existing criteria by GRANTED
+        if (searchParameters == null) {
+            searchParameters = new SearchFeatureRequestParameters();
+        }
+        if (searchParameters.getStates() == null
+            || searchParameters.getStates().getValues() == null
+            || !searchParameters.getStates().getValues().contains(RequestState.GRANTED)) {
+            List<RequestState> states = new ArrayList<>();
+            states.add(RequestState.GRANTED);
+            searchParameters.withStatesIncluded(states);
+        }
+
+        // Remove ERROR state from search criterion, as error can never be canceled
+        searchParameters.getStates().getValues().remove(RequestState.ERROR);
+
+        // Requests are cancelable only if registered for more than X hours. This is done to avoid cancel truly
+        // running requests.
+        OffsetDateTime maxRegistrationDate = OffsetDateTime.now().minusHours(abortDelayInHours);
+
+        // Add search criterion on lastUpdate to handle only previous cancelable requests and not new ones.
+        if (searchParameters.getLastUpdate() == null
+            || searchParameters.getLastUpdate().getBefore() == null
+            || searchParameters.getLastUpdate().getBefore().isAfter(maxRegistrationDate)) {
+            searchParameters.withLastUpdateBefore(maxRegistrationDate);
+        }
+
+        // Search only for cancelable states for the requested request type.
+        Set<FeatureRequestStep> cancelableSteps = STEPS_CORRELATION_TABLE.get(requestType).keySet();
+        searchParameters.withSteps(cancelableSteps);
+
+        return searchParameters;
     }
 
     /**
@@ -198,24 +210,32 @@ public class FeatureRequestAbortService {
      *     <li>the step has a match in the {@link FeatureRequestAbortService#STEPS_CORRELATION_TABLE}.</li>
      * </ul>
      *
-     * @param requestsByStep requests to cancel grouped by {@link FeatureRequestStep}.
-     * @param requestType    type of request. Feature requests are handled by type.
+     * @param requests    requests to cancel.
+     * @param requestType type of request. Feature requests are handled by type.
      * @return the number of requests actually aborted.
      */
-    private int forceErrorStateAndStep(Map<FeatureRequestStep, Set<FeatureRequestDTO>> requestsByStep,
-                                       FeatureRequestTypeEnum requestType) {
-        int nbRequestsUpdated = 0;
+    private int forceErrorStateAndStep(List<FeatureRequestDTO> requests, FeatureRequestTypeEnum requestType) {
+        // Group requests per step
+        int nbAbortedRequests = 0;
+        Map<FeatureRequestStep, Set<FeatureRequestDTO>> requestsPerStep = requests.stream()
+                                                                                  .collect(Collectors.groupingBy(
+                                                                                      FeatureRequestDTO::getStep,
+                                                                                      Collectors.mapping(r -> r,
+                                                                                                         Collectors.toSet())));
         // Abort requests by setting their states and steps to ERROR and the corresponding error step
-        for (Map.Entry<FeatureRequestStep, Set<FeatureRequestDTO>> entry : requestsByStep.entrySet()) {
+        for (Map.Entry<FeatureRequestStep, Set<FeatureRequestDTO>> entry : requestsPerStep.entrySet()) {
             FeatureRequestStep step = entry.getKey();
-            Set<FeatureRequestDTO> featureDtos = entry.getValue();
-            Set<Long> ids = featureDtos.stream().map(FeatureRequestDTO::getId).collect(Collectors.toSet());
+            Set<FeatureRequestDTO> featureDTOs = entry.getValue();
+            Set<Long> ids = featureDTOs.stream().map(FeatureRequestDTO::getId).collect(Collectors.toSet());
             // check if the step can be aborted
             FeatureRequestStep mappedStepToUpdate = STEPS_CORRELATION_TABLE.get(requestType).get(step);
             if (mappedStepToUpdate != null) {
+                // First when aborted, force deletion for deletion requests
+                featureDeletionService.forceDeletion(ids);
+                // Then for other requests, update state to ERROR
                 featureRequestService.updateRequestStateAndStep(ids, RequestState.ERROR, mappedStepToUpdate);
-                updateSourceAndSession(featureDtos, requestType);
-                nbRequestsUpdated += featureDtos.size();
+                updateSourceAndSession(featureDTOs, requestType);
+                nbAbortedRequests += ids.size();
             } else {
                 LOGGER.warn("Cannot abort {} requests because their step '{}' cannot be aborted. Allowed steps "
                             + "to be aborted for request type '{}' are : {}. Not aborted request ids: {}.",
@@ -226,9 +246,7 @@ public class FeatureRequestAbortService {
                             ids);
             }
         }
-        LOGGER.trace("Aborted page of {} feature requests with step and ids : {} ", nbRequestsUpdated, requestsByStep);
-
-        return nbRequestsUpdated;
+        return nbAbortedRequests;
     }
 
     /**

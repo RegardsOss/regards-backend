@@ -26,8 +26,10 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStepProperties;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.dao.IFeatureNotificationRequestRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 import fr.cnes.regards.modules.feature.dto.*;
@@ -78,6 +80,9 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
     private IFeatureNotificationService notificationService;
 
     @Autowired
+    private IFeatureNotificationRequestRepository featureNotificationRequestRepository;
+
+    @Autowired
     private Gson gson;
 
     @Captor
@@ -122,7 +127,8 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
                                                                                  true,
                                                                                  false,
                                                                                  source,
-                                                                                 session);
+                                                                                 session,
+                                                                                 Optional.empty());
         for (FeatureCreationRequestEvent event : list) {
             event.getFeature()
                  .setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
@@ -292,7 +298,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         int results = this.featureNotificationService.registerRequests(prepareNotificationRequests(urns));
         Assert.assertTrue(results > 0);
 
-        // Try delete all requests.
+        // Try retry all requests.
         RequestHandledResponse response = this.featureRequestService.retry(FeatureRequestTypeEnum.NOTIFICATION,
                                                                            new SearchFeatureRequestParameters().withStatesIncluded(
                                                                                List.of(RequestState.ERROR)));
@@ -304,9 +310,18 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
                             0,
                             response.getTotalRequested());
 
+        // Simulate  request in error state
+        Set<Long> featureIds = featureNotificationRequestRepository.findAll()
+                                                                   .stream()
+                                                                   .map(FeatureNotificationRequest::getId)
+                                                                   .collect(Collectors.toSet());
+        featureRequestService.updateRequestStateAndStep(featureIds,
+                                                        RequestState.ERROR,
+                                                        FeatureRequestStep.REMOTE_NOTIFICATION_ERROR);
+
         response = this.featureRequestService.retry(FeatureRequestTypeEnum.NOTIFICATION,
                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
-                                                        RequestState.GRANTED)));
+                                                        RequestState.ERROR)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 0 requests retryed as selection set on GRANTED Requests",
                             nbValid,

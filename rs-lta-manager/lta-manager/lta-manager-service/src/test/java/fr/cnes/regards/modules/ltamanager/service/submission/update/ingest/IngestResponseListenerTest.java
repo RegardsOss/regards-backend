@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.ltamanager.dto.submission.LtaDataType;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.service.submission.update.ingest.notification.SuccessLtaRequestNotification;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
@@ -150,13 +151,13 @@ public class IngestResponseListenerTest {
         //Check messages were sent onSuccess and onError
         ArgumentCaptor<List<ISubscribable>> argumentCaptor = ArgumentCaptor.forClass(List.class);
 
-        Mockito.verify(publisher, times(2)).publish(argumentCaptor.capture());
+        Mockito.verify(publisher, times(3)).publish(argumentCaptor.capture());
         List<SubmissionResponseDtoEvent> capturedSubmissionResponseDtoEvents = getSubmissionResponseDtoEvents(
             argumentCaptor);
 
         // Check List<SubmissionResponseDtoEvent>
         Assert.assertNotNull(capturedSubmissionResponseDtoEvents);
-        Assert.assertEquals("Expected 2 events", 2, capturedSubmissionResponseDtoEvents.size());
+        Assert.assertEquals("Expected 3 events", 3, capturedSubmissionResponseDtoEvents.size());
         Optional<SubmissionResponseDtoEvent> successEvent = capturedSubmissionResponseDtoEvents.stream()
                                                                                                .filter(event -> event.getResponseStatus()
                                                                                                                      .equals(
@@ -171,17 +172,21 @@ public class IngestResponseListenerTest {
                             successEvent.get().getCorrelationId());
 
         //onError
-        Optional<SubmissionResponseDtoEvent> errorEvent = capturedSubmissionResponseDtoEvents.stream()
-                                                                                             .filter(event -> event.getResponseStatus()
-                                                                                                                   .equals(
-                                                                                                                       SubmissionResponseStatus.ERROR))
-                                                                                             .findFirst();
-        if (errorEvent.isEmpty()) {
+        List<String> errorEventIds = capturedSubmissionResponseDtoEvents.stream()
+                                                                        .filter(event -> event.getResponseStatus()
+                                                                                              .equals(
+                                                                                                  SubmissionResponseStatus.ERROR))
+                                                                        .map(SubmissionResponseDto::getCorrelationId)
+                                                                        .toList();
+        if (errorEventIds.isEmpty()) {
             Assert.fail("Expected an ERROR event");
         }
-        Assert.assertEquals("The event correlation id should match the request id",
-                            events.get(3).getRequestId(),
-                            errorEvent.get().getCorrelationId());
+        // denied request
+        Assert.assertTrue("The event correlation id should match the request id",
+                          errorEventIds.contains(events.get(2).getRequestId()));
+        // error request
+        Assert.assertTrue("The event correlation id should match the request id",
+                          errorEventIds.contains(events.get(3).getRequestId()));
     }
 
     @Test

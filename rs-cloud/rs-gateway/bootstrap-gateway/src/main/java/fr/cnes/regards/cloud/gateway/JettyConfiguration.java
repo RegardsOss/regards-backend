@@ -42,6 +42,9 @@ public class JettyConfiguration {
     @Value("${jetty.threadPool.idleTimeout:3600000}")
     private int threadPoolIdleTimeout;
 
+    @Value("${jetty.threadPool.maxThreads:200}")
+    private int threadPoolMaxThreads;
+
     @Bean
     public WebServerFactoryCustomizer<JettyServletWebServerFactory> customizer() {
         LOGGER.info("Customizing Jetty server...");
@@ -49,6 +52,7 @@ public class JettyConfiguration {
             QueuedThreadPool threadPool = new QueuedThreadPool();
             LOGGER.info("Setting Jetty server thread pool idle timeout to {} ms", threadPoolIdleTimeout);
             threadPool.setIdleTimeout(threadPoolIdleTimeout);
+            threadPool.setMaxThreads(threadPoolMaxThreads);
             jetty.setThreadPool(threadPool);
             jetty.addServerCustomizers(server -> {
                 for (Connector connector : server.getConnectors()) {

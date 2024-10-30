@@ -29,14 +29,13 @@ import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.IngestStatus
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 import fr.cnes.regards.modules.ltamanager.service.submission.update.ingest.notification.SuccessLtaRequestNotification;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -78,35 +77,35 @@ public class IngestResponseService {
      */
     public void updateSubmissionRequestState(Collection<RequestInfo> responseEvents,
                                              IngestStatusResponseMapping mappedRequestState) {
-        // note: page handling is not necessary because event batch is limited to 1000 entities by default
-        List<String> requestsFound = requestRepository.findIdsByCorrelationIdIn(responseEvents.stream()
-                                                                                              .map(RequestInfo::getRequestId)
-                                                                                              .toList());
-        LOGGER.trace("{} submission requests found in database.", requestsFound.size());
-
-        List<RequestInfo> requestsUpdated = new ArrayList<>();
-        if (!requestsFound.isEmpty()) {
-            for (RequestInfo event : responseEvents) {
-                String correlationId = event.getRequestId();
-                if (requestsFound.contains(correlationId)) {
-                    SubmissionRequestState mappedState = mappedRequestState.getMappedState();
-
-                    requestRepository.updateRequestState(correlationId,
-                                                         mappedState,
-                                                         getRequestMessage(event.getErrors(), mappedRequestState),
-                                                         OffsetDateTime.now());
-                    requestsUpdated.add(event);
-                    LOGGER.trace("Submission request with correlationId \"{}\" updated with state \"{}\"",
-                                 correlationId,
-                                 mappedState);
-                }
-            }
+        for (RequestInfo event : responseEvents) {
+            String correlationId = event.getRequestId();
+            SubmissionRequestState mappedState = mappedRequestState.getMappedState();
+            requestRepository.updateRequestState(correlationId,
+                                                 mappedState,
+                                                 getRequestMessage(event.getErrors(), mappedRequestState),
+                                                 OffsetDateTime.now());
+            LOGGER.trace("Submission request with correlationId \"{}\" updated with state \"{}\"",
+                         correlationId,
+                         mappedState);
         }
-        sendNotifToOtherCatalogIfNeeded(requestsUpdated, mappedRequestState);
+        sendNotifToOtherCatalogIfRequestSuccess(responseEvents, mappedRequestState);
     }
 
-    private void sendNotifToOtherCatalogIfNeeded(List<RequestInfo> events,
-                                                 IngestStatusResponseMapping mappedRequestState) {
+    /**
+     * Return a list with only request info linked to a lta request.
+     */
+    @MultitenantTransactional
+    public Collection<RequestInfo> skipNonLtaRequestInfo(Collection<RequestInfo> infos) {
+        // note: page handling is not necessary because event batch is limited to 1000 entities by default
+        List<String> requestsFound = requestRepository.findIdsByCorrelationIdIn(infos.stream()
+                                                                                     .map(RequestInfo::getRequestId)
+                                                                                     .toList());
+        LOGGER.trace("{} submission requests found in database.", requestsFound.size());
+        return infos.stream().filter(info -> requestsFound.contains(info.getRequestId())).toList();
+    }
+
+    private void sendNotifToOtherCatalogIfRequestSuccess(Collection<RequestInfo> events,
+                                                         IngestStatusResponseMapping mappedRequestState) {
         if (mappedRequestState != IngestStatusResponseMapping.SUCCESS_MAP) {
             // do nothing if not success
             return;

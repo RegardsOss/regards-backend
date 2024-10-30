@@ -90,6 +90,8 @@ public final class FeatureLogger {
                                                           + "Feature WAITING BLOCKING DISSEMINATION acknowledge from "
                                                           + PX4;
 
+    private static final String DELETION_FORCED_FORMAT = PREFIX + "Feature DELETION FORCED from " + PX3;
+
     private static final String NOTIFICATION_DENIED_FORMAT = PREFIX + "Feature NOTIFICATION DENIED" + PX4;
 
     private static final String NOTIFICATION_GRANTED_FORMAT = PREFIX + "Feature NOTIFICATION GRANTED" + PX3;
@@ -203,6 +205,10 @@ public final class FeatureLogger {
                                        String requestId,
                                        FeatureUniformResourceName urn) {
         LOGGER.info(String.format(DELETION_BLOCKED_FORMAT, disseminationLabel, requestOwner, requestId, urn));
+    }
+
+    public static void deletionForced(String requestOwner, String requestId, FeatureUniformResourceName urn) {
+        LOGGER.info(String.format(DELETION_FORCED_FORMAT, requestOwner, requestId, urn));
     }
 
     public static void notificationDenied(String requestOwner,

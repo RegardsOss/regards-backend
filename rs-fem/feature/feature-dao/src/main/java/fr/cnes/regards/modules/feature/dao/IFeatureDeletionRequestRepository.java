@@ -107,4 +107,19 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
         """)
     void updateStepByUrn(@Param("step") FeatureRequestStep step,
                          @Param("urns") Collection<FeatureUniformResourceName> urns);
+
+    @Modifying
+    @Query("""
+        UPDATE FeatureDeletionRequest fdr
+        SET forceDeletion = :forceDeletion
+        WHERE fdr.id IN (:ids)
+        AND step = :waitingStep
+        """)
+    void doForceDeletionById(@Param("ids") Set<Long> ids,
+                             @Param("forceDeletion") boolean forceDeletion,
+                             @Param("waitingStep") FeatureRequestStep waitingStep);
+
+    default void forceDeletionById(Set<Long> ids) {
+        doForceDeletionById(ids, true, FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION);
+    }
 }

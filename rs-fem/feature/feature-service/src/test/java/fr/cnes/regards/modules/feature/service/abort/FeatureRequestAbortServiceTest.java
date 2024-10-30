@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.FeatureDeletionService;
 import fr.cnes.regards.modules.feature.service.request.FeatureRequestService;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
@@ -69,7 +70,6 @@ import java.util.stream.Collectors;
  *    <ul>
  *      <li>{@link #givenUnknownRequestStateToAbort_whenHandled_thenIgnored()}</li>
  *      <li>{@link #givenUnknownRequestStepToAbort_whenHandled_thenIgnored()}</li>
- *      <li>{@link #givenUnknownRequestTypeToAbort_whenHandled_thenIgnored()}</li>
  *      <li>{@link #givenRequestWithInvalidDelayToAbort_whenHandled_thenIgnored()}</li>
  *    </ul></li>
  * </ul>
@@ -92,12 +92,25 @@ class FeatureRequestAbortServiceTest {
     @Mock
     private FeatureSessionNotifier featureSessionNotifier;
 
+    @Mock
+    private FeatureDeletionService featureDeletionService;
+
+    /**
+     * As repository is mocked, we have to simulate that each incremental call to find with first page return new
+     * elements. So we have to keep the number of calls made to findAll method to known which part of the results to
+     * return.
+     */
+
+    private int findAllCallCounter = 0;
+
     @BeforeEach
     void init() {
         this.featureRequestAbortService = new FeatureRequestAbortService(featureRequestService,
                                                                          featureSessionNotifier,
                                                                          2,
-                                                                         ABORT_DELAY_IN_HOURS);
+                                                                         ABORT_DELAY_IN_HOURS,
+                                                                         50,
+                                                                         featureDeletionService);
     }
 
     @Test
@@ -111,6 +124,45 @@ class FeatureRequestAbortServiceTest {
                                                                          OffsetDateTime.now()
                                                                                        .minusHours(ABORT_DELAY_IN_HOURS),
                                                                          2);
+        mockFindAllRequestsMethod(simulatedFeatures);
+
+        // WHEN
+        RequestHandledResponse result = featureRequestAbortService.abortRequests(new SearchFeatureRequestParameters(),
+                                                                                 requestType);
+
+        // THEN
+        // requests should be aborted and the source/session should be updated
+        int nbExpectedRequests = simulatedFeatures.size();
+        Assertions.assertThat(result.getTotalRequested()).isEqualTo(nbExpectedRequests);
+        Assertions.assertThat(result.getTotalHandled()).isEqualTo(nbExpectedRequests);
+        Assertions.assertThat(result.getMessage()).isNull();
+        verifyUpdateRequests(simulatedFeatures, requestType);
+        verifyUpdateSourceAndSession(simulatedFeatures, requestType);
+    }
+
+    @Test
+    void givenValidDeletionRequestsToAbort_whenHandled_thenAborted() {
+        // GIVEN
+        // build creation requests, this type can be aborted
+        FeatureRequestTypeEnum requestType = FeatureRequestTypeEnum.DELETION;
+        List<FeatureRequestDTO> simulatedFeatures = buildRequestsToAbort(requestType,
+                                                                         RequestState.GRANTED,
+                                                                         FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
+                                                                         OffsetDateTime.now()
+                                                                                       .minusHours(ABORT_DELAY_IN_HOURS),
+                                                                         2);
+        simulatedFeatures.addAll(buildRequestsToAbort(requestType,
+                                                      RequestState.GRANTED,
+                                                      FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED,
+                                                      OffsetDateTime.now().minusHours(ABORT_DELAY_IN_HOURS),
+                                                      2));
+
+        simulatedFeatures.addAll(buildRequestsToAbort(requestType,
+                                                      RequestState.GRANTED,
+                                                      FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED,
+                                                      OffsetDateTime.now().minusHours(ABORT_DELAY_IN_HOURS),
+                                                      2));
+
         mockFindAllRequestsMethod(simulatedFeatures);
 
         // WHEN
@@ -298,6 +350,7 @@ class FeatureRequestAbortServiceTest {
                                                                          OffsetDateTime.now()
                                                                                        .minusHours(ABORT_DELAY_IN_HOURS),
                                                                          3);
+
         mockFindAllRequestsMethod(simulatedFeatures);
 
         // WHEN
@@ -311,34 +364,12 @@ class FeatureRequestAbortServiceTest {
         Assertions.assertThat(result.getMessage()).isNull();
     }
 
-    @Test
-    void givenRequestWithInvalidDelayToAbort_whenHandled_thenIgnored() {
-        // GIVEN
-        // build creation requests with type that can be aborted but not yet
-        FeatureRequestTypeEnum requestType = FeatureRequestTypeEnum.CREATION;
-        List<FeatureRequestDTO> simulatedFeatures = buildRequestsToAbort(requestType,
-                                                                         RequestState.GRANTED,
-                                                                         FeatureRequestStep.REMOTE_STORAGE_REQUESTED,
-                                                                         OffsetDateTime.now().minusSeconds(1),
-                                                                         2);
-        mockFindAllRequestsMethod(simulatedFeatures);
-
-        // WHEN
-        RequestHandledResponse result = featureRequestAbortService.abortRequests(new SearchFeatureRequestParameters(),
-                                                                                 requestType);
-
-        // THEN
-        // requests should be ignored
-        Assertions.assertThat(result.getTotalRequested()).isEqualTo(simulatedFeatures.size());
-        Assertions.assertThat(result.getTotalHandled()).isZero();
-        Assertions.assertThat(result.getMessage()).contains("not valid");
-    }
-
     // ---------------
     // ---- UTILS ----
     // ---------------
 
     private void mockFindAllRequestsMethod(List<FeatureRequestDTO> simulatedFeatures) {
+        findAllCallCounter = 0;
         Mockito.when(featureRequestService.findAll(Mockito.any(), Mockito.any(), Mockito.any())).thenAnswer(ans -> {
             Pageable capturedPageable = ans.getArgument(2);
             Page<FeatureRequestDTO> featurePage = toFeatureRequestDtoPage(simulatedFeatures, capturedPageable);
@@ -402,6 +433,18 @@ class FeatureRequestAbortServiceTest {
                                        ArgumentMatchers.eq(FeatureSessionProperty.IN_ERROR_REFERENCING_REQUESTS),
                                        numberOfErrorIncrementsCaptor.capture());
             }
+            case DELETION -> {
+                Mockito.verify(featureSessionNotifier, Mockito.timeout(5_000).atLeastOnce())
+                       .decrementCount(ArgumentMatchers.eq(SOURCE_TEST),
+                                       ArgumentMatchers.eq(SESSION_TEST),
+                                       ArgumentMatchers.eq(FeatureSessionProperty.RUNNING_DELETE_REQUESTS),
+                                       numberOfRunningDecrementCaptor.capture());
+                Mockito.verify(featureSessionNotifier, Mockito.timeout(5_000).atLeastOnce())
+                       .incrementCount(ArgumentMatchers.eq(SOURCE_TEST),
+                                       ArgumentMatchers.eq(SESSION_TEST),
+                                       ArgumentMatchers.eq(FeatureSessionProperty.IN_ERROR_DELETE_REQUESTS),
+                                       numberOfErrorIncrementsCaptor.capture());
+            }
             default -> Assertions.fail("Unexpected request type " + requestType);
         }
         Assertions.assertThat(numberOfRunningDecrementCaptor.getAllValues().stream().mapToLong(Long::longValue).sum())
@@ -438,8 +481,9 @@ class FeatureRequestAbortServiceTest {
 
     public Page<FeatureRequestDTO> toFeatureRequestDtoPage(List<FeatureRequestDTO> featureRequestDtos,
                                                            Pageable pageable) {
-        int start = (int) pageable.getOffset();
+        int start = (int) pageable.getPageSize() * findAllCallCounter;
         int end = Math.min((start + pageable.getPageSize()), featureRequestDtos.size());
+        findAllCallCounter++;
         if (start > featureRequestDtos.size()) {
             return new PageImpl<>(new ArrayList<>(), pageable, featureRequestDtos.size());
         } else {

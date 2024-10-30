@@ -80,4 +80,8 @@ public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequ
     Page<T> findByStep(FeatureRequestStep remoteStorageRequested, Pageable pageToRequest);
 
     List<T> findAllByUrnInAndStep(List<FeatureUniformResourceName> urn, FeatureRequestStep step);
+
+    @Modifying
+    @Query(value = "UPDATE t_feature_request SET registration_date = :date WHERE id IN :ids", nativeQuery = true)
+    void forceRegistrationDate(@Param("ids") List<Long> list, @Param("date") OffsetDateTime offsetDateTime);
 }

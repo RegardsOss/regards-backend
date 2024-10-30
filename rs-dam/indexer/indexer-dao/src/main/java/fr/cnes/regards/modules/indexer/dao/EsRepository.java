@@ -1174,15 +1174,15 @@ public class EsRepository implements IEsRepository {
             final List<T> results = new ArrayList<>();
 
             Sort sort = pageRequest.getSort();
-            // page size is max or page offset is > max page size, prepare sort for search_after
-            if ((pageRequest.getOffset() >= MAX_RESULT_WINDOW) || (pageRequest.getPageSize() == MAX_RESULT_WINDOW)) {
-                // A sort is mandatory to permit use of searchAfter (id by default if none provided)
-                sort = (sort == null) || sort.isUnsorted() ? Sort.by("ipId") : pageRequest.getSort();
-                // To assure unicity, always add "ipId" as a sort parameter
-                if (sort.getOrderFor("ipId") == null) {
-                    sort = sort.and(Sort.by("ipId"));
-                }
+
+            //We add a sort by "ipId" by default because it is needed if we use a searchAfter pagination method
+            //We add it in all case to ensure consistency of the sorting policy throughout the search
+            sort = (sort == null) || sort.isUnsorted() ? Sort.by("ipId") : pageRequest.getSort();
+            // To assure unicity, always add "ipId" as a sort parameter
+            if (sort.getOrderFor("ipId") == null) {
+                sort = sort.and(Sort.by("ipId"));
             }
+
             Object[] lastSearchAfterSortValues = null;
             // If page starts over index 10 000, advance with searchAfter just before last request
             if (pageRequest.getOffset() >= MAX_RESULT_WINDOW) {
@@ -1552,7 +1552,7 @@ public class EsRepository implements IEsRepository {
             throw new RsRuntimeException(e);
         }
     }
-    
+
     @Override
     public <T extends IIndexable> Aggregations getAggregationsFor(AggregationSearchContext<T> searchRequest) {
         return getAggregationsFor(searchRequest.searchKey(),
@@ -1599,12 +1599,12 @@ public class EsRepository implements IEsRepository {
     }
 
     private <T extends IIndexable> SearchRequest createSearchRequestForAggregations(AggregationSearchContext<T> searchRequest) {
-        SearchSourceBuilder builder =
-            createSourceBuilder4Agg(addTypes(searchRequest.criterion(), searchRequest.searchKey().getSearchTypes()),
+        SearchSourceBuilder builder = createSourceBuilder4Agg(addTypes(searchRequest.criterion(),
+                                                                       searchRequest.searchKey().getSearchTypes()),
                                                               0,
                                                               searchRequest.limit());
         searchRequest.aggregations().forEach(builder::aggregation);
-        return new SearchRequest( searchRequest.searchKey().getSearchIndex()).source(builder);
+        return new SearchRequest(searchRequest.searchKey().getSearchIndex()).source(builder);
     }
 
     @Override

@@ -15,6 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_session_delete",
@@ -48,10 +49,10 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceIT {
     }
 
     private void prepareData() throws InterruptedException {
-        prepareCreationTestData(true, 2, false, false, false, SOURCE2, SESSION1);
-        prepareCreationTestData(true, 2, false, false, false, SOURCE1, SESSION1);
-        prepareCreationTestData(true, 2, false, false, false, SOURCE2, SESSION2);
-        prepareCreationTestData(true, 2, false, false, false, SOURCE1, SESSION2);
+        prepareCreationTestData(true, 2, false, false, false, SOURCE2, SESSION1, Optional.empty());
+        prepareCreationTestData(true, 2, false, false, false, SOURCE1, SESSION1, Optional.empty());
+        prepareCreationTestData(true, 2, false, false, false, SOURCE2, SESSION2, Optional.empty());
+        prepareCreationTestData(true, 2, false, false, false, SOURCE1, SESSION2, Optional.empty());
 
         Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());

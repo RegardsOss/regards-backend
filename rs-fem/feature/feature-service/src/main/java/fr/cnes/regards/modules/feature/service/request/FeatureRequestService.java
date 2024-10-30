@@ -43,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -184,6 +185,11 @@ public class FeatureRequestService implements IFeatureRequestService {
     @Override
     public void updateRequestStateAndStep(Set<Long> requestIds, RequestState status, FeatureRequestStep requestStep) {
         this.abstractFeatureRequestRepo.updateStateAndStep(status, requestStep, requestIds);
+    }
+
+    @Override
+    public void forceRegistrationDate(List<Long> ids, OffsetDateTime date) {
+        this.abstractFeatureRequestRepo.forceRegistrationDate(ids, date);
     }
 
     @Override
