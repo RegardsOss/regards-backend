@@ -51,9 +51,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
 import fr.cnes.regards.modules.feature.service.request.FeatureRequestService;
-import fr.cnes.regards.modules.feature.service.request.FeatureStorageListener;
 import fr.cnes.regards.modules.feature.service.request.FeatureUpdateDisseminationService;
-import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
@@ -72,10 +70,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -98,7 +97,8 @@ import static org.junit.Assert.*;
                                    "regards.feature.max.bulk.size=50",
                                    "regards.feature.delay.before.processing=0",
                                    "regards.feature.storage.lister.max.lock.exception.retry=1",
-                                   "regards.feature.metrics.enabled=true" },
+                                   "regards.feature.metrics.enabled=true",
+                                   "regards.fem.requests.retry.max.entity.per.page=5" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
                                   "classpath:metrics.properties" })
@@ -118,6 +118,9 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
     @Autowired
     private Gson gson;
 
+    @Value("${regards.fem.requests.retry.max.entity.per.page}")
+    private int retryPageSize;
+
     @Captor
     private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;
 
@@ -134,6 +137,46 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // initialize notification
         this.isToNotify = initDefaultNotificationSettings();
         Mockito.reset(featureRequestService);
+    }
+
+    @Test
+    public void test_retry_pagination() {
+        // ---------------
+        // ---- GIVEN ----
+        // ---------------
+        int nbFeatures = 1;
+        // STEP 1 : create nbFeatures
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbFeatures, true, false);
+        featureCreationService.registerRequests(events);
+        featureCreationService.scheduleRequests();
+        Awaitility.await().atMost(2 * nbFeatures, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return featureRepo.count() == nbFeatures;
+        });
+        mockStorageHelper.mockFeatureCreationStorageSuccess();
+        mockNotificationSuccess();
+
+        long nbUpdates = retryPageSize * 3L + (retryPageSize - 2);
+        FeatureEntity featureEntity = featureRepo.findAll().get(0);
+        List<FeatureUpdateRequest> requests = new ArrayList<>();
+        for (int i = 0; i < nbUpdates; i++) {
+            requests.add(FeatureUpdateRequest.build(UUID.randomUUID().toString(),
+                                                    owner,
+                                                    OffsetDateTime.now(),
+                                                    RequestState.ERROR,
+                                                    null,
+                                                    featureEntity.getFeature(),
+                                                    PriorityLevel.NORMAL,
+                                                    FeatureRequestStep.LOCAL_ERROR));
+        }
+
+        featureUpdateRequestRepo.saveAll(requests);
+
+        featureUpdateService.retryRequests(new SearchFeatureRequestParameters());
+
+        Assert.assertEquals(nbUpdates,
+                            featureUpdateRequestRepo.findByStep(FeatureRequestStep.LOCAL_DELAYED, Pageable.ofSize(1))
+                                                    .getTotalElements());
     }
 
     @Test
@@ -221,7 +264,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         Assert.assertEquals(0, featureUpdateDisseminationService.handleRequests());
 
         // Try with all other running step of a update request
-        Arrays.stream(FeatureRequestStep.values()).filter(step -> step.isProcessing()).forEach(step -> {
+        Arrays.stream(FeatureRequestStep.values()).filter(FeatureRequestStep::isProcessing).forEach(step -> {
             FeatureUpdateRequest featureToUpdate = featureUpdateRequestRepo.findAll().get(0);
             featureToUpdate.setStep(step);
             featureUpdateRequestRepo.save(featureToUpdate);
@@ -684,15 +727,15 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
     private void updateFeaturesFiles(int nbSuccess,
                                      int nbErrors,
                                      boolean updateNewFile,
-                                     FeatureFileUpdateMode fileUpdateMode
-                                     ) throws InterruptedException {
+                                     FeatureFileUpdateMode fileUpdateMode) throws InterruptedException {
         updateFeaturesFiles(nbSuccess, nbErrors, updateNewFile, fileUpdateMode, false, false);
     }
 
     private void updateFeaturesFiles(int nbSuccess,
                                      int nbErrors,
                                      boolean updateNewFile,
-                                     FeatureFileUpdateMode fileUpdateMode,boolean useMockStorageAmqp,
+                                     FeatureFileUpdateMode fileUpdateMode,
+                                     boolean useMockStorageAmqp,
                                      boolean simulateStorageListenerLockException) throws InterruptedException {
         int nbFeatures = nbSuccess + nbErrors;
         int timeout = 10_000 + (nbFeatures * 100);
@@ -706,7 +749,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         this.featureCreationService.scheduleRequests();
         waitFeature(nbFeatures, null, timeout);
 
-        mockStorageHelper.mockStorageResponses(featureCreationRequestRepo, nbFeatures, 0,useMockStorageAmqp);
+        mockStorageHelper.mockStorageResponses(featureCreationRequestRepo, nbFeatures, 0, useMockStorageAmqp);
         mockNotificationSuccess();
         List<FeatureEntity> features = featureRepo.findAll();
         Assert.assertNotNull(features);
@@ -751,7 +794,9 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
 
         // Simulate response from storage
         if (simulateStorageListenerLockException) {
-            Mockito.doThrow(LockAcquisitionException.class).when(featureRequestService).handleStorageSuccess(Mockito.any());
+            Mockito.doThrow(LockAcquisitionException.class)
+                   .when(featureRequestService)
+                   .handleStorageSuccess(Mockito.any());
         }
         mockStorageHelper.mockStorageResponses(featureUpdateRequestRepo, nbSuccess, nbErrors, useMockStorageAmqp);
         if (useMockStorageAmqp) {
@@ -1145,8 +1190,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // Notify them
         List<FeatureUniformResourceName> urns = this.featureRepo.findAll()
                                                                 .stream()
-                                                                .map(f -> f.getUrn())
-                                                                .collect(Collectors.toList());
+                                                                .map(AbstractFeatureEntity::getUrn)
+                                                                .toList();
         RequestInfo<FeatureUniformResourceName> results = this.featureUpdateService.registerRequests(
             prepareUpdateRequests(urns));
         Assert.assertFalse(results.getGranted().isEmpty());
@@ -1162,8 +1207,15 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                             0,
                             response.getTotalRequested());
 
+        // Simulate  request in error state
+        Set<Long> featureIds = featureUpdateRequestRepo.findAll()
+                                                       .stream()
+                                                       .map(FeatureUpdateRequest::getId)
+                                                       .collect(Collectors.toSet());
+        featureRequestService.updateRequestStateAndStep(featureIds, RequestState.ERROR, FeatureRequestStep.LOCAL_ERROR);
+
         response = this.featureUpdateService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(List.of(
-            RequestState.GRANTED)));
+            RequestState.ERROR)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 20 requests retryed as selection set on GRANTED Requests",
                             nbValid,

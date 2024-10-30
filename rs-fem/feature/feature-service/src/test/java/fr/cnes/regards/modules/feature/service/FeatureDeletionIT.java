@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.abort.FeatureRequestAbortService;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -62,6 +63,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -71,7 +73,8 @@ import static org.junit.Assert.*;
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_deletion",
                                    "regards.amqp.enabled=true",
-                                   "regards.feature.max.bulk.size=10" },
+                                   "regards.feature.max.bulk.size=10",
+                                   "regards.feature.abort.delay.hours=0" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
                                   "classpath:metrics.properties", })
@@ -88,6 +91,9 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired
     private IFeatureEntityWithDisseminationRepository featureWithDisseminationRepository;
+
+    @Autowired
+    private FeatureRequestAbortService featureRequestAbortService;
 
     @Override
     public void doInit() {
@@ -358,9 +364,18 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
                             0,
                             response.getTotalRequested());
 
+        // Simulate  request in error state
+        Set<Long> featureIds = featureDeletionRequestRepo.findAll()
+                                                         .stream()
+                                                         .map(FeatureDeletionRequest::getId)
+                                                         .collect(Collectors.toSet());
+        featureRequestService.updateRequestStateAndStep(featureIds,
+                                                        RequestState.ERROR,
+                                                        FeatureRequestStep.REMOTE_STORAGE_ERROR);
+
         // When
         response = featureDeletionService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(List.of(
-            RequestState.GRANTED)));
+            RequestState.ERROR)));
         LOGGER.info(response.getMessage());
 
         // Then
@@ -556,6 +571,39 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
     }
 
     @Test
+    public void test_abort_deletion_request_to_force_deletion() throws InterruptedException {
+        // Given a deletion request is blocked by a pending dissemination
+        test_feature_deletion_request_blocked_with_files();
+
+        // When abort requests out dated requests
+        // regards.feature.abort.delay.hours value is forced to 0 in spring properties of this class test
+        // @TestPropertySource annotation
+        RequestHandledResponse response = featureRequestAbortService.abortRequests(new SearchFeatureRequestParameters(),
+                                                                                   FeatureRequestTypeEnum.DELETION);
+
+        // Then All deletion requests are in ERROR state and force deletion is set to true
+        List<FeatureDeletionRequest> requests = featureDeletionRequestRepo.findAll();
+        Assert.assertEquals(requests.size(), response.getTotalHandled());
+        Assert.assertFalse(requests.isEmpty());
+        requests.forEach(r -> {
+            Assert.assertTrue(r.isForceDeletion());
+            Assert.assertEquals(FeatureRequestStep.LOCAL_ERROR, r.getStep());
+        });
+
+        // When schedule again this aborted request after retry
+        featureDeletionService.retryRequests(new SearchFeatureRequestParameters());
+        featureDeletionService.scheduleRequests();
+
+        // Then All deletion requests are scheduled
+        requests = featureDeletionRequestRepo.findAll();
+        Assert.assertFalse(requests.isEmpty());
+        requests.forEach(r -> {
+            Assert.assertEquals(FeatureRequestStep.LOCAL_SCHEDULED, r.getStep());
+        });
+
+    }
+
+    @Test
     public void test_feature_deletion_request_blocked_with_files() throws InterruptedException {
         // Given : mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
@@ -574,10 +622,11 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         featureWithDisseminationRepository.save(featureEntity);
 
         // When
-        Assert.assertEquals(0L,featureDeletionService.scheduleRequests());
+        Assert.assertEquals(0L, featureDeletionService.scheduleRequests());
 
         // Then
-        Assert.assertEquals(1L, featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
+        Assert.assertEquals(1L,
+                            featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
                                                                   OffsetDateTime.now().plusDays(1)).size());
     }
 
@@ -600,11 +649,12 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         featureWithDisseminationRepository.save(featureEntity);
 
         // When
-        Assert.assertEquals(0L,featureDeletionService.scheduleRequests());
+        Assert.assertEquals(0L, featureDeletionService.scheduleRequests());
 
         // Then
-        Assert.assertEquals(1L, featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
-                                                                      OffsetDateTime.now().plusDays(1)).size());
+        Assert.assertEquals(1L,
+                            featureDeletionRequestRepo.findByStep(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION,
+                                                                  OffsetDateTime.now().plusDays(1)).size());
     }
 
     // ---------------------

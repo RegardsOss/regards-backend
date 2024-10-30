@@ -78,4 +78,10 @@ public interface IFeatureDeletionService extends IAbstractFeatureService<Feature
     RequestsInfo getInfo(SearchFeatureRequestParameters filters);
 
     List<FeatureDeletionRequest> findAllByIds(Iterable ids);
+
+    /**
+     * Force deletion for given requests ids. Force deletion is used to bypass
+     * {@link fr.cnes.regards.modules.feature.dto.FeatureRequestStep#WAITING_BLOCKING_DISSEMINATION}.
+     */
+    void forceDeletion(Set<Long> ids);
 }
