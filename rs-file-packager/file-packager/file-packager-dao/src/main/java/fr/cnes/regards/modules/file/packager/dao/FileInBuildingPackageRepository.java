@@ -23,6 +23,11 @@ import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackageStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.time.OffsetDateTime;
 
 /**
  * Repository for {@link FileInBuildingPackage}
@@ -35,4 +40,22 @@ public interface FileInBuildingPackageRepository extends JpaRepository<FileInBui
                                                                                     Pageable page);
 
     Page<FileInBuildingPackage> findByPackageReferenceId(Long packageId, Pageable page);
+
+    /**
+     * Set given error and status to the file with the given id
+     */
+    @Modifying
+    @Query("UPDATE FileInBuildingPackage f SET f.status = :status, f.errorCause = :error, f.lastUpdateDate = :date "
+           + "WHERE f.id = :id")
+    void updateFileDeletionStatus(@Param("id") Long id,
+                                  @Param("error") String error,
+                                  @Param("date") OffsetDateTime lastUpdateDate,
+                                  @Param("status") FileInBuildingPackageStatus status);
+
+    /**
+     * Set given error and {@link FileInBuildingPackageStatus#DELETION_ERROR} to the file with the given id
+     */
+    default void updateFileDeletionError(Long id, String error) {
+        updateFileDeletionStatus(id, error, OffsetDateTime.now(), FileInBuildingPackageStatus.DELETION_ERROR);
+    }
 }

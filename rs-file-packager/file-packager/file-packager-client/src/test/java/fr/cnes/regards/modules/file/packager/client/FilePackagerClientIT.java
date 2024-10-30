@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.file.packager.client;/*
+/*
  * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
@@ -16,6 +16,7 @@ package fr.cnes.regards.modules.file.packager.client;/*
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.modules.file.packager.client;
 
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;

@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackageStatus;
 import fr.cnes.regards.modules.file.packager.domain.PackageReference;
 import fr.cnes.regards.modules.file.packager.domain.PackageReferenceStatus;
 import fr.cnes.regards.modules.file.packager.service.utils.FileStorageRequestReadyToProcessEventFactory;
+import fr.cnes.regards.modules.file.packager.service.job.FileIdAndPath;
 import fr.cnes.regards.modules.file.packager.service.job.PackagerJobPriority;
 import fr.cnes.regards.modules.file.packager.service.job.StoreCompletePackageJob;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
@@ -358,6 +359,27 @@ public class FilePackagerService {
     @MultitenantTransactional
     public void setPackageError(Long packageId, String error) {
         packageReferenceRepository.updatePackageError(packageId, error);
+    }
+
+    /**
+     * Delete the file at the given path {@link FileIdAndPath#path()}.
+     * If the file is successfully deleted or didn't exist, delete the {@link FileInBuildingPackage} with the
+     * corresponding {@link FileIdAndPath#fileId()}. Otherwise, set the {@link FileInBuildingPackage} to
+     * {@link FileInBuildingPackageStatus#DELETION_ERROR}
+     */
+    @MultitenantTransactional
+    public void deleteLocalFiles(List<FileIdAndPath> filesIdAndPath) {
+        List<Long> deletionSuccess = new ArrayList<>();
+        for (FileIdAndPath fileIdAndPath : filesIdAndPath) {
+            try {
+                Files.deleteIfExists(Path.of(fileIdAndPath.path()));
+                deletionSuccess.add(fileIdAndPath.fileId());
+            } catch (IOException e) {
+                LOGGER.error("Error while deleting local file {}", fileIdAndPath.path(), e);
+                fileInBuildingPackageRepository.updateFileDeletionError(fileIdAndPath.fileId(), e.getMessage());
+            }
+        }
+        fileInBuildingPackageRepository.deleteAllById(deletionSuccess);
     }
 
     private record StorageAndPath(String storage,

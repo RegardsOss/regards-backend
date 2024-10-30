@@ -19,17 +19,11 @@
 package fr.cnes.regards.modules.file.packager.service.job;
 
 /**
- * Centralize file-packager job priorities.
- * Higher priority will be processed first.
+ * Record for {@link DeleteLocalFilesJob parameter}
  *
  * @author Thibaud Michaudel
  **/
-public class PackagerJobPriority {
+public record FileIdAndPath(Long fileId,
+                            String path) {
 
-    public static final int DELETE_LOCAL_FILES_JOB = 150;
-
-    public static final int STORE_COMPLETE_PACKAGE_JOB = 100;
-
-    private PackagerJobPriority() {
-    }
 }
