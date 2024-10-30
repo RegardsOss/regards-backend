@@ -33,11 +33,15 @@ import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.validation.Errors;
 
 import java.time.OffsetDateTime;
@@ -51,11 +55,15 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> implements IAbstractFeatureService<R> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFeatureService.class);
+
     protected static final int MAX_PAGE_TO_DELETE = 50;
 
-    protected static final int MAX_PAGE_TO_RETRY = 50;
+    @Value("${regards.fem.requests.retry.max.page:50}")
+    protected int MAX_PAGE_TO_RETRY;
 
-    protected static final int MAX_ENTITY_PER_PAGE = 2000;
+    @Value("${regards.fem.requests.retry.max.entity.per.page:2000}")
+    protected int MAX_ENTITY_PER_PAGE;
 
     @Autowired
     protected IPublisher publisher;
@@ -112,6 +120,7 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
         boolean stop = false;
         // Delete only deletable requests
         selection.withSteps(Arrays.stream(FeatureRequestStep.values()).filter(step -> !step.isProcessing()).toList());
+
         do {
             requestsPage = findRequests(selection, page);
             if (total == 0) {
@@ -120,7 +129,7 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
             sessionInfoUpdateForDelete(requestsPage.toList());
             List<String> storageRequestToCancel = requestsPage.stream()
                                                               .filter(r -> r.getGroupId() != null)
-                                                              .map(r -> r.getGroupId())
+                                                              .map(AbstractFeatureRequest::getGroupId)
                                                               .toList();
             if (!storageRequestToCancel.isEmpty()) {
                 storageClient.cancelRequests(storageRequestToCancel);
@@ -152,12 +161,24 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
     public RequestHandledResponse retryRequests(SearchFeatureRequestParameters selection) {
         long nbHandled = 0;
         long total = 0;
+        int pageCount = 0;
         String message;
-        Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
+        // Sort requests on requestDate to avoid handling same requests multiple times during pagination
+        // The request date is updated to now() for each handled request.
+        Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE, Sort.by(Sort.Order.asc("requestDate")));
         Page<R> requestsPage;
         boolean stop = false;
-        // Delete only deletable requests
-        selection.withSteps(Arrays.stream(FeatureRequestStep.values()).filter(step -> !step.isProcessing()).toList());
+        OffsetDateTime startDate = OffsetDateTime.now();
+        // Retry only retryable requests
+        selection.withSteps(Arrays.stream(FeatureRequestStep.values())
+                                  .filter(FeatureRequestStep::isRetryableErrorStep)
+                                  .toList());
+        // Add search criterion on lastUpdate to handle only previous requests and not new ones.
+        if (selection.getLastUpdate() == null
+            || selection.getLastUpdate().getBefore() == null
+            || selection.getLastUpdate().getBefore().isAfter(startDate)) {
+            selection.withLastUpdateBefore(startDate);
+        }
         do {
             requestsPage = findRequests(selection, page);
             if (total == 0) {
@@ -167,18 +188,19 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
             sessionInfoUpdateForRetry(toUpdate);
             toUpdate = getRequestsRepository().saveAll(toUpdate);
             nbHandled += toUpdate.size();
-            if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {
-                page = requestsPage.nextPageable();
-            } else {
+            if ((requestsPage.getNumber() > pageCount) || nbHandled >= total) {
                 stop = true;
             }
+            pageCount++;
         } while (!stop);
         if (nbHandled < total) {
             message = String.format("All requests has not been handled. Limit of retryable requests (%d) exceeded",
-                                    MAX_PAGE_TO_RETRY * MAX_ENTITY_PER_PAGE);
+                                    pageCount * MAX_ENTITY_PER_PAGE);
         } else {
             message = "All retryable requested handled";
         }
+
+        LOGGER.info("UPDATED for retry {} / {}", nbHandled, total);
         return RequestHandledResponse.build(total, nbHandled, message);
     }
 

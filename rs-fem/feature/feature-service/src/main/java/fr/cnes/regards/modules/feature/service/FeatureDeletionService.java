@@ -263,10 +263,20 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
      * @return requests not blocked.
      */
     private Collection<FeatureDeletionRequest> updateBlockedRequestAndReturnNotBlockedRequests(Collection<FeatureDeletionRequest> deleteRequests) {
+        // Log all forced deletion requests
+        deleteRequests.stream()
+                      .filter(FeatureDeletionRequest::isForceDeletion)
+                      .forEach(request -> FeatureLogger.deletionForced(request.getRequestOwner(),
+                                                                       request.getRequestId(),
+                                                                       request.getUrn()));
+        // Retrieve products urn for request deletion without force deletion.
+        // Requests with force deletion can be processed without checking dissemination status
         Set<FeatureUniformResourceName> urnsToDelete = deleteRequests.stream()
+                                                                     .filter(request -> !request.isForceDeletion())
                                                                      .map(AbstractFeatureRequest::getUrn)
                                                                      .collect(Collectors.toSet());
-        Collection<FeatureUniformResourceName> blocked = featureEntityRepository.findFeatureUrnWaitingBlockingDissemination(urnsToDelete);
+        Collection<FeatureUniformResourceName> blocked = featureEntityRepository.findFeatureUrnWaitingBlockingDissemination(
+            urnsToDelete);
         featureDeletionRequestRepository.updateStepByUrn(FeatureRequestStep.WAITING_BLOCKING_DISSEMINATION, blocked);
         return deleteRequests.stream().filter(r -> !blocked.contains(r.getUrn())).toList();
     }
@@ -690,5 +700,10 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
     @MultitenantTransactional(readOnly = true)
     public List<FeatureDeletionRequest> findAllByIds(Iterable ids) {
         return this.featureDeletionRequestRepository.findAllById(ids);
+    }
+
+    @Override
+    public void forceDeletion(Set<Long> ids) {
+        featureDeletionRequestRepository.forceDeletionById(ids);
     }
 }

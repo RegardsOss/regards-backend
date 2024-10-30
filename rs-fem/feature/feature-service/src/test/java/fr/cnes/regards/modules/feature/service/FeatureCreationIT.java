@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.abort.FeatureRequestAbortService;
 import fr.cnes.regards.modules.feature.service.request.IFeatureRequestService;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import org.awaitility.Awaitility;
@@ -47,6 +48,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -59,12 +61,15 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version",
                                    "regards.amqp.enabled=true",
-                                   "regards.feature.max.bulk.size=50" },
+                                   "regards.feature.max.bulk.size=50",
+                                   "regards.fem.requests.abort.max.page=3",
+                                   "regards.feature.abort.page.size=10" },
                     locations = { "classpath:regards_perf.properties",
                                   "classpath:batch.properties",
                                   "classpath:metrics.properties" })
@@ -82,6 +87,15 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired
     private IFeatureRequestService featureRequestService;
+
+    @Autowired
+    private FeatureRequestAbortService featureRequestAbortService;
+
+    @Value("${regards.fem.requests.abort.max.page}")
+    private int maxPageToAbort;
+
+    @Value("${regards.feature.abort.page.size}")
+    private int maxRequestToAbortPerPage;
 
     /**
      * Test creation of properties.getMaxBulkSize() features Check if
@@ -401,6 +415,76 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
     }
 
+    /**
+     * To ensure pagination, parameter regards.feature.abort.page.size is set in test properties to 10.
+     * regards.fem.requests.abort.max.page is set to 3 to simulate only 3 page to cancel
+     * There is 35 cancelable request so there should be 4 pages to abort.
+     */
+    @Test
+    public void test_abort_requests_with_pagination() {
+
+        // Total number of requests simulated
+        int nbRequests = 125;
+        // Number of cancelable requests
+        int nbCancelable = 35;
+        // Number of requests with registration date old enough to be considered as cancelable
+        int nbOldRequests = 86;
+        // Number of new requests in a cancelable state ( but not cancelable cause registration date is not old enough)
+        int nbRunningNewNotCancelable = 5;
+        // Register valid requests in future to avoid being schedule by scheduler
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbRequests,
+                                                                                   true,
+                                                                                   false,
+                                                                                   OffsetDateTime.now().plusDays(1));
+        this.featureCreationService.registerRequests(events);
+
+        // Simulate some started for a long time
+        Page<FeatureCreationRequest> oldRequests = featureCreationRequestRepo.findAll(Pageable.ofSize(nbOldRequests));
+        featureRequestService.forceRegistrationDate(oldRequests.stream().map(FeatureCreationRequest::getId).toList(),
+                                                    OffsetDateTime.now().minusDays(1));
+        Page<FeatureCreationRequest> newRequests = featureCreationRequestRepo.findAll(oldRequests.nextPageable());
+
+        // Simulate some errors
+        Set<Long> featureIds = featureCreationRequestRepo.findAll(Pageable.ofSize(42))
+                                                         .stream()
+                                                         .map(FeatureCreationRequest::getId)
+                                                         .collect(Collectors.toSet());
+        featureRequestService.updateRequestStateAndStep(featureIds,
+                                                        RequestState.ERROR,
+                                                        FeatureRequestStep.REMOTE_STORAGE_ERROR);
+
+        // Simulate some running requests to cancelable step
+        oldRequests = featureCreationRequestRepo.findByStep(FeatureRequestStep.LOCAL_DELAYED,
+                                                            Pageable.ofSize(nbCancelable));
+        oldRequests.forEach(r -> r.setStep(FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED));
+        featureCreationRequestRepo.saveAll(oldRequests);
+
+        // Simulate some recent running requests to cancelable step (should not be cancelable so)
+        featureIds = newRequests.stream()
+                                .limit(nbRunningNewNotCancelable)
+                                .map(FeatureCreationRequest::getId)
+                                .collect(Collectors.toSet());
+        featureRequestService.updateRequestStateAndStep(featureIds,
+                                                        RequestState.ERROR,
+                                                        FeatureRequestStep.REMOTE_STORAGE_ERROR);
+
+        featureCreationRequestRepo.findAll().forEach(r -> {
+            LOGGER.info("Request {} state={}, step={}, registration_date={}",
+                        r.getRequestId(),
+                        r.getState(),
+                        r.getStep(),
+                        r.getRegistrationDate());
+        });
+
+        RequestHandledResponse response = featureRequestAbortService.abortRequests(new SearchFeatureRequestParameters(),
+                                                                                   FeatureRequestTypeEnum.CREATION);
+        Assert.assertEquals("Pagination limit error",
+                            maxRequestToAbortPerPage * maxPageToAbort,
+                            response.getTotalHandled());
+        Assert.assertEquals("Invalid number of total requests to abort.", nbCancelable, response.getTotalRequested());
+
+    }
+
     @Test
     public void testRetryRequests() {
 
@@ -409,7 +493,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbValid, true, false);
         this.featureCreationService.registerRequests(events);
 
-        // Try delete all requests.
+        // Try retry all requests.
         RequestHandledResponse response = this.featureCreationService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(
             List.of(RequestState.ERROR)));
         LOGGER.info(response.getMessage());
@@ -420,8 +504,18 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                             0,
                             response.getTotalRequested());
 
+        // Simulate  request in error state
+        Set<Long> featureIds = featureCreationRequestRepo.findAll()
+                                                         .stream()
+                                                         .map(FeatureCreationRequest::getId)
+                                                         .collect(Collectors.toSet());
+        featureRequestService.updateRequestStateAndStep(featureIds,
+                                                        RequestState.ERROR,
+                                                        FeatureRequestStep.REMOTE_STORAGE_ERROR);
+
+        // Now retry request should be possible
         response = this.featureCreationService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(
-            List.of(RequestState.GRANTED)));
+            List.of(RequestState.ERROR)));
         LOGGER.info(response.getMessage());
         Assert.assertEquals("There should be 20 requests retryed as selection set on GRANTED Requests",
                             nbValid,

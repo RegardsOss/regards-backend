@@ -29,7 +29,9 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import org.springframework.data.domain.Pageable;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -48,6 +50,12 @@ public interface IFeatureRequestService {
     RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type,
                                             SearchFeatureRequestParameters filters,
                                             Pageable page);
+
+    /**
+     * Force non-modifiable field registration_date of given requests.
+     * Used for test only.
+     */
+    void forceRegistrationDate(List<Long> ids, OffsetDateTime date);
 
     /**
      * Set the status STORAGE_OK to all {@link FeatureEntity} references by

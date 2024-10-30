@@ -545,14 +545,32 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
     protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate,
                                                                                 boolean override,
                                                                                 boolean updateIfExists) {
-        return initFeatureCreationRequestEvent(featureNumberToCreate, override, updateIfExists, owner, session);
+        return initFeatureCreationRequestEvent(featureNumberToCreate,
+                                               override,
+                                               updateIfExists,
+                                               owner,
+                                               session,
+                                               Optional.empty());
+    }
+
+    protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate,
+                                                                                boolean override,
+                                                                                boolean updateIfExists,
+                                                                                OffsetDateTime requestDate) {
+        return initFeatureCreationRequestEvent(featureNumberToCreate,
+                                               override,
+                                               updateIfExists,
+                                               owner,
+                                               session,
+                                               Optional.of(requestDate));
     }
 
     protected List<FeatureCreationRequestEvent> initFeatureCreationRequestEvent(int featureNumberToCreate,
                                                                                 boolean override,
                                                                                 boolean updateIfExists,
                                                                                 String source,
-                                                                                String session) {
+                                                                                String session,
+                                                                                Optional<OffsetDateTime> requestDate) {
 
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
         FeatureCreationRequestEvent toAdd;
@@ -592,7 +610,7 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
                                                       featureToAdd);
             toAdd.setRequestId(UUID.randomUUID().toString());
             toAdd.setFeature(featureToAdd);
-            toAdd.setRequestDate(OffsetDateTime.now().minusDays(1));
+            toAdd.setRequestDate(requestDate.orElse(OffsetDateTime.now().minusDays(1)));
 
             events.add(toAdd);
         }
@@ -611,7 +629,8 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
                                        override,
                                        updateIfExists,
                                        owner,
-                                       session);
+                                       session,
+                                       Optional.empty());
     }
 
     protected List<FeatureCreationRequestEvent> prepareCreationTestData(boolean prepareFeatureWithFiles,
@@ -620,13 +639,14 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
                                                                         boolean override,
                                                                         boolean updateIfExists,
                                                                         String source,
-                                                                        String session) throws InterruptedException {
-
+                                                                        String session,
+                                                                        Optional<OffsetDateTime> requestDate) {
         List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(featureToCreateNumber,
                                                                                    override,
                                                                                    updateIfExists,
                                                                                    source,
-                                                                                   session);
+                                                                                   session,
+                                                                                   requestDate);
 
         if (!prepareFeatureWithFiles) {
             // remove files inside features
