@@ -77,7 +77,7 @@ public class FileArchiveRequestEventHandler
 
         filePackagerService.createNewFilesInBuildingPackage(messages);
 
-        LOGGER.info("[FileArchiveRequestEvent EVENT HANDLER] {} file archive requests handled in {} ms",
+        LOGGER.info("[FileArchiveRequestEvent HANDLER] {} file archive requests handled in {} ms",
                     messages.size(),
                     System.currentTimeMillis() - start);
     }

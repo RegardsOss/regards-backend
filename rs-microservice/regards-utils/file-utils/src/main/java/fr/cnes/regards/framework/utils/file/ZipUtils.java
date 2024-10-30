@@ -166,7 +166,7 @@ public class ZipUtils {
     }
 
     /**
-     * Add filse to the given zip stream
+     * Add files to the given zip stream
      */
     public static boolean addFilesToArchive(ZipOutputStream zipOutputStream, List<File> files) {
         for (File file : files) {

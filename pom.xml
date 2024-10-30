@@ -1917,6 +1917,11 @@
                 <artifactId>file-packager-amqp</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.filepackager</groupId>
+                <artifactId>file-packager-client</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <!-- CNES REMOTE STORAGES -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.storage.plugins</groupId>

@@ -51,5 +51,6 @@
         <module>file-packager-rest</module>
         <module>file-packager-amqp</module>
         <module>file-packager-service</module>
+        <module>file-packager-client</module>
     </modules>
 </project>

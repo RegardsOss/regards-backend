@@ -18,8 +18,13 @@
  */
 package fr.cnes.regards.modules.file.packager.service;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.file.ZipUtils;
 import fr.cnes.regards.modules.file.packager.dao.FileInBuildingPackageRepository;
@@ -29,6 +34,8 @@ import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackageStatus;
 import fr.cnes.regards.modules.file.packager.domain.PackageReference;
 import fr.cnes.regards.modules.file.packager.domain.PackageReferenceStatus;
 import fr.cnes.regards.modules.file.packager.service.utils.FileStorageRequestReadyToProcessEventFactory;
+import fr.cnes.regards.modules.file.packager.service.job.PackagerJobPriority;
+import fr.cnes.regards.modules.file.packager.service.job.StoreCompletePackageJob;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FileArchiveResponseEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileArchiveRequestEvent;
@@ -69,7 +76,8 @@ import java.util.zip.ZipOutputStream;
  *     <li>The scheduler {@link fr.cnes.regards.modules.file.packager.service.scheduler.FilePackagingScheduler
  *      FilePackagingScheduler} will close package that are too old even if they're not full </li> using the method
  *      {@link #closeOldPackages()}
- *     <li>The scheduler {TODO} will launch a
+ *     <li>The scheduler {@link fr.cnes.regards.modules.file.packager.service.scheduler.CompletePackageScheduler
+ *     CompletePackageScheduler} will launch a
  *     {@link fr.cnes.regards.modules.file.packager.service.job.StoreCompletePackageJob StoreCompletePackageJob} for
  *     all closed packages. The package will be updated and a {@link FileStorageRequestReadyToProcessEvent} will be
  *     sent to file-access to store the created archive using the method {@link #storeCompletePackage}.
@@ -89,6 +97,10 @@ public class FilePackagerService {
     private final PackageReferenceRepository packageReferenceRepository;
 
     private final IPublisher publisher;
+
+    private final JobInfoService jobInfoService;
+
+    private final IAuthenticationResolver authResolver;
 
     @Value("${regards.file.packager.archive.max.size.in.ko:1024}")
     private int maxArchiveSizeInKo;
@@ -111,10 +123,14 @@ public class FilePackagerService {
 
     public FilePackagerService(FileInBuildingPackageRepository fileInBuildingPackageRepository,
                                PackageReferenceRepository packageReferenceRepository,
-                               IPublisher publisher) {
+                               IPublisher publisher,
+                               JobInfoService jobInfoService,
+                               IAuthenticationResolver authResolver) {
         this.fileInBuildingPackageRepository = fileInBuildingPackageRepository;
         this.packageReferenceRepository = packageReferenceRepository;
         this.publisher = publisher;
+        this.jobInfoService = jobInfoService;
+        this.authResolver = authResolver;
     }
 
     /**
@@ -153,6 +169,34 @@ public class FilePackagerService {
 
         // Associate the files
         filePackageMap.forEach((key, value) -> associateFilesToPackage(key.storage(), key.path(), value));
+    }
+
+    @MultitenantTransactional
+    public void scheduleStoreCompletePackageJobs() {
+        Pageable page = PageRequest.of(0, pageSize);
+        do {
+            Page<PackageReference> packagesToStore = packageReferenceRepository.findAllByStatus(PackageReferenceStatus.TO_STORE,
+                                                                                                page);
+            for (PackageReference packageToStore : packagesToStore) {
+                Set<JobParameter> parameters = Sets.newHashSet();
+                parameters.add(new JobParameter(StoreCompletePackageJob.PACKAGE_ID_PARAMETER, packageToStore.getId()));
+                parameters.add(new JobParameter(StoreCompletePackageJob.STORAGE_PARAMETER,
+                                                packageToStore.getStorage()));
+                parameters.add(new JobParameter(StoreCompletePackageJob.CREATION_DATE_PARAMETER,
+                                                packageToStore.getCreationDate().format(archiveNameFormatter)));
+                parameters.add(new JobParameter(StoreCompletePackageJob.STORAGE_SUBDIRECTORY_PARAMETER,
+                                                packageToStore.getStorageSubdirectory()));
+                jobInfoService.createAsQueued(new JobInfo(false,
+                                                          PackagerJobPriority.STORE_COMPLETE_PACKAGE_JOB,
+                                                          parameters,
+                                                          authResolver.getUser(),
+                                                          StoreCompletePackageJob.class.getName()));
+            }
+            packageReferenceRepository.updatePackagesStatusInProgressByIdIn(packagesToStore.stream()
+                                                                                           .map(PackageReference::getId)
+                                                                                           .toList());
+            page = packagesToStore.nextPageable();
+        } while (page.isPaged());
     }
 
     @MultitenantTransactional

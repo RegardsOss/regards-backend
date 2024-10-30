@@ -20,12 +20,15 @@ package fr.cnes.regards.modules.file.packager.dao;
 
 import fr.cnes.regards.modules.file.packager.domain.PackageReference;
 import fr.cnes.regards.modules.file.packager.domain.PackageReferenceStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -38,6 +41,8 @@ public interface PackageReferenceRepository extends JpaRepository<PackageReferen
     Optional<PackageReference> findOneByStorageAndStorageSubdirectoryAndStatus(String storage,
                                                                                String storePath,
                                                                                PackageReferenceStatus status);
+
+    Page<PackageReference> findAllByStatus(PackageReferenceStatus status, Pageable pageable);
 
     /**
      * Set given status to all packages older than the given date.
@@ -76,4 +81,20 @@ public interface PackageReferenceRepository extends JpaRepository<PackageReferen
     default void updatePackageError(Long id, String error) {
         updatePackageStatus(id, error, PackageReferenceStatus.STORE_ERROR);
     }
+
+    /**
+     * Set given status to the given packages
+     */
+    @Modifying
+    @Query("UPDATE PackageReference p SET p.status = :status WHERE p.id IN :packageIds")
+    void updatePackagesStatusByIdIn(@Param("packageIds") List<Long> packageIds,
+                                    @Param("status") PackageReferenceStatus status);
+
+    /**
+     * Set {@link PackageReferenceStatus#STORE_IN_PROGRESS} to given packages
+     */
+    default void updatePackagesStatusInProgressByIdIn(List<Long> packageIds) {
+        updatePackagesStatusByIdIn(packageIds, PackageReferenceStatus.STORE_IN_PROGRESS);
+    }
+
 }
