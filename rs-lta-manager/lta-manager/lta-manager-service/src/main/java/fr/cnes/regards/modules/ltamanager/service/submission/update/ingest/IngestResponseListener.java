@@ -27,11 +27,11 @@ import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.IngestStatusResponseMapping;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionResponseDtoUtils;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -67,16 +67,26 @@ public class IngestResponseListener implements IIngestClientListener {
 
     @Override
     public void onDenied(Collection<RequestInfo> infos) {
+        infos = ingestResponseService.skipNonLtaRequestInfo(infos);
         ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.DENIED_MAP);
+        List<SubmissionResponseDtoEvent> requestsCompleteError = infos.stream()
+                                                                      .map(info -> createSubmissionResponseDtoEvent(info,
+                                                                                                                    SubmissionResponseStatus.ERROR,
+                                                                                                                    SubmissionResponseDtoUtils.buildErrorMessage(
+                                                                                                                        info.getErrors())))
+                                                                      .toList();
+        publisher.publish(requestsCompleteError);
     }
 
     @Override
     public void onGranted(Collection<RequestInfo> infos) {
+        infos = ingestResponseService.skipNonLtaRequestInfo(infos);
         ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.GRANTED_MAP);
     }
 
     @Override
     public void onError(Collection<RequestInfo> infos) {
+        infos = ingestResponseService.skipNonLtaRequestInfo(infos);
         ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.ERROR_MAP);
         List<SubmissionResponseDtoEvent> requestsCompleteError = infos.stream()
                                                                       .map(info -> createSubmissionResponseDtoEvent(info,
@@ -90,8 +100,8 @@ public class IngestResponseListener implements IIngestClientListener {
 
     @Override
     public void onSuccess(Collection<RequestInfo> infos) {
+        infos = ingestResponseService.skipNonLtaRequestInfo(infos);
         ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.SUCCESS_MAP);
-
         List<SubmissionResponseDtoEvent> submissionResponseDtoEvents = infos.stream()
                                                                             .map(info -> createSubmissionResponseDtoEvent(
                                                                                 info,
@@ -100,6 +110,12 @@ public class IngestResponseListener implements IIngestClientListener {
                                                                             .toList();
         submissionResponseDtoEvents.forEach(r -> LOGGER.debug(r.toString()));
         publisher.publish(submissionResponseDtoEvents);
+    }
+
+    @Override
+    public void onDeleted(Set<RequestInfo> infos) {
+        Collection<RequestInfo> requestInfos = ingestResponseService.skipNonLtaRequestInfo(infos);
+        ingestResponseService.updateSubmissionRequestState(requestInfos, IngestStatusResponseMapping.DELETED_MAP);
     }
 
     /**
@@ -117,10 +133,5 @@ public class IngestResponseListener implements IIngestClientListener {
                                                               .orElse(null),
                                                       oRequest.map(SubmissionRequest::getOriginRequestPriority)
                                                               .orElse(1));
-    }
-
-    @Override
-    public void onDeleted(Set<RequestInfo> infos) {
-        ingestResponseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.DELETED_MAP);
     }
 }
