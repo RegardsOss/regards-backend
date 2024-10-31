@@ -438,9 +438,10 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                                                    false,
                                                                                    OffsetDateTime.now().plusDays(1));
         this.featureCreationService.registerRequests(events);
+        waitRequest(featureCreationRequestRepo, nbRequests, 10000L);
 
         // Simulate some started for a long time
-        Page<FeatureCreationRequest> oldRequests = featureCreationRequestRepo.findAll(Pageable.ofSize(nbOldRequests));
+        Page<FeatureCreationRequest> oldRequests = featureCreationRequestRepo.findAll(Pageable.ofSize(1000));
         featureRequestService.forceRegistrationDate(oldRequests.stream().map(FeatureCreationRequest::getId).toList(),
                                                     OffsetDateTime.now().minusDays(1));
         Page<FeatureCreationRequest> newRequests = featureCreationRequestRepo.findAll(oldRequests.nextPageable());
@@ -469,16 +470,18 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                         RequestState.ERROR,
                                                         FeatureRequestStep.REMOTE_STORAGE_ERROR);
 
-        featureCreationRequestRepo.findAll().forEach(r -> {
-            LOGGER.info("Request {} state={}, step={}, registration_date={}",
-                        r.getRequestId(),
-                        r.getState(),
-                        r.getStep(),
-                        r.getRegistrationDate());
-        });
+        LOGGER.info("#############################################################");
+        LOGGER.info("Requests before abort : ");
+        logAllCreationRequestsState();
 
+        LOGGER.info("#############################################################");
+        LOGGER.info("Requests Aborting ... ");
         RequestHandledResponse response = featureRequestAbortService.abortRequests(new SearchFeatureRequestParameters(),
                                                                                    FeatureRequestTypeEnum.CREATION);
+
+        LOGGER.info("#############################################################");
+        LOGGER.info("Requests After abort : ");
+        logAllCreationRequestsState();
         Assert.assertEquals("Pagination limit error",
                             maxRequestToAbortPerPage * maxPageToAbort,
                             response.getTotalHandled());
