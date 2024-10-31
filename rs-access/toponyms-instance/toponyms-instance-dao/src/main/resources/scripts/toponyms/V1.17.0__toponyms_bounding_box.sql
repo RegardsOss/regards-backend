@@ -214,7 +214,7 @@ UPDATE ${flyway:defaultSchema}.t_toponyms
              SET bounding_box = '{"sw":{"lat":0.827,"lon":137.2234512},"ne":{"lat":10.291,"lon":163.2364054}}'
              WHERE bid = 'Federated_States';
 UPDATE ${flyway:defaultSchema}.t_toponyms
-             SET bounding_box = '{"sw":{"lat":-21.9434274,"lon":172},"ne":{"lat":-12.2613866,"lon":-178.5}}'
+             SET bounding_box = '{"sw":{"lat":-19.177,"lon":177.25},"ne":{"lat":-16.1,"lon":-179.178}}'
              WHERE bid = 'Fiji';
 UPDATE ${flyway:defaultSchema}.t_toponyms
              SET bounding_box = '{"sw":{"lat":59.4541578,"lon":19.0832098},"ne":{"lat":70.0922939,"lon":31.5867071}}'
@@ -709,7 +709,7 @@ UPDATE ${flyway:defaultSchema}.t_toponyms
              SET bounding_box = '{"sw":{"lat":49.674,"lon":-14.015517},"ne":{"lat":61.061,"lon":2.0919117}}'
              WHERE bid = 'United_Kingdom';
 UPDATE ${flyway:defaultSchema}.t_toponyms
-             SET bounding_box = '{"sw":{"lat":24.9493,"lon":-125.0011},"ne":{"lat":49.5904,"lon":-66.9326}}'
+             SET bounding_box = '{"sw":{"lat":18.2127,"lon":172.3958},"ne":{"lat":71.8438,"lon":-66.3998}}'
              WHERE bid = 'United_States';
 UPDATE ${flyway:defaultSchema}.t_toponyms
              SET bounding_box = '{"sw":{"lat":-35.7824481,"lon":-58.4948438},"ne":{"lat":-30.0853962,"lon":-53.0755833}}'
