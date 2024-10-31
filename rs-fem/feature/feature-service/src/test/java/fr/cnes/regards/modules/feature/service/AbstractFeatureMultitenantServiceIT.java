@@ -306,6 +306,16 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
         });
     }
 
+    protected void logAllCreationRequestsState() {
+        featureCreationRequestRepo.findAll().forEach(r -> {
+            LOGGER.info("Request {} state={}, step={}, registration_date={}",
+                        r.getRequestId(),
+                        r.getState(),
+                        r.getStep(),
+                        r.getRegistrationDate());
+        });
+    }
+
     /**
      * Wait until feature creation request(s) are properly deleted
      *
