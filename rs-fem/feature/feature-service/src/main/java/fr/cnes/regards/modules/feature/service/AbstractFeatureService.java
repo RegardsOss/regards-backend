@@ -65,8 +65,6 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
     @Value("${regards.fem.requests.retry.max.entity.per.page:2000}")
     protected int MAX_ENTITY_PER_PAGE;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractFeatureService.class);
-
     @Autowired
     protected IPublisher publisher;
 
