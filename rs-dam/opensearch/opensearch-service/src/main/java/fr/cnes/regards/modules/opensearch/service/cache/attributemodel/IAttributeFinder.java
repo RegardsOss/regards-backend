@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -39,6 +40,15 @@ public interface IAttributeFinder {
      * @throws OpenSearchUnknownParameter if parameter name cannot be mapped to an attribute
      */
     AttributeModel findByName(String name) throws OpenSearchUnknownParameter;
+
+    /**
+     * Return an Optional of {@link AttributeModel} related to the passed name
+     * Does not return any exception
+     *
+     * @param name open search parameter name
+     * @return the Optional of {@link AttributeModel}
+     */
+    Optional<AttributeModel> findByNameOptional(String name);
 
     /**
      * @param type type filter
