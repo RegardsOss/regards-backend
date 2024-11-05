@@ -35,7 +35,6 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
@@ -728,11 +727,24 @@ public class FileDeletionRequestService {
     }
 
     /**
-     * Delete all requests for the given storage identifier
+     * Delete all requests for the given storage identifier and status if it's present.
+     * For file deletion requests, the request will be retried with forceDelete = true before being deleted.
      */
     public void deleteByStorage(String storageLocationId, Optional<FileRequestStatus> status) {
         if (status.isPresent()) {
-            fileDeletionRequestRepo.deleteByStorageAndStatus(storageLocationId, status.get());
+            if (FileRequestStatus.ERROR == status.get()) {
+                // Retry the deletion requests with forceDelete = true so the requests are deleted no matter
+                // the job result. Setting the requests to TO_DO state will make it so it is retried in the
+                // next call of the FileRequestScheduler
+                LOGGER.warn("Retrying all deletion of files from storage location {} with forceDelete. The "
+                            + "deletion requests will be deleted even if the files deletion does not succeed",
+                            storageLocationId);
+                fileDeletionRequestRepo.setStatusAndForceDeleteByStatus(FileRequestStatus.ERROR,
+                                                                        FileRequestStatus.TO_DO,
+                                                                        storageLocationId);
+            } else {
+                fileDeletionRequestRepo.deleteByStorageAndStatus(storageLocationId, status.get());
+            }
         } else {
             fileDeletionRequestRepo.deleteByStorage(storageLocationId);
         }

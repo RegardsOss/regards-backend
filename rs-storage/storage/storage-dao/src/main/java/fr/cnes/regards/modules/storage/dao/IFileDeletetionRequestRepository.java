@@ -80,6 +80,13 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
     int updateStatus(@Param("status") FileRequestStatus status, @Param("id") Long id);
 
     @Modifying
+    @Query("UPDATE FileDeletionRequest fdr SET fdr.forceDelete = true, fdr.status = :statusToSet WHERE "
+           + "fdr.status = :statusToUpdate AND fdr.storage = :storage")
+    void setStatusAndForceDeleteByStatus(@Param("statusToUpdate") FileRequestStatus statusToUpdate,
+                                         @Param("statusToSet") FileRequestStatus statusToSet,
+                                         @Param("storage") String storageLocationId);
+
+    @Modifying
     @Query("update FileDeletionRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
     int updateError(@Param("status") FileRequestStatus status,
                     @Param("errorCause") String errorCause,
@@ -93,11 +100,9 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
 
     boolean existsByStorageAndStatusIn(String storage, Collection<FileRequestStatus> status);
 
-    boolean existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(String storage,
-                                                                       String checksum,
-                                                                       Set<FileRequestStatus> ruuninstatus);
+    boolean existsByStorageAndFileReferenceMetaInfoChecksum(String storage, String checksum);
 
-    boolean existsByFileReferenceMetaInfoChecksumAndStatusIn(String checksum, Set<FileRequestStatus> ruuninstatus);
+    boolean existsByFileReferenceMetaInfoChecksumAndStatusIn(String checksum, Set<FileRequestStatus> runningStatus);
 
     Set<FileDeletionRequest> findByFileReferenceMetaInfoChecksumIn(Set<String> checksums);
 
