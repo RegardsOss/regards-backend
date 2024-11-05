@@ -1212,7 +1212,10 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                                                        .stream()
                                                        .map(FeatureUpdateRequest::getId)
                                                        .collect(Collectors.toSet());
-        featureRequestService.updateRequestStateAndStep(featureIds, RequestState.ERROR, FeatureRequestStep.LOCAL_ERROR);
+        featureRequestService.updateRequestStateAndStep(featureIds,
+                                                        RequestState.ERROR,
+                                                        FeatureRequestStep.LOCAL_ERROR,
+                                                        Set.of("Simulated error by test."));
 
         response = this.featureUpdateService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(List.of(
             RequestState.ERROR)));
@@ -1280,6 +1283,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         createOneWithError();
 
         featureUpdateService.retryRequests(new SearchFeatureRequestParameters());
+        waitForStep(featureUpdateRequestRepo, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 10_000);
         mockNotificationSuccess();
         waitRequest(featureUpdateRequestRepo, 0, 20000);
 

@@ -183,8 +183,17 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
-    public void updateRequestStateAndStep(Set<Long> requestIds, RequestState status, FeatureRequestStep requestStep) {
-        this.abstractFeatureRequestRepo.updateStateAndStep(status, requestStep, requestIds);
+    public void updateRequestStateAndStep(Set<Long> requestIds,
+                                          RequestState status,
+                                          FeatureRequestStep requestStep,
+                                          Set<String> errors) {
+        List<AbstractFeatureRequest> requests = abstractFeatureRequestRepo.findAllById(requestIds);
+        requests.forEach(r -> {
+            errors.forEach(r::addError);
+            r.setState(RequestState.ERROR);
+            r.setStep(FeatureRequestStep.LOCAL_ERROR);
+        });
+        abstractFeatureRequestRepo.saveAll(requests);
     }
 
     @Override

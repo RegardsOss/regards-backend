@@ -3,7 +3,6 @@ package fr.cnes.regards.modules.feature.dao;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.IProviderIdByUrn;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -59,19 +58,6 @@ public interface IAbstractFeatureRequestRepository<T extends AbstractFeatureRequ
     @Modifying
     @Query("UPDATE AbstractFeatureRequest afr SET afr.step = :newStep WHERE afr.id IN :ids ")
     void updateStep(@Param("newStep") FeatureRequestStep step, @Param("ids") Set<Long> ids);
-
-    /**
-     * Update {@link AbstractFeatureRequest} state. <b>WARNING: this method acts on {@link AbstractFeatureRequest}
-     * so, for example, even using a {@link IFeatureCopyRequestRepository} you can update a {@link fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest}</b>
-     *
-     * @param requestState new {@link FeatureRequestStep}
-     * @param ids          id of {@link AbstractFeatureRequest} to update
-     */
-    @Modifying
-    @Query("update AbstractFeatureRequest afr set afr.state = :newState, afr.step = :newStep where afr.id in :ids ")
-    void updateStateAndStep(@Param("newState") RequestState requestState,
-                            @Param("newStep") FeatureRequestStep requestStep,
-                            @Param("ids") Set<Long> ids);
 
     @Modifying
     @Query("delete from AbstractFeatureRequest req where urn in :urns")

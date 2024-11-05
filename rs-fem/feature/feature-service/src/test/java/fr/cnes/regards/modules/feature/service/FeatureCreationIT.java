@@ -453,7 +453,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                          .collect(Collectors.toSet());
         featureRequestService.updateRequestStateAndStep(featureIds,
                                                         RequestState.ERROR,
-                                                        FeatureRequestStep.REMOTE_STORAGE_ERROR);
+                                                        FeatureRequestStep.REMOTE_STORAGE_ERROR,
+                                                        Set.of("Simulated error in test."));
 
         // Simulate some running requests to cancelable step
         oldRequests = featureCreationRequestRepo.findByStep(FeatureRequestStep.LOCAL_DELAYED,
@@ -468,7 +469,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                 .collect(Collectors.toSet());
         featureRequestService.updateRequestStateAndStep(featureIds,
                                                         RequestState.ERROR,
-                                                        FeatureRequestStep.REMOTE_STORAGE_ERROR);
+                                                        FeatureRequestStep.REMOTE_STORAGE_ERROR,
+                                                        Set.of("Simulated error in test."));
 
         LOGGER.info("#############################################################");
         LOGGER.info("Requests before abort : ");
@@ -515,7 +517,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                          .collect(Collectors.toSet());
         featureRequestService.updateRequestStateAndStep(featureIds,
                                                         RequestState.ERROR,
-                                                        FeatureRequestStep.REMOTE_STORAGE_ERROR);
+                                                        FeatureRequestStep.REMOTE_STORAGE_ERROR,
+                                                        Set.of("Simulated error in test."));
 
         // Now retry request should be possible
         response = this.featureCreationService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(

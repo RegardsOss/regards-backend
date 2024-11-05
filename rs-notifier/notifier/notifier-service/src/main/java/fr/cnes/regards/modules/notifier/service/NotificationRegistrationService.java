@@ -189,6 +189,8 @@ public class NotificationRegistrationService {
                                                                          abortedRecipientId);
                     notificationRequestRepository.removeRecipientScheduled(notificationRequest.getId(),
                                                                            abortedRecipientId);
+                    LOGGER.error("Request {} moved from scheduled requests for recipient {} to to_schedule requests "
+                                 + "cause associated job crashed", notificationRequest.getState(), abortedRecipientId);
                     // Keep request ID to update its state
                     notificationRequestIdsToUpdate.add(notificationRequest.getId());
                 } else {

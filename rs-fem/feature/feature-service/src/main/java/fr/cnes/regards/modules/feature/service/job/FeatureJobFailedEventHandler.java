@@ -92,13 +92,15 @@ public class FeatureJobFailedEventHandler implements IHandler<JobEvent>, Applica
 
                 }.getType();
                 Set<Long> requestIds = job.getParametersAsMap().get(AbstractFeatureJob.IDS_PARAMETER).getValue(type);
-                LOGGER.error("Job {} failed detected. Updating associated {} requests to ERROR status and LOCAL_ERROR"
-                             + " step", job.getId().toString(), requestIds.size());
+                String errorMessage = String.format("Job %s failed detected. Updating associated %s requests to ERROR "
+                                                    + "status and LOCAL_ERROR step",
+                                                    job.getId().toString(),
+                                                    requestIds.size());
+                LOGGER.error(errorMessage);
                 featureRequestService.updateRequestStateAndStep(requestIds,
                                                                 RequestState.ERROR,
-                                                                FeatureRequestStep.LOCAL_ERROR);
-                // Fixme - retrieve the error from the job and attach it to every request
-                // if the request do not contain the error
+                                                                FeatureRequestStep.LOCAL_ERROR,
+                                                                Set.of(errorMessage));
             }
         }
     }

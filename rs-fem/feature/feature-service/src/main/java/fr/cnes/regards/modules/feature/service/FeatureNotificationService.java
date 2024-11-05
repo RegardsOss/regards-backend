@@ -309,11 +309,12 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                                                         RequestState.ERROR));
         }
         onError(error);
-        abstractFeatureRequestRepo.updateStateAndStep(RequestState.ERROR,
-                                                      errorStep,
-                                                      error.stream()
-                                                           .map(AbstractFeatureRequest::getId)
-                                                           .collect(Collectors.toSet()));
+        error.forEach(r -> {
+            r.addError("Notification error");
+            r.setState(RequestState.ERROR);
+            r.setStep(errorStep);
+        });
+        abstractFeatureRequestRepo.saveAll(error);
     }
 
     @Override

@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.feature.service.FeatureDeletionService;
 import fr.cnes.regards.modules.feature.service.request.FeatureRequestService;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
+import io.jsonwebtoken.lang.Assert;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.assertj.core.api.Assertions;
@@ -382,12 +383,16 @@ class FeatureRequestAbortServiceTest {
 
     private void verifyUpdateRequests(List<FeatureRequestDTO> simulatedFeatures, FeatureRequestTypeEnum requestType) {
         ArgumentCaptor<Set<Long>> requestsIdsCaptor = ArgumentCaptor.forClass(Set.class);
+        ArgumentCaptor<Set<String>> requestsErrorsCaptor = ArgumentCaptor.forClass(Set.class);
         ArgumentCaptor<FeatureRequestStep> argumentCaptor = ArgumentCaptor.forClass(FeatureRequestStep.class);
 
         Mockito.verify(featureRequestService, Mockito.timeout(5_000).atLeastOnce())
                .updateRequestStateAndStep(requestsIdsCaptor.capture(),
                                           ArgumentMatchers.eq(RequestState.ERROR),
-                                          argumentCaptor.capture());
+                                          argumentCaptor.capture(),
+                                          requestsErrorsCaptor.capture());
+
+        Assert.notEmpty(requestsErrorsCaptor.getValue());
 
         List<Long> idsProcessed = requestsIdsCaptor.getAllValues().stream().flatMap(Set::stream).toList();
         Assertions.assertThat(idsProcessed)

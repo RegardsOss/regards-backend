@@ -343,6 +343,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
     private void createOneRequestsWithNotificationError() throws InterruptedException {
 
         prepareCreationTestData(false, 1, false, true, false);
+        waitForStep(featureCreationRequestRepo, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 10_000);
         mockNotificationError();
         waitCreationRequestDeletion(1, 20000);
         waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 10_000);
