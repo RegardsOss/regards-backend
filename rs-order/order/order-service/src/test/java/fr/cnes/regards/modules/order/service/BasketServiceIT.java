@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
+import fr.cnes.regards.modules.order.exception.CannotHaveProcessingAndFiltersException;
 import fr.cnes.regards.modules.order.service.processing.AbstractOrderProcessingServiceIT;
 import fr.cnes.regards.modules.order.test.SearchClientMock;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
@@ -298,7 +299,8 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
 
     @Test
     @Purpose("Test if the selection is in error when too many features are added")
-    public void addOversizedSelectionTestForFeatures() throws EmptyBasketException, EmptySelectionException {
+    public void addOversizedSelectionTestForFeatures()
+        throws EmptyBasketException, EmptySelectionException, CannotHaveProcessingAndFiltersException {
         OrderProcessInfo orderProcessInfo = new OrderProcessInfo(Scope.FEATURE,
                                                                  Cardinality.ONE_PER_INPUT_FILE,
                                                                  List.of(DataType.RAWDATA),
@@ -310,7 +312,8 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
 
     @Test
     @Purpose("Test if the selection is in error when too many files are added")
-    public void addOversizedSelectionTestForFiles() throws EmptyBasketException, EmptySelectionException {
+    public void addOversizedSelectionTestForFiles()
+        throws EmptyBasketException, EmptySelectionException, CannotHaveProcessingAndFiltersException {
         OrderProcessInfo orderProcessInfo = new OrderProcessInfo(Scope.FEATURE,
                                                                  Cardinality.ONE_PER_INPUT_FILE,
                                                                  List.of(DataType.RAWDATA),
@@ -322,7 +325,8 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
 
     @Test
     @Purpose("Test if the selection is in error when file sizes exceed the process limit")
-    public void addOversizedSelectionTestForFileSizes() throws EmptyBasketException, EmptySelectionException {
+    public void addOversizedSelectionTestForFileSizes()
+        throws EmptyBasketException, EmptySelectionException, CannotHaveProcessingAndFiltersException {
         OrderProcessInfo orderProcessInfo = new OrderProcessInfo(Scope.FEATURE,
                                                                  Cardinality.ONE_PER_INPUT_FILE,
                                                                  List.of(DataType.RAWDATA),
@@ -334,7 +338,8 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
 
     @Test
     @Purpose("Test if the selection is working when there is no limit")
-    public void addOversizedSelectionTestWithNoLimit() throws EmptyBasketException, EmptySelectionException {
+    public void addOversizedSelectionTestWithNoLimit()
+        throws EmptyBasketException, EmptySelectionException, CannotHaveProcessingAndFiltersException {
         OrderProcessInfo orderProcessInfo = new OrderProcessInfo(Scope.FEATURE,
                                                                  Cardinality.ONE_PER_INPUT_FILE,
                                                                  List.of(DataType.RAWDATA),
@@ -345,7 +350,7 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
     }
 
     private void testSelectionOverProcessSizeLimit(OrderProcessInfo orderProcessInfo, boolean expectedException)
-        throws EmptyBasketException, EmptySelectionException {
+        throws EmptyBasketException, EmptySelectionException, CannotHaveProcessingAndFiltersException {
         UUID processBusinessId = UUID.randomUUID();
         setUpProcessingClient(processBusinessId, new OrderProcessInfoMapper(), orderProcessInfo);
         // Create a basket add multiple selections to the basket

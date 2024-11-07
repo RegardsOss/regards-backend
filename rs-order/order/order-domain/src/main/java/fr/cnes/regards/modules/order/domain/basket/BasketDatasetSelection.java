@@ -234,6 +234,10 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
         return this.processDatasetDescription != null;
     }
 
+    public boolean hasFileFilter() {
+        return this.fileSelectionDescription != null;
+    }
+
     public BasketDatasetSelectionDto toBasketDatasetSelectionDto() {
         BasketDatasetSelectionDto dto = new BasketDatasetSelectionDto();
         dto.setId(this.getId());

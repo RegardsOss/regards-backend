@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.rest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import fr.cnes.regards.modules.order.domain.exception.*;
+import fr.cnes.regards.modules.order.exception.CannotHaveProcessingAndFiltersException;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +52,12 @@ public class OrderControllerAdvice {
     public ResponseEntity<ServerErrorResponse> handleTooManyItemsSelectedInBasketException(
         TooManyItemsSelectedInBasketException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(e.getMessage(), e));
+    }
+
+    @ExceptionHandler(CannotHaveProcessingAndFiltersException.class)
+    public ResponseEntity<ServerErrorResponse> handleCannotHaveProcessingAndFiltersException(
+        CannotHaveProcessingAndFiltersException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
     @ExceptionHandler(CatalogSearchException.class)

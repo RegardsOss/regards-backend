@@ -25,12 +25,12 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.dto.dto.BasketDto;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
 import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
+import fr.cnes.regards.modules.order.exception.CannotHaveProcessingAndFiltersException;
 import fr.cnes.regards.modules.order.service.IBasketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -161,12 +161,8 @@ public class BasketController implements IResourceController<BasketDto> {
     public ResponseEntity<EntityModel<BasketDto>> attachProcessDescriptionToDatasetSelection(
         @PathVariable("datasetSelectionId") Long dsSelectionId,
         @RequestBody(required = false) ProcessDatasetDescriptionDto description)
-        throws EmptyBasketException, TooManyItemsSelectedInBasketException {
+        throws EmptyBasketException, TooManyItemsSelectedInBasketException, CannotHaveProcessingAndFiltersException {
         Basket basket = basketService.find(authResolver.getUser());
-        if (basket.getDatasetSelections().stream().anyMatch(ds -> ds.getFileSelectionDescription() != null)) {
-            LOGGER.error("Cannot set processing if any file filter exists.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-        }
         Basket modified = basketService.attachProcessing(basket, dsSelectionId, description);
         return ResponseEntity.ok(toResource(modified.toBasketDto()));
     }
@@ -245,12 +241,8 @@ public class BasketController implements IResourceController<BasketDto> {
     public ResponseEntity<EntityModel<BasketDto>> updateFileFilters(
         @PathVariable("datasetSelectionId") Long dsSelectionId,
         @RequestBody(required = false) FileSelectionDescriptionDto fileSelectionDescriptionDTO)
-        throws EmptyBasketException {
+        throws EmptyBasketException, CannotHaveProcessingAndFiltersException {
         Basket basket = basketService.find(authResolver.getUser());
-        if (basket.getDatasetSelections().stream().anyMatch(BasketDatasetSelection::hasProcessing)) {
-            LOGGER.error("Cannot set file filter if any processing is attached.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-        }
         basket = basketService.attachFileFilters(basket, dsSelectionId, fileSelectionDescriptionDTO);
         return ResponseEntity.ok(toResource(basket.toBasketDto()));
     }

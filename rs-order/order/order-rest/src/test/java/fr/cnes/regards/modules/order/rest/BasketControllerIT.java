@@ -489,7 +489,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         performDefaultPut(BasketController.ORDER_BASKET
                           + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS,
                           body,
-                          customizer().expectStatusForbidden(),
+                          customizer().expectStatusBadRequest(),
                           "error",
                           basket.getDatasetSelections().first().getId());
     }

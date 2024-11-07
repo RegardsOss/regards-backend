@@ -218,7 +218,7 @@ public class OrderProcessingService implements IOrderProcessingService {
         try {
             FeignSecurityManager.asUser(owner, role);
             ResponseEntity<PProcessDTO> response = processingClient.findByUuid(processIdStr);
-            if (response.hasBody() && response.getStatusCode() == HttpStatus.OK) {
+            if (response != null && response.hasBody() && response.getStatusCode() == HttpStatus.OK) {
                 return response.getBody();
             } else {
                 throw new ModuleException("Error retrieving process id " + processIdStr);
