@@ -26,6 +26,12 @@ import java.util.List;
 public class WorkerHeartBeatEventHandler
     implements IBatchHandler<WorkerHeartBeatEvent>, ApplicationListener<ApplicationReadyEvent> {
 
+    /**
+     * Bulk size limit to handle heartbeats
+     */
+    @Value("${regards.workermanager.worker.heartbeat.bulk.size:50}")
+    private int BULK_SIZE;
+
     private final ISubscriber subscriber;
 
     private final WorkerCacheService workerCacheService;
@@ -51,6 +57,11 @@ public class WorkerHeartBeatEventHandler
     @Override
     public void handleBatch(List<WorkerHeartBeatEvent> messages) {
         workerCacheService.registerWorkers(messages);
+    }
+
+    @Override
+    public int getBatchSize() {
+        return BULK_SIZE;
     }
 
     @Override
