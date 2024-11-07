@@ -1175,12 +1175,23 @@ public class EsRepository implements IEsRepository {
 
             Sort sort = pageRequest.getSort();
 
-            //We add a sort by "ipId" by default because it is needed if we use a searchAfter pagination method
-            //We add it in all case to ensure consistency of the sorting policy throughout the search
-            sort = (sort == null) || sort.isUnsorted() ? Sort.by("ipId") : pageRequest.getSort();
-            // To assure unicity, always add "ipId" as a sort parameter
-            if (sort.getOrderFor("ipId") == null) {
-                sort = sort.and(Sort.by("ipId"));
+            // Always define at least a default sorting parameter to assure uniqueness and potential deep search
+            // as sort is mandatory to permit use of searchAfter
+            // Look at : https://www.elastic.co/guide/en/elasticsearch/reference/7.17/paginate-search-results.html#search-after
+            // (We don't use PIT for now)
+            // /!\ Important :
+            // Sorting must be set as soon as the first search is performed even if MAX_RESULT_WINDOW not
+            // reach to avoid losing data with pagination. Indeed, searching with offset and size parameters (from
+            // and size) until MAX_RESULT_WINDOW results must be sorted the same way as with the search_after to
+            // ensure that the recovered sets are strictly distinct.
+            // Without this, changing the order will result in the recovery of sets that are not distinct,
+            // and therefore duplicates at the very least.
+            String genericSortingField = "ipId";
+            Sort genericSort = Sort.by(Sort.Direction.DESC, genericSortingField);
+            if (sort.isUnsorted()) {
+                sort = genericSort;
+            } else if (sort.getOrderFor(genericSortingField) == null) {
+                sort = sort.and(genericSort);
             }
 
             Object[] lastSearchAfterSortValues = null;
@@ -1860,11 +1871,10 @@ public class EsRepository implements IEsRepository {
                 updatedAscSortMap.forEach((key, value) -> builder.sort(SortBuilders.fieldSort(key)
                                                                                    .order(value ?
                                                                                               SortOrder.ASC :
-                                                                                              SortOrder.DESC)
-                                                                                   .unmappedType(DOUBLE)));
-                // "double" because a type is necessary. This has only an impact when seaching on several indices if
-                // property is mapped on one and no on the other(s). Will see this when it happens (if it happens a day)
-                // entry -> builder.sort(entry.getKey(), entry.getValue() ? SortOrder.ASC : SortOrder.DESC));
+                                                                                              SortOrder.DESC)));
+                // Do not add unmapped_type option as we are querying a single indices at once and
+                // all mappings are always defined by the application
+                // Look at : https://www.elastic.co/guide/en/elasticsearch/reference/current/sort-search-results.html#_ignoring_unmapped_fields
             }
         }
     }
