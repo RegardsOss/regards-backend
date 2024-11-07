@@ -31,6 +31,9 @@ public class FileSelectionDescriptionDto {
 
     private Set<DataTypeLight> fileTypes;
 
+    /**
+     * regex pattern
+     */
     private String fileNamePattern;
 
     public FileSelectionDescriptionDto(Set<DataTypeLight> fileTypes, String fileNamePattern) {

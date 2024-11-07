@@ -49,6 +49,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Basket controller
@@ -241,7 +242,7 @@ public class BasketController implements IResourceController<BasketDto> {
     public ResponseEntity<EntityModel<BasketDto>> updateFileFilters(
         @PathVariable("datasetSelectionId") Long dsSelectionId,
         @RequestBody(required = false) FileSelectionDescriptionDto fileSelectionDescriptionDTO)
-        throws EmptyBasketException, CannotHaveProcessingAndFiltersException {
+        throws EmptyBasketException, CannotHaveProcessingAndFiltersException, PatternSyntaxException {
         Basket basket = basketService.find(authResolver.getUser());
         basket = basketService.attachFileFilters(basket, dsSelectionId, fileSelectionDescriptionDTO);
         return ResponseEntity.ok(toResource(basket.toBasketDto()));

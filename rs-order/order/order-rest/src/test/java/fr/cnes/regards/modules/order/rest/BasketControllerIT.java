@@ -495,6 +495,23 @@ public class BasketControllerIT extends AbstractRegardsIT {
     }
 
     @Test
+    public void test_failUpdateFileFiltersInvalidRegex() {
+        // GIVEN
+        Basket basket = createBasket();
+        FileSelectionDescriptionDto body = new FileSelectionDescriptionDto(null, "test**");
+        basketRepos.save(basket);
+
+        // WHEN try to update file filters
+        // THEN bad request status because a processing is already set.
+        performDefaultPut(BasketController.ORDER_BASKET
+                          + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_FILE_FILTERS,
+                          body,
+                          customizer().expectStatusBadRequest(),
+                          "error",
+                          basket.getDatasetSelections().first().getId());
+    }
+
+    @Test
     public void testEmptyBasket() {
         createBasket();
         performDefaultDelete(BasketController.ORDER_BASKET, customizer().expectStatusNoContent(), "error");

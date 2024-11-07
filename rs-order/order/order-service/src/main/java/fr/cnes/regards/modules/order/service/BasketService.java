@@ -70,6 +70,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -309,12 +311,12 @@ public class BasketService implements IBasketService {
                                                            "Basket selection with id "
                                                            + datasetId
                                                            + " doesn't exist")); // NOSONAR Duplicated strings
-        // check the number of items in the basket only if a process is associated to the dataset
         if (desc != null) {
             if (basketSelection.hasFileFilter()) {
                 LOGGER.error("Cannot set processing if any file filter exists.");
                 throw new CannotHaveProcessingAndFiltersException();
             }
+            // check the number of items in the basket only if a process is associated to the dataset
             checkLimitElementsInOrder(desc.getProcessBusinessId().toString(), basketSelection);
         }
         // attach the process to the dataset if no error has occurred
@@ -412,7 +414,7 @@ public class BasketService implements IBasketService {
     public Basket attachFileFilters(Basket basket,
                                     Long datasetId,
                                     @Nullable FileSelectionDescriptionDto fileSelectionDescriptionDTO)
-        throws CannotHaveProcessingAndFiltersException {
+        throws CannotHaveProcessingAndFiltersException, PatternSyntaxException {
         // find dataset selection with selected id
         BasketDatasetSelection basketSelection = basket.getDatasetSelections()
                                                        .stream()
@@ -427,22 +429,27 @@ public class BasketService implements IBasketService {
                 LOGGER.error("Cannot set file filter if any processing is attached.");
                 throw new CannotHaveProcessingAndFiltersException();
             }
-            FileSelectionDescriptionDto fileSelectionDescription = new FileSelectionDescriptionDto(
-                fileSelectionDescriptionDTO.getFileTypes(),
-                fileSelectionDescriptionDTO.getFileNamePattern());
-            basketSelection.setFileSelectionDescription(fileSelectionDescription);
+            checkRegexValidity(fileSelectionDescriptionDTO.getFileNamePattern());
+            basketSelection.setFileSelectionDescription(fileSelectionDescriptionDTO);
         } else {
             basketSelection.setFileSelectionDescription(null);
         }
         return repos.save(basket);
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private void checkRegexValidity(String fileNamePattern) throws PatternSyntaxException {
+        if (fileNamePattern == null) {
+            return;
+        }
+        Pattern.compile(fileNamePattern);
+    }
+
     private Basket attachProcessToDatasetSelectionAndSaveBasket(Basket basket,
                                                                 BasketDatasetSelection ds,
                                                                 ProcessDatasetDescriptionDto desc) {
         ds.setProcessDatasetDescription(desc);
-        Basket modified = repos.save(basket);
-        return modified;
+        return repos.save(basket);
     }
 
     /**

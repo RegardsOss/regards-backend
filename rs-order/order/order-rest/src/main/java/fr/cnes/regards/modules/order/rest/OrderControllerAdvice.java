@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.NoSuchElementException;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * @author oroussel
@@ -57,6 +58,11 @@ public class OrderControllerAdvice {
     @ExceptionHandler(CannotHaveProcessingAndFiltersException.class)
     public ResponseEntity<ServerErrorResponse> handleCannotHaveProcessingAndFiltersException(
         CannotHaveProcessingAndFiltersException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(e.getMessage(), e));
+    }
+
+    @ExceptionHandler(PatternSyntaxException.class)
+    public ResponseEntity<ServerErrorResponse> handleInvalidFilterException(PatternSyntaxException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
