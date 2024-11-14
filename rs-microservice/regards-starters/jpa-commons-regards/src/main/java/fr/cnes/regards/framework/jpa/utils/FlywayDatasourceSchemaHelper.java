@@ -25,6 +25,7 @@ import org.flywaydb.core.api.Location;
 import org.flywaydb.core.api.MigrationVersion;
 import org.flywaydb.core.api.configuration.Configuration;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
+import org.flywaydb.core.api.exception.FlywayValidateException;
 import org.flywaydb.core.api.migration.JavaMigration;
 import org.flywaydb.core.api.resource.LoadableResource;
 import org.flywaydb.core.api.resource.Resource;
@@ -42,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -176,7 +178,20 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
             .locations(SCRIPT_LOCATION_PATH + File.separator + moduleName)
             // Create one migration table by module
             .table(moduleName + TABLE_SUFFIX).load();
-        flyway.migrate();
+        try {
+            flyway.migrate();
+        } catch (FlywayValidateException e) {
+            try {
+                LOGGER.error("Error while migrating table {} of schema {} with script location '{}' in database {}",
+                             moduleName + TABLE_SUFFIX,
+                             schema,
+                             SCRIPT_LOCATION_PATH + File.separator + moduleName,
+                             dataSource.getConnection().getCatalog());
+            } catch (SQLException sqlException) {
+                LOGGER.error(sqlException.getMessage());
+            }
+            throw e;
+        }
     }
 
     /**
