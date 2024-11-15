@@ -27,6 +27,10 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseExcep
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.util.UriUtils;
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Plugin to allow access to dataobjects with an opensearch request.
@@ -51,13 +55,16 @@ public class CustomDataObjectsAccessPlugin implements IDataObjectAccessFilterPlu
     @Autowired
     IOpenSearchService openSearchService;
 
+    private static String QUERY_PREFIX = "q=";
+
     @PluginParameter(label = OPEN_SEARCH_FILTER)
     private String openSearchFilter;
 
     @Override
     public ICriterion getSearchFilter() {
         try {
-            return openSearchService.parse(openSearchFilter);
+            String encodedSearchFilter = UriUtils.encode(openSearchFilter.replaceFirst(QUERY_PREFIX, ""), StandardCharsets.UTF_8);
+            return openSearchService.parse(QUERY_PREFIX + encodedSearchFilter);
         } catch (OpenSearchParseException e) {
             LOGGER.error(e.getMessage(), e);
             return null;
