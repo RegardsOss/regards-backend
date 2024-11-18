@@ -31,6 +31,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
@@ -116,6 +117,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(value = "regards.http.converter", havingValue = "gson", matchIfMissing = true)
     public GsonHttpMessageConverter gsonConverter(@Qualifier("gson") Gson gson,
                                                   @Qualifier("prettyGson") Gson prettyGson) {
         final GsonHttpMessageConverterCustom gsonHttpMessageConverter = new GsonHttpMessageConverterCustom();
