@@ -61,6 +61,8 @@ public final class S3FileTestUtils {
 
     private static final int MULTIPART_UPLOAD_PREFETCH = 1;
 
+    private static final int MAX_S3_HTTP_CONNECTION = 50;
+
     /**
      * Store files on a s3 server
      *
@@ -121,7 +123,8 @@ public final class S3FileTestUtils {
             int maxBytesPerPart = MULTIPART_THRESHOLD_MB * 1024 * 1024;
             try (S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler,
                                                                                   maxBytesPerPart,
-                                                                                  MULTIPART_UPLOAD_PREFETCH)) {
+                                                                                  MULTIPART_UPLOAD_PREFETCH,
+                                                                                  MAX_S3_HTTP_CONNECTION)) {
 
                 return client.write(writeCmd)
                              .flatMap(writeResult -> writeResult.matchWriteResult(Mono::just,
@@ -183,7 +186,10 @@ public final class S3FileTestUtils {
     private static S3HighLevelReactiveClient getS3HighLevelReactiveClient() {
         Scheduler scheduler = Schedulers.newParallel("s3-reactive-client", 10);
         int maxBytesPerPart = 5 * 1024 * 1024;
-        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10);
+        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler,
+                                                                         maxBytesPerPart,
+                                                                         10,
+                                                                         MAX_S3_HTTP_CONNECTION);
         return client;
     }
 }

@@ -81,7 +81,7 @@ public class S3HighLevelReactiveClientIT {
                                                                                        .rootPath(rootPath)
                                                                                        .build();
 
-        try (S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024, 10)) {
+        try (S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024, 10, 50)) {
             Flux<ByteBuffer> buffers = DataBufferUtils.read(new ClassPathResource("small.txt"),
                                                             new DefaultDataBufferFactory(),
                                                             1024).map(DataBuffer::asByteBuffer);
@@ -205,7 +205,7 @@ public class S3HighLevelReactiveClientIT {
                                                                                        .rootPath(rootPath)
                                                                                        .build();
 
-        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024, 10);
+        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024, 10, 50);
 
         Flux<ByteBuffer> buffers = DataBufferUtils.read(new ClassPathResource("small.txt"),
                                                         new DefaultDataBufferFactory(),
@@ -254,7 +254,7 @@ public class S3HighLevelReactiveClientIT {
                                                                                        .rootPath(rootPath)
                                                                                        .build();
 
-        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024, 10);
+        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024, 10, 50);
 
         Flux<ByteBuffer> buffers = DataBufferUtils.read(new ClassPathResource("small.txt"),
                                                         new DefaultDataBufferFactory(),
@@ -297,7 +297,10 @@ public class S3HighLevelReactiveClientIT {
                                                                                        .rootPath(rootPath)
                                                                                        .build();
 
-        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024, 10);
+        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(),
+                                                                         5 * 1024 * 1024,
+                                                                         10,
+                                                                         50);
 
         long size = 10L * 1024L * 1024L + 512L;
 
@@ -399,7 +402,10 @@ public class S3HighLevelReactiveClientIT {
                                                                                        .rootPath(rootPath)
                                                                                        .build();
 
-        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024, 10);
+        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(),
+                                                                         5 * 1024 * 1024,
+                                                                         10,
+                                                                         50);
 
         long size = 10L * 1024L * 1024L + 512L;
 
@@ -447,7 +453,10 @@ public class S3HighLevelReactiveClientIT {
                                                                                        .rootPath(rootPath)
                                                                                        .build();
 
-        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024, 10);
+        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(),
+                                                                         5 * 1024 * 1024,
+                                                                         10,
+                                                                         50);
 
         long size = 10L * 1024L * 1024L + 512L;
 

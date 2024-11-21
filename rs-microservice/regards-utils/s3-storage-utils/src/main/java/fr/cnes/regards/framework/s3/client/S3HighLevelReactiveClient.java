@@ -79,14 +79,17 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
      */
     private final int reactorPreFetch;
 
-    private final Cache<StorageConfigDto, S3AsyncClientReactorWrapper> configManagers = Caffeine.newBuilder()
-                                                                                                .expireAfterWrite(
-                                                                                                    Duration.ofMinutes(5))
-                                                                                                .evictionListener(
-                                                                                                    S3HighLevelReactiveClient::onClientCacheEviction)
-                                                                                                .build();
+    private final Cache<StorageConfig, S3AsyncClientReactorWrapper> configManagers = Caffeine.newBuilder()
+                                                                                             .expireAfterWrite(Duration.ofMinutes(
+                                                                                                 5))
+                                                                                             .evictionListener(
+                                                                                                 S3HighLevelReactiveClient::onClientCacheEviction)
+                                                                                             .build();
 
-    public S3HighLevelReactiveClient(Scheduler scheduler, int maxBytesPerPart, int reactorPreFetch) {
+    public S3HighLevelReactiveClient(Scheduler scheduler,
+                                     int maxBytesPerPart,
+                                     int reactorPreFetch,
+                                     int s3clientHttpMaxConcurrency) {
         this.scheduler = scheduler;
         this.maxBytesPerPart = maxBytesPerPart;
         this.reactorPreFetch = reactorPreFetch;

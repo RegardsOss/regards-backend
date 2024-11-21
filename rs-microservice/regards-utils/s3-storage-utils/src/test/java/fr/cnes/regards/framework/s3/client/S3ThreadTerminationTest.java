@@ -93,11 +93,12 @@ public class S3ThreadTerminationTest {
     public S3HighLevelReactiveClient createClient(int i) {
         Scheduler scheduler = Schedulers.newParallel("s3-reactive-client-" + i, 10);
         int maxBytesPerPart = 5 * 1024 * 1024;
-        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10);
-        StorageConfigDto config = new StorageConfigBuilder(s3Host, region, key, secret).bucket(bucket)
-                                                                                       .rootPath("root_" + i)
-                                                                                       .build();
-        String entryKey = StorageConfigUtils.entryKey(config, "file");
+        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10, 50);
+        StorageConfig config = StorageConfig.builder(s3Host, region, key, secret)
+                                            .bucket(bucket)
+                                            .rootPath("root_" + i)
+                                            .build();
+        String entryKey = config.entryKey("file");
         Flux<ByteBuffer> buffers = DataBufferUtils.read(new ClassPathResource("small.txt"),
                                                         new DefaultDataBufferFactory(),
                                                         1024).map(DataBuffer::asByteBuffer);

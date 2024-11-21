@@ -248,7 +248,7 @@ public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
 
     private S3HighLevelReactiveClient getS3Client() {
         Scheduler scheduler = Schedulers.newParallel("test-delivery-s3-client", 10);
-        return new S3HighLevelReactiveClient(scheduler, 2_000_000, 10);
+        return new S3HighLevelReactiveClient(scheduler, 2_000_000, 10, 50);
     }
 
     private void clean() throws IOException {
