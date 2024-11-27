@@ -163,7 +163,7 @@ public class ProjectUserService implements IProjectUserService {
             user = Optional.of(new ProjectUser().setEmail(userEmail)
                                                 .setRole(new Role(DefaultRole.INSTANCE_ADMIN.toString(), null)));
         } else {
-            user = projectUserRepository.findOneByEmail(userEmail);
+            user = projectUserRepository.findOneByEmailIgnoreCase(userEmail);
             // Filter out hidden meta data
             if (user.isPresent()) {
                 Set<MetaData> visibleMetadata = user.get()
@@ -180,7 +180,7 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public ProjectUser retrieveCurrentUser() throws EntityNotFoundException {
         String email = authenticationResolver.getUser();
-        return projectUserRepository.findOneByEmail(email)
+        return projectUserRepository.findOneByEmailIgnoreCase(email)
                                     .orElseThrow(() -> new EntityNotFoundException("Current user", ProjectUser.class));
     }
 
@@ -251,7 +251,7 @@ public class ProjectUserService implements IProjectUserService {
     @Override
     public void updateUserAccessRights(String login, List<ResourcesAccess> updatedUserAccessRights)
         throws EntityNotFoundException {
-        ProjectUser user = projectUserRepository.findOneByEmail(login)
+        ProjectUser user = projectUserRepository.findOneByEmailIgnoreCase(login)
                                                 .orElseThrow(() -> new EntityNotFoundException(login,
                                                                                                ProjectUser.class));
         try (Stream<ResourcesAccess> previous = user.getPermissions().stream();
@@ -265,7 +265,7 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public void removeUserAccessRights(String login) throws EntityNotFoundException {
-        ProjectUser user = projectUserRepository.findOneByEmail(login)
+        ProjectUser user = projectUserRepository.findOneByEmailIgnoreCase(login)
                                                 .orElseThrow(() -> new EntityNotFoundException(login,
                                                                                                ProjectUser.class));
         user.setPermissions(new ArrayList<>());
@@ -338,12 +338,14 @@ public class ProjectUserService implements IProjectUserService {
                               AccountStatus accountStatus) throws EntityException {
 
         String email = accessRequestDto.getEmail();
-        if (projectUserRepository.findOneByEmail(email).isPresent()) {
+        if (projectUserRepository.findOneByEmailIgnoreCase(email).isPresent()) {
             throw new EntityAlreadyExistsException("The email address '" + email + "' is already in use.");
         }
 
         Account account = accountUtilsService.retrieveAccount(email);
         if (account != null) {
+            // Replace the email with the one of the account that is the reference for the case
+            email = account.getEmail();
             LOG.info("Creating user with an existing account - no new account created");
         } else {
             account = accountUtilsService.createAccount(accessRequestDto, isExternal, accountStatus);

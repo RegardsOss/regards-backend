@@ -49,7 +49,7 @@ public interface IAccountRepository extends JpaRepository<Account, Long>, JpaSpe
      * @param pEmail The {@link Account}'s <code>email</code>
      * @return An optional account
      */
-    Optional<Account> findOneByEmail(String pEmail);
+    Optional<Account> findOneByEmailIgnoreCase(String pEmail);
 
     /**
      * Find all Account which status is not the one provided.

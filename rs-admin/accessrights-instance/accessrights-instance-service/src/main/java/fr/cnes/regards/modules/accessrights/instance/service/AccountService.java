@@ -232,7 +232,7 @@ public class AccountService implements IAccountService, InitializingBean {
 
     @Override
     public Account retrieveAccountByEmail(String email) throws EntityNotFoundException {
-        return accountRepository.findOneByEmail(email)
+        return accountRepository.findOneByEmailIgnoreCase(email)
                                 .orElseThrow(() -> new EntityNotFoundException(email, Account.class));
     }
 
@@ -256,7 +256,7 @@ public class AccountService implements IAccountService, InitializingBean {
     public boolean validatePassword(String email, String password, boolean checkAccountValidity)
         throws EntityNotFoundException {
 
-        Optional<Account> toValidate = accountRepository.findOneByEmail(email);
+        Optional<Account> toValidate = accountRepository.findOneByEmailIgnoreCase(email);
 
         if (!toValidate.isPresent()) {
             return false;
@@ -289,7 +289,7 @@ public class AccountService implements IAccountService, InitializingBean {
 
     @Override
     public boolean existAccount(String pEmail) {
-        return accountRepository.findOneByEmail(pEmail).isPresent();
+        return accountRepository.findOneByEmailIgnoreCase(pEmail).isPresent();
     }
 
     @Override

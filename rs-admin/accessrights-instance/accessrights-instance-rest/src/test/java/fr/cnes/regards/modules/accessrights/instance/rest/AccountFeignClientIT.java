@@ -80,7 +80,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
                                                                             feignSecurityManager));
         FeignSecurityManager.asSystem();
 
-        final Optional<Account> account = accountRepo.findOneByEmail(MAIL_TEST);
+        final Optional<Account> account = accountRepo.findOneByEmailIgnoreCase(MAIL_TEST);
         account.ifPresent(accountRepo::delete);
     }
 

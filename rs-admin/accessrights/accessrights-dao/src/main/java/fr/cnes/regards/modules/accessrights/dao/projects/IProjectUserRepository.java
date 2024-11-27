@@ -51,7 +51,7 @@ public interface IProjectUserRepository
      * @return The optional {@link ProjectUser} with passed <code>email</code>
      */
     @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
-    Optional<ProjectUser> findOneByEmail(String pEmail);
+    Optional<ProjectUser> findOneByEmailIgnoreCase(String pEmail);
 
     @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
     Optional<ProjectUser> findById(Long id);

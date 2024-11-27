@@ -102,7 +102,7 @@ public class WaitForQualificationListener
     }
 
     public void onAccountActivation(String email) {
-        Optional<ProjectUser> optional = projectUserRepository.findOneByEmail(email);
+        Optional<ProjectUser> optional = projectUserRepository.findOneByEmailIgnoreCase(email);
         ProjectUser projectUser = optional.orElse(null);
         if (projectUser != null) {
             try {

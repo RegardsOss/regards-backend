@@ -202,7 +202,7 @@ public class ProjectUserServiceTest {
     public void createUserByBypassingRegistrationProcess() throws EntityException {
 
         // Given
-        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(projectUserRepository.findOneByEmailIgnoreCase(EMAIL)).thenReturn(Optional.empty());
         when(projectUserRepository.save(any(ProjectUser.class))).thenAnswer(args -> args.getArgument(0,
                                                                                                      ProjectUser.class));
         when(accountUtilsService.retrieveAccount(EMAIL)).thenReturn(null);
@@ -226,7 +226,7 @@ public class ProjectUserServiceTest {
     public void createUserByBypassingRegistrationProcessWithoutAccount() throws EntityException {
 
         // Given
-        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(projectUserRepository.findOneByEmailIgnoreCase(EMAIL)).thenReturn(Optional.empty());
         when(roleService.retrieveRole(ROLE_NAME)).thenReturn(new Role());
         when(projectUserRepository.save(any(ProjectUser.class))).thenAnswer(args -> args.getArgument(0,
                                                                                                      ProjectUser.class));
@@ -250,7 +250,7 @@ public class ProjectUserServiceTest {
     @Test
     @Purpose("Check that the system allows to create a new projectUser with the associated account.")
     public void createUserByBypassingRegistrationProcessError() {
-        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.of(new ProjectUser()));
+        when(projectUserRepository.findOneByEmailIgnoreCase(EMAIL)).thenReturn(Optional.of(new ProjectUser()));
         assertThrows(EntityAlreadyExistsException.class, () -> projectUserService.createProjectUser(accessRequest));
     }
 
@@ -375,7 +375,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to retrieve a specific user by email.")
     public void retrieveOneByEmail() throws EntityNotFoundException {
         // Mock the repository returned value
-        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        when(projectUserRepository.findOneByEmailIgnoreCase(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Retrieve actual value
         ProjectUser actual = projectUserService.retrieveOneByEmail(EMAIL);
@@ -384,7 +384,7 @@ public class ProjectUserServiceTest {
         Assert.assertThat(actual, Matchers.samePropertyValuesAs(projectUser));
 
         // Check that the repository's method was called with right arguments
-        verify(projectUserRepository).findOneByEmail(EMAIL);
+        verify(projectUserRepository).findOneByEmailIgnoreCase(EMAIL);
     }
 
     /**
@@ -399,7 +399,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system fails when trying to retrieve a user with unknown email.")
     public void retrieveOneByEmailNotFound() throws EntityNotFoundException {
         // Mock the repository returned value
-        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(projectUserRepository.findOneByEmailIgnoreCase(EMAIL)).thenReturn(Optional.empty());
 
         // Trigger the exception
         projectUserService.retrieveOneByEmail(EMAIL);
@@ -420,7 +420,7 @@ public class ProjectUserServiceTest {
         when(authenticationResolver.getUser()).thenReturn(EMAIL);
 
         // Mock the repository returned value
-        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        when(projectUserRepository.findOneByEmailIgnoreCase(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Retrieve actual value
         ProjectUser actual = projectUserService.retrieveCurrentUser();
@@ -429,7 +429,7 @@ public class ProjectUserServiceTest {
         Assert.assertThat(actual, Matchers.is(Matchers.equalTo(projectUser)));
 
         // Check that the repository's method was called with right arguments
-        verify(projectUserRepository).findOneByEmail(EMAIL);
+        verify(projectUserRepository).findOneByEmailIgnoreCase(EMAIL);
     }
 
     /**
@@ -526,7 +526,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system fails when trying to override a not exisiting user's access rights.")
     public void updateUserAccessRightsEntityNotFound() throws EntityNotFoundException {
         // Mock the repository returned value
-        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(projectUserRepository.findOneByEmailIgnoreCase(EMAIL)).thenReturn(Optional.empty());
 
         // Trigger the exception
         projectUserService.updateUserAccessRights(EMAIL, new ArrayList<>());
@@ -543,7 +543,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to override role's access rights for a user.")
     public void updateUserAccessRights() throws EntityNotFoundException {
         // Mock the repository returned value
-        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        when(projectUserRepository.findOneByEmailIgnoreCase(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Define updated permissions
         ResourcesAccess updatedPermission = new ResourcesAccess(0L,
@@ -597,7 +597,7 @@ public class ProjectUserServiceTest {
         Role borrowedRole = new Role();
 
         // Mock the repository
-        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        when(projectUserRepository.findOneByEmailIgnoreCase(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
         when(roleService.retrieveRole(borrowedRoleName)).thenReturn(borrowedRole);
         // Make sure the borrowed role is not hierarchically inferior
         when(roleService.isHierarchicallyInferiorOrEqual(borrowedRole, projectUser.getRole())).thenReturn(false);
@@ -628,7 +628,7 @@ public class ProjectUserServiceTest {
         borrowedRole.setPermissions(borrowedRolePermissions);
 
         // Mock the repository
-        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        when(projectUserRepository.findOneByEmailIgnoreCase(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
         when(roleService.retrieveRole(borrowedRoleName)).thenReturn(borrowedRole);
         when(roleService.retrieveRoleResourcesAccesses(borrowedRoleId)).thenReturn(borrowedRolePermissions);
 
@@ -668,7 +668,7 @@ public class ProjectUserServiceTest {
         projectUser.getRole().setPermissions(permissions);
 
         // Mock the repository
-        when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
+        when(projectUserRepository.findOneByEmailIgnoreCase(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
         when(roleService.retrieveRoleResourcesAccesses(projectUser.getRole().getId())).thenReturn(permissions);
 
         // Define expected permissions

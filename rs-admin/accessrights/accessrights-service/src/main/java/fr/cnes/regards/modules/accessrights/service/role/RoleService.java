@@ -856,7 +856,7 @@ public class RoleService implements IRoleService, InitializingBean {
         Set<Role> borrowablesRoles = new TreeSet<>(new RoleHierarchyComparator(this));
 
         String email = authResolver.getUser();
-        Optional<ProjectUser> optionnalUser = projectUserRepository.findOneByEmail(email);
+        Optional<ProjectUser> optionnalUser = projectUserRepository.findOneByEmailIgnoreCase(email);
         if (!optionnalUser.isPresent()) {
             return borrowablesRoles;
         }

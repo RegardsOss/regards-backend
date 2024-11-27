@@ -145,7 +145,7 @@ public class ProjectUserGroupService {
     }
 
     public void linkAccessGroups(String email, List<String> groups) throws EntityNotFoundException {
-        ProjectUser projectUser = projectUserRepository.findOneByEmail(email)
+        ProjectUser projectUser = projectUserRepository.findOneByEmailIgnoreCase(email)
                                                        .orElseThrow(() -> new EntityNotFoundException(email,
                                                                                                       ProjectUser.class));
         if (!CollectionUtils.isEmpty(groups)) {

@@ -225,7 +225,7 @@ public class RoleServiceTest {
 
         // mock project user
         ProjectUser projectUser = new ProjectUser("test@test.test", roleAdmin, new ArrayList<>(), new HashSet<>());
-        Mockito.when(projectUserRepository.findOneByEmail("test@test.test")).thenReturn(Optional.of(projectUser));
+        Mockito.when(projectUserRepository.findOneByEmailIgnoreCase("test@test.test")).thenReturn(Optional.of(projectUser));
         Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName())).thenReturn(Sets.newHashSet(adminSon));
         Set<Role> result = roleService.retrieveBorrowableRoles();
         Assert.assertTrue(result.contains(rolePublic));

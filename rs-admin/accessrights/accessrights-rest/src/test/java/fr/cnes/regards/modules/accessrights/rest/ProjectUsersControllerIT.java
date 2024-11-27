@@ -357,7 +357,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void testExport() throws UnsupportedEncodingException {
 
         // Given
-        ProjectUser testUser = projectUserRepository.findOneByEmail(EMAIL).get();
+        ProjectUser testUser = projectUserRepository.findOneByEmailIgnoreCase(EMAIL).get();
         testUser.setFirstName("John");
         testUser.setLastName("Doe");
         testUser.setAccessGroups(new HashSet<>(Arrays.asList("group1", "public")));
@@ -389,7 +389,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void testCount() throws UnsupportedEncodingException {
 
         // Given
-        ProjectUser testUser = projectUserRepository.findOneByEmail(EMAIL).get();
+        ProjectUser testUser = projectUserRepository.findOneByEmailIgnoreCase(EMAIL).get();
         testUser.setFirstName("John");
         testUser.setLastName("Doe");
         testUser.setAccessGroups(new HashSet<>(Arrays.asList("group1", "public")));
@@ -408,7 +408,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void testGroupFilter() throws UnsupportedEncodingException {
 
         // Given
-        ProjectUser testUser = projectUserRepository.findOneByEmail(otherUser.getEmail()).get();
+        ProjectUser testUser = projectUserRepository.findOneByEmailIgnoreCase(otherUser.getEmail()).get();
         testUser.setAccessGroups(new HashSet<>(Collections.singletonList("groupFilter")));
 
         // When
