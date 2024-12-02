@@ -27,6 +27,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 import java.time.OffsetDateTime;
 
 /**
@@ -58,4 +60,14 @@ public interface FileInBuildingPackageRepository extends JpaRepository<FileInBui
     default void updateFileDeletionError(Long id, String error) {
         updateFileDeletionStatus(id, error, OffsetDateTime.now(), FileInBuildingPackageStatus.DELETION_ERROR);
     }
+
+    /**
+     * Set given status to the given files
+     */
+    @Modifying
+    @Query("UPDATE FileInBuildingPackage f SET f.status = :statusToSet WHERE f.id IN :fileIds AND f.status = "
+           + ":statusToUpdate")
+    void updateFileStatusByIdInAndStatus(@Param("fileIds") List<Long> fileIds,
+                                         @Param("statusToSet") FileInBuildingPackageStatus statusToSet,
+                                         @Param("statusToUpdate") FileInBuildingPackageStatus statusToUpdate);
 }

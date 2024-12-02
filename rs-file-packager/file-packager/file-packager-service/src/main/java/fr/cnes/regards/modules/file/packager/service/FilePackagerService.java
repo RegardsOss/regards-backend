@@ -33,10 +33,10 @@ import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackage;
 import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackageStatus;
 import fr.cnes.regards.modules.file.packager.domain.PackageReference;
 import fr.cnes.regards.modules.file.packager.domain.PackageReferenceStatus;
-import fr.cnes.regards.modules.file.packager.service.utils.FileStorageRequestReadyToProcessEventFactory;
 import fr.cnes.regards.modules.file.packager.service.job.FileIdAndPath;
 import fr.cnes.regards.modules.file.packager.service.job.PackagerJobPriority;
 import fr.cnes.regards.modules.file.packager.service.job.StoreCompletePackageJob;
+import fr.cnes.regards.modules.file.packager.service.utils.FileStorageRequestReadyToProcessEventFactory;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FileArchiveResponseEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileArchiveRequestEvent;
@@ -202,7 +202,7 @@ public class FilePackagerService {
 
     @MultitenantTransactional
     public void storeCompletePackage(Long packageId, String storageSubdirectory, String creationDate, String storage) {
-        Path archivePath = Path.of(archiveDirectory, storageSubdirectory, creationDate + ".zip");
+        Path archivePath = getArchivePath(storageSubdirectory, creationDate);
 
         // Delete archive if it exists (because this job was run earlier and failed)
         try {
@@ -241,6 +241,10 @@ public class FilePackagerService {
 
         // Update the archive in database
         packageReferenceRepository.updatePackageChecksum(packageId, checksum);
+    }
+
+    public Path getArchivePath(String storageSubdirectory, String creationDate) {
+        return Path.of(archiveDirectory, storageSubdirectory, creationDate + ".zip");
     }
 
     private void addFilesToArchive(Long packageId, ZipOutputStream zipOutputStream) {
@@ -380,6 +384,17 @@ public class FilePackagerService {
             }
         }
         fileInBuildingPackageRepository.deleteAllById(deletionSuccess);
+    }
+
+    /**
+     * Reset files to {@link FileInBuildingPackageStatus#TO_LOCAL_DELETE} status following a job crash or abort.
+     * Only update files in {@link FileInBuildingPackageStatus#DELETING}.
+     */
+    @MultitenantTransactional
+    public void retryFileDeletion(List<Long> filesId) {
+        fileInBuildingPackageRepository.updateFileStatusByIdInAndStatus(filesId,
+                                                                        FileInBuildingPackageStatus.TO_LOCAL_DELETE,
+                                                                        FileInBuildingPackageStatus.DELETING);
     }
 
     private record StorageAndPath(String storage,
