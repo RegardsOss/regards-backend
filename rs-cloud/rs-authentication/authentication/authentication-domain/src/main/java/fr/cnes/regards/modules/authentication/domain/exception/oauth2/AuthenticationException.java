@@ -52,7 +52,7 @@ public class AuthenticationException extends RuntimeException {
     /**
      * Add some additional information
      */
-    public void addAdditionalInformation(String key, String value) {
+    public final void addAdditionalInformation(String key, String value) {
         if (this.additionalInformation == null) {
             this.additionalInformation = new TreeMap<String, String>();
         }

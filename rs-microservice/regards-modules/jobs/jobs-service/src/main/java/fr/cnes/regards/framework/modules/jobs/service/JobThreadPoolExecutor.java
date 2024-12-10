@@ -51,21 +51,17 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
 
         private static final AtomicInteger poolNumber = new AtomicInteger(1);
 
-        private final ThreadGroup group;
-
         private final AtomicInteger threadNumber = new AtomicInteger(1);
 
         private final String namePrefix;
 
         private DefaultJobThreadFactory() {
-            SecurityManager s = System.getSecurityManager();
-            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
             namePrefix = "job-pool-" + poolNumber.getAndIncrement() + "-thread-";
         }
 
         @Override
         public Thread newThread(Runnable r) {
-            Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+            Thread t = new Thread(r, namePrefix + threadNumber.getAndIncrement());
             if (t.isDaemon()) {
                 t.setDaemon(false);
             }

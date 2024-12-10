@@ -398,7 +398,6 @@ public class NotificationRegistrationService {
     }
 
     private Set<PluginConfiguration> validateRecipients(Set<String> recipientIds, Errors errors) {
-        String fieldInError = "businessId";
         Set<PluginConfiguration> pluginConfigurations = new HashSet<>();
         for (String businessId : recipientIds) {
             try {

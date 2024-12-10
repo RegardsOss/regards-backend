@@ -60,6 +60,8 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
 
     private static final Double RELOCATE_DATELINE = 360.0;
 
+    private static final String KEYWORD_SUFFIX = ".keyword";
+
     @Override
     public QueryBuilder visitEmptyCriterion(EmptyCriterion criterion) {
         return QueryBuilders.matchAllQuery();
@@ -97,7 +99,7 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
     public QueryBuilder visitStringMatchCriterion(StringMatchCriterion criterion) {
         switch (criterion.getMatchType()) {
             case KEYWORD:
-                return visitStringMatchCriterion(criterion, ".keyword");
+                return visitStringMatchCriterion(criterion, KEYWORD_SUFFIX);
             case FULL_TEXT_SEARCH:
                 return visitStringMatchCriterion(criterion, "");
             default:
@@ -121,10 +123,11 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
             case STARTS_WITH:
                 return QueryBuilders.matchPhrasePrefixQuery(attName, searchValue).maxExpansions(10_000);
             case ENDS_WITH:
-                return QueryBuilders.regexpQuery(attName + searchIndexSuffix, ".*" + regExpEscape(searchValue)).caseInsensitive(true);
+                return QueryBuilders.regexpQuery(attName + searchIndexSuffix, ".*" + regExpEscape(searchValue))
+                                    .caseInsensitive(true);
             case CONTAINS:
-                return QueryBuilders.regexpQuery(attName + searchIndexSuffix, ".*" + regExpEscape(searchValue) +
-                                                                              ".*").caseInsensitive(true);
+                return QueryBuilders.regexpQuery(attName + searchIndexSuffix, ".*" + regExpEscape(searchValue) + ".*")
+                                    .caseInsensitive(true);
             case REGEXP:
                 return QueryBuilders.regexpQuery(attName + searchIndexSuffix, searchValue);
             default:
@@ -154,7 +157,7 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         for (String attName : attNames) {
             // regexp is a term-level query, so it applies to  ".keyword" subfield, searchValue is regexp escaped
-            boolQueryBuilder.should(QueryBuilders.regexpQuery(attName + ".keyword",
+            boolQueryBuilder.should(QueryBuilders.regexpQuery(attName + KEYWORD_SUFFIX,
                                                               ".*" + regExpEscape(searchValue) + ".*")
                                                  .caseInsensitive(true));
         }
@@ -165,7 +168,7 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
     public QueryBuilder visitStringMatchAnyCriterion(StringMatchAnyCriterion criterion) {
         switch (criterion.getMatchType()) {
             case KEYWORD:
-                return QueryBuilders.termsQuery(criterion.getName() + ".keyword", criterion.getValue());
+                return QueryBuilders.termsQuery(criterion.getName() + KEYWORD_SUFFIX, criterion.getValue());
             case FULL_TEXT_SEARCH:
                 return QueryBuilders.matchQuery(criterion.getName(), criterion.getValue());
             default:

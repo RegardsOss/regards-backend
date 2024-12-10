@@ -57,6 +57,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+
 /**
  * REST Controller to manage feature requests
  *
@@ -212,12 +213,13 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
         boolean authorizedUser = currentUserRole.equals(DefaultRole.ADMIN.name())
                                  || currentUserRole.equals(DefaultRole.PROJECT_ADMIN.name())
                                  || currentUserRole.equals(DefaultRole.INSTANCE_ADMIN.name());
+        boolean hasStepCorrelation = FeatureRequestAbortService.STEPS_CORRELATION_TABLE.containsKey(requestType)
+                                     && FeatureRequestAbortService.STEPS_CORRELATION_TABLE.get(requestType)
+                                                                                          .containsKey(featureRequest.getStep());
         if (authorizedUser
             && featureRequest.getRegistrationDate().plusHours(abortDelayInHours).isBefore(start)
             && featureRequest.getState() == RequestState.GRANTED
-            && FeatureRequestAbortService.STEPS_CORRELATION_TABLE.containsKey(requestType)
-            && FeatureRequestAbortService.STEPS_CORRELATION_TABLE.get(requestType)
-                                                                 .containsKey(featureRequest.getStep())) {
+            && hasStepCorrelation) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "searchFeatureRequests",
