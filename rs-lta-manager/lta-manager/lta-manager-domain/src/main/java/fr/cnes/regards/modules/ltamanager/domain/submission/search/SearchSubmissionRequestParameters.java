@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.beans.ConstructorProperties;
 import java.util.Objects;
 
 /**
@@ -66,6 +67,14 @@ public class SearchSubmissionRequestParameters implements AbstractSearchParamete
     @Valid
     private final ValuesRestriction<Long> idsRestriction;
 
+    @ConstructorProperties({ "owner",
+                             "session",
+                             "owner",
+                             "datatype",
+                             "creationDate",
+                             "statusDate",
+                             "statusesRestriction",
+                             "idsRestriction" })
     public SearchSubmissionRequestParameters(@Nullable String owner,
                                              @Nullable String session,
                                              @Nullable String datatype,

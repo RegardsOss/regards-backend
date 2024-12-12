@@ -317,7 +317,8 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
                                                                    .collect(Collectors.toSet());
         featureRequestService.updateRequestStateAndStep(featureIds,
                                                         RequestState.ERROR,
-                                                        FeatureRequestStep.REMOTE_NOTIFICATION_ERROR);
+                                                        FeatureRequestStep.REMOTE_NOTIFICATION_ERROR,
+                                                        Set.of("Simulated error in test."));
 
         response = this.featureRequestService.retry(FeatureRequestTypeEnum.NOTIFICATION,
                                                     new SearchFeatureRequestParameters().withStatesIncluded(List.of(
@@ -381,6 +382,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
 
         // Retry
         featureNotificationService.retryRequests(new SearchFeatureRequestParameters());
+        waitForStep(featureNotificationRequestRepository, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 10_000);
         mockNotificationSuccess();
         waitRequest(notificationRequestRepo, 0, 20000);
 

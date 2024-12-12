@@ -395,6 +395,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>jackson-regards-starter</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>jsoniter-regards-starter</artifactId>
                 <version>${revision}</version>
             </dependency>

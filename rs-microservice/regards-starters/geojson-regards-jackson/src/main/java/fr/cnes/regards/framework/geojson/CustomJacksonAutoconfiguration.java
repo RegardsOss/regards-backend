@@ -20,8 +20,10 @@ package fr.cnes.regards.framework.geojson;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import fr.cnes.regards.framework.geojson.modules.EntityModelSerializerModule;
 import fr.cnes.regards.framework.geojson.modules.GeometrySerializerModule;
 import fr.cnes.regards.framework.geojson.modules.MimeTypeSerializerModule;
+import fr.cnes.regards.framework.geojson.modules.PageModelSerializerModule;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -29,6 +31,9 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 /**
  * Configuration bean to register modules in the default jackson ObjectMapper which is constructed when calling new ObjectMapper()
+ * To add a custom module (to permits serialization of a non-generic class), create in your maven
+ * module the file /META-INF/services/com.fasterxml.jackson.databind.Module containing the qualifier of your mobule so
+ * it's actually used by jackson for serialization and deserialization.
  *
  * @author Thomas GUILLOU
  **/
@@ -37,7 +42,7 @@ public class CustomJacksonAutoconfiguration {
 
     /**
      * Create an ObjectMapperBuilder.
-     * The default ObjectMapper configuration that is used when neww ObjectMapper() is called will be overridden
+     * The default ObjectMapper configuration that is used when new ObjectMapper() is called will be overridden
      */
     @Bean
     @Primary
@@ -47,7 +52,9 @@ public class CustomJacksonAutoconfiguration {
         // jackson-datatype-jdk8: support for other Java 8 types like Optional
         // jackson-datatype-jsr310: support for Java 8 Date & Time API types
         return new Jackson2ObjectMapperBuilder().modulesToInstall(new MimeTypeSerializerModule(),
-                                                                  new GeometrySerializerModule())
+                                                                  new GeometrySerializerModule(),
+                                                                  new PageModelSerializerModule(),
+                                                                  new EntityModelSerializerModule())
                                                 .serializationInclusion(JsonInclude.Include.NON_ABSENT)
                                                 .failOnUnknownProperties(false)
                                                 // Spring Cloud default config has disable WRITE_DATES_AS_TIMESTAMPS

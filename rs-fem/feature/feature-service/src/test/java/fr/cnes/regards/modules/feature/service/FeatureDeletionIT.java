@@ -371,7 +371,8 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
                                                          .collect(Collectors.toSet());
         featureRequestService.updateRequestStateAndStep(featureIds,
                                                         RequestState.ERROR,
-                                                        FeatureRequestStep.REMOTE_STORAGE_ERROR);
+                                                        FeatureRequestStep.REMOTE_STORAGE_ERROR,
+                                                        Set.of("Simulated error in test."));
 
         // When
         response = featureDeletionService.retryRequests(new SearchFeatureRequestParameters().withStatesIncluded(List.of(
@@ -439,7 +440,9 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         createRequestWithError();
 
         // Retry
-        featureDeletionService.retryRequests(new SearchFeatureRequestParameters());
+        RequestHandledResponse response = featureDeletionService.retryRequests(new SearchFeatureRequestParameters());
+        Assert.assertEquals(1L, response.getTotalHandled());
+        waitForStep(featureDeletionRequestRepo, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 1, 10000);
         mockNotificationSuccess();
         waitRequest(featureDeletionRequestRepo, 0, 20000);
 

@@ -108,7 +108,11 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
     void updateStepByUrn(@Param("step") FeatureRequestStep step,
                          @Param("urns") Collection<FeatureUniformResourceName> urns);
 
-    @Modifying
+    /**
+     * clearAutomatically is set to ensure cache is cleared after this update. So all next find will find the updated
+     * entity
+     */
+    @Modifying(clearAutomatically = true)
     @Query("""
         UPDATE FeatureDeletionRequest fdr
         SET forceDeletion = :forceDeletion

@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
 import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
+import fr.cnes.regards.modules.order.exception.CannotHaveProcessingAndFiltersException;
 import org.springframework.lang.Nullable;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -131,7 +132,7 @@ public interface IBasketService {
      *                                               defined by the process
      */
     Basket attachProcessing(Basket basket, Long datasetId, @Nullable ProcessDatasetDescriptionDto description)
-        throws TooManyItemsSelectedInBasketException;
+        throws TooManyItemsSelectedInBasketException, CannotHaveProcessingAndFiltersException;
 
     /**
      * Duplicates a basket with the exact same content, but with a new owner
@@ -159,7 +160,6 @@ public interface IBasketService {
      * @param fileSelectionDescriptionDTO the new file filter description
      * @return updated {@link Basket}
      */
-    Basket attachFileFilters(Basket basket,
-                             Long dsSelectionId,
-                             FileSelectionDescriptionDto fileSelectionDescriptionDTO);
+    Basket attachFileFilters(Basket basket, Long dsSelectionId, FileSelectionDescriptionDto fileSelectionDescriptionDTO)
+        throws CannotHaveProcessingAndFiltersException;
 }

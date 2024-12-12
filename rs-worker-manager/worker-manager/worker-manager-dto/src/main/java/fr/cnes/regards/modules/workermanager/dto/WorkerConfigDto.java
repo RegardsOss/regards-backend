@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.workermanager.dto;
 
-import org.springframework.util.Assert;
-
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import org.springframework.util.Assert;
+
 import java.util.Set;
 
 /**
@@ -53,8 +53,8 @@ public class WorkerConfigDto {
     /**
      * Indicate if worker response in error must be stored in worker-manager database or not
      */
-    private final boolean keepErrors;
-    
+    private final Boolean keepErrors; // default = true
+
     public WorkerConfigDto(String workerType,
                            Set<String> contentTypeInputs,
                            @Nullable String contentTypeOutput,
@@ -82,6 +82,7 @@ public class WorkerConfigDto {
     }
 
     public boolean isKeepErrors() {
-        return keepErrors;
+        // if keepErrors is not specified, then it is true
+        return keepErrors == null || keepErrors;
     }
 }

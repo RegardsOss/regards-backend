@@ -233,7 +233,10 @@ public class FeatureRequestAbortService {
                 // First when aborted, force deletion for deletion requests
                 featureDeletionService.forceDeletion(ids);
                 // Then for other requests, update state to ERROR
-                featureRequestService.updateRequestStateAndStep(ids, RequestState.ERROR, mappedStepToUpdate);
+                featureRequestService.updateRequestStateAndStep(ids,
+                                                                RequestState.ERROR,
+                                                                mappedStepToUpdate,
+                                                                Set.of("Request has been aborted."));
                 updateSourceAndSession(featureDTOs, requestType);
                 nbAbortedRequests += ids.size();
             } else {

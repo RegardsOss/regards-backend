@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FileAvailabilityStatusDto;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FilesAvailabilityRequestDto;
@@ -131,7 +130,10 @@ public class FileAvailabilityService {
         // retrieve storages
         Set<StorageLocationConfiguration> storagesUsed = storageConfigurationService.searchByNames(allStoragesReferenced);
         if (allStoragesReferenced.size() != storagesUsed.size()) {
-            LOGGER.warn("One or many storages used in availability request have problem : configuration cannot be found");
+            List<String> absentStorages = new ArrayList<>(allStoragesReferenced);
+            absentStorages.removeAll(storagesUsed.stream().map(StorageLocationConfiguration::getName).toList());
+            LOGGER.warn("One or more storages used in availability requests are not present in the storage "
+                        + "configurations : {}", absentStorages);
             LOGGER.debug("Storages extracted from fileReference : " + allStoragesReferenced);
             LOGGER.debug("Storages computed from storage repository (except for web) : " + storagesUsed);
         }

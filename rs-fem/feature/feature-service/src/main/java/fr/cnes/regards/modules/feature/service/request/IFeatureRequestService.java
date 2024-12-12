@@ -103,5 +103,8 @@ public interface IFeatureRequestService {
     /**
      * Update status and request step of given requests
      */
-    public void updateRequestStateAndStep(Set<Long> requestIds, RequestState status, FeatureRequestStep requestStep);
+    void updateRequestStateAndStep(Set<Long> requestIds,
+                                   RequestState status,
+                                   FeatureRequestStep requestStep,
+                                   Set<String> errors);
 }

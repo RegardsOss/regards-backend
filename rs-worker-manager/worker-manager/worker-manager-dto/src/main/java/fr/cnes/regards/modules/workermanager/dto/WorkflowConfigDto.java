@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.workermanager.dto;
 
-import org.springframework.util.Assert;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import org.springframework.util.Assert;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -45,7 +45,7 @@ public class WorkflowConfigDto {
     @Valid
     private final List<WorkflowStepDto> steps;
 
-    private final boolean keepErrors;
+    private final Boolean keepErrors; // default = true
 
     public WorkflowConfigDto(String workflowType, List<WorkflowStepDto> steps, boolean keepErrors) {
         Assert.notNull(workflowType, "workflowType is mandatory");
@@ -86,6 +86,7 @@ public class WorkflowConfigDto {
     }
 
     public boolean isKeepErrors() {
-        return keepErrors;
+        // if keepErrors is not specified, then it is true
+        return keepErrors == null || keepErrors;
     }
 }

@@ -101,6 +101,11 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
     }
 
     @Override
+    public Optional<AttributeModel> findByNameOptional(String name) {
+        return Optional.ofNullable(getTenantMap().get(name));
+    }
+
+    @Override
     public Set<AttributeModel> findByType(PropertyType type) throws OpenSearchUnknownParameter {
 
         Collection<AttributeModel> ppties = getTenantTypedMap().get(type);

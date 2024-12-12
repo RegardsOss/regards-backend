@@ -366,13 +366,16 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                                                                   .collect(Collectors.toSet());
         Set<Long> errorIds = errors.stream().map(IFeatureRequestToSchedule::getId).collect(Collectors.toSet());
         if (!errorIds.isEmpty()) {
-            errors.forEach(r -> LOGGER.error(
-                "Update request {} on {} not scheduled cause a deletion request is processing on the same feature",
-                r.getId(),
-                r.getUrn()));
-            this.featureUpdateRequestRepository.updateStateAndStep(RequestState.ERROR,
-                                                                   FeatureRequestStep.LOCAL_ERROR,
-                                                                   errorIds);
+            List<FeatureUpdateRequest> requestsToUpdate = featureUpdateRequestRepository.findAllById(errorIds);
+            requestsToUpdate.forEach(r -> {
+                String errorCause = String.format("Update request %s on %s not scheduled cause a deletion request is "
+                                                  + "processing on the same feature", r.getId(), r.getUrn());
+                LOGGER.error(errorCause);
+                r.addError(errorCause);
+                r.setState(RequestState.ERROR);
+                r.setStep(FeatureRequestStep.LOCAL_ERROR);
+            });
+            featureUpdateRequestRepository.saveAll(requestsToUpdate);
         }
         toSchedule.removeAll(errors);
         return toSchedule;

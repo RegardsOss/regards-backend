@@ -41,7 +41,9 @@ import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
 import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
+import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
 import fr.cnes.regards.modules.order.dto.input.DataTypeLight;
+import fr.cnes.regards.modules.order.exception.CannotHaveProcessingAndFiltersException;
 import fr.cnes.regards.modules.order.service.commons.AbstractOrderServiceIT;
 import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
@@ -439,7 +441,8 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     }
 
     @Test
-    public void test_dataFilesFiltersRAWDATA() throws InterruptedException, ModuleException, CatalogSearchException {
+    public void test_dataFilesFiltersRAWDATA()
+        throws InterruptedException, ModuleException, CatalogSearchException, CannotHaveProcessingAndFiltersException {
         tenantResolver.forceTenant(getDefaultTenant());
         Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrderPause");
         basketRepository.save(basket);
@@ -465,7 +468,8 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     }
 
     @Test
-    public void test_dataFilesNoFilter() throws InterruptedException, ModuleException, CatalogSearchException {
+    public void test_dataFilesNoFilter()
+        throws InterruptedException, ModuleException, CatalogSearchException, CannotHaveProcessingAndFiltersException {
         // GIVEN
         tenantResolver.forceTenant(getDefaultTenant());
 
@@ -506,7 +510,8 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     }
 
     @Test
-    public void test_dataFilesNameFilter() throws InterruptedException, ModuleException, CatalogSearchException {
+    public void test_dataFilesNameFilter()
+        throws InterruptedException, ModuleException, CatalogSearchException, CannotHaveProcessingAndFiltersException {
         // GIVEN
         tenantResolver.forceTenant(getDefaultTenant());
         Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrderPause");
@@ -532,8 +537,56 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     }
 
     @Test
+    public void test_fileFilterAndProcessing()
+        throws InterruptedException, ModuleException, CatalogSearchException, CannotHaveProcessingAndFiltersException {
+        // GIVEN an order with two dataset selection
+        tenantResolver.forceTenant(getDefaultTenant());
+        Basket basket = OrderTestUtils.getBasketDoubleSelection("simpleOrderPause");
+        basketRepository.save(basket);
+        Mockito.when(authenticationResolver.getUser()).thenReturn(basket.getOwner());
+        basketService.addSelection(basket.getId(), createBasketSelectionRequest(DS1_IP_ID.toString(), ""));
+        basket = basketService.load(basket.getId());
+        Long firstDatasetId = basket.getDatasetSelections().first().getId();
+        Long secondDatasetId = basket.getDatasetSelections().last().getId();
+        // attach filters to first dataset
+        basketService.attachFileFilters(basket, firstDatasetId, new FileSelectionDescriptionDto(null, ".*\\.bin$"));
+        try {
+            // WHEN attach processing to first dataset selection
+            basketService.attachProcessing(basket,
+                                           firstDatasetId,
+                                           new ProcessDatasetDescriptionDto(UUID.randomUUID(),
+                                                                            io.vavr.collection.HashMap.of("key",
+                                                                                                          "value")
+                                                                                                      .toJavaMap()));
+            Assertions.fail("attachProcessing should fail.");
+        } catch (CannotHaveProcessingAndFiltersException e) {
+            // THEN attach fail because it cannot be processing and filter on the same dataset.
+        }
+        // WHEN add processing to second dataset
+        basketService.attachProcessing(basket,
+                                       secondDatasetId,
+                                       new ProcessDatasetDescriptionDto(UUID.randomUUID(),
+                                                                        io.vavr.collection.HashMap.of("key", "value")
+                                                                                                  .toJavaMap()));
+        // THEN add filter to second dataset
+        try {
+            // WHEN attach processing to first dataset selection
+            basketService.attachFileFilters(basket,
+                                            secondDatasetId,
+                                            new FileSelectionDescriptionDto(null, ".*\\.bin$"));
+            Assertions.fail("attachFileFilters should fail.");
+        } catch (CannotHaveProcessingAndFiltersException e) {
+            // THEN attach fail because it cannot be processing and filter on the same dataset.
+        }
+        // THEN remove processing from second dataset, and retry to attach same filter
+        basketService.attachProcessing(basket, secondDatasetId, null);
+        basketService.attachFileFilters(basket, secondDatasetId, new FileSelectionDescriptionDto(null, ".*\\.bin$"));
+        // THEN no exception is thrown
+    }
+
+    @Test
     public void test_dataFilesFiltersWithNoResults()
-        throws InterruptedException, ModuleException, CatalogSearchException {
+        throws InterruptedException, ModuleException, CatalogSearchException, CannotHaveProcessingAndFiltersException {
         // GIVEN
         tenantResolver.forceTenant(getDefaultTenant());
         Basket basket = OrderTestUtils.getBasketSingleSelection("simpleOrderPause");
