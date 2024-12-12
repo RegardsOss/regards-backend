@@ -104,14 +104,9 @@ public class RequestStatusService {
         if (request.getStatus() == FileRequestStatus.TO_DO) {
             toDelayStatusList = FileRequestStatus.RUNNING_AND_DELAYED_STATUS;
         }
-        // Delayed storage request if a deletion requests already exists
-        if (deletionReqRepo.existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(storage,
-                                                                                       checksum,
-                                                                                       FileRequestStatus.RUNNING_STATUS)) {
-            status = FileRequestStatus.DELAYED;
-        }
-        // Delay storage request if an other storage request is already running for the same file to store
-        else if (storageReqRepo.existsByStorageAndMetaInfoChecksumAndStatusIn(storage, checksum, toDelayStatusList)) {
+        // Delayed storage request if a deletion requests already exists or if another storage request is already running for the same file
+        if (deletionReqRepo.existsByStorageAndFileReferenceMetaInfoChecksum(storage, checksum)
+            || storageReqRepo.existsByStorageAndMetaInfoChecksumAndStatusIn(storage, checksum, toDelayStatusList)) {
             status = FileRequestStatus.DELAYED;
         } else if (request.getStatus() == FileRequestStatus.DELAYED && status == FileRequestStatus.TO_DO) {
             LOGGER.info("Request {}/{} undelayed", request.getMetaInfo().getChecksum(), request.getStorage());
