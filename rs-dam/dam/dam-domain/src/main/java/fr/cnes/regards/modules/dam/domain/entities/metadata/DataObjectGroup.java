@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.dam.domain.entities.metadata;
 
+import java.util.Objects;
+import java.util.Optional;
+
 /**
  * Information about a group access to a specific dataset for data objects.
  *
@@ -99,5 +102,34 @@ public class DataObjectGroup {
 
     public Boolean getDataObjectAccess() {
         return dataObjectAccess;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DataObjectGroup that)) {
+            return false;
+        }
+        // NOTICE : dataObjectAccessFilterPluginBusinessId can be an empty String in ES and NULL from frontend.
+        return Objects.equals(groupName, that.groupName)
+               && Objects.equals(dataFileAccess, that.dataFileAccess)
+               && Objects.equals(dataObjectAccess, that.dataObjectAccess)
+               && Objects.equals(datasetAccess, that.datasetAccess)
+               && Objects.equals(Optional.ofNullable(metaDataObjectAccessFilterPluginBusinessId).orElse(""),
+                                 Optional.ofNullable(that.metaDataObjectAccessFilterPluginBusinessId).orElse(""))
+               && Objects.equals(Optional.ofNullable(dataObjectAccessFilterPluginBusinessId).orElse(""),
+                                 Optional.ofNullable(that.dataObjectAccessFilterPluginBusinessId).orElse(""));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(groupName,
+                            dataFileAccess,
+                            dataObjectAccess,
+                            datasetAccess,
+                            Optional.ofNullable(metaDataObjectAccessFilterPluginBusinessId).orElse(""),
+                            Optional.ofNullable(dataObjectAccessFilterPluginBusinessId).orElse(""));
     }
 }
