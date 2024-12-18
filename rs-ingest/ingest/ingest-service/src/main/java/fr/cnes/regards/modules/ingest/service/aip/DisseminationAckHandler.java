@@ -105,4 +105,9 @@ public class DisseminationAckHandler
     public boolean isDedicatedDLQEnabled() {
         return false;
     }
+
+    @Override
+    public Class<DisseminationAckEvent> getMType() {
+        return DisseminationAckEvent.class;
+    }
 }

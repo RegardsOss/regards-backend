@@ -84,4 +84,8 @@ public class FeatureDisseminationResponseHandler
         return true;
     }
 
+    @Override
+    public Class<DisseminationAckEvent> getMType() {
+        return DisseminationAckEvent.class;
+    }
 }
