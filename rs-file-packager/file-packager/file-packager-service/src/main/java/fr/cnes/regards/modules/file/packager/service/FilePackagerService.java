@@ -387,6 +387,15 @@ public class FilePackagerService {
     }
 
     /**
+     * Retry package in {@link PackageReferenceStatus#STORE_ERROR} state by setting it to
+     * {@link PackageReferenceStatus#TO_STORE}
+     */
+    @MultitenantTransactional
+    public void retryPackagesInError() {
+        packageReferenceRepository.updatePackageInErrorStatusToToStoreStatus();
+    }
+
+    /**
      * Reset files to {@link FileInBuildingPackageStatus#TO_LOCAL_DELETE} status following a job crash or abort.
      * Only update files in {@link FileInBuildingPackageStatus#DELETING}.
      */

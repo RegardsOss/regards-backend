@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.file.packager.service.FilePackagerService;
+import fr.cnes.regards.modules.file.packager.service.scheduler.CompletePackageScheduler;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +33,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,8 +45,9 @@ import org.springframework.test.context.TestPropertySource;
  *
  * @author Thibaud Michaudel
  **/
-@ActiveProfiles(value = { "default", "test", "nojobs", "noscheduler" })
+@ActiveProfiles(value = { "default", "test", "nojobs" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=file_packager_client_it" })
+@Import(FilePackagerClientTestConfig.class)
 public class FilePackagerClientIT extends AbstractRegardsWebIT {
 
     private IFilePackagerClient client;
@@ -54,6 +57,9 @@ public class FilePackagerClientIT extends AbstractRegardsWebIT {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private CompletePackageScheduler completePackageScheduler;
 
     @Autowired
     private Gson gson;

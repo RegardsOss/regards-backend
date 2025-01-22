@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.file.packager.rest;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.file.packager.service.scheduler.CompletePackageScheduler;
+import fr.cnes.regards.modules.file.packager.service.scheduler.RetryFilePackagingScheduler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -42,10 +43,16 @@ public class FilePackagerController {
 
     public static final String SCHEDULE_COMPLETE_PACKAGE_PATH = "/storeCompletePackages";
 
+    public static final String RETRY_PACKAGE_ERROR_PATH = "/retryPackageError";
+
     private final CompletePackageScheduler completePackageScheduler;
 
-    public FilePackagerController(CompletePackageScheduler completePackageScheduler) {
+    private final RetryFilePackagingScheduler retryFilePackagingScheduler;
+
+    public FilePackagerController(CompletePackageScheduler completePackageScheduler,
+                                  RetryFilePackagingScheduler retryFilePackagingScheduler) {
         this.completePackageScheduler = completePackageScheduler;
+        this.retryFilePackagingScheduler = retryFilePackagingScheduler;
     }
 
     @Operation(summary = "Request to schedule storage of small file packages that are complete (or too old)")
@@ -56,6 +63,17 @@ public class FilePackagerController {
                     role = DefaultRole.ADMIN)
     public ResponseEntity<Void> scheduleStoreCompletePackage() {
         completePackageScheduler.scheduleCompletePackage();
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Request to reschedule the storage of small file packages whose last storage attempt ended in error")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+                                         description = "Successfully rescheduled the storage small file packages in error") })
+    @PostMapping(path = RETRY_PACKAGE_ERROR_PATH)
+    @ResourceAccess(description = "Endpoint to reschedule the storage of small file packages whose last storage attempt ended in error",
+                    role = DefaultRole.ADMIN)
+    public ResponseEntity<Void> retryStorePackagesInError() {
+        retryFilePackagingScheduler.scheduleRetryFilePackaging();
         return ResponseEntity.ok().build();
     }
 }

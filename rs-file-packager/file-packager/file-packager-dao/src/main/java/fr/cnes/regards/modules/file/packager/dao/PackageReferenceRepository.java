@@ -97,4 +97,19 @@ public interface PackageReferenceRepository extends JpaRepository<PackageReferen
         updatePackagesStatusByIdIn(packageIds, PackageReferenceStatus.STORE_IN_PROGRESS);
     }
 
+    /**
+     * Set the given {@link PackageReferenceStatus} to the packges currently in the given {@link PackageReferenceStatus}
+     */
+    @Modifying
+    @Query("UPDATE PackageReference p SET p.status = :statusToSet WHERE p.status = :statusToUpdate")
+    void updatePackagesStatusByStatus(@Param("statusToUpdate") PackageReferenceStatus statusToUpdate,
+                                      @Param("statusToSet") PackageReferenceStatus statusToSet);
+
+    /**
+     * Set {@link PackageReferenceStatus#TO_STORE} to packages in {@link PackageReferenceStatus#STORE_ERROR
+     * STORE_ERROR} status.
+     */
+    default void updatePackageInErrorStatusToToStoreStatus() {
+        updatePackagesStatusByStatus(PackageReferenceStatus.STORE_ERROR, PackageReferenceStatus.TO_STORE);
+    }
 }

@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.PostMapping;
  *
  * @author Thibaud Michaudel
  **/
-
 @RestClient(name = "rs-file-packager", contextId = "rs-file-packager.config.client")
 public interface IFilePackagerClient {
 
