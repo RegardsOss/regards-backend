@@ -372,8 +372,9 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         for (Entry<FeatureDeletionRequest, FeatureEntity> entry : requestsWithFiles.entrySet()) {
             FeatureDeletionRequest featureDeletionrequest = entry.getKey();
             // If request is not set a force deletion, check if a dissemination is pending on the feature to delete.
-            // If so, the deletion request must be blocked until dissemination is recieved.
+            // If so, the deletion request must be blocked until dissemination is received.
             if (!entry.getKey().isForceDeletion()) {
+                // FIXME: here we use disseminationInfo entities, but they are lazy
                 entry.getValue().getDisseminationsInfo().forEach(disseminationInfo -> {
                     if (disseminationInfo.isBlocking() && disseminationInfo.getAckDate() == null) {
                         // Monitoring log
@@ -484,6 +485,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
             // If request is not set a force deletion, check if a dissemination is pending on the feature to delete.
             // If so, the deletion request must be blocked until dissemination is received.
             if (!featureDeletionRequestAndFeatureEntity.getKey().isForceDeletion()) {
+                // FIXME: here we use disseminationInfo entities, but they are lazy
                 featureEntity.getDisseminationsInfo().forEach(disseminationInfo -> {
                     if (disseminationInfo.isBlocking() && disseminationInfo.getAckDate() == null) {
                         // Monitoring log
@@ -699,7 +701,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
     }
 
     @MultitenantTransactional(readOnly = true)
-    public List<FeatureDeletionRequest> findAllByIds(Iterable ids) {
+    public List<FeatureDeletionRequest> findAllByIds(Collection<Long> ids) {
         return this.featureDeletionRequestRepository.findAllById(ids);
     }
 

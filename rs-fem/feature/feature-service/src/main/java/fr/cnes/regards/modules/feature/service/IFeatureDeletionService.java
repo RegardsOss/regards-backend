@@ -30,6 +30,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -77,7 +78,7 @@ public interface IFeatureDeletionService extends IAbstractFeatureService<Feature
      */
     RequestsInfo getInfo(SearchFeatureRequestParameters filters);
 
-    List<FeatureDeletionRequest> findAllByIds(Iterable ids);
+    List<FeatureDeletionRequest> findAllByIds(Collection<Long> ids);
 
     /**
      * Force deletion for given requests ids. Force deletion is used to bypass
