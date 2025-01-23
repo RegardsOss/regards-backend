@@ -239,7 +239,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                                          .autoDelete(EventUtils.isAutoDeleteQueue(eventType))
                                          .exchange(exchangeName)
                                          .queue(queueName);
-        subscribeTo(receiver, channel, true);
+        subscribeTo(receiver, channel, purgeQueue);
     }
 
     @Override
