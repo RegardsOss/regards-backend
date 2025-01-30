@@ -41,6 +41,10 @@ public class StorageResponseDto {
 
     private final boolean storedInCache;
 
+    private final String finalArchiveParentUrl;
+
+    private final String fileCachePath;
+
     private final StorageResponseErrorEnum errorType;
 
     private final String error;
@@ -55,6 +59,8 @@ public class StorageResponseDto {
                               Integer height,
                               Integer weight,
                               boolean storedInCache,
+                              String finalArchiveParentUrl,
+                              String fileCachePath,
                               StorageResponseErrorEnum errorType,
                               String error) {
         this.requestId = requestId;
@@ -64,12 +70,21 @@ public class StorageResponseDto {
         this.height = height;
         this.weight = weight;
         this.storedInCache = storedInCache;
+        this.finalArchiveParentUrl = finalArchiveParentUrl;
+        this.fileCachePath = fileCachePath;
         this.errorType = errorType;
         this.error = error;
     }
 
     /**
-     * Success constructor
+     * Fully stored Success constructor
+     */
+    public StorageResponseDto(Long requestId, String url, String checksum, long size, Integer height, Integer weight) {
+        this(requestId, url, checksum, size, height, weight, false, null, null, null, null);
+    }
+
+    /**
+     * Cache Success constructor
      */
     public StorageResponseDto(Long requestId,
                               String url,
@@ -77,8 +92,16 @@ public class StorageResponseDto {
                               long size,
                               Integer height,
                               Integer weight,
-                              boolean storedInCache) {
-        this(requestId, url, checksum, size, height, weight, storedInCache, null, null);
+                              String finalArchiveParentUrl,
+                              String fileCachePath) {
+        this(requestId, url, checksum, size, height, weight, true, finalArchiveParentUrl, fileCachePath, null, null);
+    }
+
+    /**
+     * Reference success constructor
+     */
+    public StorageResponseDto(Long requestId, String url, String checksum) {
+        this(requestId, url, checksum, 0, 0, 0, false, null, null, null, null);
     }
 
     /**
@@ -89,14 +112,7 @@ public class StorageResponseDto {
                               String checksum,
                               StorageResponseErrorEnum errorType,
                               String error) {
-        this(requestId, url, checksum, 0L, 0, 0, false, errorType, error);
-    }
-
-    /**
-     * Reference success constructor
-     */
-    public StorageResponseDto(Long requestId, String url, String checksum) {
-        this(requestId, url, checksum, 0, 0, 0, false);
+        this(requestId, url, checksum, 0L, 0, 0, false, null, null, errorType, error);
     }
 
     public Long getRequestId() {
@@ -127,6 +143,14 @@ public class StorageResponseDto {
         return storedInCache;
     }
 
+    public String getFinalArchiveParentUrl() {
+        return finalArchiveParentUrl;
+    }
+
+    public String getFileCachePath() {
+        return fileCachePath;
+    }
+
     public StorageResponseErrorEnum getErrorType() {
         return errorType;
     }
@@ -149,19 +173,31 @@ public class StorageResponseDto {
         }
         StorageResponseDto that = (StorageResponseDto) o;
         return size == that.size
-               && Objects.equals(height, that.height)
-               && Objects.equals(weight, that.weight)
                && storedInCache == that.storedInCache
                && Objects.equals(requestId, that.requestId)
                && Objects.equals(url, that.url)
                && Objects.equals(checksum, that.checksum)
-               && Objects.equals(errorType, that.errorType)
+               && Objects.equals(height, that.height)
+               && Objects.equals(weight, that.weight)
+               && Objects.equals(finalArchiveParentUrl, that.finalArchiveParentUrl)
+               && Objects.equals(fileCachePath, that.fileCachePath)
+               && errorType == that.errorType
                && Objects.equals(error, that.error);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(requestId, url, checksum, size, height, weight, storedInCache, errorType, error);
+        return Objects.hash(requestId,
+                            url,
+                            checksum,
+                            size,
+                            height,
+                            weight,
+                            storedInCache,
+                            finalArchiveParentUrl,
+                            fileCachePath,
+                            errorType,
+                            error);
     }
 
     @Override
@@ -183,9 +219,14 @@ public class StorageResponseDto {
                + weight
                + ", storedInCache="
                + storedInCache
-               + ", errorType='"
-               + errorType
+               + ", finalArchiveParentUrl='"
+               + finalArchiveParentUrl
                + '\''
+               + ", fileCachePath='"
+               + fileCachePath
+               + '\''
+               + ", errorType="
+               + errorType
                + ", error='"
                + error
                + '\''

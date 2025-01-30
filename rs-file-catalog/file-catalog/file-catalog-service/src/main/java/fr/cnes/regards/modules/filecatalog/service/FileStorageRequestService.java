@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
 import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
@@ -34,6 +35,7 @@ import fr.cnes.regards.modules.fileaccess.dto.input.FileStorageMetaInfoDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FileArchiveResponseEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.output.FileArchiveRequestEvent;
 import fr.cnes.regards.modules.filecatalog.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.filecatalog.dao.IFileStorageRequestAggregationRepository;
 import fr.cnes.regards.modules.filecatalog.dao.result.RequestAndMaxStatus;
@@ -448,7 +450,9 @@ public class FileStorageRequestService {
             // decrement the number of running requests
             this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
             // notify the number of successful created files
-            this.sessionNotifier.incrementStoredFiles(sessionOwner, session, nbFilesStored);
+            if (nbFilesStored > 0) {
+                this.sessionNotifier.incrementStoredFiles(sessionOwner, session, nbFilesStored);
+            }
 
             if (result.notifyActionRemainingToAdmin()) {
                 filesWithActionsRemaining.add(result.fileUrl());
@@ -544,6 +548,85 @@ public class FileStorageRequestService {
         }
     }
 
+    @MultitenantTransactional
+    public void processFileStorageSuccessResponses(List<StorageResponseEvent> events) {
+        Map<Long, StorageResponseEvent> responseIdToEventMap = events.stream()
+                                                                     .collect(Collectors.toMap(StorageResponseEvent::getRequestId,
+                                                                                               Function.identity()));
+        Map<Long, FileStorageRequestAggregation> requestIdToRequestMap = fileStorageRequestAggregationRepository.findAllById(
+                                                                                                                    responseIdToEventMap.keySet())
+                                                                                                                .stream()
+                                                                                                                .collect(
+                                                                                                                    Collectors.toMap(
+                                                                                                                        FileStorageRequestAggregation::getId,
+                                                                                                                        Function.identity()));
+
+        List<FileStorageResult> successesStorage = new ArrayList<>();
+        List<FileArchiveRequestEvent> archiveEventsToSend = new ArrayList<>();
+
+        for (Long requestId : responseIdToEventMap.keySet()) {
+            FileStorageRequestAggregation request = requestIdToRequestMap.get(requestId);
+            StorageResponseEvent event = responseIdToEventMap.get(requestId);
+            if (request == null) {
+                LOGGER.error(
+                    "Received a storage response event for an unknown request [request id : {} ; checksum : {}]",
+                    requestId,
+                    event.getChecksum());
+            } else {
+
+                successesStorage.add(new FileStorageResult(request,
+                                                           event.getUrl(),
+                                                           event.isStoredInCache() ? FileArchiveStatus.TO_STORE : null,
+                                                           event.isStoredInCache()));
+                // If the file is only stored locally, an event is sent to the file packager
+                if (event.isStoredInCache()) {
+                    archiveEventsToSend.add(new FileArchiveRequestEvent(requestId,
+                                                                        request.getStorage(),
+                                                                        request.getMetaInfo().getChecksum(),
+                                                                        request.getMetaInfo().getFileName(),
+                                                                        request.getStorageSubDirectory(),
+                                                                        event.getFinalArchiveParentUrl(),
+                                                                        event.getFileCachePath(),
+                                                                        request.getMetaInfo().getFileSize()));
+                }
+            }
+        }
+
+        handleSuccess(successesStorage);
+        if (!archiveEventsToSend.isEmpty()) {
+            publisher.publish(archiveEventsToSend);
+        }
+    }
+
+    /**
+     * Process received {@link StorageResponseEvent}s in error status
+     */
+    @MultitenantTransactional
+    public void processFileStorageErrorResponses(List<StorageResponseEvent> events) {
+        Map<Long, StorageResponseEvent> responseIdToEventMap = events.stream()
+                                                                     .collect(Collectors.toMap(StorageResponseEvent::getRequestId,
+                                                                                               Function.identity()));
+        Map<Long, FileStorageRequestAggregation> requestIdToRequestMap = fileStorageRequestAggregationRepository.findAllById(
+                                                                                                                    responseIdToEventMap.keySet())
+                                                                                                                .stream()
+                                                                                                                .collect(
+                                                                                                                    Collectors.toMap(
+                                                                                                                        FileStorageRequestAggregation::getId,
+                                                                                                                        Function.identity()));
+
+        for (Long requestId : responseIdToEventMap.keySet()) {
+            FileStorageRequestAggregation request = requestIdToRequestMap.get(requestId);
+            StorageResponseEvent event = responseIdToEventMap.get(requestId);
+            if (request == null) {
+                LOGGER.error("Received a storage error event for an unknown request [request id : {} ; checksum : {}]",
+                             requestId,
+                             event.getChecksum());
+            } else {
+                handleError(request, event.getError());
+            }
+        }
+    }
+
     /**
      * Create the file reference for each successful request
      */
@@ -566,7 +649,6 @@ public class FileStorageRequestService {
                                                      .toList();
 
         this.handleSuccess(resultList);
-
     }
 
     private record FileStorageResult(FileStorageRequestAggregation request,

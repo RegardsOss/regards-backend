@@ -97,17 +97,32 @@ public class FileStorageService {
                             height = imageFileMetadata.getHeightInPx();
                             weight = imageFileMetadata.getWidthInPx();
                         }
-                        storageResponseEvent = StorageResponseEvent.createSuccessResponse(requestId,
-                                                                                          workerResponseContent.getStoreFileMetadata()
-                                                                                                               .getStoredFileUrl(),
-                                                                                          workerResponseContent.getStoreFileMetadata()
-                                                                                                               .getChecksum(),
-                                                                                          workerResponseContent.getStoreFileMetadata()
-                                                                                                               .getFileSizeInBytes(),
-                                                                                          height,
-                                                                                          weight,
-                                                                                          computeIsStoredInCached(
-                                                                                              workerResponseContent));
+                        if (isStoredInCache(workerResponseContent)) {
+                            storageResponseEvent = StorageResponseEvent.createSuccessCacheResponse(requestId,
+                                                                                                   workerResponseContent.getStoreFileMetadata()
+                                                                                                                        .getStoredFileUrl(),
+                                                                                                   workerResponseContent.getStoreFileMetadata()
+                                                                                                                        .getChecksum(),
+                                                                                                   workerResponseContent.getStoreFileMetadata()
+                                                                                                                        .getFileSizeInBytes(),
+                                                                                                   height,
+                                                                                                   weight,
+                                                                                                   workerResponseContent.getFileProcessingMetadata()
+                                                                                                                        .getStoreParentUrl(),
+                                                                                                   workerResponseContent.getFileProcessingMetadata()
+                                                                                                                        .getCachePath());
+                        } else {
+                            storageResponseEvent = StorageResponseEvent.createSuccessResponse(requestId,
+                                                                                              workerResponseContent.getStoreFileMetadata()
+                                                                                                                   .getStoredFileUrl(),
+                                                                                              workerResponseContent.getStoreFileMetadata()
+                                                                                                                   .getChecksum(),
+                                                                                              workerResponseContent.getStoreFileMetadata()
+                                                                                                                   .getFileSizeInBytes(),
+                                                                                              height,
+                                                                                              weight);
+                        }
+
                     }
                     eventsToSend.add(storageResponseEvent);
                 }
@@ -129,7 +144,7 @@ public class FileStorageService {
         }
     }
 
-    private boolean computeIsStoredInCached(StorageWorkerResponseDto workerResponseContent) {
+    private boolean isStoredInCache(StorageWorkerResponseDto workerResponseContent) {
         return workerResponseContent.getFileProcessingMetadata().getCachePath() != null;
     }
 }

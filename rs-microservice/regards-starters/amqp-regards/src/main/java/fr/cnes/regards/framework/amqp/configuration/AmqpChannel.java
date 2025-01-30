@@ -133,6 +133,7 @@ public class AmqpChannel {
         return conf;
     }
 
+
     public AmqpChannel exchange(String exchangeName) {
         this.exchangeName = Optional.ofNullable(exchangeName);
         return this;

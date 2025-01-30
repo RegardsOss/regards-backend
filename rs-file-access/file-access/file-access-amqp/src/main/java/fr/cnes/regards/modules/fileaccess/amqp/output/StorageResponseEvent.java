@@ -36,23 +36,25 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
     private StorageResponseEvent(Long requestId,
                                  String url,
                                  String checksum,
-                                 Long size,
+                                 long size,
                                  Integer height,
-                                 Integer weight,
-                                 boolean storedInCache,
-                                 StorageResponseErrorEnum errorType,
-                                 String error) {
-        super(requestId, url, checksum, size, height, weight, storedInCache, errorType, error);
+                                 Integer weight) {
+        super(requestId, url, checksum, size, height, weight);
     }
 
     private StorageResponseEvent(Long requestId,
                                  String url,
                                  String checksum,
-                                 Long size,
+                                 long size,
                                  Integer height,
                                  Integer weight,
-                                 boolean storedInCache) {
-        super(requestId, url, checksum, size, height, weight, storedInCache);
+                                 String finalArchiveParentUrl,
+                                 String fileCachePath) {
+        super(requestId, url, checksum, size, height, weight, finalArchiveParentUrl, fileCachePath);
+    }
+
+    private StorageResponseEvent(Long requestId, String url, String checksum) {
+        super(requestId, url, checksum);
     }
 
     private StorageResponseEvent(Long requestId,
@@ -63,10 +65,6 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
         super(requestId, url, checksum, errorType, error);
     }
 
-    public StorageResponseEvent(Long requestId, String url, String checksum) {
-        super(requestId, url, checksum);
-    }
-
     /**
      * Success event
      */
@@ -75,9 +73,36 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
                                                              String checksum,
                                                              long size,
                                                              Integer height,
-                                                             Integer weight,
-                                                             boolean storedInCache) {
-        return new StorageResponseEvent(requestId, url, checksum, size, height, weight, storedInCache);
+                                                             Integer weight) {
+        return new StorageResponseEvent(requestId, url, checksum, size, height, weight);
+    }
+
+    /**
+     * Success cache event
+     */
+    public static StorageResponseEvent createSuccessCacheResponse(Long requestId,
+                                                                  String url,
+                                                                  String checksum,
+                                                                  long size,
+                                                                  Integer height,
+                                                                  Integer weight,
+                                                                  String finalArchiveParentUrl,
+                                                                  String fileCachePath) {
+        return new StorageResponseEvent(requestId,
+                                        url,
+                                        checksum,
+                                        size,
+                                        height,
+                                        weight,
+                                        finalArchiveParentUrl,
+                                        fileCachePath);
+    }
+
+    /**
+     * Success Reference event
+     */
+    public static StorageResponseEvent createSuccessResponse(Long requestId, String url, String checksum) {
+        return new StorageResponseEvent(requestId, url, checksum);
     }
 
     /**
@@ -89,13 +114,6 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
                                                            StorageResponseErrorEnum errorType,
                                                            String error) {
         return new StorageResponseEvent(requestId, url, checksum, errorType, error);
-    }
-
-    /**
-     * Success Reference event
-     */
-    public static StorageResponseEvent createSuccessResponse(Long requestId, String url, String checksum) {
-        return new StorageResponseEvent(requestId, url, checksum);
     }
 
     /**
