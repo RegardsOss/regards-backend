@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.test;
 
-import java.util.Optional;
-
-import org.mockito.Mockito;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -33,6 +25,13 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.utils.spring.CglibHelper;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+
+import java.util.Optional;
 
 /**
  * Provide during test either empty beans (when profile="!testAmqp") relative to AMQP
@@ -75,9 +74,27 @@ public class AmqpTestConfiguration {
             @Override
             public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
                                                               IHandler<E> receiver,
+                                                              String routingKey) {
+                subscriber.subscribeTo(eventType, receiver, true, routingKey);
+
+            }
+
+            @Override
+            public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                              IHandler<E> receiver,
                                                               String queueName,
                                                               String exchangeName) {
                 subscriber.subscribeTo(eventType, receiver, queueName, exchangeName, true);
+            }
+
+            @Override
+            public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                              IHandler<E> receiver,
+                                                              String queueName,
+                                                              String exchangeName,
+                                                              String routingKey) {
+                subscriber.subscribeTo(eventType, receiver, queueName, exchangeName, true, routingKey);
+
             }
 
             @Override
@@ -92,8 +109,28 @@ public class AmqpTestConfiguration {
             @Override
             public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
                                                               IHandler<E> receiver,
+                                                              String queueName,
+                                                              String exchangeName,
+                                                              boolean purgeQueue,
+                                                              String routingKey) {
+                subscriber.subscribeTo(eventType, receiver, queueName, exchangeName, true, routingKey);
+
+            }
+
+            @Override
+            public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                              IHandler<E> receiver,
                                                               boolean purgeQueue) {
                 subscriber.subscribeTo(eventType, receiver, true);
+            }
+
+            @Override
+            public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                              IHandler<E> receiver,
+                                                              boolean purgeQueue,
+                                                              String routingKey) {
+                subscriber.subscribeTo(eventType, receiver, true, routingKey);
+
             }
 
             @Override

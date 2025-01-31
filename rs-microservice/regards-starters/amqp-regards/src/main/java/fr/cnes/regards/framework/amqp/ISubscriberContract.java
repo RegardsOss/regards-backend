@@ -43,6 +43,16 @@ public interface ISubscriberContract {
     <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver);
 
     /**
+     * Subscribe to this {@link ISubscribable} event with a routing key
+     *
+     * @param <E>        {@link ISubscribable} event
+     * @param eventType  {@link ISubscribable} event
+     * @param receiver   event {@link IHandler}
+     * @param routingKey Routing key for the subscription
+     */
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, String routingKey);
+
+    /**
      * Subscribe to the given queueName to listen for {@link ISubscribable} events<br/>
      * <ul>
      *     <li>The queue is created if missing</li>
@@ -62,6 +72,27 @@ public interface ISubscriberContract {
                                                String exchangeName);
 
     /**
+     * Subscribe to the given queueName to listen for {@link ISubscribable} events with a routing key<br/>
+     * <ul>
+     *     <li>The queue is created if missing</li>
+     *     <li>The exchange is created if missing</li>
+     *     <li>The queue is bind to the exchange with UNICAST(routingKey=queueName) or BROADCAST</li>
+     * </ul>
+     *
+     * @param <E>          {@link ISubscribable} event
+     * @param eventType    {@link ISubscribable} event
+     * @param receiver     event {@link IHandler}
+     * @param queueName    Name of the queue to listen for
+     * @param exchangeName Name of the exchange to create and to bind to the newly subscribe queue.
+     * @param routingKey   Routing key for the subscription
+     */
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                               IHandler<E> receiver,
+                                               String queueName,
+                                               String exchangeName,
+                                               String routingKey);
+
+    /**
      * Subscribe to the given queueName to listen for {@link ISubscribable} events<br/>
      * <ul>
      *     <li>The queue is created if missing</li>
@@ -74,6 +105,7 @@ public interface ISubscriberContract {
      * @param receiver     event {@link IHandler}
      * @param queueName    Name of the queue to listen for
      * @param exchangeName Name of the exchange to create and to bind to the newly subscribe queue.
+     * @param purgeQueue   True to purge queue if already exists
      */
     <E extends ISubscribable> void subscribeTo(Class<E> eventType,
                                                IHandler<E> receiver,
@@ -82,14 +114,51 @@ public interface ISubscriberContract {
                                                boolean purgeQueue);
 
     /**
+     * Subscribe to the given queueName to listen for {@link ISubscribable} events with a routing key<br/>
+     * <ul>
+     *     <li>The queue is created if missing</li>
+     *     <li>The exchange is created if missing</li>
+     *     <li>The queue is bind to the exchange with UNICAST(routingKey=queueName) or BROADCAST</li>
+     * </ul>
+     *
+     * @param <E>          {@link ISubscribable} event
+     * @param eventType    {@link ISubscribable} event
+     * @param receiver     event {@link IHandler}
+     * @param queueName    Name of the queue to listen for
+     * @param exchangeName Name of the exchange to create and to bind to the newly subscribe queue.
+     * @param purgeQueue   True to purge queue if already exists
+     * @param routingKey   Routing key for the subscription
+     */
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                               IHandler<E> receiver,
+                                               String queueName,
+                                               String exchangeName,
+                                               boolean purgeQueue,
+                                               String routingKey);
+
+    /**
      * Subscribe to this {@link ISubscribable} event
      *
-     * @param <E>        @link ISubscribable} event
+     * @param <E>        {@link ISubscribable} event
      * @param eventType  {@link ISubscribable} event
      * @param receiver   event {@link IHandler}
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
     <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue);
+
+    /**
+     * Subscribe to this {@link ISubscribable} event with a routing key
+     *
+     * @param <E>        {@link ISubscribable} event
+     * @param eventType  {@link ISubscribable} event
+     * @param receiver   event {@link IHandler}
+     * @param purgeQueue true to purge queue if already exists. Useful in tests.
+     * @param routingKey Routing key for the subscription
+     */
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                               IHandler<E> receiver,
+                                               boolean purgeQueue,
+                                               String routingKey);
 
     /**
      * Unsubscribe from this {@link ISubscribable} event.

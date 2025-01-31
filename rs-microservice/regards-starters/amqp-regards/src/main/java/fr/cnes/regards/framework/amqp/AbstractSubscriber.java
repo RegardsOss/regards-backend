@@ -251,6 +251,61 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     }
 
     @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, String routingKey) {
+        AmqpChannel channel = AmqpChannel.build(eventType)
+                                         .autoDelete(EventUtils.isAutoDeleteQueue(eventType))
+                                         .forHandler(receiver)
+                                         .withRoutingKey(routingKey);
+        subscribeTo(receiver, channel, false);
+    }
+
+    @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                      IHandler<E> receiver,
+                                                      String queueName,
+                                                      String exchangeName,
+                                                      String routingKey) {
+        AmqpChannel channel = AmqpChannel.build(eventType)
+                                         .forHandler(receiver)
+                                         .autoDelete(EventUtils.isAutoDeleteQueue(eventType))
+                                         .exchange(exchangeName)
+                                         .queue(queueName)
+                                         .withRoutingKey(routingKey);
+        subscribeTo(receiver, channel, false);
+
+    }
+
+    @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                      IHandler<E> receiver,
+                                                      String queueName,
+                                                      String exchangeName,
+                                                      boolean purgeQueue,
+                                                      String routingKey) {
+        AmqpChannel channel = AmqpChannel.build(eventType)
+                                         .forHandler(receiver)
+                                         .autoDelete(EventUtils.isAutoDeleteQueue(eventType))
+                                         .exchange(exchangeName)
+                                         .queue(queueName)
+                                         .withRoutingKey(routingKey);
+        subscribeTo(receiver, channel, purgeQueue);
+
+    }
+
+    @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                      IHandler<E> receiver,
+                                                      boolean purgeQueue,
+                                                      String routingKey) {
+        AmqpChannel channel = AmqpChannel.build(eventType)
+                                         .forHandler(receiver)
+                                         .autoDelete(EventUtils.isAutoDeleteQueue(eventType))
+                                         .withRoutingKey(routingKey);
+        subscribeTo(receiver, channel, purgeQueue);
+
+    }
+
+    @Override
     public void purgeAllQueues(String tenant) {
         if (virtualHostAdmin != null) {
             LOGGER.info("Purging queues for {} handlers", handlerInstances.size());

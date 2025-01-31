@@ -154,6 +154,19 @@ public abstract class AbstractPublisher implements IPublisherContract {
     }
 
     @Override
+    @Transactional
+    public void publish(ISubscribable event, String routingKey) {
+        String tenant = resolveTenant();
+        if (tenant != null) {
+            publishMessageByTenant(tenant, event.getClass().getName(), routingKey, event, DEFAULT_PRIORITY, null);
+        } else {
+            String errorMessage = "Unable to publish events because there is no defined tenant.";
+            LOGGER.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    @Override
     public void publish(ISubscribable event, String exchangeName, Optional<String> queueName) {
         Class<? extends ISubscribable> eventClass = event.getClass();
         AmqpChannel channel = AmqpChannel.build(eventClass).exchange(exchangeName);

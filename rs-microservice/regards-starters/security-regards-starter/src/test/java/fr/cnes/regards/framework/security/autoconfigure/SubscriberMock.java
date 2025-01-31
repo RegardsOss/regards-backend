@@ -39,10 +39,24 @@ public class SubscriberMock implements ISubscriber {
     }
 
     @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, String routingKey) {
+
+    }
+
+    @Override
     public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
                                                       IHandler<E> receiver,
                                                       String queueName,
                                                       String exchangeName) {
+    }
+
+    @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                      IHandler<E> receiver,
+                                                      String queueName,
+                                                      String exchangeName,
+                                                      String routingKey) {
+
     }
 
     @Override
@@ -56,6 +70,16 @@ public class SubscriberMock implements ISubscriber {
                                                       String queueName,
                                                       String exchangeName,
                                                       boolean purgeQueue) {
+    }
+
+    @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                      IHandler<E> receiver,
+                                                      String queueName,
+                                                      String exchangeName,
+                                                      boolean purgeQueue,
+                                                      String routingKey) {
+
     }
 
     @Override
@@ -89,5 +113,13 @@ public class SubscriberMock implements ISubscriber {
     @Override
     public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue) {
         /// Nothing to do
+    }
+
+    @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                      IHandler<E> receiver,
+                                                      boolean purgeQueue,
+                                                      String routingKey) {
+
     }
 }

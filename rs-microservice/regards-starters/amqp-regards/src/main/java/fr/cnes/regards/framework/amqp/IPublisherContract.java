@@ -92,6 +92,12 @@ public interface IPublisherContract {
     void publish(ISubscribable event, int priority);
 
     /**
+     * Publish event to an exchange named after the event class, using the given routing key.
+     * Uses the default priority and add no header to the event.
+     */
+    void publish(ISubscribable event, String routingKey);
+
+    /**
      * Publish in batch a list of {@link ISubscribable} events with specified priority
      * <p>
      * <br/><br/><b>!!!!! Experimental feature for test only at the moment</b>
