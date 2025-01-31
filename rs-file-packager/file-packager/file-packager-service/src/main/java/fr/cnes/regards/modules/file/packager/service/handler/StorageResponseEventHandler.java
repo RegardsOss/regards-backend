@@ -20,10 +20,8 @@ package fr.cnes.regards.modules.file.packager.service.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackage;
 import fr.cnes.regards.modules.file.packager.service.FilePackagerService;
-import fr.cnes.regards.modules.filecatalog.amqp.output.FileArchiveRequestEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,49 +33,42 @@ import org.springframework.validation.Errors;
 import java.util.List;
 
 /**
- * Handler for {@link FileArchiveRequestEvent} sent from file-catalog to file-packager in order to request the packaging of a small file.
- * For each message, the handler will save one {@link FileInBuildingPackage} in database that will be processed by
- * the scheduler {@link fr.cnes.regards.modules.file.packager.service.scheduler.FilePackagingScheduler
- * FilePackagingScheduler}.
+ * Handler for {@link StorageResponseEvent} that are received when a package has been stored by the file access
+ * microservice. The package need to be updated in database and an event is sent to the file catalog for each file in
+ * this package.
  *
  * @author Thibaud Michaudel
- **/
+ */
 @Component
-public class FileArchiveRequestEventHandler
-    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileArchiveRequestEvent> {
+public class StorageResponseEventHandler
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<StorageResponseEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileArchiveRequestEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageResponseEventHandler.class);
 
     private final ISubscriber subscriber;
 
     private final FilePackagerService filePackagerService;
 
-    private final IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Value("${regards.file.packager.files.archive.request.bulk.size:100}")
+    @Value("${regards.file.packager.storage.response.bulk.size:50}")
     private int bulkSize;
 
-    public FileArchiveRequestEventHandler(ISubscriber subscriber,
-                                          FilePackagerService filePackagerService,
-                                          IRuntimeTenantResolver runtimeTenantResolver) {
+    public StorageResponseEventHandler(ISubscriber subscriber, FilePackagerService filePackagerService) {
         this.subscriber = subscriber;
         this.filePackagerService = filePackagerService;
-        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(FileArchiveRequestEvent.class, this);
+        subscriber.subscribeTo(StorageResponseEvent.class, this);
     }
 
     @Override
-    public void handleBatch(List<FileArchiveRequestEvent> messages) {
-        LOGGER.debug("[FileArchiveRequestEvent HANDLER] {} file archive requests received", messages.size());
+    public void handleBatch(List<StorageResponseEvent> messages) {
+        LOGGER.debug("[StorageResponseEvent HANDLER] {} package storage events received", messages.size());
         long start = System.currentTimeMillis();
+        filePackagerService.updatePackageAfterCompletion(messages);
 
-        filePackagerService.createNewFilesInBuildingPackage(messages);
-
-        LOGGER.info("[FileArchiveRequestEvent HANDLER] {} file archive requests handled in {} ms",
+        LOGGER.info("[StorageResponseEvent HANDLER] {} package storage events handled in {} ms",
                     messages.size(),
                     System.currentTimeMillis() - start);
     }
@@ -88,8 +79,13 @@ public class FileArchiveRequestEventHandler
     }
 
     @Override
-    public Errors validate(FileArchiveRequestEvent message) {
+    public Errors validate(StorageResponseEvent message) {
         return null;
+    }
+
+    @Override
+    public boolean isRetryEnabled() {
+        return true;
     }
 
 }

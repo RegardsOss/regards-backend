@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.file.packager.service.scheduler;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.file.packager.service.FilePackagerService;
@@ -38,25 +37,28 @@ import java.time.Duration;
 import java.time.Instant;
 
 /**
- * Scheduler scheduling storage jobs for complete packages
+ * Scheduler to periodically delete files whose package is STORED.
  *
  * @author Thibaud Michaudel
  **/
 @Component
 @Profile("!noscheduler")
 @EnableScheduling
-@MultitenantTransactional
-public class CompletePackageScheduler extends AbstractTaskScheduler {
+public class FileDeletingScheduler extends AbstractTaskScheduler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CompletePackageScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletingScheduler.class);
 
     private static final String DEFAULT_INITIAL_DELAY_IN_MS = "30000";
 
-    private static final String DEFAULT_SCHEDULING_DELAY_IN_MS = "1000";
+    private static final String DEFAULT_SCHEDULING_DELAY_IN_MS = "3600000";
 
-    private static final String LOCK_ACTIONS = "FILE PACKAGER STORE COMPLETE PACKAGE ACTIONS";
+    private static final String LOCK_ID = "file-packager-file-deleting";
 
-    private final LockingTaskExecutor.Task completePackageTask;
+    private static final String LOCK_TITLE = "File Packager file deleting scheduling";
+
+    private static final String LOCK_ACTIONS = "FILE PACKAGER DELETE FILES ACTIONS";
+
+    private final LockingTaskExecutor.Task fileDeletingTask;
 
     private final ILockingTaskExecutors lockingTaskExecutors;
 
@@ -66,16 +68,16 @@ public class CompletePackageScheduler extends AbstractTaskScheduler {
 
     private final FilePackagerService filePackagerService;
 
-    @Value("${regards.file.packager.complete.package.lock.duration.in.seconds.:300}")
-    private int lockDurationInSeconds;
+    @Value("${regards.file.packager.file.deleting.lock.duration:60}")
+    private int lockDuration;
 
-    public CompletePackageScheduler(ILockingTaskExecutors lockingTaskExecutors,
-                                    IRuntimeTenantResolver runtimeTenantResolver,
-                                    ITenantResolver tenantResolver,
-                                    FilePackagerService filePackagerService) {
-        completePackageTask = () -> {
+    public FileDeletingScheduler(ILockingTaskExecutors lockingTaskExecutors,
+                                 IRuntimeTenantResolver runtimeTenantResolver,
+                                 ITenantResolver tenantResolver,
+                                 FilePackagerService filePackagerService) {
+        fileDeletingTask = () -> {
             lockingTaskExecutors.assertLocked();
-            completePackage();
+            filePackagerService.scheduleDeleteLocalFilesJobs();
         };
         this.lockingTaskExecutors = lockingTaskExecutors;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -83,26 +85,22 @@ public class CompletePackageScheduler extends AbstractTaskScheduler {
         this.filePackagerService = filePackagerService;
     }
 
-    public void completePackage() {
-        filePackagerService.scheduleStoreCompletePackageJobs();
-    }
-
     @Scheduled(initialDelayString = "${regards.file.packager.schedule.initial.delay.ms:"
                                     + DEFAULT_INITIAL_DELAY_IN_MS
                                     + "}",
                fixedDelayString = "${regards.file.packager.schedule.delay.ms:" + DEFAULT_SCHEDULING_DELAY_IN_MS + "}")
-    public void scheduleCompletePackage() {
+    private void scheduleDeleteFile() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, LOCK_ACTIONS);
-                lockingTaskExecutors.executeWithLock(completePackageTask,
+                lockingTaskExecutors.executeWithLock(fileDeletingTask,
                                                      new LockConfiguration(Instant.now(),
-                                                                           FilePackagerSchedulersLock.LOCK_ID,
-                                                                           Duration.ofSeconds(lockDurationInSeconds),
+                                                                           LOCK_ID,
+                                                                           Duration.ofSeconds(lockDuration),
                                                                            Duration.ZERO));
             } catch (Throwable e) {
-                handleSchedulingError(LOCK_ACTIONS, FilePackagerSchedulersLock.LOCK_TITLE, e);
+                handleSchedulingError(LOCK_ACTIONS, LOCK_TITLE, e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

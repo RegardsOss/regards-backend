@@ -16,24 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.file.packager.service.scheduler;
+package fr.cnes.regards.modules.file.packager.amqp;
+
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.modules.file.packager.dto.FileArchiveCompletionDto;
 
 /**
- * Centralize file-packager schedulers lock
+ * Event for a {link {@link FileArchiveCompletionDto} }
  *
  * @author Thibaud Michaudel
- **/
-public class FilePackagerSchedulersLock {
+ */
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
+public class FileArchiveCompletionEvent extends FileArchiveCompletionDto implements ISubscribable {
 
-    /**
-     * Common lock for {@link FilePackagingScheduler} and {@link CompletePackageScheduler} as they shouldn't be
-     * running at the same time to prevent package update conflicts.
-     */
-    public static final String LOCK_ID = "file-packager-file-packaging";
-
-    /**
-     * Common lock title for {@link FilePackagingScheduler} and {@link CompletePackageScheduler} as they shouldn't be
-     * running at the same time to prevent package update conflicts.
-     */
-    public static final String LOCK_TITLE = "File Packager file packaging scheduling";
+    public FileArchiveCompletionEvent(String storage, String checksum) {
+        super(storage, checksum);
+    }
 }

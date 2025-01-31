@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2025 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -27,9 +27,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-
 import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Repository for {@link FileInBuildingPackage}
@@ -42,6 +41,12 @@ public interface FileInBuildingPackageRepository extends JpaRepository<FileInBui
                                                                                     Pageable page);
 
     Page<FileInBuildingPackage> findByPackageReferenceId(Long packageId, Pageable page);
+
+    Page<FileInBuildingPackage> findByPackageReferenceIdIn(List<Long> packageIds, Pageable page);
+
+    Page<FileInBuildingPackage> findAllByStatusAndKeepInCacheUntilDateBefore(FileInBuildingPackageStatus status,
+                                                                             OffsetDateTime date,
+                                                                             Pageable page);
 
     /**
      * Set given error and status to the file with the given id
@@ -62,7 +67,7 @@ public interface FileInBuildingPackageRepository extends JpaRepository<FileInBui
     }
 
     /**
-     * Set given status to the given files
+     * Set given status to the given files, use the file current status as a security
      */
     @Modifying
     @Query("UPDATE FileInBuildingPackage f SET f.status = :statusToSet WHERE f.id IN :fileIds AND f.status = "
@@ -70,4 +75,12 @@ public interface FileInBuildingPackageRepository extends JpaRepository<FileInBui
     void updateFileStatusByIdInAndStatus(@Param("fileIds") List<Long> fileIds,
                                          @Param("statusToSet") FileInBuildingPackageStatus statusToSet,
                                          @Param("statusToUpdate") FileInBuildingPackageStatus statusToUpdate);
+
+    /**
+     * Set given status to the given files
+     */
+    @Modifying
+    @Query("UPDATE FileInBuildingPackage f SET f.status = :statusToSet WHERE f.id IN :fileIds")
+    void updateFileStatusByIdInAndStatus(@Param("fileIds") List<Long> fileIds,
+                                         @Param("statusToSet") FileInBuildingPackageStatus statusToSet);
 }

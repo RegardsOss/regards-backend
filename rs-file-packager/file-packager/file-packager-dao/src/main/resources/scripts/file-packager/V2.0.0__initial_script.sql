@@ -44,3 +44,6 @@ CREATE INDEX IF NOT EXISTS idx_file_in_building_package
 
 CREATE INDEX IF NOT EXISTS idx_file_in_building_package_storage_subdirectory_status
     ON t_file_in_building_package (storage, storage_subdirectory, status);
+
+CREATE INDEX IF NOT EXISTS ifx_file_in_building_package_status_keepincacheuntildate ON t_file_in_building_package
+    (status, keep_in_cache_until_date);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2025 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.file.packager.service;
 
+import com.google.common.base.Functions;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -27,17 +28,21 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.file.ZipUtils;
+import fr.cnes.regards.modules.file.packager.amqp.FileArchiveCompletionEvent;
 import fr.cnes.regards.modules.file.packager.dao.FileInBuildingPackageRepository;
 import fr.cnes.regards.modules.file.packager.dao.PackageReferenceRepository;
 import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackage;
 import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackageStatus;
 import fr.cnes.regards.modules.file.packager.domain.PackageReference;
 import fr.cnes.regards.modules.file.packager.domain.PackageReferenceStatus;
+import fr.cnes.regards.modules.file.packager.service.job.DeleteLocalFilesJob;
 import fr.cnes.regards.modules.file.packager.service.job.FileIdAndPath;
 import fr.cnes.regards.modules.file.packager.service.job.PackagerJobPriority;
 import fr.cnes.regards.modules.file.packager.service.job.StoreCompletePackageJob;
 import fr.cnes.regards.modules.file.packager.service.utils.FileStorageRequestReadyToProcessEventFactory;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
+import fr.cnes.regards.modules.fileaccess.dto.output.StorageResponseDto;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FileArchiveResponseEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileArchiveRequestEvent;
 import org.slf4j.Logger;
@@ -58,6 +63,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -82,9 +88,23 @@ import java.util.zip.ZipOutputStream;
  *     {@link fr.cnes.regards.modules.file.packager.service.job.StoreCompletePackageJob StoreCompletePackageJob} for
  *     all closed packages. The package will be updated and a {@link FileStorageRequestReadyToProcessEvent} will be
  *     sent to file-access to store the created archive using the method {@link #storeCompletePackage}.
- *     To be continued ...
+ *     </li>
+ *     <li> The handler {@link fr.cnes.regards.modules.file.packager.service.handler.StorageResponseEventHandler
+ *     StorageResponseEventHandler} will receive an event from the file access microservice when a package has been
+ *     stored. The package status will be updated in the packager database ans the file will will be marked to be
+ *     deleted. For each file that is now fully stored, an event {@link FileArchiveCompletionEvent} is sent to
+ *     file-catalog.
+ *     </li>
+ *     <li> The scheduler {@link fr.cnes.regards.modules.file.packager.service.scheduler.FileDeletingScheduler
+ *     FileDeletingScheduler} will shcedule a
+ *     {@link fr.cnes.regards.modules.file.packager.service.job.DeleteLocalFilesJob DeleteLocalFilesJob} to delete
+ *     the files in status {@link FileInBuildingPackageStatus#TO_LOCAL_DELETE TO_LOCAL_DELETE}
  *     </li>
  * </ul>
+ * <p>
+ *     At the end of the workflow, an archive containing the files has been physically stored and en entry containing
+ *     this package information is permanently stored in the file packager database. It can be used to retrieve the
+ *     archive and the files it contains.
  *
  * @author Thibaud Michaudel
  **/
@@ -404,6 +424,99 @@ public class FilePackagerService {
         fileInBuildingPackageRepository.updateFileStatusByIdInAndStatus(filesId,
                                                                         FileInBuildingPackageStatus.TO_LOCAL_DELETE,
                                                                         FileInBuildingPackageStatus.DELETING);
+    }
+
+    /**
+     * For each response, update the package status, send an event to file catalog for each
+     * file in this package and update those files status so they can be deleted by the {@link fr.cnes.regards.modules.file.packager.service.scheduler.FileDeletingScheduler}
+     *
+     * @param responses The events to be processed. Only the fields {@link StorageResponseEvent#getRequestId()
+     *                  requestId} and {@link StorageResponseEvent#getError() error} are relevant in this method
+     */
+    @MultitenantTransactional
+    public void updatePackageAfterCompletion(List<StorageResponseEvent> responses) {
+        List<PackageReference> packages = packageReferenceRepository.findAllByIdIn(responses.stream()
+                                                                                            .map(StorageResponseDto::getRequestId)
+                                                                                            .toList());
+        Map<Long, PackageReference> packagesById = packages.stream()
+                                                           .collect(Collectors.toMap(PackageReference::getId,
+                                                                                     Functions.identity()));
+        Map<String, List<Long>> successesIdByStorage = new HashMap<>();
+        List<PackageReference> updatedPackages = new ArrayList<>();
+        List<FileInBuildingPackage> updatedFiles = new ArrayList<>();
+
+        for (StorageResponseEvent response : responses) {
+            PackageReference packageReference = packagesById.get(response.getRequestId());
+            if (packageReference == null) {
+                // FIXME Review, qu'est-ce qu'on fait dans ce cas là ??
+                LOGGER.error("No package found with id {}. The event is ignored", response.getRequestId());
+            }
+            if (response.isRequestSuccessful()) {
+                packageReference.setStatus(PackageReferenceStatus.STORED);
+                successesIdByStorage.computeIfAbsent(packageReference.getStorage(), k -> new ArrayList<>())
+                                    .add(packageReference.getId());
+            } else {
+                packageReference.setStatus(PackageReferenceStatus.STORE_ERROR);
+                packageReference.setErrorCause(response.getError());
+                LOGGER.error("An error occurred in file-access while storing the package with id {} : {}",
+                             packageReference.getId(),
+                             response.getError());
+            }
+            updatedPackages.add(packageReference);
+        }
+
+        // Retrieve the files associated with the updated package to notify catalog and set the files to be deleted
+        for (String storage : successesIdByStorage.keySet()) {
+            Pageable page = PageRequest.of(0, pageSize);
+            do {
+                Page<FileInBuildingPackage> filesInPackage = fileInBuildingPackageRepository.findByPackageReferenceIdIn(
+                    successesIdByStorage.get(storage),
+                    page);
+                for (FileInBuildingPackage file : filesInPackage.getContent()) {
+                    // FIXME Review, c'est bourin d'envoyer un event par fichier mais c'est l'alternative la plus
+                    //  performante je pense, à discuter
+                    publisher.publish(new FileArchiveCompletionEvent(storage, file.getChecksum()));
+                    file.setStatus(FileInBuildingPackageStatus.TO_LOCAL_DELETE);
+                    updatedFiles.add(file);
+                }
+                page = filesInPackage.nextPageable();
+            } while (page.isPaged());
+        }
+
+        // Update the packages and files (this should not be required but it's done just to be sure).
+        packageReferenceRepository.saveAll(updatedPackages);
+        fileInBuildingPackageRepository.saveAll(updatedFiles);
+    }
+
+    @MultitenantTransactional
+    public void scheduleDeleteLocalFilesJobs() {
+        Pageable page = PageRequest.of(0, pageSize);
+        do {
+            // Retrieve all the files to delete
+            Page<FileInBuildingPackage> filesToDelete = fileInBuildingPackageRepository.findAllByStatusAndKeepInCacheUntilDateBefore(
+                FileInBuildingPackageStatus.TO_LOCAL_DELETE,
+                OffsetDateTime.now(),
+                page);
+            // Configure the deletion job for the current page of files
+            Set<JobParameter> parameters = Sets.newHashSet();
+            parameters.add(new JobParameter(DeleteLocalFilesJob.FILES_ID_AND_PATH_PARAMETER,
+                                            filesToDelete.get()
+                                                         .map(fileToDelete -> new FileIdAndPath(fileToDelete.getId(),
+                                                                                                fileToDelete.getFileCachePath()))
+                                                         .toList()));
+            jobInfoService.createAsQueued(new JobInfo(false,
+                                                      PackagerJobPriority.DELETE_LOCAL_FILES_JOB,
+                                                      parameters,
+                                                      authResolver.getUser(),
+                                                      DeleteLocalFilesJob.class.getName()));
+
+            // Update the files status
+            fileInBuildingPackageRepository.updateFileStatusByIdInAndStatus(filesToDelete.get()
+                                                                                         .map(FileInBuildingPackage::getId)
+                                                                                         .toList(),
+                                                                            FileInBuildingPackageStatus.DELETING);
+            page = filesToDelete.nextPageable();
+        } while (page.isPaged());
     }
 
     private record StorageAndPath(String storage,

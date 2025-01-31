@@ -62,6 +62,10 @@
             <groupId>fr.cnes.regards.modules.filepackager</groupId>
             <artifactId>file-packager-domain</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.filepackager</groupId>
+            <artifactId>file-packager-amqp</artifactId>
+        </dependency>
 
         <!-- Regards -->
         <dependency>

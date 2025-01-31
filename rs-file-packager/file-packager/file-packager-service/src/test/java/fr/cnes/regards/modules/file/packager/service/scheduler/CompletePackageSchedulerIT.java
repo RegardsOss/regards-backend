@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2025 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,12 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.file.packager.service;
+package fr.cnes.regards.modules.file.packager.service.scheduler;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.modules.file.packager.dao.PackageReferenceRepository;
 import fr.cnes.regards.modules.file.packager.domain.PackageReference;
 import fr.cnes.regards.modules.file.packager.domain.PackageReferenceStatus;
+import fr.cnes.regards.modules.file.packager.service.FilePackagerService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;

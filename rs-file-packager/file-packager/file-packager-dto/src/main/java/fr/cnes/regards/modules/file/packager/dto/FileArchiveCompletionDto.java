@@ -16,24 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.file.packager.service.scheduler;
+package fr.cnes.regards.modules.file.packager.dto;
 
 /**
- * Centralize file-packager schedulers lock
+ * Information about a file whose archive has been fully stored
  *
  * @author Thibaud Michaudel
- **/
-public class FilePackagerSchedulersLock {
+ */
+public class FileArchiveCompletionDto {
 
-    /**
-     * Common lock for {@link FilePackagingScheduler} and {@link CompletePackageScheduler} as they shouldn't be
-     * running at the same time to prevent package update conflicts.
-     */
-    public static final String LOCK_ID = "file-packager-file-packaging";
+    private String storage;
 
-    /**
-     * Common lock title for {@link FilePackagingScheduler} and {@link CompletePackageScheduler} as they shouldn't be
-     * running at the same time to prevent package update conflicts.
-     */
-    public static final String LOCK_TITLE = "File Packager file packaging scheduling";
+    private String checksum;
+
+    public FileArchiveCompletionDto(String storage, String checksum) {
+        this.storage = storage;
+        this.checksum = checksum;
+    }
+
+    public String getStorage() {
+        return storage;
+    }
+
+    public String getChecksum() {
+        return checksum;
+    }
 }

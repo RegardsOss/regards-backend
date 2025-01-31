@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2025 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -43,6 +43,8 @@ public interface PackageReferenceRepository extends JpaRepository<PackageReferen
                                                                                PackageReferenceStatus status);
 
     Page<PackageReference> findAllByStatus(PackageReferenceStatus status, Pageable pageable);
+
+    List<PackageReference> findAllByIdIn(List<Long> ids);
 
     /**
      * Set given status to all packages older than the given date.
