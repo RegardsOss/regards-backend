@@ -29,6 +29,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -76,7 +77,18 @@ public interface IFileReferenceRepository
 
     Set<FileReference> findByLocationStorageAndLocationFileArchiveStatus(String storage,
                                                                          FileArchiveStatus fileArchiveStatus);
-    
+
     Set<FileReference> findByLocationFileArchiveStatusAndLocationUrlIn(FileArchiveStatus fileArchiveStatus,
                                                                        Set<String> urls);
+
+    @Query("UPDATE FileReference f SET f.location.fileArchiveStatus = :status "
+           + "WHERE f.location.storage = :storage AND f.metaInfo.checksum IN :checksums")
+    @Modifying
+    void updateArchiveStatusByStorageAndChecksum(@Param("storage") String storage,
+                                                 @Param("checksums") List<String> checksums,
+                                                 @Param("status") FileArchiveStatus status);
+
+    default void updateArchiveStatusStoredByStorageAndChecksumIn(String storage, List<String> checksums) {
+        updateArchiveStatusByStorageAndChecksum(storage, checksums, FileArchiveStatus.STORED);
+    }
 }

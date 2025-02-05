@@ -104,7 +104,15 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>hateoas-regards</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+            <artifactId>plugins-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.filepackager</groupId>
+            <artifactId>file-packager-amqp</artifactId>
+        </dependency>
+        
         <!-- External -->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
@@ -126,10 +134,6 @@
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-            <artifactId>plugins-domain</artifactId>
         </dependency>
     </dependencies>
 </project>

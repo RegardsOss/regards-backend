@@ -317,6 +317,14 @@ public class FileReferenceService {
     }
 
     /**
+     * Update the status of file references with given storage/checksum to STORED
+     */
+    @MultitenantTransactional
+    public void updateFileReferenceStored(String storage, List<String> checksums) {
+        fileRefRepo.updateArchiveStatusStoredByStorageAndChecksumIn(storage, checksums);
+    }
+
+    /**
      * Store modification of given file
      */
     public void store(FileReference updatedFile) {
