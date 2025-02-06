@@ -18,14 +18,22 @@
  */
 package fr.cnes.regards.modules.ltamanager.service.submission.creation.amqp;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.amqp.batch.dto.ResponseMessage;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.modules.ltamanager.amqp.input.SubmissionRequestDtoEvent;
 import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseDto;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.service.submission.creation.SubmissionCreateService;
+import io.vavr.control.Try;
+import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -105,4 +113,20 @@ public class SubmissionCreateEventHandler
         return errors;
     }
 
+    @Override
+    public ResponseMessage<? extends ISubscribable> buildDeniedResponseForNotConvertedMessage(Message message, String errorMessage) {
+        try {
+            // Correlation identifier is mandatory to return error
+            String correlationId = JsonPath.read(new String(message.getBody()), "$.correlationId");
+            // Extract productId value if path $.productId exists
+            // product identifier is not mandatory to return error
+            // if exception is raised, productId will be null using Try vavr getOrElse method
+            String productId = Try.of(() -> JsonPath.read(new String(message.getBody()), "$.productId").toString()).getOrElse((String) null);
+            return ResponseMessage.buildResponse(
+                    new SubmissionResponseDtoEvent(correlationId, SubmissionResponseStatus.DENIED, productId, null,
+                            null, errorMessage, null, null));
+        } catch (PathNotFoundException e) {
+            return ResponseMessage.buildEmptyResponse();
+        }
+    }
 }
