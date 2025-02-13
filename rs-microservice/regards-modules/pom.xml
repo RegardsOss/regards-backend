@@ -63,6 +63,7 @@
         <module>tenant-settings</module>
         <module>session</module>
         <module>tinyurl</module>
+        <module>retry</module>
     </modules>
 
 </project>

@@ -86,6 +86,10 @@
             <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
             <artifactId>jobs-service</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.retry</groupId>
+            <artifactId>regards-retry</artifactId>
+        </dependency>
         <!-- COTS -->
         <dependency>
             <groupId>org.springframework.retry</groupId>

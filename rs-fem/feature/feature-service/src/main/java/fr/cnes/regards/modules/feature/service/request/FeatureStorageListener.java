@@ -24,9 +24,9 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
-import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import org.hibernate.exception.LockAcquisitionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -50,7 +49,6 @@ import java.util.stream.Collectors;
  * @author Sébastien Binda
  */
 @Component
-@EnableRetry
 public class FeatureStorageListener implements IStorageRequestListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureStorageListener.class);
@@ -173,15 +171,16 @@ public class FeatureStorageListener implements IStorageRequestListener {
         LOGGER.error("Too many retries for optimistic lock. Optimistic lock is maybe not the right solution here. "
                      + "Request are now considered as storage error. Retry requests later.", e);
         List<RequestResultInfoDto> simulatedErrors = requests.stream()
-                .flatMap(r -> r.getSuccessRequests().stream())
-                .map(r -> RequestResultInfoDto.build(r.getGroupId(),
-                                                     r.getRequestChecksum(),
-                                                     r.getRequestStorage(),
-                                                     r.getRequestStorePath(),
-                                                     r.getRequestOwners(),
-                                                     r.getResultFile(),
-                                                     "Internal error cause by too much concurrency. Please retry "
-                                                     + "request later")).toList();
+                                                             .flatMap(r -> r.getSuccessRequests().stream())
+                                                             .map(r -> RequestResultInfoDto.build(r.getGroupId(),
+                                                                                                  r.getRequestChecksum(),
+                                                                                                  r.getRequestStorage(),
+                                                                                                  r.getRequestStorePath(),
+                                                                                                  r.getRequestOwners(),
+                                                                                                  r.getResultFile(),
+                                                                                                  "Internal error cause by too much concurrency. Please retry "
+                                                                                                  + "request later"))
+                                                             .toList();
         this.featureRequestService.handleStorageError(simulatedErrors);
     }
 

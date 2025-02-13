@@ -150,6 +150,9 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
     protected IFeatureEntityRepository featureRepo;
 
     @Autowired
+    IFeatureEntityWithDisseminationRepository featureEntityWithDisseminationRepository;
+
+    @Autowired
     protected IFeatureUpdateRequestRepository featureUpdateRequestRepo;
 
     @Autowired
@@ -536,13 +539,21 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
     protected FeatureDisseminationInfo createFeatureDisseminationInfo(FeatureUniformResourceName productUrn,
                                                                       String recipientLabel,
                                                                       boolean ackRequired) {
-        return new FeatureDisseminationInfo(new FeatureUpdateDisseminationRequest(productUrn,
-                                                                                  recipientLabel,
-                                                                                  FeatureUpdateDisseminationInfoType.PUT,
-                                                                                  OffsetDateTime.now(),
-                                                                                  ackRequired,
-                                                                                  false));
+        return new FeatureDisseminationInfo(createFeatureUpdateDisseminationRequest(productUrn,
+                                                                                    recipientLabel,
+                                                                                    ackRequired));
 
+    }
+
+    protected FeatureUpdateDisseminationRequest createFeatureUpdateDisseminationRequest(FeatureUniformResourceName productUrn,
+                                                                                        String recipientLabel,
+                                                                                        boolean ackRequired) {
+        return new FeatureUpdateDisseminationRequest(productUrn,
+                                                     recipientLabel,
+                                                     FeatureUpdateDisseminationInfoType.PUT,
+                                                     OffsetDateTime.now(),
+                                                     ackRequired,
+                                                     false);
     }
 
     public boolean initDefaultNotificationSettings() {

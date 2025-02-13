@@ -34,11 +34,13 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureUpdateDisseminationRequestRepository;
 import fr.cnes.regards.modules.feature.domain.AbstractFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.IFeatureRequestToSchedule;
 import fr.cnes.regards.modules.feature.domain.request.*;
+import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.DisseminationAckEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
@@ -61,6 +63,7 @@ import fr.cnes.regards.modules.notifier.dto.out.RecipientStatus;
 import org.assertj.core.util.Lists;
 import org.awaitility.Awaitility;
 import org.hibernate.exception.LockAcquisitionException;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -73,6 +76,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -81,7 +85,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -117,6 +121,9 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
 
     @Autowired
     private Gson gson;
+
+    @Autowired
+    private IFeatureUpdateDisseminationRequestRepository featureUpdateDisseminationRequestRepository;
 
     @Value("${regards.fem.requests.retry.max.entity.per.page}")
     private int retryPageSize;
@@ -1358,6 +1365,78 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         checkKey(1, "updatedProducts", sessionStepProperties);
         checkKey(0, "runningUpdateRequests", sessionStepProperties);
         checkKey(0, "inErrorUpdateRequests", sessionStepProperties);
+    }
+
+    @Test
+    public void testConcurrentModificationDuringDissemination() throws Exception {
+        // Prepare mock data
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        List<String> urns = List.of("URN:FEATURE:DATA:IAS:dd0ece16-1aef-3492-b1e7-dc205bcd6b37:V1",
+                                    "URN:FEATURE:DATA:IAS:dd0ece16-1aef-3492-b1e7-dc205bcd6b38:V1",
+                                    "URN:FEATURE:DATA:IAS:dd0ece16-1aef-3492-b1e7-dc205bcd6b39:V1",
+                                    "URN:FEATURE:DATA:IAS:dd0ece16-1aef-3492-b1e7-dc205bcd6b40:V1",
+                                    "URN:FEATURE:DATA:IAS:dd0ece16-1aef-3492-b1e7-dc205bcd6b41:V1");
+        for (String urn : urns) {
+            createFeatureWithUrn(urn);
+        }
+        for (String urn : urns) {
+            launchTwoDisseminationRequestForProduct(executorService, urn);
+        }
+        executorService.shutdown();
+    }
+
+    @NotNull
+    private void createFeatureWithUrn(String urn) {
+        FeatureEntity featureEntity = FeatureEntity.build("sessionOwner",
+                                                          "session",
+                                                          Feature.build("bob",
+                                                                        "owner",
+                                                                        FeatureUniformResourceName.fromString(urn),
+                                                                        null,
+                                                                        EntityType.DATA,
+                                                                        "model"),
+                                                          null,
+                                                          "model");
+        featureRepo.save(featureEntity);
+    }
+
+    private void launchTwoDisseminationRequestForProduct(ExecutorService executorService, String urn)
+        throws InterruptedException, ExecutionException {
+
+        FeatureUpdateDisseminationRequest request = createFeatureUpdateDisseminationRequest(FeatureUniformResourceName.fromString(
+            urn), "recipient", false);
+
+        FeatureUpdateDisseminationRequest request1 = createFeatureUpdateDisseminationRequest(FeatureUniformResourceName.fromString(
+            urn), "recipient", false);
+        featureUpdateDisseminationRequestRepository.save(request);
+
+        Page<FeatureUpdateDisseminationRequest> page = new PageImpl<>(List.of(request));
+
+        // First thread that call the handleFeatureUpdateDisseminationRequests method
+        Future<?> disseminationTask = executorService.submit(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            featureUpdateDisseminationService.handleFeatureUpdateDisseminationRequests(page);
+        });
+
+        // Second thread that simulate a concurrent update to the feature entity
+        Future<?> updateTask = executorService.submit(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            FeatureEntity entityToUpdate = featureEntityWithDisseminationRepository.findByUrn(FeatureUniformResourceName.fromString(
+                urn));
+            entityToUpdate.getDisseminationsInfo().add(new FeatureDisseminationInfo(request1));
+            featureEntityWithDisseminationRepository.save(entityToUpdate);
+        });
+
+        // Wait for both threads to complete
+        disseminationTask.get();
+        updateTask.get();
+
+        FeatureEntity foundFeature = featureEntityWithDisseminationRepository.findByUrn(FeatureUniformResourceName.fromString(
+            urn));
+        Assertions.assertNotNull(foundFeature, "The feature should exist");
+        Assertions.assertEquals(1,
+                                foundFeature.getDisseminationsInfo().size(),
+                                "There should be only 1 dissemination info");
     }
 
     // ---------------------

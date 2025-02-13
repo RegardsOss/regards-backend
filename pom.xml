@@ -731,6 +731,11 @@
                 <artifactId>tinyurl</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules.retry</groupId>
+                <artifactId>regards-retry</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <!-- Regards Plugins -->
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.plugins</groupId>

@@ -48,12 +48,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -68,7 +68,6 @@ import java.util.stream.Collectors;
  * @author Léo Mieulet
  */
 @Component
-@EnableRetry
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class FeatureUpdateDisseminationService {
 
@@ -195,9 +194,9 @@ public class FeatureUpdateDisseminationService {
     }
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
-    @Retryable(value = { OptimisticLockingFailureException.class, LockAcquisitionException.class },
-               maxAttempts = 10,
-               backoff = @Backoff(delay = 1000))
+    @Retryable(value = { OptimisticLockingFailureException.class,
+                         LockAcquisitionException.class,
+                         DataIntegrityViolationException.class }, maxAttempts = 5, backoff = @Backoff(delay = 1000))
     public void handleFeatureUpdateDisseminationRequests(Page<FeatureUpdateDisseminationRequest> results) {
         SessionFeatureDisseminationInfos sessionInfos = new SessionFeatureDisseminationInfos();
 
@@ -233,10 +232,21 @@ public class FeatureUpdateDisseminationService {
     }
 
     @Recover
-    public void recoverOptimisticRetries(Exception e, Page<FeatureUpdateDisseminationRequest> results)
+    public void recoverHandleFeatureUpdateDisseminationRequests(Exception e,
+                                                                Page<FeatureUpdateDisseminationRequest> results)
         throws Exception {
-        LOGGER.error("[FEATURE UPDATE DISSEMINATION] Too many retries for optimistic lock. Optimistic lock is maybe "
-                     + "not the right solution here", e);
+        if (e instanceof OptimisticLockingFailureException || e instanceof LockAcquisitionException) {
+            LOGGER.error(
+                "[FEATURE UPDATE DISSEMINATION] Too many retries for optimistic lock. Optimistic lock is maybe "
+                + "not the right solution here",
+                e);
+        } else if (e instanceof DataIntegrityViolationException) {
+            // See Jira-897, dissemination info can be occasionally duplicated.
+            LOGGER.error("[FEATURE UPDATE DISSEMINATION] Too many retry with DataIntegrityViolationException thrown.",
+                         e);
+        } else {
+            LOGGER.error("[FEATURE UPDATE DISSEMINATION] Unexpected exception occurred", e);
+        }
         throw e;
     }
 
