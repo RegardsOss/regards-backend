@@ -6,12 +6,10 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.FailedAfter1sJob;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.SpringJob;
+import fr.cnes.regards.framework.modules.jobs.domain.*;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
+import fr.cnes.regards.framework.modules.jobs.metric.JobMetricService;
 import fr.cnes.regards.framework.modules.jobs.task.JobInfoTaskScheduler;
 import fr.cnes.regards.framework.modules.jobs.test.JobTestConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -20,10 +18,12 @@ import org.assertj.core.util.Lists;
 import org.awaitility.Awaitility;
 import org.junit.*;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -33,6 +33,8 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
+
+import static org.mockito.Mockito.verify;
 
 /**
  * Test of Jobs executions (status, pool, spring autowiring, ...)
@@ -95,6 +97,12 @@ public class JobServiceIT {
     @Autowired
     private Gson gson;
 
+    @MockBean
+    private JobMetricService jobMetricServiceMock;
+
+    @Value("${spring.application.name}")
+    private String microservice;
+
     @Before
     public void setUp() {
         GsonUtil.setGson(gson);
@@ -129,6 +137,18 @@ public class JobServiceIT {
         });
         Assert.assertTrue(runnings.contains(jobInfoId));
         Assert.assertTrue(succeededs.contains(jobInfoId));
+
+        verify(jobMetricServiceMock, Mockito.times(1)).incrementJobCreation(WaiterJob.class.getName(),
+                                                                            TENANT,
+                                                                            microservice);
+        verify(jobMetricServiceMock, Mockito.times(1)).incrementRunningJob(WaiterJob.class.getName(),
+                                                                           TENANT,
+                                                                           microservice);
+        verify(jobMetricServiceMock, Mockito.times(1)).incrementJobDone(WaiterJob.class.getName(),
+                                                                        TENANT,
+                                                                        microservice,
+                                                                        JobStatus.SUCCEEDED.toString());
+
     }
 
     @Test
@@ -147,6 +167,17 @@ public class JobServiceIT {
 
         Assert.assertFalse(succeededs.contains(jobInfoId));
         Assert.assertTrue(aborteds.contains(jobInfoId));
+
+        verify(jobMetricServiceMock, Mockito.times(1)).incrementJobCreation(WaiterJob.class.getName(),
+                                                                            TENANT,
+                                                                            microservice);
+        verify(jobMetricServiceMock, Mockito.times(1)).incrementRunningJob(WaiterJob.class.getName(),
+                                                                           TENANT,
+                                                                           microservice);
+        verify(jobMetricServiceMock, Mockito.times(1)).incrementJobDone(WaiterJob.class.getName(),
+                                                                        TENANT,
+                                                                        microservice,
+                                                                        JobStatus.ABORTED.toString());
     }
 
     @Test
@@ -170,6 +201,17 @@ public class JobServiceIT {
         Assert.assertTrue(runnings.contains(jobInfoId));
         Assert.assertFalse(succeededs.contains(jobInfoId));
         Assert.assertTrue(aborteds.contains(jobInfoId));
+
+        verify(jobMetricServiceMock, Mockito.times(1)).incrementJobCreation(WaiterJob.class.getName(),
+                                                                            TENANT,
+                                                                            microservice);
+        verify(jobMetricServiceMock, Mockito.times(1)).incrementRunningJob(WaiterJob.class.getName(),
+                                                                           TENANT,
+                                                                           microservice);
+        verify(jobMetricServiceMock, Mockito.times(1)).incrementJobDone(WaiterJob.class.getName(),
+                                                                        TENANT,
+                                                                        microservice,
+                                                                        JobStatus.ABORTED.toString());
     }
 
     @Test
@@ -190,6 +232,17 @@ public class JobServiceIT {
         Assert.assertTrue(runnings.contains(failedJobId));
         Assert.assertFalse(succeededs.contains(failedJobId));
         Assert.assertTrue(faileds.contains(failedJobId));
+
+        verify(jobMetricServiceMock, Mockito.times(1)).incrementJobCreation(FailedAfter1sJob.class.getName(),
+                                                                            TENANT,
+                                                                            microservice);
+        verify(jobMetricServiceMock, Mockito.times(1)).incrementRunningJob(FailedAfter1sJob.class.getName(),
+                                                                           TENANT,
+                                                                           microservice);
+        verify(jobMetricServiceMock, Mockito.times(1)).incrementJobDone(FailedAfter1sJob.class.getName(),
+                                                                        TENANT,
+                                                                        microservice,
+                                                                        JobStatus.FAILED.toString());
     }
 
     @Test

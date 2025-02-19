@@ -61,6 +61,8 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
 
     public static final String ERROR_CREATE_JOB_INFO = "An error occurred while creating the JobInfo...";
 
+    private static final Pageable DEFAULT_PAGEABLE = Pageable.ofSize(100);
+
     private static final Logger LOGGER = LoggerFactory.getLogger(JobInfoService.class);
 
     @Autowired
@@ -323,9 +325,8 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     public void requeueOldToBeRunJobs() {
         OffsetDateTime tooOldDate = OffsetDateTime.now().minusMinutes(toBeRunExpirationMinutes);
         List<JobInfo> jobInfos = jobInfoRepository.findAllByStatusStatusAndStatusStatusDateLessThan(JobStatus.TO_BE_RUN,
-                                                                                                         tooOldDate,
-                                                                                                         Pageable.ofSize(
-                                                                                                             100));
+                                                                                                    tooOldDate,
+                                                                                                    DEFAULT_PAGEABLE);
         if (!jobInfos.isEmpty()) {
             LOGGER.warn("Requeue {} jobs in TO_BE_RUN status for too long.", jobInfos.size());
             jobInfos.forEach(jobInfo -> jobInfo.updateStatus(JobStatus.QUEUED));

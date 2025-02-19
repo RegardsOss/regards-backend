@@ -25,11 +25,14 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
+import fr.cnes.regards.framework.modules.jobs.metric.JobMetricService;
+import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.FileSystemUtils;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
@@ -83,22 +86,30 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
+    private final IWorkspaceService workspaceService;
+
     private final BiMap<JobInfo, RunnableFuture<Void>> jobsMap;
 
     private final IPublisher publisher;
 
     private final Executor singleThreadExecutor = Executors.newSingleThreadExecutor();
 
+    private JobMetricService metricService;
+
     public JobThreadPoolExecutor(int poolSize,
                                  IJobInfoService jobInfoService,
                                  BiMap<JobInfo, RunnableFuture<Void>> jobsMap,
                                  IRuntimeTenantResolver runtimeTenantResolver,
-                                 IPublisher publisher) {
+                                 IWorkspaceService workspaceService,
+                                 IPublisher publisher,
+                                 JobMetricService metricService) {
         super(poolSize, poolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), THREAD_FACTORY);
         this.jobInfoService = jobInfoService;
         this.jobsMap = jobsMap;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.workspaceService = workspaceService;
         this.publisher = publisher;
+        this.metricService = metricService;
     }
 
     private JobInfo getJobInfo(Runnable r) {
@@ -130,6 +141,14 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         runtimeTenantResolver.forceTenant(jobInfo.getTenant());
         jobInfo.updateStatus(JobStatus.RUNNING);
         jobInfo.setLastHeartbeatDate(OffsetDateTime.now());
+
+        try {
+            metricService.incrementRunningJob(jobInfo.getClassName(),
+                                              jobInfo.getTenant(),
+                                              workspaceService.getMicroserviceWorkspace().getFileName().toString());
+        } catch (IOException e) {
+            LOGGER.error("Error while getting the workspace service, on tenant: {}", jobInfo.getTenant(), e);
+        }
         jobInfoService.save(jobInfo);
         publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.RUNNING, jobInfo.getClassName()));
         super.beforeExecute(t, r);
@@ -170,7 +189,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
                         jobInfo.updateStatus(JobStatus.FAILED);
                         jobInfo.getStatus().setStackTrace(sw.toString());
                         jobInfoService.save(jobInfo);
-
+                        incrementCounterJobsDone(jobInfo, JobStatus.FAILED.toString());
                         publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED, jobInfo.getClassName()));
                     });
                 }
@@ -183,7 +202,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
             jobInfo.updateStatus(JobStatus.SUCCEEDED);
             jobInfo.setResult(jobInfo.getJob().getResult());
             jobInfoService.save(jobInfo);
-
+            incrementCounterJobsDone(jobInfo, JobStatus.SUCCEEDED.toString());
             publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.SUCCEEDED, jobInfo.getClassName()));
         }
         // Delete complete workspace dir if job has one
@@ -201,8 +220,20 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
             LOGGER.debug("Job aborted");
             jobInfo.updateStatus(JobStatus.ABORTED);
             jobInfoService.save(jobInfo);
+            incrementCounterJobsDone(jobInfo, JobStatus.ABORTED.toString());
             publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED, jobInfo.getClassName()));
         });
+    }
+
+    private void incrementCounterJobsDone(JobInfo jobInfo, String status) {
+        try {
+            metricService.incrementJobDone(jobInfo.getClassName(),
+                                           jobInfo.getTenant(),
+                                           workspaceService.getMicroserviceWorkspace().getFileName().toString(),
+                                           status);
+        } catch (IOException e) {
+            LOGGER.error("Error while getting the workspace service, on tenant: {}", jobInfo.getTenant(), e);
+        }
     }
 
 }

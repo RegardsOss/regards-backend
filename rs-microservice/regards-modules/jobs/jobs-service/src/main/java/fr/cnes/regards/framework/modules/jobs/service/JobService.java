@@ -19,6 +19,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceException;
+import fr.cnes.regards.framework.modules.jobs.metric.JobMetricService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
@@ -35,6 +36,7 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -90,6 +92,8 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
 
     private LockService lockService;
 
+    private JobMetricService metricService;
+
     // Boolean permitting to determine if method manage() can pull jobs and executing them
     private boolean canManage = true;
 
@@ -100,7 +104,8 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                       ISubscriber subscriber,
                       IPublisher publisher,
                       AutowireCapableBeanFactory beanFactory,
-                      LockService lockService) {
+                      LockService lockService,
+                      JobMetricService metricService) {
         this.workspaceService = workspaceService;
         this.jobInfoService = jobInfoService;
         this.tenantResolver = tenantResolver;
@@ -109,6 +114,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
         this.publisher = publisher;
         this.beanFactory = beanFactory;
         this.lockService = lockService;
+        this.metricService = metricService;
     }
 
     private static void printStackTrace(JobStatusInfo statusInfo, Exception e) {
@@ -134,7 +140,13 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
      */
     @Override
     public void afterPropertiesSet() {
-        threadPool = new JobThreadPoolExecutor(poolSize, jobInfoService, jobsMap, runtimeTenantResolver, publisher);
+        threadPool = new JobThreadPoolExecutor(poolSize,
+                                               jobInfoService,
+                                               jobsMap,
+                                               runtimeTenantResolver,
+                                               workspaceService,
+                                               publisher,
+                                               metricService);
     }
 
     @Override
@@ -307,6 +319,10 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
             // Initiate first heart beat of job
             jobInfo.setLastHeartbeatDate(OffsetDateTime.now());
             jobsMap.put(jobInfo, future);
+            metricService.incrementJobCreation(jobInfo.getClassName(),
+                                               jobInfo.getTenant(),
+                                               workspaceService.getMicroserviceWorkspace().getFileName().toString());
+
             return future;
         } catch (RejectedExecutionException e) {
             // ThreadPool has been shutted down (maybe due to a refresh)
@@ -325,6 +341,8 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
         } catch (JobParameterInvalidException e) {
             LOGGER.error("Invalid parameter", e);
             manageJobInstantiationError(jobInfo, e);
+        } catch (IOException e) {
+            LOGGER.error("Error while getting microservice file path name");
         } finally {
             runtimeTenantResolver.clearTenant();
             abortedBeforeStartedJobs.invalidate(jobInfo.getId());
