@@ -124,7 +124,7 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                                           .build();
     }
 
-    private static S3AsyncClient createS3Client(StorageConfig config) {
+    private static S3AsyncClient createS3Client(StorageConfigDto config) {
         AwsBasicCredentials credentials = AwsBasicCredentials.create(config.getKey(), config.getSecret());
         return S3AsyncClient.builder()
                             .endpointOverride(URI.create(config.getEndpoint()))

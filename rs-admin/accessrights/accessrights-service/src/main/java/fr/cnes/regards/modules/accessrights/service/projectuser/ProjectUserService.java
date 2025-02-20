@@ -104,9 +104,6 @@ public class ProjectUserService implements IProjectUserService {
 
     private final IPublisher publisher;
 
-    @Autowired
-    private INotificationClient notificationClient;
-
     /**
      * Configured instance administrator user email/login
      */

@@ -128,13 +128,12 @@ public class S3HighLevelReactiveClientTest {
 
     @Before
     public void init() {
-        config = StorageConfig.builder(s3Host, region, key, secret)
-                              .bucket(bucket)
-                              .rootPath(rootPath)
-                              .maxRetriesNumber(3)
-                              .retryBackOffBaseDuration(1)
-                              .retryBackOffMaxDuration(2)
-                              .build();
+        config = new StorageConfigBuilder(s3Host, region, key, secret).bucket(bucket)
+                                                                      .rootPath(rootPath)
+                                                                      .maxRetriesNumber(3)
+                                                                      .retryBackOffBaseDuration(1)
+                                                                      .retryBackOffMaxDuration(2)
+                                                                      .build();
         client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024, 10, 50);
     }
 
