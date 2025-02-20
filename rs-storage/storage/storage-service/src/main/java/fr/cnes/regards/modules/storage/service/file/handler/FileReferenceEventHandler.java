@@ -130,6 +130,7 @@ public class FileReferenceEventHandler
      */
     private void handleFileStored(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
+
         if (request.isPresent()) {
             Optional<FileReference> oFileRef = fileReferenceService.searchWithOwners(event.getLocation().getStorage(),
                                                                                      event.getMetaInfo().getChecksum());

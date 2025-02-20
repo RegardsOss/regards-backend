@@ -57,6 +57,9 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.*;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+
 /**
  * Test class
  *
@@ -138,7 +141,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
                             1,
                             stoReqService.search(ONLINE_CONF_LABEL, checksum).size());
         // Now check for event published
-        Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(this.publisher, Mockito.times(0)).publish(any(FileReferenceEvent.class));
 
         // SImulate job schedule
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
@@ -153,7 +156,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
                           stoReqService.search(ONLINE_CONF_LABEL, checksum).isEmpty());
         // Now check for event published
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(this.publisher, Mockito.times(1)).publish(any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference event STORED should be published",
                             FileReferenceEventType.STORED,
@@ -297,7 +300,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
         Assert.assertTrue("New request should be in state " + FileRequestStatus.DELAYED,
                           newRequests.stream().allMatch(r -> r.getStatus() == FileRequestStatus.DELAYED));
         // Now check for event published
-        Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(this.publisher, Mockito.times(0)).publish(any(FileReferenceEvent.class));
 
         // Simulate job schedule -> Run first request
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
@@ -368,7 +371,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
         Assert.assertTrue("there should be on request in DELAYED status",
                           requests.stream().anyMatch(r -> r.getStatus() == FileRequestStatus.DELAYED));
         // Now check for event published
-        Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(this.publisher, Mockito.times(0)).publish(any(FileReferenceEvent.class));
 
         // Simulate job schedule for the first storage request
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
@@ -399,7 +402,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
                           stoReqService.search(ONLINE_CONF_LABEL, checksum).isEmpty());
         // Now check for event published
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(this.publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(this.publisher, Mockito.times(2)).publish(any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference event STORED should be published",
                             FileReferenceEventType.STORED,
@@ -506,7 +509,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
                             storageReqs2.stream().findFirst().get().getGroupIds().stream().findFirst().get());
 
         // Now check for event published
-        Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(this.publisher, Mockito.times(0)).publish(any(FileReferenceEvent.class));
 
         // Simulate job schedule
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
@@ -519,11 +522,15 @@ public class StoreFileEventIT extends AbstractStorageIT {
         Assert.assertTrue("File request should be deleted", stoReqService.search(ONLINE_CONF_LABEL, cs2).isEmpty());
         // Now check for event published
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(this.publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(this.publisher, Mockito.times(2)).publish(any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference event STORED should be published",
                             FileReferenceEventType.STORED,
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
+        Mockito.verify(this.storageMetricService, Mockito.times(2))
+               .incrementStorageRequests(eq(ONLINE_CONF_LABEL), eq(runtimeTenantResolver.getTenant()));
+        Mockito.verify(this.storageMetricService, Mockito.times(2))
+               .incrementStorageRequestSuccess(eq(ONLINE_CONF_LABEL), eq(runtimeTenantResolver.getTenant()));
     }
 
     /**
@@ -555,7 +562,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
                            fileRefService.search(storageDestination, checksum).isPresent());
         // Now check for event published
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(this.publisher, Mockito.times(1)).publish(any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference event STORED should be published",
                             FileReferenceEventType.STORE_ERROR,
@@ -615,7 +622,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
         Assert.assertFalse("File should not be referenced",
                            fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         // Now check for event published
-        Mockito.verify(publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(publisher, Mockito.times(0)).publish(any(FileReferenceEvent.class));
         Mockito.clearInvocations(publisher);
 
         // Simulate job schedule
@@ -633,7 +640,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
                             FileRequestStatus.ERROR,
                             stoReqService.search(ONLINE_CONF_LABEL, checksum).stream().findFirst().get().getStatus());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(this.publisher, Mockito.times(1)).publish(any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Assert.assertEquals("File reference event STORED should be published",
                             FileReferenceEventType.STORE_ERROR,
@@ -655,6 +662,11 @@ public class StoreFileEventIT extends AbstractStorageIT {
         Assert.assertEquals("There should be one request in TO_DO state",
                             1L,
                             storeRequests.stream().filter(r -> r.getStatus() == FileRequestStatus.TO_DO).count());
+
+        Mockito.verify(this.storageMetricService, Mockito.times(1))
+               .incrementStorageRequests(eq(ONLINE_CONF_LABEL), eq(runtimeTenantResolver.getTenant()));
+        Mockito.verify(this.storageMetricService, Mockito.times(1))
+               .incrementStorageRequestError(eq(ONLINE_CONF_LABEL), eq(runtimeTenantResolver.getTenant()));
     }
 
     @Test

@@ -56,4 +56,11 @@ public class AbstractMetricService {
         counter.increment(increment);
     }
 
+    /**
+     * Initialize a counter with a 0 value if it does not already exist
+     */
+    protected void initializeCounterIfAbsent(String metricName, Map<String, String> tags) {
+        Counter.builder(metricName).tags(generateTags(tags)).register(registry);
+    }
+
 }

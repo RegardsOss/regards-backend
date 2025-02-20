@@ -33,11 +33,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.FileRestorationWorkingSubset;
@@ -60,6 +60,8 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.job.FileCacheRequestJob;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
+import fr.cnes.regards.modules.storage.service.metric.StorageMetricService;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
@@ -76,7 +78,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Nullable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
@@ -140,6 +141,10 @@ public class FileCacheRequestService {
     @Value("${regards.storage.group.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
 
+    private StorageMetricService metricService;
+
+    private IRuntimeTenantResolver tenantResolver;
+
     public FileCacheRequestService(IFileCacheRequestRepository fileCacheRequestRepository,
                                    IPluginService pluginService,
                                    IJobInfoService jobInfoService,
@@ -155,7 +160,9 @@ public class FileCacheRequestService {
                                    RequestStatusService reqStatusService,
                                    INotificationClient notificationClient,
                                    ApplicationContext applicationContext,
-                                   FileCacheRequestService fileCacheRequestService) {
+                                   FileCacheRequestService fileCacheRequestService,
+                                   StorageMetricService metricService,
+                                   IRuntimeTenantResolver tenantResolver) {
         this.fileCacheRequestRepository = fileCacheRequestRepository;
         this.pluginService = pluginService;
         this.jobInfoService = jobInfoService;
@@ -172,6 +179,8 @@ public class FileCacheRequestService {
         this.notificationClient = notificationClient;
         this.applicationContext = applicationContext;
         this.self = fileCacheRequestService;
+        this.metricService = metricService;
+        this.tenantResolver = tenantResolver;
     }
 
     /**
@@ -249,6 +258,8 @@ public class FileCacheRequestService {
                                                      String groupId,
                                                      String checksum,
                                                      FileRequestStatus status) {
+        metricService.incrementRestorationRequests(fileRefToRestore.getLocation().getStorage(),
+                                                   tenantResolver.getTenant());
         FileCacheRequest fileCacheRequest;
         fileCacheRequest = new FileCacheRequest(fileRefToRestore,
                                                 cacheService.getCacheDirectoryPath(checksum),
@@ -552,6 +563,8 @@ public class FileCacheRequestService {
                         .forEach(groupId -> reqGrpService.availibilityRequestSuccess(groupId,
                                                                                      fileCacheRequest.getChecksum(),
                                                                                      owners));
+        metricService.incrementRestorationRequestSuccess(fileCacheRequest.getStorage(), tenantResolver.getTenant());
+
     }
 
     /**
@@ -580,6 +593,7 @@ public class FileCacheRequestService {
                                                               null,
                                                               Lists.newArrayList(),
                                                               cause));
+        metricService.incrementRestorationRequestError(fileReq.getStorage(), tenantResolver.getTenant());
     }
 
     /**

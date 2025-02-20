@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -64,10 +65,12 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storage.service.file.job.PeriodicStorageLocationJob;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
+import fr.cnes.regards.modules.storage.service.metric.StorageMetricService;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.service.template.StorageTemplatesConf;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
+import io.micrometer.core.instrument.Counter;
 import jakarta.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -144,6 +147,8 @@ public class FileStorageRequestService {
 
     private final ITemplateService templateService;
 
+    private final StorageMetricService metricService;
+
     private final Validator validator;
 
     @Value("${regards.storage.storage.requests.days.before.expiration:5}")
@@ -151,6 +156,10 @@ public class FileStorageRequestService {
 
     @Value("${regards.storage.storage.requests.per.job:100}")
     private Integer nbRequestsPerJob;
+
+    private Counter storageRequestErrorCounter;
+
+    private IRuntimeTenantResolver tenantResolver;
 
     public FileStorageRequestService(IPluginService pluginService,
                                      IFileStorageRequestRepository fileStorageRequestRepo,
@@ -168,7 +177,9 @@ public class FileStorageRequestService {
                                      IJobInfoRepository jobInfoRepo,
                                      INotificationClient notificationClient,
                                      ITemplateService templateService,
-                                     Validator validator) {
+                                     StorageMetricService metricService,
+                                     Validator validator,
+                                     IRuntimeTenantResolver tenantResolver) {
         this.pluginService = pluginService;
         this.fileStorageRequestRepo = fileStorageRequestRepo;
         this.jobInfoService = jobInfoService;
@@ -185,7 +196,9 @@ public class FileStorageRequestService {
         this.jobInfoRepo = jobInfoRepo;
         this.notificationClient = notificationClient;
         this.templateService = templateService;
+        this.metricService = metricService;
         this.validator = validator;
+        this.tenantResolver = tenantResolver;
     }
 
     /**
@@ -232,8 +245,9 @@ public class FileStorageRequestService {
      * same file with identical checksum and storage location.
      */
     private boolean isIdenticalRequest(FileStorageRequestDto requestDto, FileStorageRequestAggregation request) {
-        return StringUtils.equals(request.getMetaInfo().getChecksum(), requestDto.getChecksum())
-               && StringUtils.equals(request.getStorage(), requestDto.getStorage());
+        return StringUtils.equals(request.getMetaInfo().getChecksum(), requestDto.getChecksum()) && StringUtils.equals(
+            request.getStorage(),
+            requestDto.getStorage());
     }
 
     /**
@@ -801,6 +815,7 @@ public class FileStorageRequestService {
             // The storage destination is unknown, we can already set the request in error status
             handleStorageNotAvailable(fileStorageRequest, Optional.empty());
         } else {
+            metricService.incrementStorageRequests(storage, tenantResolver.getTenant());
             // save request
             fileStorageRequestRepo.save(fileStorageRequest);
 
@@ -946,6 +961,9 @@ public class FileStorageRequestService {
                         // If reference file already exists for the given owner (unmodified), total of stored files already contains this one.
                         nbFilesStored++;
                     }
+
+                    metricService.incrementStorageRequestSuccess(result.getRequest().getStorage(),
+                                                                 tenantResolver.getTenant());
                 } catch (ModuleException e) {
                     LOGGER.error(e.getMessage(), e);
                     handleError(request, e.getMessage());
@@ -977,6 +995,7 @@ public class FileStorageRequestService {
 
             // Delete the FileRefRequest as it has been handled
             if (isHandleSuccess) {
+
                 delete(request);
             }
         }
@@ -1042,6 +1061,7 @@ public class FileStorageRequestService {
         String session = request.getSession();
         this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
         this.sessionNotifier.incrementErrorRequests(sessionOwner, session);
+        metricService.incrementStorageRequestError(request.getStorage(), tenantResolver.getTenant());
     }
 
     public boolean handleJobCrash(JobInfo jobInfo) {

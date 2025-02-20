@@ -55,6 +55,8 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
+import static org.mockito.ArgumentMatchers.eq;
+
 /**
  * Test class
  *
@@ -215,6 +217,13 @@ public class AvailabilityFileReferenceIT extends AbstractStorageIT {
                           notAvailables.contains(file6.getMetaInfo().getChecksum()));
         Assert.assertTrue("File should be unavailable as it is offline",
                           notAvailables.contains(file7.getMetaInfo().getChecksum()));
+
+        //Asserts that we have 3 increments for the restoration metric (3 nearline files) and for their success
+        Mockito.verify(this.storageMetricService, Mockito.times(3))
+               .incrementRestorationRequests(eq(NEARLINE_CONF_LABEL), eq(runtimeTenantResolver.getTenant()));
+        Mockito.verify(this.storageMetricService, Mockito.times(3))
+               .incrementRestorationRequestSuccess(eq(NEARLINE_CONF_LABEL), eq(runtimeTenantResolver.getTenant()));
+
     }
 
     @Test
@@ -340,6 +349,14 @@ public class AvailabilityFileReferenceIT extends AbstractStorageIT {
                             0,
                             fileCacheRequestRepository.findByGroupIdsAndStatus(groupId, FileRequestStatus.ERROR)
                                                       .size());
+
+        //Check 4 increments for the restoration metric counter with 3 errors and then 4 successes
+        Mockito.verify(this.storageMetricService, Mockito.times(4))
+               .incrementRestorationRequests(eq(NEARLINE_CONF_LABEL), eq(runtimeTenantResolver.getTenant()));
+        Mockito.verify(this.storageMetricService, Mockito.times(3))
+               .incrementRestorationRequestError(eq(NEARLINE_CONF_LABEL), eq(runtimeTenantResolver.getTenant()));
+        Mockito.verify(this.storageMetricService, Mockito.times(4))
+               .incrementStorageRequestSuccess(eq(NEARLINE_CONF_LABEL), eq(runtimeTenantResolver.getTenant()));
     }
 
 }

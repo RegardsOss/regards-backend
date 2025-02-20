@@ -54,6 +54,7 @@ import fr.cnes.regards.modules.storage.service.file.request.*;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
+import fr.cnes.regards.modules.storage.service.metric.StorageMetricService;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOfflineDataStorage;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
@@ -64,6 +65,7 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
@@ -184,6 +186,9 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
 
     @Autowired
     protected IPluginService pluginService;
+
+    @MockBean
+    protected StorageMetricService storageMetricService;
 
     protected String originUrl = "file://in/this/directory/file.test";
 
