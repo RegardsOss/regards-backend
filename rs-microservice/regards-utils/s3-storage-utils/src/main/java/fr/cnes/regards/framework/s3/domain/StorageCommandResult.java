@@ -205,6 +205,11 @@ public interface StorageCommandResult {
         public StorageCommand s3Cmd() {
             return s3Cmd;
         }
+
+        @Override
+        public String toString() {
+            return "Base{" + "s3Cmd=" + s3Cmd + '}';
+        }
     }
 
 }

@@ -66,6 +66,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -98,6 +100,9 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
     private static final SdkAsyncHttpClient httpClient = NettyNioAsyncHttpClient.builder()
                                                                                 .writeTimeout(Duration.ZERO)
                                                                                 .maxConcurrency(1000)
+                                                                                .connectionTimeout(Duration.ofSeconds(10))
+                                                                                .connectionAcquisitionTimeout(Duration.ofSeconds(
+                                                                                    20))
                                                                                 .build();
 
     public S3AsyncClientReactorWrapper(StorageConfigDto config) {
@@ -242,8 +247,8 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
      * Return the expiration date from the given S3 head response.
      *
      * @return the expiration date; otherwise null if the expiration date does not exist with
-     * {@link HEAD_RESPONSE_RESTORE_EXPIRE_PATTERN} pattern in response.
-     * @throws DateTimeParseException if date is not wellformed in response.
+     * {@link #HEAD_RESPONSE_RESTORE_EXPIRE_PATTERN} pattern in response.
+     * @throws DateTimeParseException if date is not well formed in response.
      */
     private static ZonedDateTime getRestoreRequestExpiration(HeadObjectResponse response)
         throws DateTimeParseException {
@@ -296,12 +301,15 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
         });
     }
 
-    public Mono<ResponseAndStream> readContentFlux(String bucket, String key, boolean failIfMissing) {
+    public Mono<ResponseAndStream> readContentFlux(String bucket, String key, boolean failIfMissing, int rateLimit) {
         return withClient(client -> {
             GetObjectRequest request = GetObjectRequest.builder().bucket(bucket).key(key).build();
-            return fromFutureSupplier(() -> client.getObject(request, new GetResponseAndStream())).onErrorMap(
-                SdkClientException.class,
-                S3ClientException::new);
+            return fromFutureSupplier(() -> client.getObject(request, new GetResponseAndStream(rateLimit))
+                                                  .orTimeout(30, TimeUnit.SECONDS)).onErrorMap(SdkClientException.class,
+                                                                                               S3ClientException::new)
+                                                                                   .onErrorMap(TimeoutException.class,
+                                                                                               t -> new S3ClientException(
+                                                                                                   "Timeout waiting for s3 server getObject response"));
         });
     }
 
@@ -443,7 +451,7 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
      * when the upload is complete.
      * <p>
      * This only work if the upload is done sequentially (the parts are sent in order), ie if parallel upload is not
-     * used. @see{{@link S3HighLevelReactiveClient#uploadThenCompleteMultipartEntry(StorageEntry, StorageConfigDto, String, String, String)}}
+     * used. @see{{@link S3HighLevelReactiveClient#uploadThenCompleteMultipartEntry(StorageEntry, StorageConfigDto, String, String, String, String)}
      *
      * @param bucket    the bucket the file is uploaded to
      * @param path      the path in the bucket

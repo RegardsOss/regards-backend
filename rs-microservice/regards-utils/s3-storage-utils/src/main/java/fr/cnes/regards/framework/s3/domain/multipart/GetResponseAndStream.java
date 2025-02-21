@@ -20,6 +20,12 @@ public class GetResponseAndStream implements AsyncResponseTransformer<GetObjectR
 
     private GetObjectResponse response;
 
+    private final int rateLimit;
+
+    public GetResponseAndStream(int rateLimit) {
+        this.rateLimit = rateLimit;
+    }
+
     @Override
     public CompletableFuture<ResponseAndStream> prepare() {
         return future;
@@ -33,6 +39,7 @@ public class GetResponseAndStream implements AsyncResponseTransformer<GetObjectR
     @Override
     public void onStream(SdkPublisher<ByteBuffer> publisher) {
         Flux<ByteBuffer> bbFlux = Flux.from(preventClose(publisher))
+                                      .limitRate(rateLimit)
                                       .doOnNext(bb -> LOG.debug("Read bytebuffer of {} size={}b",
                                                                 response,
                                                                 bb.remaining()));

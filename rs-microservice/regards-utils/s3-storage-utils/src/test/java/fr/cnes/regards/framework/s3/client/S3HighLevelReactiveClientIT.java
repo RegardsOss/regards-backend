@@ -142,7 +142,7 @@ public class S3HighLevelReactiveClientIT {
                                 size,
                                 contentLength.get().longValue());
 
-            client.read(StorageCommand.read(config, cmdId, entryKey)).block().matchReadResult(pipe -> {
+            client.read(StorageCommand.read(config, cmdId, entryKey), 10).block().matchReadResult(pipe -> {
                 pipe.getEntry().doOnNext(e -> LOGGER.info("entry: {}", readBytes(e))).block();
                 return true;
             }, unreachableStorage -> {
@@ -153,7 +153,7 @@ public class S3HighLevelReactiveClientIT {
                 return false;
             });
 
-            client.read(StorageCommand.read(config, cmdId, entryKey)).block().matchReadResult(pipe -> {
+            client.read(StorageCommand.read(config, cmdId, entryKey), 10).block().matchReadResult(pipe -> {
                 pipe.getEntry().doOnNext(e -> {
                     byte[] readContent = readBytes(e);
                     LOGGER.info("entry: {}", readContent.length);
@@ -348,7 +348,7 @@ public class S3HighLevelReactiveClientIT {
                   return false;
               });
 
-        client.read(StorageCommand.read(config, cmdId, entryKey)).block().matchReadResult(pipe -> {
+        client.read(StorageCommand.read(config, cmdId, entryKey), 10).block().matchReadResult(pipe -> {
             pipe.getEntry().doOnNext(e -> {
                 byte[] readContent = readBytes(e);
                 LOGGER.info("entry: {}", readContent.length);

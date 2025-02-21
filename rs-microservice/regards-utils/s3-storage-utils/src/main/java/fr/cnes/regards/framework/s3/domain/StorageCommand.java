@@ -135,6 +135,11 @@ public interface StorageCommand {
         public StorageConfigDto getConfig() {
             return config;
         }
+
+        @Override
+        public String toString() {
+            return "Base{" + "cmdId=" + cmdId + ", entryKey='" + entryKey + ", config=" + config + '}';
+        }
     }
 
 }

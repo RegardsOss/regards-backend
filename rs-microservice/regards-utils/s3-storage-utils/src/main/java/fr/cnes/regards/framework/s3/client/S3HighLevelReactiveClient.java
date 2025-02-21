@@ -102,11 +102,14 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         return configManagers.get(config, cfg -> new S3AsyncClientReactorWrapper(cfg));
     }
 
-    public Mono<ReadResult> read(Read readCmd) {
-        return readingCallableMono(readCmd).subscribeOn(scheduler).onErrorResume(t -> {
-            LOGGER.error(String.format("Error reading file from S3 server. Root cause : %s", t.getMessage()), t);
-            return Mono.just(new StorageCommandResult.UnreachableStorage(readCmd, t));
-        }).log("storage.s3.read", Level.FINE, SignalType.ON_SUBSCRIBE, SignalType.ON_NEXT, SignalType.ON_ERROR);
+    public Mono<ReadResult> read(Read readCmd, int rateLimit) {
+        return readingCallableMono(readCmd, rateLimit).subscribeOn(scheduler)
+                                                      .onErrorResume(t -> Mono.just(new UnreachableStorage(readCmd, t)))
+                                                      .log("storage.s3.read",
+                                                           Level.FINE,
+                                                           SignalType.ON_SUBSCRIBE,
+                                                           SignalType.ON_NEXT,
+                                                           SignalType.ON_ERROR);
     }
 
     /**
@@ -198,24 +201,23 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         return getClient(config).contentLength(bucket, archivePath).onErrorMap(S3ClientException::new);
     }
 
-    private Mono<ReadResult> readingCallableMono(Read readCmd) {
+    private Mono<ReadResult> readingCallableMono(Read readCmd, int rateLimit) {
         StorageConfigDto config = readCmd.getConfig();
         String bucket = config.getBucket();
         String entryKey = readCmd.getEntryKey();
-        return getClient(config).readContentFlux(bucket, entryKey, true)
+        return getClient(config).readContentFlux(bucket, entryKey, true, rateLimit)
                                 .map(ras -> (ReadResult) new ReadingPipe(readCmd,
                                                                          Mono.just(getStorageEntry(config,
                                                                                                    entryKey,
                                                                                                    ras))))
-                                .onErrorResume(t -> t instanceof NoSuchKeyException ?
+                                .onErrorResume(exception -> exception instanceof NoSuchKeyException ?
                                     Mono.just(new ReadNotFound(readCmd)) :
-                                    Mono.just(new UnreachableStorage(readCmd, t)));
+                                    Mono.just(new UnreachableStorage(readCmd, exception)));
     }
 
     private static StorageEntry getStorageEntry(StorageConfigDto config, String entryKey, ResponseAndStream ras) {
         Long size = ras.getResponse().contentLength();
         String etag = ras.getResponse().eTag();
-        LOGGER.debug("Reading entry={} size={} eTag={}", entryKey, size, etag);
         return StorageEntry.builder()
                            .config(config)
                            .fullPath(entryKey)

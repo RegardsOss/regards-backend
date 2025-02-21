@@ -369,7 +369,8 @@ public final class DownloadUtils {
             StorageCommandID cmdId = new StorageCommandID(keyAndStorage.key(), commandId);
             InputStream s3InputStream = getInputStreamFromS3Source(keyAndStorage.key(),
                                                                    keyAndStorage.storageConfig(),
-                                                                   cmdId);
+                                                                   cmdId,
+                                                                   10);
             if (downloadTmpConfig != null && (downloadTmpConfig.forceTmpFile()
                                               || contentLength > downloadTmpConfig.maxContentLength())) {
                 return getInputStreamUsingTmpFile(downloadTmpConfig, s3InputStream);
@@ -404,12 +405,12 @@ public final class DownloadUtils {
      */
     public static InputStream getInputStreamFromS3Source(String entryKey,
                                                          StorageConfigDto storageConfig,
-                                                         StorageCommandID cmdId) throws FileNotFoundException {
+                                                         StorageCommandID cmdId,
+                                                         int rateLimit) throws FileNotFoundException {
         try {
             S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
-            StorageCommand.Read readCmd = StorageCommand.read(storageConfig, cmdId, entryKey);
-            return client.read(readCmd)
-                         .flatMap(readResult -> readResult.matchReadResult(r -> toInputStream(r),
+            return client.read(StorageCommand.read(storageConfig, cmdId, entryKey), rateLimit)
+                         .flatMap(readResult -> readResult.matchReadResult(DownloadUtils::toInputStream,
                                                                            unreachable -> Mono.error(new S3ClientException(
                                                                                "Unreachable server: "
                                                                                + unreachable.getThrowable()
@@ -418,7 +419,11 @@ public final class DownloadUtils {
                                                                                "Entry not found"))))
                          .block();
         } catch (Exception e) {
+            LOGGER.error("Error during the getting input stream from S3 Source", e);
             Throwable unwrappedException = Exceptions.unwrap(e);
+            LOGGER.error("Context cause [{}][{}]", entryKey, cmdId);
+            LOGGER.error("Root cause", unwrappedException);
+
             if (unwrappedException instanceof S3ClientException s3ClientException) {
                 throw s3ClientException;
             }
@@ -427,7 +432,6 @@ public final class DownloadUtils {
             }
             throw e;
         }
-
     }
 
     /**
@@ -461,6 +465,7 @@ public final class DownloadUtils {
         }
         DataBufferUtils.write(buffers.map(dbf::wrap), outputStream).onErrorResume(throwable -> {
             try {
+                LOGGER.error("Error during the closing of output stream");
                 outputStream.close();
             } catch (IOException ioe) {
                 LOGGER.error("An error occurred while closing file output stream", ioe);

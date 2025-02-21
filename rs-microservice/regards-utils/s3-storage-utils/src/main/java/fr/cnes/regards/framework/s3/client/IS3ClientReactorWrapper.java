@@ -57,7 +57,7 @@ public interface IS3ClientReactorWrapper {
 
     Mono<Optional<Long>> contentLength(String bucket, String key);
 
-    Mono<ResponseAndStream> readContentFlux(String bucket, String key, boolean failIfMissing);
+    Mono<ResponseAndStream> readContentFlux(String bucket, String key, boolean failIfMissing, int rateLimit);
 
     Flux<String> listObjects(String bucket, String prefix);
 
