@@ -39,6 +39,9 @@ public class JettyConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JettyConfiguration.class);
 
+    @Value("${jetty.http.idleTimeout:3600000}")
+    private int httpIdleTimeout;
+
     @Value("${jetty.threadPool.idleTimeout:3600000}")
     private int threadPoolIdleTimeout;
 
@@ -58,7 +61,7 @@ public class JettyConfiguration {
             jetty.addServerCustomizers(server -> {
                 for (Connector connector : server.getConnectors()) {
                     if (connector instanceof ServerConnector) {
-                        ((ServerConnector) connector).setIdleTimeout(threadPoolIdleTimeout);
+                        ((ServerConnector) connector).setIdleTimeout(httpIdleTimeout);
                     }
                 }
             });
