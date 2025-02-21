@@ -152,7 +152,7 @@ public class OrderAttachmentDataSetService {
             FeignSecurityManager.asSystem();
             return ResponseEntityUtils.extractBodyOrNull(datasetClient.retrieveDataset(datasetIpid));
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            LOGGER.error("Cannot retrieve dataset ", e);
+            LOGGER.error(String.format("Cannot retrieve dataset Cause : %s", e.getMessage()), e);
             throw new ModuleException(e.getMessage());
         } finally {
             FeignSecurityManager.reset();

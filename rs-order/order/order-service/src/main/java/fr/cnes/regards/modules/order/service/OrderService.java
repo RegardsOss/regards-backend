@@ -460,17 +460,12 @@ public class OrderService implements IOrderService {
             writer.append(OffsetDateTimeAdapter.format(order.getStatusDate())).append(';');
             writer.append(Integer.toString(order.getPercentCompleted())).append(';');
             writer.append(Integer.toString(order.getFilesInErrorCount())).append(';');
-            writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(dt -> dt.getFilesSize()).sum()))
+            writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(DatasetTask::getFilesSize).sum()))
                   .append(';');
-            writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(dt -> dt.getFilesCount()).sum()));
+            writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(DatasetTask::getFilesCount).sum()));
             writer.newLine();
         }
         writer.close();
-    }
-
-    @Override
-    public boolean isActionAvailable(Long orderId, Action action) {
-        return StringUtils.isBlank(getErrorMessageOnAction(orderRepository.findSimpleById(orderId), action));
     }
 
     @Override

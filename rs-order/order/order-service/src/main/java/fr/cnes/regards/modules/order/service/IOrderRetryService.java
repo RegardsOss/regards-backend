@@ -30,10 +30,6 @@ public interface IOrderRetryService {
                                String role,
                                int priority);
 
-    void createExternalSubOrder(DatasetTask datasetTask,
-                                Set<OrderDataFile> orderDataFiles,
-                                long orderId,
-                                String owner,
-                                String correlationId);
+    void createExternalSubOrder(DatasetTask datasetTask, Set<OrderDataFile> orderDataFiles, long orderId, String owner);
 
 }

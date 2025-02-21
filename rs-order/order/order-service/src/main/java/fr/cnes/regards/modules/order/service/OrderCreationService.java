@@ -165,7 +165,7 @@ public class OrderCreationService implements IOrderCreationService {
                                         + "Retry later.",
                                         owner));
             }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException e) { //NOSONAR
             computeOrderFailure(orderId, String.format(e.getMessage(), owner));
         } finally {
             CorrelationIdUtils.clearCorrelationId();
@@ -176,7 +176,7 @@ public class OrderCreationService implements IOrderCreationService {
      * Update order with the given id with failure status and given error cause.
      */
     public void computeOrderFailure(Long orderId, String cause) {
-        Order order = orderRepository.getById(orderId);
+        Order order = orderRepository.getReferenceById(orderId);
         order.setStatus(OrderStatus.FAILED);
         order.setMessage(cause);
         orderRepository.save(order);
@@ -229,7 +229,7 @@ public class OrderCreationService implements IOrderCreationService {
                                                                                  > 0)) {
                 // Because external files haven't size set (files.size isn't allowed to be mapped on DatasourcePlugins
                 // other than AipDatasourcePlugin which manage only internal files), these will not be taken into
-                // account by {@see OrderService#updateCurrentOrdersComputedValues}
+                // account by OrderService#updateCurrentOrdersComputedValues
                 order.setPercentCompleted(100);
                 order.setAvailableFilesCount(orderCounts.getExternalFilesCount());
                 order.setWaitingForUser(true);
@@ -436,7 +436,7 @@ public class OrderCreationService implements IOrderCreationService {
                                                  .toList();
         for (DataFile dataFile : dataFileFiltered) {
             // Referenced dataFiles are externally stored.
-            if (!dataFile.isReference()) {
+            if (dataFile.isReference() == Boolean.FALSE) {
                 addInternalFileToStorageBucket(order, storageBucketFiles, dataFile, feature);
             } else {
                 addExternalFileToExternalBucket(order, externalBucketFiles, dataFile, feature);

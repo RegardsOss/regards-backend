@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
 import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -53,7 +54,6 @@ import org.springframework.util.MimeType;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import jakarta.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -208,8 +208,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     public void launchNextFilesTasks(Iterable<OrderDataFile> dataFiles) {
         // Look at FilesTasks if they are ended (no more file to download)...
         List<Long> dataFilesIds = Lists.newArrayList(dataFiles).stream().map(OrderDataFile::getId).toList();
-        List<Long> filesTasksIds =
-            orderDataFileRepository.findDistinctFilesTaskIdByIdIn(dataFilesIds);
+        List<Long> filesTasksIds = orderDataFileRepository.findDistinctFilesTaskIdByIdIn(dataFilesIds);
         List<FilesTask> filesTasks = filesTasksRepository.findAllById(filesTasksIds);
         Long orderId = null;
         // Update all these FileTasks
@@ -261,7 +260,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         Optional<OrderDataFile> dataFileOpt = orderDataFileRepository.findFirstByChecksumAndIpIdAndOrderId(checksum,
                                                                                                            aipId,
                                                                                                            orderId);
-        if (!dataFileOpt.isPresent()) {
+        if (dataFileOpt.isEmpty()) {
             throw new NoSuchElementException();
         }
         return dataFileOpt.get();
@@ -511,21 +510,21 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     private void updateOrderIfFinished(Order order, long errorCount) {
         // Update order status if percent_complete has reached 100%
         LOGGER.debug("Completion of order {} : {}%", order.getId(), order.getPercentCompleted());
-        if (order.getPercentCompleted() == 100) {
-            // update only once the order status
-            if (!order.getStatus()
-                      .isOneOfStatuses(OrderStatus.DONE, OrderStatus.FAILED, OrderStatus.DONE_WITH_WARNING)) {
-                // If no files in error = DONE
-                if (errorCount == 0) {
-                    order.setStatus(OrderStatus.DONE);
-                } else if (errorCount == order.getDatasetTasks().stream().mapToLong(DatasetTask::getFilesCount).sum()) {
-                    // If all files in error => FAILED
-                    order.setStatus(OrderStatus.FAILED);
-                } else { // DONE_WITH_WARNING
-                    order.setStatus(OrderStatus.DONE_WITH_WARNING);
-                }
-                orderResponseService.notifyFinishedOrder(order);
+        // update only once the order status
+        if (order.getPercentCompleted() == 100 && !order.getStatus()
+                                                        .isOneOfStatuses(OrderStatus.DONE,
+                                                                         OrderStatus.FAILED,
+                                                                         OrderStatus.DONE_WITH_WARNING)) {
+            // If no files in error = DONE
+            if (errorCount == 0) {
+                order.setStatus(OrderStatus.DONE);
+            } else if (errorCount == order.getDatasetTasks().stream().mapToLong(DatasetTask::getFilesCount).sum()) {
+                // If all files in error => FAILED
+                order.setStatus(OrderStatus.FAILED);
+            } else { // DONE_WITH_WARNING
+                order.setStatus(OrderStatus.DONE_WITH_WARNING);
             }
+            orderResponseService.notifyFinishedOrder(order);
         }
     }
 

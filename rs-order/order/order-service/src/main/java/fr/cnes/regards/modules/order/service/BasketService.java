@@ -391,7 +391,7 @@ public class BasketService implements IBasketService {
                                                                          processBusinessId)));
 
             // limit the number of items ordered only if forbidSplitInSuborders is active
-            if (processInfo.getForbidSplitInSuborders()) {
+            if (processInfo.getForbidSplitInSuborders() == Boolean.TRUE) {
                 // check if the number of items in the basket does not exceed maximum number of items configured
                 // by the process. The numberOfElementsToCheck is init to 0 by default in case there is no limit
                 // configured in the process
@@ -498,11 +498,11 @@ public class BasketService implements IBasketService {
         Pattern.compile(fileNamePattern);
     }
 
-    private Basket attachProcessToDatasetSelectionAndSaveBasket(Basket basket,
-                                                                BasketDatasetSelection ds,
-                                                                ProcessDatasetDescriptionDto desc) {
+    private void attachProcessToDatasetSelectionAndSaveBasket(Basket basket,
+                                                              BasketDatasetSelection ds,
+                                                              ProcessDatasetDescriptionDto desc) {
         ds.setProcessDatasetDescription(desc);
-        return repos.save(basket);
+        repos.save(basket);
     }
 
     /**
@@ -545,7 +545,7 @@ public class BasketService implements IBasketService {
                 throw new CatalogSearchException();
             }
             DocFilesSummary curDsSelectionSummary = ResponseEntityUtils.extractBodyOrThrow(docFilesSummaryResponseEntity,
-                                                                                           () -> new CatalogSearchException());
+                                                                                           CatalogSearchException::new);
             // Take into account only asked datasetIpId (sub-)summary
             DocFilesSubSummary curDsSelectionSubSummary = curDsSelectionSummary.getSubSummariesMap()
                                                                                .get(datasetSelection.getDatasetIpid());

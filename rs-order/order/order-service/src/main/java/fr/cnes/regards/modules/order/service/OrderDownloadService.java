@@ -315,7 +315,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         }
         return downloadOk;
     }
-    
+
     public Optional<Response> downloadDataFile(OrderDataFile dataFile, String errorPrefix, @Nullable String asUser) {
         Response response = null;
         try {
@@ -323,7 +323,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
             // impact the download quotas, but we upgrade the privileges so that the request passes.
             FeignSecurityManager.asUser(asUser != null ? asUser : authResolver.getUser(),
                                         DefaultRole.PROJECT_ADMIN.name());
-            // To download file with accessrights checked, we should use catalogDownloadClient
+            // To download file with access rights checked, we should use catalogDownloadClient
             // but the accessRight have already been checked here.
             if (dataFile.urlIsFromDam()) {
                 response = attachmentClient.getFile(dataFile.getIpId().toString(), dataFile.getChecksum(), null, false);
@@ -334,7 +334,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
             String stack = getStack(e);
             String source = dataFile.urlIsFromDam() ? "Error from Dam download" : "Error from Storage download";
             LOGGER.error(errorPrefix + " " + source, e);
-            dataFile.setDownloadError(String.format("%s %s\n%s", errorPrefix, source, stack));
+            dataFile.setDownloadError(String.format("%s %s%n%s", errorPrefix, source, stack));
         } finally {
             FeignSecurityManager.reset();
         }
@@ -363,7 +363,6 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                                                                        noProxyHosts,
                                                                        10_000,
                                                                        Collections.emptyList())) {
-            // FIXME : If file is external (http url not stored by storage, file size of the dataFile can be null.
             // In this case, if the real file size is over 4Gb The apache zip library is not available to use
             // the right implementation (64bits).
             readInputStreamAndAddToZip(downloadErrorFiles,

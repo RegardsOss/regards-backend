@@ -221,21 +221,18 @@ public class OrderHelperService {
     public void createExternalSubOrder(DatasetTask datasetTask, Set<OrderDataFile> orderDataFiles, Order order) {
         dataFileService.create(orderDataFiles);
 
-        createExternalSubOrder(datasetTask, orderDataFiles, order.getId(), order.getOwner(), order.getCorrelationId());
+        createExternalSubOrder(datasetTask, orderDataFiles, order.getId(), order.getOwner());
     }
 
     /**
      * Create an external sub-order ie a FilesTask, and add it to DatasetTask.
      * An external sub-order is ended just after its creating (no waiting of job for an external suborder).
-     *
-     * @return the identifier of created sub-order in database
      */
     @MultitenantTransactional
     public void createExternalSubOrder(DatasetTask datasetTask,
                                        Set<OrderDataFile> orderDataFiles,
                                        long orderId,
-                                       String owner,
-                                       String correlationId) {
+                                       String owner) {
 
         LOGGER.info("Creating external sub-order of {} files (Order: {} - Owner: {})",
                     orderDataFiles.size(),

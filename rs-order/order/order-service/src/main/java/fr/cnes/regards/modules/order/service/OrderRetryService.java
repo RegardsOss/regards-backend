@@ -253,7 +253,7 @@ public class OrderRetryService implements IOrderRetryService {
         if (!bucket.isEmpty() && (last
                                   || bucket.size() >= MAX_BUCKET_FILE_COUNT
                                   || suborderSizeCounter.externalBucketTooBig(bucket))) {
-            self.createExternalSubOrder(datasetTask, bucket, orderId, owner, correlationId);
+            self.createExternalSubOrder(datasetTask, bucket, orderId, owner);
             counts.incrExternalSubOrderCount();
             bucket.clear();
         }
@@ -282,9 +282,8 @@ public class OrderRetryService implements IOrderRetryService {
     public void createExternalSubOrder(DatasetTask datasetTask,
                                        Set<OrderDataFile> orderDataFiles,
                                        long orderId,
-                                       String owner,
-                                       String correlationId) {
-        orderHelperService.createExternalSubOrder(datasetTask, orderDataFiles, orderId, owner, correlationId);
+                                       String owner) {
+        orderHelperService.createExternalSubOrder(datasetTask, orderDataFiles, orderId, owner);
     }
 
     private void resetState(OrderDataFile orderDataFile) {
