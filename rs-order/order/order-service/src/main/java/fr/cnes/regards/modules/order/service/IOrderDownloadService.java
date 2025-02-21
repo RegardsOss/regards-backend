@@ -36,7 +36,8 @@ public interface IOrderDownloadService {
      * @param orderOwner  order owner
      * @param inDataFiles concerned order data files
      */
-    void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os);
+    List<OrderDataFile> downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os)
+        throws IOException;
 
     /**
      * Create a metalink file with all files.

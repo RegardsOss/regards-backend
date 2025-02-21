@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
@@ -37,12 +39,14 @@ import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.exception.TooManyDownloadException;
 import fr.cnes.regards.modules.order.dto.OrderControllerEndpointConfiguration;
 import fr.cnes.regards.modules.order.metalink.schema.*;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.storage.client.StorageDownloaderClient;
+import jakarta.annotation.Nullable;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
@@ -58,10 +62,10 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
-import jakarta.annotation.Nullable;
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
@@ -72,6 +76,8 @@ import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RefreshScope
@@ -218,18 +224,14 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         }
         if (!zipCreationFailed) {
             // Set statuses of all downloaded files
-            availableFiles.forEach(f -> f.setState(FileState.DOWNLOADED));
+            downloadedFiles.forEach(f -> f.setState(FileState.DOWNLOADED));
             // Set statuses of all not downloaded files
             downloadErrorFiles.forEach(f -> f.getLeft().setState(FileState.DOWNLOAD_ERROR));
-            // use one set to save everybody
-            availableFiles.addAll(downloadErrorFiles.stream().map(Pair::getLeft).toList());
-            dataFileService.save(availableFiles);
-
-            processingEventSender.sendDownloadedFilesNotification(availableFiles);
-
-            // Don't forget to manage user order jobs (maybe order is in waitingForUser state)
-            orderJobService.manageUserOrderStorageFilesJobInfos(orderOwner);
+            // Update both download and not downloaded files
+            dataFileService.updateDownloadedFiles(orderOwner, availableFiles);
+            return downloadedFiles;
         }
+        return downloadedFiles;
     }
 
     /**
@@ -277,46 +279,43 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
 
         Optional<Response> responseOpt = downloadDataFile(dataFile, errorPrefix, null);
         if (responseOpt.isPresent()) {
-            Response response = responseOpt.get();
-            if (response.status() != HttpStatus.OK.value()) {
-                String adminErrorMessage = String.format("Cannot retrieve data file (aip : %s, checksum : %s). Feign "
-                                                         + "downloadFile method returns %s",
-                                                         aip,
-                                                         dataFile.getChecksum(),
-                                                         responseOpt.map(Response::toString).orElse("null"));
-                handleDownloadError(downloadErrorFiles,
-                                    currentFileIterator,
-                                    dataFile,
-                                    adminErrorMessage,
-                                    humanizeError(responseOpt));
-            } else { // Download ok
-                Long contentLength = Long.parseLong(response.headers()
-                                                            .get(OrderDataFileService.CONTENT_LENGTH_HEADER)
-                                                            .iterator()
-                                                            .next());
-                try (InputStream is = response.body().asInputStream()) {
-                    readInputStreamAndAddToZip(downloadErrorFiles,
-                                               zos,
-                                               fileNamesInZip,
-                                               currentFileIterator,
-                                               dataFile,
-                                               Optional.of(contentLength),
-                                               aip,
-                                               is);
-                    downloadOk = true;
-                } catch (IOException e) {
-                    LOGGER.error(e.getMessage(), e);
+            try (Response response = responseOpt.get()) {
+                if (response.status() != HttpStatus.OK.value()) {
+                    String adminErrorMessage = String.format(
+                        "Cannot retrieve data file (aip : %s, checksum : %s). Feign "
+                        + "downloadFile method returns %s",
+                        aip,
+                        dataFile.getChecksum(),
+                        responseOpt.map(Response::toString).orElse("null"));
                     handleDownloadError(downloadErrorFiles,
                                         currentFileIterator,
                                         dataFile,
-                                        String.format("Error while downloading internal file %s", dataFile.getUrl()),
-                                        "Error during file download");
+                                        adminErrorMessage,
+                                        humanizeError(responseOpt));
+                } else { // Download ok
+                    Long contentLength = null;
+                    Collection<String> lengthHeader = response.headers()
+                                                              .get(OrderDataFileService.CONTENT_LENGTH_HEADER);
+                    if (lengthHeader != null && !lengthHeader.isEmpty()) {
+                        contentLength = Long.parseLong(lengthHeader.iterator().next());
+                    }
+                    try (InputStream is = response.body().asInputStream()) {
+                        readInputStreamAndAddToZip(downloadErrorFiles,
+                                                   zos,
+                                                   fileNamesInZip,
+                                                   currentFileIterator,
+                                                   dataFile,
+                                                   Optional.ofNullable(contentLength),
+                                                   aip,
+                                                   is);
+                        downloadOk = true;
+                    }
                 }
             }
         }
         return downloadOk;
     }
-
+    
     public Optional<Response> downloadDataFile(OrderDataFile dataFile, String errorPrefix, @Nullable String asUser) {
         Response response = null;
         try {

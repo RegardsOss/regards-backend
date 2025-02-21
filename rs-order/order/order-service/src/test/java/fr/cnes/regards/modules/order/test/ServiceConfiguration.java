@@ -18,7 +18,11 @@
  */
 package fr.cnes.regards.modules.order.test;
 
+import feign.Request;
+import feign.RequestTemplate;
+import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.security.autoconfigure.CustomCacheControlHeadersWriter;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.client.entities.IAttachmentClient;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
@@ -35,10 +39,18 @@ import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import fr.cnes.regards.modules.storage.client.StorageDownloaderClient;
+import org.assertj.core.util.Lists;
+import org.eclipse.jetty.http.HttpHeader;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.*;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.*;
 
 import static org.mockito.Mockito.mock;
 
@@ -61,7 +73,38 @@ public class ServiceConfiguration {
 
     @Bean
     public IStorageRestClient storageRestClient() {
-        return mock(IStorageRestClient.class);
+        IStorageRestClient mock = mock(IStorageRestClient.class);
+
+        Mockito.when(mock.downloadFile(Mockito.any(), Mockito.any())).thenAnswer(i -> {
+            File testFile = new File("src/test/resources/download/test.dat");
+            InputStream is = new FileInputStream(testFile);
+            int fileSize = (int) testFile.length();
+            Map<String, Collection<String>> headers = com.google.common.collect.Maps.newHashMap();
+            headers.put(HttpHeader.CONTENT_LENGTH.toString(), Lists.newArrayList(testFile.length() + ""));
+            return Response.builder().body(is, fileSize).headers(headers).status(200).request(request()).build();
+        });
+
+        return mock;
+    }
+
+    private Map<String, Collection<String>> headers(@Nullable Map<String, Collection<String>> additionalHeaders) {
+        HashMap<String, Collection<String>> headers = new HashMap<>();
+        headers.put(CustomCacheControlHeadersWriter.CACHE_CONTROL, Collections.singletonList("cache"));
+        headers.put(CustomCacheControlHeadersWriter.EXPIRES, Collections.singletonList("expires"));
+        headers.put(CustomCacheControlHeadersWriter.PRAGMA, Collections.singletonList("pragma"));
+        headers.put("key1", Arrays.asList("value1", "value2"));
+        if (additionalHeaders != null) {
+            headers.putAll(additionalHeaders);
+        }
+        return headers;
+    }
+
+    private Request request() {
+        return Request.create(Request.HttpMethod.GET,
+                              "url",
+                              headers(null),
+                              Request.Body.empty(),
+                              new RequestTemplate());
     }
 
     @Bean
@@ -102,7 +145,9 @@ public class ServiceConfiguration {
 
     @Bean
     public IAuthenticationResolver mockAuthResolver() {
-        return mock(IAuthenticationResolver.class);
+        IAuthenticationResolver mock = mock(IAuthenticationResolver.class);
+        Mockito.when(mock.getUser()).thenReturn("user.test@regards.fr");
+        return mock;
     }
 
     @Bean

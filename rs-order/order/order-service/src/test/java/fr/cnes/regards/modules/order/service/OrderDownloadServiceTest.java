@@ -46,7 +46,7 @@ public class OrderDownloadServiceTest {
 
     private final IOrderDataFileService dataFileService = Mockito.mock(IOrderDataFileService.class);
 
-    private final IOrderJobService orderJobService = Mockito.mock(IOrderJobService.class);
+    private final IOrderJobService orderJobService = Mockito.mock(OrderJobService.class);
 
     private final IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
 
@@ -108,17 +108,17 @@ public class OrderDownloadServiceTest {
 
         // WHEN
         try (FileOutputStream os = new FileOutputStream("target/test.zip")) {
-            service.downloadOrderCurrentZip("owner", files, os);
-        }
+            List<OrderDataFile> downloadedFiles = service.downloadOrderCurrentZip("owner", files, os);
 
-        // THEN
-        // We expect to have FILE1, FILE2, FILE4 and FILE5 in zip. FILE3 is the same as FILE2 (filename and checksum) so
-        // it is not in the result zip.
-        Assert.assertTrue(files.stream().allMatch(f -> f.getState() == FileState.DOWNLOADED));
-        try (ZipFile zipFile = new ZipFile("target/test.zip")) {
-            Assert.assertEquals(files.size() - 1, zipFile.stream().count());
+            // THEN
+            // We expect to have FILE1, FILE2, FILE4 and FILE5 in zip. FILE3 is the same as FILE2 (filename and checksum) so
+            // it is not in the result zip.
+            Assert.assertEquals(files.size() - 1, downloadedFiles.size());
+            Assert.assertTrue(downloadedFiles.stream().allMatch(f -> f.getState() == FileState.DOWNLOADED));
+            try (ZipFile zipFile = new ZipFile("target/test.zip")) {
+                Assert.assertEquals(files.size() - 1, zipFile.stream().count());
+            }
         }
-
     }
 
     private OrderDataFile initFile(String id, String file, String checksum) {
