@@ -115,6 +115,8 @@ public class FeignClientConfiguration {
      */
     @Bean
     public Feign.Builder builder(@Value("${regards.enable.feign.bulkhead:true}") boolean bulkhead,
+                                 @Value("${regards.enable.feign.max.concurrent.call:25}") int maxConcurrentCall,
+                                 @Value("${regards.enable.feign.max.wait.duration.seconds:0}") int maxWaitDuration,
                                  @Value("${regards.enable.feign.rateLimiter:true}") boolean rateLimiter,
                                  @Value("${regards.enable.feign.readTimeout:60000}") int readTimeout,
                                  @Value("${regards.enable.feign.bulkhead.maxWaitDurationInSeconds:3600}")
@@ -138,7 +140,8 @@ public class FeignClientConfiguration {
             feignDecoratorBuilder.withBulkhead(Bulkhead.of("customBulkhead",
                                                            BulkheadConfig.custom()
                                                                          .maxWaitDuration(Duration.ofSeconds(
-                                                                             maxWaitDurationInSeconds))
+                                                                             maxWaitDuration))
+                                                                         .maxConcurrentCalls(maxConcurrentCall)
                                                                          .build()));
         }
 
