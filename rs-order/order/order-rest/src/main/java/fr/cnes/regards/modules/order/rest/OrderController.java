@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -37,6 +38,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.dto.dto.OrderDto;
 import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
+import fr.cnes.regards.modules.order.domain.exception.TooManyDownloadException;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderResponseDto;
@@ -180,6 +182,9 @@ public class OrderController implements IResourceController<OrderDto> {
     private IAuthenticationResolver authResolver;
 
     @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
+    @Autowired
     private PagedResourcesAssembler<OrderDto> orderDtoPagedResourcesAssembler;
 
     @Value("${regards.order.secret}")
@@ -232,6 +237,7 @@ public class OrderController implements IResourceController<OrderDto> {
     @RequestMapping(method = RequestMethod.POST, path = ADMIN_ROOT_PATH)
     public ResponseEntity<EntityModel<OrderDto>> createAppOrder(@RequestBody OrderRequest orderRequest)
         throws IllegalStateException, EntityInvalidException, EmptyBasketException {
+
         String user = authResolver.getUser();
         Basket basket = basketService.find(user);
         Order order = orderService.createOrder(basket,
@@ -352,11 +358,7 @@ public class OrderController implements IResourceController<OrderDto> {
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
         }
-        response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
-                           "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now()
-                                                                                        .toString()
-                                                                                        .replaceAll(" ", "-") + ".zip");
-        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+
         List<OrderDataFile> availableFiles = new ArrayList<>(dataFileService.findAllAvailables(orderId));
         // No file available
         if (availableFiles.isEmpty()) {
@@ -364,11 +366,29 @@ public class OrderController implements IResourceController<OrderDto> {
         }
 
         try {
+            orderDownloadService.lockDownloadOrder(tenantResolver.getTenant(),
+                                                   authResolver.getUser(),
+                                                   orderId,
+                                                   order.getLabel());
+            response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
+                               "attachment;filename=order_"
+                               + orderId
+                               + "_"
+                               + OffsetDateTime.now()
+                                               .toString()
+                                               .replaceAll(" ", "-")
+                               + ".zip");
+            response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             orderDownloadService.downloadOrderCurrentZip(order.getOwner(), availableFiles, response.getOutputStream());
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
+            orderDownloadService.unlockDownloadOrder(tenantResolver.getTenant(), orderId);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (TooManyDownloadException e) {
+            LOGGER.warn(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+        orderDownloadService.unlockDownloadOrder(tenantResolver.getTenant(), orderId);
 
         // Stream the response
         return new ResponseEntity<>(HttpStatus.OK);
@@ -468,7 +488,9 @@ public class OrderController implements IResourceController<OrderDto> {
                                 LinkRels.LIST,
                                 MethodParamFactory.build(Pageable.class));
 
-        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.DOWNLOAD)) {
+        Order order = orderService.loadSimple(orderDto.getId());
+
+        if (orderService.isActionAvailable(order, OrderService.Action.DOWNLOAD)) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "downloadAllAvailableFiles",
@@ -476,35 +498,35 @@ public class OrderController implements IResourceController<OrderDto> {
                                     MethodParamFactory.build(Long.class, orderDto.getId()),
                                     MethodParamFactory.build(HttpServletResponse.class));
         }
-        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.PAUSE)) {
+        if (orderService.isActionAvailable(order, OrderService.Action.PAUSE)) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "pauseOrder",
                                     LinkRelation.of("pause"),
                                     MethodParamFactory.build(Long.class, orderDto.getId()));
         }
-        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.RESUME)) {
+        if (orderService.isActionAvailable(order, OrderService.Action.RESUME)) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "resumeOrder",
                                     LinkRelation.of("resume"),
                                     MethodParamFactory.build(Long.class, orderDto.getId()));
         }
-        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.DELETE)) {
+        if (orderService.isActionAvailable(order, OrderService.Action.DELETE)) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "deleteOrder",
                                     LinkRels.DELETE,
                                     MethodParamFactory.build(Long.class, orderDto.getId()));
         }
-        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.REMOVE)) {
+        if (orderService.isActionAvailable(order, OrderService.Action.REMOVE)) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "removeOrder",
                                     LinkRelation.of("remove"),
                                     MethodParamFactory.build(Long.class, orderDto.getId()));
         }
-        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.RESTART)) {
+        if (orderService.isActionAvailable(order, OrderService.Action.RESTART)) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "restartOrder",
@@ -512,7 +534,7 @@ public class OrderController implements IResourceController<OrderDto> {
                                     MethodParamFactory.build(Long.class, orderDto.getId()),
                                     MethodParamFactory.build(OrderRequest.class));
         }
-        if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.RETRY)) {
+        if (orderService.isActionAvailable(order, OrderService.Action.RETRY)) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "retryOrder",

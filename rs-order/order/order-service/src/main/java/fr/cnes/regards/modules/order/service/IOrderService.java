@@ -21,9 +21,9 @@ package fr.cnes.regards.modules.order.service;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.domain.SearchRequestParameters;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.dto.dto.OrderStatusDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -173,7 +173,7 @@ public interface IOrderService {
      */
     void writeAllOrdersInCsv(BufferedWriter writer, SearchRequestParameters filters) throws IOException;
 
-    boolean isActionAvailable(Long orderId, OrderService.Action action);
+    boolean isActionAvailable(Order order, OrderService.Action action);
 
     /**
      * Check if current user has access to the order using order's owner.

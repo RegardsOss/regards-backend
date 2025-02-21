@@ -20,7 +20,10 @@ package fr.cnes.regards.modules.order.service;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import fr.cnes.regards.modules.order.domain.exception.TooManyDownloadException;
+import org.springframework.lang.NonNull;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -41,5 +44,17 @@ public interface IOrderDownloadService {
      * @param orderId concerned order id
      */
     void downloadOrderMetalink(Long orderId, OutputStream os) throws ModuleException;
+
+    /**
+     * Try to lock an order download.
+     * If a download is already processing for the given orderId, a exception is thronw;
+     */
+    void lockDownloadOrder(String tenant, @NonNull String user, Long orderId, String orderLabel)
+        throws TooManyDownloadException;
+
+    /**
+     * Unlock an order download processing.
+     */
+    void unlockDownloadOrder(String tenant, Long orderId);
 
 }

@@ -115,6 +115,8 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
 
     private final IAttachmentClient attachmentClient;
 
+    private final Map<String, Cache<Long, String>> runningDownloadsByTenant = new ConcurrentHashMap<>();
+
     public OrderDownloadService(IOrderRepository orderRepository,
                                 IOrderDataFileService dataFileService,
                                 IOrderJobService orderJobService,
@@ -147,9 +149,41 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         }
     }
 
+    public void lockDownloadOrder(String tenant, @NonNull String user, Long orderId, String orderLabel)
+        throws TooManyDownloadException {
+        Cache<Long, String> cache = runningDownloadsByTenant.computeIfAbsent(tenant,
+                                                                             t -> Caffeine.newBuilder()
+                                                                                          .expireAfterAccess(30,
+                                                                                                             TimeUnit.MINUTES)
+                                                                                          .maximumSize(10_000)
+                                                                                          .build());
+        String alreadyDownloadingUser = cache.getIfPresent(orderId);
+        if (alreadyDownloadingUser != null) {
+            String message = String.format("Your download for order %s (%s) is already running. Please wait the end of "
+                                           + "your current download to download the next part of your order.",
+                                           orderLabel,
+                                           orderId);
+            throw new TooManyDownloadException(message);
+        } else {
+            cache.put(orderId, user);
+        }
+    }
+
+    public void unlockDownloadOrder(String tenant, Long orderId) {
+        runningDownloadsByTenant.computeIfPresent(tenant, (t, cache) -> {
+            cache.invalidate(orderId);
+            return cache;
+        });
+    }
+
     @Override
-    public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os) {
+    public List<OrderDataFile> downloadOrderCurrentZip(String orderOwner,
+                                                       List<OrderDataFile> inDataFiles,
+                                                       OutputStream os) throws IOException {
+        // !! Force immutable list to mutable one by creating a new ArrayList. This is done to be able to remove
+        // elements from this list without modifying original provided one.
         List<OrderDataFile> availableFiles = new ArrayList<>(inDataFiles);
+
         List<OrderDataFile> downloadedFiles = new ArrayList<>();
         // A multiset to manage multi-occurrences of files with same name
         Multiset<String> fileNamesInZip = HashMultiset.create();

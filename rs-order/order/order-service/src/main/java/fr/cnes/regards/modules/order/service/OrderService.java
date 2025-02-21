@@ -474,6 +474,11 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    public boolean isActionAvailable(Order order, Action action) {
+        return StringUtils.isBlank(getErrorMessageOnAction(order, action));
+    }
+
+    @Override
     public boolean hasCurrentUserAccessTo(String owner) {
         String role = authResolver.getRole();
         String user = authResolver.getUser();
