@@ -91,7 +91,6 @@ public class OrderCreationNotificationTest {
 
     private OrderCreationService givenOrderCreationServiceUnderTest() {
         return new OrderCreationService(mockOrderRepo(),
-                                        null,
                                         mockJobOrderService(),
                                         null,
                                         null,
@@ -104,7 +103,6 @@ public class OrderCreationNotificationTest {
                                         null,
                                         templateService,
                                         mockOrderRequestResponseService(),
-                                        null,
                                         null,
                                         null,
                                         null);

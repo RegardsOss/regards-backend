@@ -119,7 +119,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     }
 
     @Test
-    public void multipleDsOrder() throws InterruptedException, EntityInvalidException {
+    public void multipleDsOrder() throws InterruptedException, EntityInvalidException, IOException {
 
         tenantResolver.forceTenant(getDefaultTenant());
         Basket basket = OrderTestUtils.getBasketDoubleSelection("multipleDsOrder");
@@ -178,7 +178,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     }
 
     @Test
-    public void multipleDsOrderPause() throws InterruptedException, ModuleException {
+    public void multipleDsOrderPause() throws InterruptedException, ModuleException, IOException {
 
         tenantResolver.forceTenant(getDefaultTenant());
         Basket basket = OrderTestUtils.getBasketDoubleSelection("multipleDsOrderPause");
@@ -220,7 +220,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     }
 
     @Test
-    public void multipleDsOrderPauseAndDelete() throws InterruptedException, ModuleException {
+    public void multipleDsOrderPauseAndDelete() throws InterruptedException, ModuleException, IOException {
 
         tenantResolver.forceTenant(getDefaultTenant());
         Basket basket = OrderTestUtils.getBasketDoubleSelection("multipleDsOrderPauseAndDelete");

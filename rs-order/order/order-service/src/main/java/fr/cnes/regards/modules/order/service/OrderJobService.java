@@ -63,7 +63,6 @@ import java.util.Optional;
  * @author oroussel
  */
 @Service
-@MultitenantTransactional
 @RefreshScope
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, DisposableBean {
@@ -182,7 +181,8 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
         }
     }
 
-    private Void doManageUserOrderStorageFilesJobInfos(String user) {
+    @MultitenantTransactional
+    public Void doManageUserOrderStorageFilesJobInfos(String user) {
         int currentJobsCount = (int) jobInfoRepository.countUserPlannedAndRunningJobs(user);
 
         // Current Waiting for user jobs
@@ -216,7 +216,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
             try {
                 LockServiceResponse<Object> lockResponse = lockService.runWithLock(String.format("run-suborders-%s",
                                                                                                  user),
-                                                                                   () -> doManageUserOrderStorageFilesJobInfos(
+                                                                                   () -> self.doManageUserOrderStorageFilesJobInfos(
                                                                                        user));
                 if (!lockResponse.isExecuted()) {
                     LOGGER.error(String.format("Wait too long for a lock to run suborders of user %s.", user));
@@ -229,6 +229,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
     }
 
     @Override
+    @MultitenantTransactional(readOnly = true)
     public boolean isOrderPaused(Long orderId) {
         Order order = orderRepository.getById(orderId);
         return order.getStatus().equals(OrderStatus.PAUSED);

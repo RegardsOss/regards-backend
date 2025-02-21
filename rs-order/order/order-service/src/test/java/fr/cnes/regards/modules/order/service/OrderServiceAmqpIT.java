@@ -40,6 +40,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +66,8 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
     private static final String ORDER_OWNER = "owner";
 
     @Test
-    public void test_whenOrderFinishedThenAmqpCorrectlySent() throws ModuleException, InterruptedException {
+    public void test_whenOrderFinishedThenAmqpCorrectlySent()
+        throws ModuleException, InterruptedException, IOException {
         // GIVEN
         tenantResolver.forceTenant(getDefaultTenant());
         Basket basket = OrderTestUtils.getBasketSingleSelection("simple");

@@ -496,6 +496,14 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         return orders;
     }
 
+    @MultitenantTransactional
+    public void updateDownloadedFiles(String orderOwner, List<OrderDataFile> downloadFiles) {
+        save(downloadFiles);
+        processingEventSender.sendDownloadedFilesNotification(downloadFiles);
+        // Don't forget to manage user order jobs (maybe order is in waitingForUser state)
+        orderJobService.manageUserOrderStorageFilesJobInfos(orderOwner);
+    }
+
     /**
      * Update finished order status and clean associated FileTasks not in error
      * If status updated, send an amqp notification

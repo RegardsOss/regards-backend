@@ -19,9 +19,7 @@
 package fr.cnes.regards.modules.order.service.request;
 
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
@@ -29,8 +27,6 @@ import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.ExceededBasketSizeException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
-import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
 import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.exception.AutoOrderException;
 import fr.cnes.regards.modules.order.service.BasketService;
@@ -39,8 +35,6 @@ import fr.cnes.regards.modules.order.service.settings.OrderSettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.time.OffsetDateTime;
 
@@ -50,18 +44,9 @@ import java.time.OffsetDateTime;
  * @author Iliana Ghazali
  **/
 @Service
-@MultitenantTransactional
 public class AutoOrderCompletionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoOrderCompletionService.class);
-
-    /**
-     * Constants
-     */
-
-    private static final String SEARCH_ENGINE_TYPE = "legacy";
-
-    private static final String DEFAULT_ACCESS_ROLE = DefaultRole.EXPLOIT.toString();
 
     public static final String ERROR_RESPONSE_FORMAT = "%s: %s"; // SimpleException.class: error cause
 
@@ -92,7 +77,7 @@ public class AutoOrderCompletionService {
     public Order generateOrder(OrderRequestDto orderRequestDto, String role, boolean checkSizeLimit)
         throws AutoOrderException {
         try {
-            Basket basket = createBasketFromRequest(orderRequestDto, role);
+            Basket basket = basketService.createBasketFromRequest(orderRequestDto, role);
             if (checkSizeLimit) {
                 verifyBasketSize(basket, orderRequestDto);
             }
@@ -136,56 +121,6 @@ public class AutoOrderCompletionService {
                              + "size allowed [{} bytes]", basketSizeInBytes, maxSizeLimitInBytes);
             }
         }
-    }
-
-    /**
-     * Create or update a basket from a {@link OrderRequestDto}. The basket will be completed with :
-     * <ul>
-     *     <li>{@link BasketDatasetSelection} computed from the request opensearch queries</li>
-     *     <li>{@link FileSelectionDescriptionDto} built with request filters</li>
-     * </ul>
-     *
-     * @param orderRequestDto order request with information to extract
-     * @param role            user role that limits its access to data. Can be null if the request originates from AMQP.
-     * @return the updated basket
-     * @throws TooManyItemsSelectedInBasketException if there are too many data on the basket
-     * @throws EmptySelectionException               if the opensearch queries did not return any data
-     */
-    private Basket createBasketFromRequest(OrderRequestDto orderRequestDto, String role)
-        throws TooManyItemsSelectedInBasketException, EmptySelectionException, CatalogSearchException {
-        // create basket
-        Basket basket = basketService.findOrCreate(orderRequestDto.getUser());
-        // add opensearch query parameters
-        for (String query : orderRequestDto.getQueries()) {
-            //FIXME: user and role should not be given directly for security reasons.
-            // Instead a token must be used, this feature will be released later.
-            basket = basketService.addSelection(basket.getId(),
-                                                createBasketSelectionRequest(query),
-                                                orderRequestDto.getUser(),
-                                                role == null ? DEFAULT_ACCESS_ROLE : role);
-        }
-        // add filters on dataTypes and filenames
-        // /!\ to do after addSelection because datasetSelections are init in this method
-        if (orderRequestDto.getFilters() != null) {
-            basket.getDatasetSelections()
-                  .forEach(ds -> ds.setFileSelectionDescription(new FileSelectionDescriptionDto(orderRequestDto.getFilters()
-                                                                                                               .getDataTypes(),
-                                                                                                orderRequestDto.getFilters()
-                                                                                                               .getFilenameRegExp())));
-        }
-        return basket;
-    }
-
-    /**
-     * Create a {@link BasketSelectionRequest} with a query extracted from {@link OrderRequestDto#getQueries()}
-     */
-    private BasketSelectionRequest createBasketSelectionRequest(String query) {
-        BasketSelectionRequest selectionRequest = new BasketSelectionRequest();
-        selectionRequest.setEngineType(SEARCH_ENGINE_TYPE);
-        MultiValueMap<String, String> searchParameters = new LinkedMultiValueMap<>();
-        searchParameters.add("q", query);
-        selectionRequest.setSearchParameters(searchParameters);
-        return selectionRequest;
     }
 
 }

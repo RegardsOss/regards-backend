@@ -74,7 +74,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
-@MultitenantTransactional
 @RefreshScope
 public class OrderDownloadService implements IOrderDownloadService, InitializingBean {
 
@@ -270,7 +269,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                                           Iterator<OrderDataFile> currentFileIterator,
                                           Multiset<String> fileNamesInZip,
                                           List<Pair<OrderDataFile, String>> downloadErrorFiles,
-                                          ZipArchiveOutputStream zos) {
+                                          ZipArchiveOutputStream zos) throws IOException {
         String errorPrefix = "Error while downloading file.";
         String aip = dataFile.getIpId().toString();
         dataFile.setDownloadError(null);
@@ -479,6 +478,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         }
     }
 
+    @MultitenantTransactional
     @Override
     public void downloadOrderMetalink(Long orderId, OutputStream os) throws ModuleException {
         Order order = orderRepository.findSimpleById(orderId);

@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
@@ -48,7 +47,8 @@ import java.util.UUID;
 import static fr.cnes.regards.modules.order.service.OrderService.DEFAULT_CORRELATION_ID_FORMAT;
 import static fr.cnes.regards.modules.order.service.request.OrderRequestTestUtils.checkOrderRequestResponses;
 import static fr.cnes.regards.modules.order.service.request.OrderRequestTestUtils.createValidOrderRequests;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 
 /**
  * Test for {@link AutoOrderRequestService} </br>
@@ -82,9 +82,6 @@ public class OrderRequestServiceTest {
                                                                                                orderService,
                                                                                                orderSettings);
         this.orderRequestService = new AutoOrderRequestService(autoOrderCompletionService);
-        Mockito.when(basketService.findOrCreate(any())).thenAnswer(answer -> new Basket(answer.getArgument(0)));
-        Mockito.when(basketService.addSelection(any(), any(), anyString(), anyString()))
-               .thenAnswer(answer -> new Basket(answer.getArgument(0)));
         Mockito.when(orderService.createOrder(any(), any(), any(), anyInt(), any(), any())).thenAnswer(answer -> {
             Order order = new Order();
             order.setId(Long.valueOf(answer.getArgument(5)));
@@ -117,7 +114,7 @@ public class OrderRequestServiceTest {
         int nbReq = 2;
         List<OrderRequestDto> orderRequests = createValidOrderRequests(nbReq);
         EmptySelectionException expectedException = new EmptySelectionException();
-        Mockito.when(basketService.addSelection(any(), any(), any(), any())).thenThrow(expectedException);
+        Mockito.when(basketService.createBasketFromRequest(any(), any())).thenThrow(expectedException);
 
         // WHEN
         List<OrderResponseDto> responses = orderRequestService.createOrderFromRequestsWithSizeLimit(orderRequests,

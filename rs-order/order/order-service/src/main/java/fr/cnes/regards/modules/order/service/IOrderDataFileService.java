@@ -22,12 +22,12 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
+import jakarta.annotation.Nullable;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
-import jakarta.annotation.Nullable;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -120,4 +120,11 @@ public interface IOrderDataFileService {
      */
     boolean hasAvailableFiles(Long orderId);
 
+    /**
+     * Update {@link OrderDataFile} after download success
+     *
+     * @param orderOwner     User performing the files download
+     * @param availableFiles list of files that have been downloaded
+     */
+    void updateDownloadedFiles(String orderOwner, List<OrderDataFile> availableFiles);
 }

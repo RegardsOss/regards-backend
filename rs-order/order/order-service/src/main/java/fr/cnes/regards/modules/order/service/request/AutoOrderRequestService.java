@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.order.service.request;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
@@ -45,7 +44,6 @@ import java.util.UUID;
  * @author Iliana Ghazali
  **/
 @Service
-@MultitenantTransactional
 public class AutoOrderRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoOrderRequestService.class);

@@ -32,12 +32,12 @@ import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
-import fr.cnes.regards.modules.order.dao.IDatasetTaskRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
 import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
@@ -57,8 +57,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -69,19 +67,14 @@ import static fr.cnes.regards.modules.order.service.utils.LogUtils.ORDER_ID_LOG_
 
 @Service
 @RefreshScope
-@MultitenantTransactional
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class OrderCreationService implements IOrderCreationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderCreationService.class);
-    
+
     private static final int MAX_BUCKET_FILE_COUNT = 5_000;
 
     private final IOrderRepository orderRepository;
-
-    private final IDatasetTaskRepository datasetTaskRepository;
-
-    private final IOrderDataFileService dataFileService;
 
     private final IOrderJobService orderJobService;
 
@@ -114,7 +107,6 @@ public class OrderCreationService implements IOrderCreationService {
     private final LockService lockService;
 
     public OrderCreationService(IOrderRepository orderRepository,
-                                IOrderDataFileService dataFileService,
                                 IOrderJobService orderJobService,
                                 BasketSelectionPageSearch basketSelectionPageSearch,
                                 SuborderSizeCounter suborderSizeCounter,
@@ -129,10 +121,8 @@ public class OrderCreationService implements IOrderCreationService {
                                 OrderResponseService orderResponseService,
                                 OrderAttachmentDataSetService orderAttachmentDataSetService,
                                 IOrderCreationService orderCreationService,
-                                LockService lockeService,
-                                IDatasetTaskRepository datasetTaskRepository) {
+                                LockService lockeService) {
         this.orderRepository = orderRepository;
-        this.dataFileService = dataFileService;
         this.orderJobService = orderJobService;
         this.basketSelectionPageSearch = basketSelectionPageSearch;
         this.suborderSizeCounter = suborderSizeCounter;
@@ -147,13 +137,11 @@ public class OrderCreationService implements IOrderCreationService {
         this.orderResponseService = orderResponseService;
         this.orderAttachmentDataSetService = orderAttachmentDataSetService;
         this.lockService = lockeService;
-        this.datasetTaskRepository = datasetTaskRepository;
         this.self = orderCreationService;
     }
 
     @Override
     @Async("orderThreadPoolTaskExecutor")
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void asyncCompleteOrderCreation(Basket basket,
                                            String owner,
                                            Long orderId,
@@ -202,7 +190,6 @@ public class OrderCreationService implements IOrderCreationService {
         OrderCounts orderCounts = new OrderCounts();
         try {
             String owner = order.getOwner();
-
             LOGGER.info("Completing order (id: {}) with owner {}...", order.getId(), owner);
             // To search objects with SearchClient
             int priority = orderJobService.computePriority(owner, role);
@@ -251,7 +238,7 @@ public class OrderCreationService implements IOrderCreationService {
         } catch (ModuleException e) {
             LOGGER.error("Error while completing order creation", e);
             order.setStatus(OrderStatus.FAILED);
-            order.setMessage(e.getMessage());
+            order.setMessage(getErrorMessage(e));
             order.setExpirationDate(orderHelperService.computeOrderExpirationDate(0, subOrderDuration));
         }
         // Notify external sub-orders in DONE state
@@ -270,6 +257,16 @@ public class OrderCreationService implements IOrderCreationService {
             orderJobService.manageUserOrderStorageFilesJobInfos(order.getOwner());
         }
         applicationEventPublisher.publishEvent(new OrderCreationCompletedEvent(order));
+    }
+
+    /**
+     * Transform exception message to error cause to save in order database.
+     */
+    private String getErrorMessage(ModuleException e) {
+        if (e instanceof TooManyItemsSelectedInBasketException) {
+            return "Too many items selected for your current order.";
+        }
+        return e.getMessage();
     }
 
     /**
@@ -324,7 +321,7 @@ public class OrderCreationService implements IOrderCreationService {
         }
     }
 
-    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
+    @MultitenantTransactional
     public OrderCounts manageDatasetSelection(Order order,
                                               String owner,
                                               String role,
@@ -338,8 +335,6 @@ public class OrderCreationService implements IOrderCreationService {
         Set<OrderDataFile> storageBucketFiles = new HashSet<>();
         // Bucket of external files (not managed by Storage, directly downloadable)
         Set<OrderDataFile> externalBucketFiles = new HashSet<>();
-
-        List<Long> externalSubOrderIds = new ArrayList<>();
 
         DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel, DataTypeSelection.ALL.getFileTypes());
 

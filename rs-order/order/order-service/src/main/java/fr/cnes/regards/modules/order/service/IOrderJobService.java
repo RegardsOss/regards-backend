@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
-
 /**
  * Order job service.
  * This service is responsible of managing order jobs taken into account user restrictions on priorities and number of
@@ -30,9 +27,11 @@ import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEven
  */
 public interface IOrderJobService {
 
-    void handleApplicationReadyEvent(ApplicationReadyEvent event);
-
-    void handleRefreshScopeRefreshedEvent(RefreshScopeRefreshedEvent event);
+    /**
+     * Manage user order jobs ie look if restriction on user concurrent jobs count permits new ones to be added and add
+     * them if it is the case
+     */
+    Void doManageUserOrderStorageFilesJobInfos(String user);
 
     /**
      * Compute priority for next order/jobInfo(s)
@@ -44,8 +43,8 @@ public interface IOrderJobService {
     int computePriority(String user, String role);
 
     /**
-     * Manage user order jobs ie look if restriction on user concurrent jobs count permits new ones to be added and add
-     * them if it is the case
+     * Perform a lock on user name. When lock is acquired, run the doManageUserOrderStorageFilesJobInfos action
+     * This lock is necessary to avoid this process running multiple time in parallel for a same user.
      */
     void manageUserOrderStorageFilesJobInfos(String user);
 

@@ -63,8 +63,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeType;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -129,12 +127,8 @@ public class OrderProcessingService implements IOrderProcessingService {
         this.jobInfoService = jobInfoService;
     }
 
-    /**
-     * Propagation REQUIRES_NEW : One transaction per dataset selection, to avoid hibernate cache size explode if
-     * many dataset selection are to handle in order.
-     */
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @MultitenantTransactional
     public OrderCounts manageProcessedDatasetSelection(Order order,
                                                        String owner,
                                                        String role,

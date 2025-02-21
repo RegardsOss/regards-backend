@@ -178,7 +178,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @MultitenantTransactional
     public Order loadComplete(Long id) {
         return orderRepository.findCompleteById(id);
     }
@@ -280,7 +280,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     public Order create(Order order) {
         LOGGER.info("Creating order with owner {}", order.getOwner());
         order.setCreationDate(OffsetDateTime.now());

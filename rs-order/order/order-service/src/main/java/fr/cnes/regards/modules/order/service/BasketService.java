@@ -23,6 +23,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.ResponseEntityUtils;
@@ -39,6 +40,7 @@ import fr.cnes.regards.modules.order.domain.exception.*;
 import fr.cnes.regards.modules.order.dto.dto.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.dto.dto.FileSelectionDescriptionDto;
 import fr.cnes.regards.modules.order.dto.dto.ProcessDatasetDescriptionDto;
+import fr.cnes.regards.modules.order.dto.input.OrderRequestDto;
 import fr.cnes.regards.modules.order.exception.CannotHaveProcessingAndFiltersException;
 import fr.cnes.regards.modules.order.service.processing.OrderProcessingService;
 import fr.cnes.regards.modules.order.service.utils.BasketSelectionFromFileUtils;
@@ -80,11 +82,11 @@ import java.util.stream.Stream;
  * @author Sébastien Binda
  */
 @Service
-@MultitenantTransactional(noRollbackFor = { EmptySelectionException.class,
-                                            TooManyItemsSelectedInBasketException.class })
 public class BasketService implements IBasketService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BasketService.class);
+
+    private static final String DEFAULT_ACCESS_ROLE = DefaultRole.EXPLOIT.toString();
 
     private static final String LEGACY_SEARCH_ENGINE_TYPE = "legacy";
 
@@ -226,6 +228,58 @@ public class BasketService implements IBasketService {
         return repos.save(basket);
     }
 
+    /**
+     * Create or update a basket from a {@link OrderRequestDto}. The basket will be completed with :
+     * <ul>
+     *     <li>{@link BasketDatasetSelection} computed from the request opensearch queries</li>
+     *     <li>{@link FileSelectionDescriptionDto} built with request filters</li>
+     * </ul>
+     * <p>
+     * Transactional : Transaction is needed here to ensure basket is fully created or not.
+     *
+     * @param orderRequestDto order request with information to extract
+     * @param role            user role that limits its access to data. Can be null if the request originates from AMQP.
+     * @return the updated basket
+     * @throws TooManyItemsSelectedInBasketException if there are too many data on the basket
+     * @throws EmptySelectionException               if the opensearch queries did not return any data
+     */
+    @MultitenantTransactional
+    public Basket createBasketFromRequest(OrderRequestDto orderRequestDto, String role)
+        throws TooManyItemsSelectedInBasketException, EmptySelectionException, CatalogSearchException {
+        // create basket
+        Basket basket = findOrCreate(orderRequestDto.getUser());
+        // add opensearch query parameters
+        for (String query : orderRequestDto.getQueries()) {
+            basket = addSelection(basket.getId(),
+                                  createBasketSelectionRequest(query),
+                                  orderRequestDto.getUser(),
+                                  role == null ? DEFAULT_ACCESS_ROLE : role);
+        }
+        // add filters on dataTypes and filenames
+        // /!\ to do after addSelection because datasetSelections are init in this method
+        if (orderRequestDto.getFilters() != null) {
+            basket.getDatasetSelections()
+                  .forEach(ds -> ds.setFileSelectionDescription(new FileSelectionDescriptionDto(orderRequestDto.getFilters()
+                                                                                                               .getDataTypes(),
+                                                                                                orderRequestDto.getFilters()
+                                                                                                               .getFilenameRegExp())));
+        }
+        return basket;
+    }
+
+    /**
+     * Create a {@link BasketSelectionRequest} with a query extracted from {@link OrderRequestDto#getQueries()}
+     */
+    private BasketSelectionRequest createBasketSelectionRequest(String query) {
+        BasketSelectionRequest selectionRequest = new BasketSelectionRequest();
+        selectionRequest.setEngineType(LEGACY_SEARCH_ENGINE_TYPE);
+        MultiValueMap<String, String> searchParameters = new LinkedMultiValueMap<>();
+        searchParameters.add("q", query);
+        selectionRequest.setSearchParameters(searchParameters);
+        return selectionRequest;
+    }
+
+    @MultitenantTransactional
     @Override
     public Basket addSelectionFromFile(MultipartFile file)
         throws TooManyItemsInFileException, CatalogSearchException, EmptySelectionException,
@@ -289,14 +343,13 @@ public class BasketService implements IBasketService {
                 }
                 try {
                     computeSummaryAndUpdateDatasetSelection(dsSelection);
-                    repos.save(basket);
                 } catch (CatalogSearchException e) {
                     LOGGER.error(e.getMessage(), e);
                 }
                 break;
             }
         }
-        return basket;
+        return repos.save(basket);
     }
 
     @Override
