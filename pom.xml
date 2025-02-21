@@ -2653,7 +2653,7 @@
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
                 <artifactId>netty-nio-client</artifactId>
-                <version>software.amazon.awssdk.s3.version</version>
+                <version>${software.amazon.awssdk.s3.version}</version>
             </dependency>
 
             <!-- DTO Mapper -->
