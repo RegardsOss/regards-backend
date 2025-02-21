@@ -55,6 +55,8 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
      */
     public static final int LABEL_FIELD_LENGTH = 50;
 
+    public static final int MESSAGE_MAX_LENGTH = 255;
+
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id", foreignKey = @ForeignKey(name = "fk_order"))
     @SortNatural
@@ -110,7 +112,7 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     private boolean waitingForUser = false;
 
     @Column(name = "message", nullable = true)
-    @Length(max = 255)
+    @Length(max = MESSAGE_MAX_LENGTH)
     private String message;
 
     /**
@@ -244,7 +246,11 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     }
 
     public void setMessage(String message) {
-        this.message = message;
+        if (message != null && message.length() > MESSAGE_MAX_LENGTH) {
+            this.message = message.substring(0, MESSAGE_MAX_LENGTH - 4) + "...";
+        } else {
+            this.message = message;
+        }
     }
 
     public String getCorrelationId() {
