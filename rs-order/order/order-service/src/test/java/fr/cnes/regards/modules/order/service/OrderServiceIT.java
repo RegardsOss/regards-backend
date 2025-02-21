@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.order.configuration.OrderAutoConfiguration;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IDatasetTaskRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -94,7 +95,7 @@ import static org.mockito.ArgumentMatchers.any;
  * @author oroussel
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = ServiceConfiguration.class)
+@ContextConfiguration(classes = { ServiceConfiguration.class, OrderAutoConfiguration.class })
 @ActiveProfiles("test")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @DirtiesContext

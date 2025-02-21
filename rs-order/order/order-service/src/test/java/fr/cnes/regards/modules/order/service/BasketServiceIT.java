@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.configuration.OrderAutoConfiguration;
 import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
@@ -66,7 +67,7 @@ import static fr.cnes.regards.modules.order.test.SearchClientMock.*;
  * @author oroussel
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = ServiceConfiguration.class)
+@ContextConfiguration(classes = { ServiceConfiguration.class, OrderAutoConfiguration.class })
 @ActiveProfiles("test")
 public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
 

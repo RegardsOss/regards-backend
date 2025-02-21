@@ -152,7 +152,7 @@ public class OrderCreationService implements IOrderCreationService {
     }
 
     @Override
-    @Async
+    @Async("orderThreadPoolTaskExecutor")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void asyncCompleteOrderCreation(Basket basket,
                                            String owner,

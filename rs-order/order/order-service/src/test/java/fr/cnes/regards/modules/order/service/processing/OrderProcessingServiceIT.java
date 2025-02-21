@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
+import fr.cnes.regards.modules.order.configuration.OrderAutoConfiguration;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
@@ -47,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
@@ -59,6 +61,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@ContextConfiguration(classes = OrderAutoConfiguration.class)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_processing_test_it_scope_item", })
 public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
 
