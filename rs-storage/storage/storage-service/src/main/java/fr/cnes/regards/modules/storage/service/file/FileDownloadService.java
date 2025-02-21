@@ -67,7 +67,6 @@ import static io.vavr.API.Case;
  * @author Sébastien Binda
  */
 @Service
-@MultitenantTransactional
 public class FileDownloadService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDownloadService.class);
@@ -112,6 +111,7 @@ public class FileDownloadService {
      */
     @MultitenantTransactional(noRollbackFor = { ModuleException.class })
     public Callable<DownloadableFile> downloadFile(String checksum) throws ModuleException {
+        LOGGER.debug("Service download checksum: {}", checksum);
         //noinspection unchecked
         return Try.success(checksum)
                   .flatMap(this::downloadCacheFile)
@@ -301,10 +301,8 @@ public class FileDownloadService {
                 fileToDownload.getMetaInfo().getChecksum(),
                 fileToDownload.getLocation().toString()), e);
         } catch (FileNotFoundException e) {
-            LOGGER.error(e.getMessage(), e);
             throw new EntityNotFoundException(e.getMessage());
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
             throw new ModuleException(e.getMessage(), e);
         }
     }
