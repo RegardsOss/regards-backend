@@ -63,6 +63,9 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import org.springframework.util.MimeTypeUtils;
 
 /**
  * {@link IProjectUserService} implementation
@@ -103,6 +106,9 @@ public class ProjectUserService implements IProjectUserService {
     private final QuotaHelperService quotaHelperService;
 
     private final IPublisher publisher;
+
+    @Autowired
+    private INotificationClient notificationClient;
 
     /**
      * Configured instance administrator user email/login
