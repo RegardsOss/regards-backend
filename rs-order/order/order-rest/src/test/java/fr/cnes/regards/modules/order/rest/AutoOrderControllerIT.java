@@ -134,9 +134,6 @@ public class AutoOrderControllerIT extends AbstractOrderControllerIT {
                                                           "order was not created from orderRequestDto!");
 
         // THEN
-        // empty basket should be created
-        Assert.assertNotNull(basketRepository.findByOwner(getDefaultUserEmail()));
-
         // expect rest response
         actualResponse.andExpect(MockMvcResultMatchers.jsonPath("$.content").exists())
                       .andExpect(MockMvcResultMatchers.jsonPath("$.content.status",

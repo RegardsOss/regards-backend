@@ -42,12 +42,10 @@ import fr.cnes.regards.modules.order.service.job.OrderJobPriority;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
 import fr.cnes.regards.modules.order.service.request.CancelOrderJob;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
@@ -55,7 +53,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Order jobs specific behavior, like priority computation or job enqueue user business rules management
@@ -107,10 +104,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
         this.tenantResolver = tenantResolver;
     }
 
-    @Override
     @EventListener
-    @Transactional(Transactional.TxType.NOT_SUPPORTED)
-    // Doesn't need a transaction (make Controller IT tests failed otherwise)
     public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(JobEvent.class, this);
     }
@@ -118,12 +112,6 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
     @Override
     public void destroy() {
         subscriber.unsubscribeFrom(JobEvent.class, false);
-    }
-
-    @Override
-    @EventListener
-    public void handleRefreshScopeRefreshedEvent(RefreshScopeRefreshedEvent event) {
-        subscriber.subscribeTo(JobEvent.class, this);
     }
 
     @Override
@@ -166,8 +154,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
                                     endedJobInfo.getId());
                         // Update datafile_status to error
                         Long[] fileIds = endedJobInfo.getParametersAsMap().get(FilesJobParameter.NAME).getValue();
-                        List<OrderDataFile> errorDataFiles =
-                            orderDataFileRepository.findAllById(Arrays.asList(fileIds));
+                        List<OrderDataFile> errorDataFiles = orderDataFileRepository.findAllById(Arrays.asList(fileIds));
                         errorDataFiles.forEach(df -> df.setState(FileState.ERROR));
                         // Save update dataFiles with error status and launch next fileTasks if any (done in the
                         // saveAll method)

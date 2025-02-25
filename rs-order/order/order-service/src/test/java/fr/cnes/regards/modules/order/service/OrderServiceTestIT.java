@@ -30,8 +30,6 @@ import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
-import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
@@ -91,13 +89,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    protected IBasketRepository basketRepos;
-
-    @Autowired
     private IOrderDataFileService orderDataFileService;
-
-    @Autowired
-    private IOrderRepository orderRepos;
 
     @Autowired
     public IDatasetClient datasetClient;

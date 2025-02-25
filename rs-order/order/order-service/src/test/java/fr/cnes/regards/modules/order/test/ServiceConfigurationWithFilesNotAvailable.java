@@ -29,7 +29,10 @@ import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
-import fr.cnes.regards.modules.storage.client.*;
+import fr.cnes.regards.modules.storage.client.IStorageClient;
+import fr.cnes.regards.modules.storage.client.IStorageDownloaderRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.*;
@@ -42,7 +45,7 @@ import static org.mockito.Mockito.mock;
  * @author Sébastien Binda
  */
 @Configuration
-@ComponentScan(basePackages = { "fr.cnes.regards.modules.order.service" })
+@ComponentScan(basePackages = { "fr.cnes.regards.modules" })
 @EnableAutoConfiguration
 @EnableScheduling
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
@@ -88,11 +91,6 @@ public class ServiceConfigurationWithFilesNotAvailable {
     @Bean
     public IStorageDownloaderRestClient mockStorageDownloaderRestClient() {
         return Mockito.mock(IStorageDownloaderRestClient.class);
-    }
-
-    @Bean
-    public StorageDownloaderClient storageDownloaderClient() {
-        return mock(StorageDownloaderClient.class);
     }
 
     @Bean

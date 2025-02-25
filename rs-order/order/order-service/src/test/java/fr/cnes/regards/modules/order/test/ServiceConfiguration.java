@@ -38,7 +38,6 @@ import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
-import fr.cnes.regards.modules.storage.client.StorageDownloaderClient;
 import org.assertj.core.util.Lists;
 import org.eclipse.jetty.http.HttpHeader;
 import org.mockito.Mockito;
@@ -59,7 +58,7 @@ import static org.mockito.Mockito.mock;
  * @author Sébastien Binda
  */
 @Configuration
-@ComponentScan(basePackages = { "fr.cnes.regards.modules.order.service" })
+@ComponentScan(basePackages = { "fr.cnes.regards.modules" })
 @EnableAutoConfiguration
 @EnableScheduling
 @PropertySource(value = { "classpath:test.properties", "classpath:test_${user.name}.properties" },
@@ -105,11 +104,6 @@ public class ServiceConfiguration {
                               headers(null),
                               Request.Body.empty(),
                               new RequestTemplate());
-    }
-
-    @Bean
-    public StorageDownloaderClient storageDownloaderClient() {
-        return mock(StorageDownloaderClient.class);
     }
 
     @Bean

@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 /**
@@ -61,7 +62,7 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
     @Autowired
     private OrderMaintenanceService orderMaintenanceService;
 
-    private static final String CORRELATION_ID = "myCorrelationId";
+    @Autowired
 
     private static final String ORDER_OWNER = "owner";
 
@@ -76,7 +77,8 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
         Mockito.when(authenticationResolver.getUser()).thenReturn(ORDER_OWNER);
 
         // WHEN Create and run order
-        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240, ORDER_OWNER, CORRELATION_ID);
+        String correlationId = UUID.randomUUID().toString();
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240, ORDER_OWNER, correlationId);
         simulateSchedulerMultipleTimes(1);
         waitForSubOrderDone();
         simulateSchedulerMultipleTimes(2);
@@ -91,12 +93,14 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
         Assertions.assertEquals(1, events.size());
         OrderResponseDtoEvent suborderDoneEvent = events.get(0);
         Assertions.assertEquals(OrderRequestStatus.SUBORDER_DONE, suborderDoneEvent.getStatus());
-        Assertions.assertEquals(CORRELATION_ID, suborderDoneEvent.getCorrelationId());
+        Assertions.assertEquals(correlationId, suborderDoneEvent.getCorrelationId());
 
         Mockito.reset(publisher);
         // continue execution : download files to allow next suborder to be run
         List<OrderDataFile> availableFiles = new ArrayList<>(dataFileService.findAllAvailables(order.getId()));
+        Assertions.assertTrue(!availableFiles.isEmpty(), "There should be files available here");
         simulateSchedulerMultipleTimes(1);
+        LOGGER.info("Simulating user download !!!!!!!!!!!!!!!");
         orderDownloadService.downloadOrderCurrentZip(order.getOwner(), availableFiles, new OutputStreamDoNothing());
         waitForSubOrderDone(); // wait for the second suborder done
         simulateSchedulerMultipleTimes(4);
@@ -116,7 +120,7 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
                                                           .toList();
         Assertions.assertEquals(1, mainEventList.size());
         OrderResponseDtoEvent mainEvent = mainEventList.get(0);
-        Assertions.assertEquals(CORRELATION_ID, mainEvent.getCorrelationId());
+        Assertions.assertEquals(correlationId, mainEvent.getCorrelationId());
         Assertions.assertEquals(OrderRequestStatus.DONE, mainEvent.getStatus());
         // assure that 2 sub-order has been created
         Assertions.assertEquals(2, filesTasksRepository.countByOrderId(order.getId()));
@@ -126,7 +130,7 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
                                                                          == OrderRequestStatus.SUBORDER_DONE)
                                                            .toList();
         Assertions.assertEquals(2, suborderEvents.size());
-        Assertions.assertTrue(suborderEvents.stream().allMatch(ev -> CORRELATION_ID.equals(ev.getCorrelationId())));
+        Assertions.assertTrue(suborderEvents.stream().allMatch(ev -> correlationId.equals(ev.getCorrelationId())));
         String downloadUrl = "regardsHost/api/v1/rs-order/user/orders/" + order.getId() + "/download";
         Assertions.assertEquals(downloadUrl, mainEvent.getDownloadLink());
         Assertions.assertTrue(suborderEvents.stream().allMatch(ev -> downloadUrl.equals(ev.getDownloadLink())));
@@ -140,9 +144,10 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
         basketRepository.save(basket);
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.when(authenticationResolver.getUser()).thenReturn(ORDER_OWNER);
+        String correlationId = UUID.randomUUID().toString();
 
         // WHEN Create and run order
-        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240, ORDER_OWNER, CORRELATION_ID);
+        Order order = orderService.createOrder(basket, basket.getOwner(), URL, 240, ORDER_OWNER, correlationId);
         simulateSchedulerMultipleTimes(1);
         waitForSubOrderDone();
         simulateSchedulerMultipleTimes(2); // schedule
@@ -160,7 +165,7 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
         order = orderRepository.findSimpleById(order.getId());
         Assertions.assertEquals(OrderStatus.DONE_WITH_WARNING, order.getStatus());
         Assertions.assertEquals(OrderRequestStatus.FAILED, orderDoneEvent.getStatus());
-        Assertions.assertEquals(CORRELATION_ID, orderDoneEvent.getCorrelationId());
+        Assertions.assertEquals(correlationId, orderDoneEvent.getCorrelationId());
     }
 
     private void simulateSchedulerMultipleTimes(int times) {
