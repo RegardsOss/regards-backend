@@ -56,6 +56,7 @@ public class FeignClientConfiguration {
 
     /**
      * Basic log
+     *
      * @return loggin level
      */
     @Bean
@@ -111,25 +112,48 @@ public class FeignClientConfiguration {
     }
 
     /**
-     * Allow 404 response to be processed as empty response insetad of error.
+     * Allow 404 response to be processed as empty response instead of error.
+     *
+     * @param bulkhead          enable or disable bulkhead security. Bulkhead is enabled by default. Bulkhead is a mechanism
+     *                          to limit the number of concurrent calls to a service. If the number of concurrent calls is
+     *                          higher than the limit, the call is rejected.
+     * @param maxConcurrentCall if bulkhead is enabled, this parameter defines the maximum number of concurrent calls
+     *                          allowed to the service.
+     * @param maxWaitDuration   if bulkhead is enabled, this parameter defines the maximum time to wait for a call to be
+     *                          accepted by the bulkhead.
+     *                          If the call is not accepted within this time, the call is rejected.
+     *                          If the value is 0, the call is rejected immediately if the bulkhead is full.
+     *                          If the value is negative, the call is never rejected.
+     *                          If the value is positive, the call is rejected after the specified time.
+     *                          The default value is 0.
+     *                          The value is expressed in seconds.
+     * @param rateLimiter       if rateLimiter is enabled, this parameter defines the maximum number of calls allowed to the
+     *                          service in a given time frame.
+     *                          If the number of calls is higher than the limit, the call is rejected.
+     *                          The default value is 50.
+     * @param connexionTimeout  Connexion timeout for feign. Default is 10 seconds. Expressed in milliseconds.
+     * @param readTimeout       the read timeout for the feign client
+     *                          The default value is 60000 milliseconds.
+     *                          The value is expressed in milliseconds.
+     *                          The read timeout is the maximum time to wait for a response from the server.
+     *                          If the server does not respond within this time, the call is aborted.
      */
     @Bean
     public Feign.Builder builder(@Value("${regards.enable.feign.bulkhead:true}") boolean bulkhead,
                                  @Value("${regards.enable.feign.max.concurrent.call:25}") int maxConcurrentCall,
                                  @Value("${regards.enable.feign.max.wait.duration.seconds:0}") int maxWaitDuration,
-                                 @Value("${regards.enable.feign.rateLimiter:true}") boolean rateLimiter,
-                                 @Value("${regards.enable.feign.readTimeout:60000}") int readTimeout,
-                                 @Value("${regards.enable.feign.bulkhead.maxWaitDurationInSeconds:3600}")
-                                 long maxWaitDurationInSeconds) {
+                                 @Value("${regards.enable.feign.rateLimiter:50}") int rateLimiter,
+                                 @Value("${regards.enable.feign.connexionTimeout:10000}") int connexionTimeout,
+                                 @Value("${regards.enable.feign.readTimeout:60000}") int readTimeout) {
 
         LOGGER.info("Initialization of feign configuration with bulkhead={}, rateLimiter={}", bulkhead, rateLimiter);
         FeignDecorators.Builder feignDecoratorBuilder = FeignDecorators.builder();
-        if (rateLimiter) {
+        if (rateLimiter > 0) {
             // configure feign with custom rate limiter
             RateLimiter rateLimitConfig = RateLimiter.of("customRateLimiter",
                                                          RateLimiterConfig.custom()
                                                                           .limitRefreshPeriod(Duration.ofMillis(1L))
-                                                                          .limitForPeriod(50)
+                                                                          .limitForPeriod(rateLimiter)
                                                                           .timeoutDuration(Duration.ofMillis(readTimeout))
                                                                           .build());
             feignDecoratorBuilder.withRateLimiter(rateLimitConfig);
@@ -148,7 +172,11 @@ public class FeignClientConfiguration {
         // return custom feign builder and allow 404 responses to be processed without errors
         Resilience4jFeign.Builder builder = Resilience4jFeign.builder(feignDecoratorBuilder.build());
         builder.dismiss404();
-        builder.options(new Request.Options(5000, TimeUnit.MILLISECONDS, readTimeout, TimeUnit.MILLISECONDS, false));
+        builder.options(new Request.Options(connexionTimeout,
+                                            TimeUnit.MILLISECONDS,
+                                            readTimeout,
+                                            TimeUnit.MILLISECONDS,
+                                            false));
         return builder;
     }
 }

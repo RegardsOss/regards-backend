@@ -102,6 +102,13 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         return configManagers.get(config, cfg -> new S3AsyncClientReactorWrapper(cfg));
     }
 
+    /**
+     * @param readCmd   S3 command to execute
+     * @param rateLimit the rate limit for the stream. rateLimit must be > 0.
+     *                  the rate limit is used to limit the number of byte buffers prefetch in the reactive flux.
+     *                  It is necessary to limit the rate, in case of buffers are not read at te same speed than
+     *                  they are created.
+     */
     public Mono<ReadResult> read(Read readCmd, int rateLimit) {
         return readingCallableMono(readCmd, rateLimit).subscribeOn(scheduler)
                                                       .onErrorResume(t -> Mono.just(new UnreachableStorage(readCmd, t)))
@@ -201,6 +208,13 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
         return getClient(config).contentLength(bucket, archivePath).onErrorMap(S3ClientException::new);
     }
 
+    /**
+     * @param readCmd   S3 command to execute
+     * @param rateLimit the rate limit for the stream. rateLimit must be > 0.
+     *                  the rate limit is used to limit the number of byte buffers prefetch in the reactive flux.
+     *                  It is necessary to limit the rate, in case of buffers are not read at te same speed than
+     *                  they are created.
+     */
     private Mono<ReadResult> readingCallableMono(Read readCmd, int rateLimit) {
         StorageConfigDto config = readCmd.getConfig();
         String bucket = config.getBucket();

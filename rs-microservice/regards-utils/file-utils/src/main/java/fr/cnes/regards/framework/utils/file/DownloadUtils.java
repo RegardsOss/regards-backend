@@ -401,6 +401,11 @@ public final class DownloadUtils {
      *
      * @param entryKey      the file to download on the s3 server
      * @param storageConfig the storageConfiguration
+     *                      /**
+     * @param rateLimit     the rate limit for the stream. rateLimit must be > 0.
+     *                      the rate limit is used to limit the number of byte buffers prefetch in the reactive flux.
+     *                      It is necessary to limit the rate, in case of buffers are not read at te same speed than
+     *                      they are created.
      * @return an InputStream of the file
      */
     public static InputStream getInputStreamFromS3Source(String entryKey,
@@ -463,14 +468,12 @@ public final class DownloadUtils {
                 "This should never happen, the input stream was created 1 line before we tried connecting it, it cannot be already connected",
                 e);
         }
-        DataBufferUtils.write(buffers.map(dbf::wrap), outputStream).onErrorResume(throwable -> {
+        DataBufferUtils.write(buffers.map(dbf::wrap), outputStream).doOnError(e -> {
             try {
-                LOGGER.error("Error during the closing of output stream");
                 outputStream.close();
             } catch (IOException ioe) {
                 LOGGER.error("An error occurred while closing file output stream", ioe);
             }
-            return Flux.error(throwable);
         }).doOnComplete(() -> {
             try {
                 outputStream.close();

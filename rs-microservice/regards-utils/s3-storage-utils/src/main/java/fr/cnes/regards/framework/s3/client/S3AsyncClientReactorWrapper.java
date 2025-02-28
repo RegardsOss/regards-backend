@@ -301,6 +301,15 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
         });
     }
 
+    /**
+     * @param bucket        the bucket name
+     * @param key           the key of the object
+     * @param failIfMissing if true, the method will throw an exception if the object is not found
+     * @param rateLimit     the rate limit for the stream. rateLimit must be > 0.
+     *                      the rate limit is used to limit the number of byte buffers prefetch in the reactive flux.
+     *                      It is necessary to limit the rate, in case of buffers are not read at te same speed than
+     *                      they are created.
+     */
     public Mono<ResponseAndStream> readContentFlux(String bucket, String key, boolean failIfMissing, int rateLimit) {
         return withClient(client -> {
             GetObjectRequest request = GetObjectRequest.builder().bucket(bucket).key(key).build();

@@ -20,6 +20,12 @@ public class GetResponseAndStream implements AsyncResponseTransformer<GetObjectR
 
     private GetObjectResponse response;
 
+    /**
+     * The rate limit for the stream. rateLimit must be > 0.
+     * The rate limit is used to limit the number of byte buffers prefetch in the reactive flux.
+     * It is necessary to limit the rate, in case of buffers are not read at te same speed than
+     * they are created.
+     */
     private final int rateLimit;
 
     public GetResponseAndStream(int rateLimit) {
