@@ -69,8 +69,6 @@ public final class S3BucketTestUtils {
 
     private static final int MULTIPART_UPLOAD_PREFETCH = 1;
 
-    private static final int MAX_S3_HTTP_CONNECTION = 50;
-
     private S3BucketTestUtils() {
     }
 
@@ -152,8 +150,7 @@ public final class S3BucketTestUtils {
         StorageCommandResult.WriteResult result;
         try (S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler,
                                                                               maxBytesPerPart,
-                                                                              MULTIPART_UPLOAD_PREFETCH,
-                                                                              MAX_S3_HTTP_CONNECTION)) {
+                                                                              MULTIPART_UPLOAD_PREFETCH)) {
 
             result = client.write(StorageCommand.write(storageConfig, cmdId, entryKey, entry)).block();
             if (result == null) {
@@ -191,8 +188,7 @@ public final class S3BucketTestUtils {
         StorageCommandResult.CheckResult result;
         try (S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler,
                                                                               maxBytesPerPart,
-                                                                              MULTIPART_UPLOAD_PREFETCH,
-                                                                              MAX_S3_HTTP_CONNECTION)) {
+                                                                              MULTIPART_UPLOAD_PREFETCH)) {
 
             result = client.check(StorageCommand.check(storageConfig, cmdId, entryKey)).block();
         }

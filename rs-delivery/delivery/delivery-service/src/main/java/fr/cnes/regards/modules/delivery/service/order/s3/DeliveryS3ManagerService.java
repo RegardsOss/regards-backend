@@ -55,7 +55,7 @@ public class DeliveryS3ManagerService {
 
     private S3HighLevelReactiveClient initS3Client() {
         Scheduler scheduler = Schedulers.newParallel("delivery-s3-client", 10);
-        return new S3HighLevelReactiveClient(scheduler, MULTIPART_THRESHOLD_BYTES, 10, MAX_S3_HTTP_CONCURRENT_ACCESS);
+        return new S3HighLevelReactiveClient(scheduler, MULTIPART_THRESHOLD_BYTES, 10);
     }
 
     /**

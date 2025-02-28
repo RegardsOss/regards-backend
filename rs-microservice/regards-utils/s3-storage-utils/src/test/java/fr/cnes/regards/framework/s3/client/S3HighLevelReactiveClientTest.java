@@ -134,7 +134,7 @@ public class S3HighLevelReactiveClientTest {
                                                                       .retryBackOffBaseDuration(1)
                                                                       .retryBackOffMaxDuration(2)
                                                                       .build();
-        client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024, 10, 50);
+        client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024, 10);
     }
 
     @After

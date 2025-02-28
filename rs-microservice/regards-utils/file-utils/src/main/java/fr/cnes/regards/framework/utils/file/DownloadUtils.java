@@ -68,8 +68,6 @@ public final class DownloadUtils {
 
     private static final String HTTP_VERB_HEAD = "HEAD";
 
-    private static final int S3_MAX_HTTP_CONCURRENT_ACCESS = 500;
-
     /**
      * Client singleton for usage in the DownloadUtils
      */
@@ -444,7 +442,7 @@ public final class DownloadUtils {
                                                                "s3-download-utils-reactive-client",
                                                                5);
             int maxBytesPerPart = 5 * 1024 * 1024;
-            client = new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10, S3_MAX_HTTP_CONCURRENT_ACCESS);
+            client = new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10);
         }
         return client;
     }

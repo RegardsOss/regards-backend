@@ -86,10 +86,7 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
                                                                                                     S3HighLevelReactiveClient::onClientCacheEviction)
                                                                                                 .build();
 
-    public S3HighLevelReactiveClient(Scheduler scheduler,
-                                     int maxBytesPerPart,
-                                     int reactorPreFetch,
-                                     int s3clientHttpMaxConcurrency) {
+    public S3HighLevelReactiveClient(Scheduler scheduler, int maxBytesPerPart, int reactorPreFetch) {
         this.scheduler = scheduler;
         this.maxBytesPerPart = maxBytesPerPart;
         this.reactorPreFetch = reactorPreFetch;
