@@ -21,16 +21,12 @@ package fr.cnes.regards.modules.storage.rest;
 import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
 import io.vavr.control.Try;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class DownloadableFileWrapper extends FileDownloadService.QuotaLimitedDownloadableFile {
 
     private final FileDownloadService.QuotaLimitedDownloadableFile dlFile;
 
     private final IQuotaService.WithQuotaOperationHandler quotaHandler;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadableFileWrapper.class);
 
     DownloadableFileWrapper(FileDownloadService.QuotaLimitedDownloadableFile dlFile,
                             IQuotaService.WithQuotaOperationHandler quotaHandler) {
