@@ -27,7 +27,7 @@ import java.util.Objects;
  **/
 public class StorageResponseDto {
 
-    private final Long requestId;
+    private final String requestId;
 
     private final String url;
 
@@ -52,7 +52,7 @@ public class StorageResponseDto {
     /**
      * Full constructor
      */
-    public StorageResponseDto(Long requestId,
+    public StorageResponseDto(String requestId,
                               String url,
                               String checksum,
                               long size,
@@ -79,14 +79,19 @@ public class StorageResponseDto {
     /**
      * Fully stored Success constructor
      */
-    public StorageResponseDto(Long requestId, String url, String checksum, long size, Integer height, Integer weight) {
+    public StorageResponseDto(String requestId,
+                              String url,
+                              String checksum,
+                              long size,
+                              Integer height,
+                              Integer weight) {
         this(requestId, url, checksum, size, height, weight, false, null, null, null, null);
     }
 
     /**
      * Cache Success constructor
      */
-    public StorageResponseDto(Long requestId,
+    public StorageResponseDto(String requestId,
                               String url,
                               String checksum,
                               long size,
@@ -100,14 +105,14 @@ public class StorageResponseDto {
     /**
      * Reference success constructor
      */
-    public StorageResponseDto(Long requestId, String url, String checksum) {
+    public StorageResponseDto(String requestId, String url, String checksum) {
         this(requestId, url, checksum, 0, 0, 0, false, null, null, null, null);
     }
 
     /**
      * Error constructor
      */
-    public StorageResponseDto(Long requestId,
+    public StorageResponseDto(String requestId,
                               String url,
                               String checksum,
                               StorageResponseErrorEnum errorType,
@@ -115,7 +120,7 @@ public class StorageResponseDto {
         this(requestId, url, checksum, 0L, 0, 0, false, null, null, errorType, error);
     }
 
-    public Long getRequestId() {
+    public String getRequestId() {
         return requestId;
     }
 

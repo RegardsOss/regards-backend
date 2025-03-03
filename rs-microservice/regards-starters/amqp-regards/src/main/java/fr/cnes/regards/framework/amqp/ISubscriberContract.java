@@ -33,6 +33,8 @@ import java.util.Optional;
  */
 public interface ISubscriberContract {
 
+    final String ROUTING_KEY_SUFFIX = ".#";
+
     /**
      * Subscribe to this {@link ISubscribable} event
      *

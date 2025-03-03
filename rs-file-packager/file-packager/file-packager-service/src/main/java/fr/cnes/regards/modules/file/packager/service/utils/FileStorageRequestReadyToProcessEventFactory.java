@@ -29,7 +29,7 @@ import java.time.OffsetDateTime;
  *
  * @author Thibaud Michaudel
  **/
-public class FileStorageRequestReadyToProcessEventFactory {
+public final class FileStorageRequestReadyToProcessEventFactory {
 
     private static final String JOB_REQUEST_OWNER = "FilePackager";
 
@@ -39,13 +39,13 @@ public class FileStorageRequestReadyToProcessEventFactory {
     /**
      * Create a package storage request event
      */
-    public static FileStorageRequestReadyToProcessEvent createPackageRequestEvent(Long packageId,
+    public static FileStorageRequestReadyToProcessEvent createPackageRequestEvent(String requestId,
                                                                                   String storageSubdirectory,
                                                                                   String storage,
                                                                                   String checksum,
                                                                                   Path archivePath) {
         OffsetDateTime today = OffsetDateTime.now();
-        return new FileStorageRequestReadyToProcessEvent(packageId,
+        return new FileStorageRequestReadyToProcessEvent(requestId,
                                                          checksum,
                                                          "MD5",
                                                          archivePath.toString(),

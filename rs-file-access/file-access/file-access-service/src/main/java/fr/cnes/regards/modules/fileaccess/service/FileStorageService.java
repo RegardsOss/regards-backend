@@ -19,22 +19,30 @@
 package fr.cnes.regards.modules.fileaccess.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
+import fr.cnes.regards.modules.fileaccess.amqp.output.StorageWorkerRequestEvent;
+import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.dto.output.StorageResponseErrorEnum;
 import fr.cnes.regards.modules.fileaccess.dto.output.worker.StorageWorkerResponseDto;
 import fr.cnes.regards.modules.fileaccess.dto.output.worker.type.ImageFileMetadata;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
 import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Service to manage file storage (using workers) in file-access
@@ -42,54 +50,78 @@ import java.util.List;
  * @author Thibaud Michaudel
  **/
 @Service
-@MultitenantTransactional
 public class FileStorageService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageService.class);
 
     private final IPublisher publisher;
 
-    public FileStorageService(IPublisher publisher) {
+    private final StoragePluginConfigurationService storagePluginConfigurationService;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    private final IPluginService pluginService;
+
+    /**
+     * File datatypes for which image size calculation is needed
+     */
+    private final List<DataType> imageTypes = List.of(DataType.QUICKLOOK_SD,
+                                                      DataType.QUICKLOOK_MD,
+                                                      DataType.QUICKLOOK_HD,
+                                                      DataType.THUMBNAIL);
+
+    public FileStorageService(IPublisher publisher,
+                              StoragePluginConfigurationService storagePluginConfigurationService,
+                              IRuntimeTenantResolver runtimeTenantResolver,
+                              IPluginService pluginService) {
         this.publisher = publisher;
+        this.storagePluginConfigurationService = storagePluginConfigurationService;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.pluginService = pluginService;
     }
 
     /**
      * Create a {@link StorageResponseEvent} from the given {@link ResponseEvent} when
      */
     public void filterWorkerResponse(List<ResponseEvent> storageWorkerRequestEvent) {
-        List<StorageResponseEvent> eventsToSend = new ArrayList<>();
         for (ResponseEvent message : storageWorkerRequestEvent) {
-            Long requestId = Long.valueOf(message.getRequestId());
-            StorageResponseEvent storageResponseEvent;
             switch (message.getState()) {
                 case SKIPPED -> {
                     LOGGER.error("Worker is not active");
-                    eventsToSend.add(StorageResponseEvent.createSimpleErrorResponse(requestId,
-                                                                                    StorageResponseErrorEnum.INACTIVE_WORKER,
-                                                                                    "Worker is not active"));
+                    publisher.publish(StorageResponseEvent.createSimpleErrorResponse(message.getRequestId(),
+                                                                                     StorageResponseErrorEnum.INACTIVE_WORKER,
+                                                                                     "Worker is not active"),
+                                      message.getRequestId());
                 }
-                case GRANTED, DELAYED -> {
+                case GRANTED -> {
                     // ignore response
                 }
+                case DELAYED -> {
+                    LOGGER.warn("{} request is delayed", message.getRequestId());
+                }
                 case INVALID_CONTENT -> {
-                    eventsToSend.add(StorageResponseEvent.createSimpleErrorResponse(requestId,
-                                                                                    StorageResponseErrorEnum.INVALID_REQUEST_CONTENT,
-                                                                                    "Invalid request content"));
+                    publisher.publish(StorageResponseEvent.createSimpleErrorResponse(message.getRequestId(),
+                                                                                     StorageResponseErrorEnum.INVALID_REQUEST_CONTENT,
+                                                                                     "Invalid request content"),
+                                      message.getRequestId());
                 }
                 case ERROR -> {
                     Collection<String> messageList = message.getMessage();
                     String messagesJoined = messageList != null ? String.join("\n", messageList) : "Error";
-                    eventsToSend.add(StorageResponseEvent.createSimpleErrorResponse(requestId,
-                                                                                    StorageResponseErrorEnum.WORKER_ERROR,
-                                                                                    messagesJoined));
+                    publisher.publish(StorageResponseEvent.createSimpleErrorResponse(message.getRequestId(),
+                                                                                     StorageResponseErrorEnum.WORKER_ERROR,
+                                                                                     messagesJoined),
+                                      message.getRequestId());
                 }
                 case SUCCESS -> {
                     StorageWorkerResponseDto workerResponseContent = extractWorkerResponse(message);
                     if (workerResponseContent == null) {
-                        storageResponseEvent = StorageResponseEvent.createSimpleErrorResponse(requestId,
+                        publisher.publish(StorageResponseEvent.createSimpleErrorResponse(message.getRequestId(),
 
-                                                                                              StorageResponseErrorEnum.WORKER_RESPONSE_EMPTY,
-                                                                                              "Worker response is null");
+                                                                                         StorageResponseErrorEnum.WORKER_RESPONSE_EMPTY,
+                                                                                         "Worker response is "
+                                                                                         + "null"),
+                                          message.getRequestId());
                     } else {
                         Integer height = null;
                         Integer weight = null;
@@ -98,21 +130,7 @@ public class FileStorageService {
                             weight = imageFileMetadata.getWidthInPx();
                         }
                         if (isStoredInCache(workerResponseContent)) {
-                            storageResponseEvent = StorageResponseEvent.createSuccessCacheResponse(requestId,
-                                                                                                   workerResponseContent.getStoreFileMetadata()
-                                                                                                                        .getStoredFileUrl(),
-                                                                                                   workerResponseContent.getStoreFileMetadata()
-                                                                                                                        .getChecksum(),
-                                                                                                   workerResponseContent.getStoreFileMetadata()
-                                                                                                                        .getFileSizeInBytes(),
-                                                                                                   height,
-                                                                                                   weight,
-                                                                                                   workerResponseContent.getFileProcessingMetadata()
-                                                                                                                        .getStoreParentUrl(),
-                                                                                                   workerResponseContent.getFileProcessingMetadata()
-                                                                                                                        .getCachePath());
-                        } else {
-                            storageResponseEvent = StorageResponseEvent.createSuccessResponse(requestId,
+                            publisher.publish(StorageResponseEvent.createSuccessCacheResponse(message.getRequestId(),
                                                                                               workerResponseContent.getStoreFileMetadata()
                                                                                                                    .getStoredFileUrl(),
                                                                                               workerResponseContent.getStoreFileMetadata()
@@ -120,15 +138,29 @@ public class FileStorageService {
                                                                                               workerResponseContent.getStoreFileMetadata()
                                                                                                                    .getFileSizeInBytes(),
                                                                                               height,
-                                                                                              weight);
+                                                                                              weight,
+                                                                                              workerResponseContent.getFileProcessingMetadata()
+                                                                                                                   .getStoreParentUrl(),
+                                                                                              workerResponseContent.getFileProcessingMetadata()
+                                                                                                                   .getCachePath()),
+                                              message.getRequestId());
+                        } else {
+                            publisher.publish(StorageResponseEvent.createSuccessResponse(message.getRequestId(),
+                                                                                         workerResponseContent.getStoreFileMetadata()
+                                                                                                              .getStoredFileUrl(),
+                                                                                         workerResponseContent.getStoreFileMetadata()
+                                                                                                              .getChecksum(),
+                                                                                         workerResponseContent.getStoreFileMetadata()
+                                                                                                              .getFileSizeInBytes(),
+                                                                                         height,
+                                                                                         weight),
+                                              message.getRequestId());
                         }
 
                     }
-                    eventsToSend.add(storageResponseEvent);
                 }
             }
         }
-        publisher.publish(eventsToSend);
     }
 
     private StorageWorkerResponseDto extractWorkerResponse(ResponseEvent message) {
@@ -147,4 +179,126 @@ public class FileStorageService {
     private boolean isStoredInCache(StorageWorkerResponseDto workerResponseContent) {
         return workerResponseContent.getFileProcessingMetadata().getCachePath() != null;
     }
+
+    /**
+     * For reference requests, validate the reference url and send a response to the sender.
+     * For storage requests, dispatch the requests to the storage worker.
+     */
+    public void processStorageRequests(List<FileStorageRequestReadyToProcessEvent> messages) {
+        List<StorageWorkerRequestEvent> workerEventsToSend = new ArrayList<>();
+        Map<String, Optional<AbstractStoragePluginConfigurationDto>> configurations = new HashMap<>();
+        Map<String, IStorageLocation> storageLocations = new HashMap<>();
+        for (FileStorageRequestReadyToProcessEvent message : messages) {
+            Optional<AbstractStoragePluginConfigurationDto> oConfiguration = configurations.computeIfAbsent(message.getStorage(),
+                                                                                                            storagePluginConfigurationService::getByName);
+            if (oConfiguration.isEmpty()) {
+                String errorMessage = String.format(
+                    "Error while processing storage request for file %s. No configuration found for %s",
+                    message.getChecksum(),
+                    message.getStorage());
+                LOGGER.error(errorMessage);
+                publisher.publish(StorageResponseEvent.createErrorResponse(message.getRequestId(),
+                                                                           message.getOriginUrl(),
+                                                                           message.getChecksum(),
+                                                                           StorageResponseErrorEnum.UNKNOWN_STORAGE_LOCATION,
+                                                                           errorMessage), message.getRequestId());
+
+            } else {
+
+                if (message.isReference()) {
+                    // This is a reference request (no physical storage will be done, the file just need to be
+                    // validated).
+                    publisher.publish(validateReferenceUrl(message, storageLocations), message.getRequestId());
+                } else {
+                    // This is a physical storage request (the worker will handle the storage)
+                    workerEventsToSend.add(createWorkerEvent(message, oConfiguration.get()));
+                }
+            }
+        }
+        if (!workerEventsToSend.isEmpty()) {
+            publisher.publish(workerEventsToSend);
+        }
+    }
+
+    private StorageWorkerRequestEvent createWorkerEvent(FileStorageRequestReadyToProcessEvent message,
+                                                        AbstractStoragePluginConfigurationDto configuration) {
+        // Body
+        boolean needToComputeImageSize = MediaType.parseMediaType(message.getMetadata().getMimeType())
+                                                  .getType()
+                                                  .equals("image")
+                                         && imageTypes.contains(DataType.valueOf(message.getMetadata().getType()))
+                                         && (message.getMetadata().getHeight() == 0
+                                             || message.getMetadata().getWidth() == 0);
+
+        StorageWorkerRequestEvent eventToSend = new StorageWorkerRequestEvent(message.getChecksum(),
+                                                                              message.getAlgorithm(),
+                                                                              message.getOriginUrl(),
+                                                                              message.getSubDirectory(),
+                                                                              needToComputeImageSize,
+                                                                              message.isActivateSmallFilePackaging(),
+                                                                              configuration);
+        // Headers
+        eventToSend.setHeader(StorageWorkerRequestEvent.CONTENT_TYPE_HEADER,
+                              FileAccessConstants.CONTENT_TYPE_HEADER + message.getStorage());
+        eventToSend.setHeader(StorageWorkerRequestEvent.REQUEST_ID_HEADER, message.getRequestId());
+        eventToSend.setHeader(StorageWorkerRequestEvent.TENANT_HEADER, runtimeTenantResolver.getTenant());
+        eventToSend.setHeader(StorageWorkerRequestEvent.OWNER_HEADER, message.getOwner());
+        eventToSend.setHeader(StorageWorkerRequestEvent.SESSION_HEADER, message.getSession());
+        return eventToSend;
+    }
+
+    private StorageResponseEvent validateReferenceUrl(FileStorageRequestReadyToProcessEvent request,
+                                                      Map<String, IStorageLocation> storageLocations) {
+        try {
+            Set<String> errors = Sets.newHashSet();
+            IStorageLocation storagePlugin = storageLocations.get(request.getStorage());
+            if (storagePlugin == null) {
+                try {
+                    storagePlugin = pluginService.getPlugin(request.getStorage());
+                } catch (NotAvailablePluginConfigurationException e) {
+                    String error = String.format("Error while processing storage request"
+                                                 + " for file %s. No plugin found for %s",
+                                                 request.getOriginUrl(),
+                                                 request.getStorage());
+                    LOGGER.error(error, e.getMessage());
+                    return StorageResponseEvent.createErrorResponse(request.getRequestId(),
+                                                                    request.getOriginUrl(),
+                                                                    request.getChecksum(),
+                                                                    StorageResponseErrorEnum.UNKNOWN_STORAGE_LOCATION,
+                                                                    error);
+                }
+            } else {
+                storageLocations.put(request.getStorage(), storagePlugin);
+            }
+
+            if (storagePlugin.isValidUrl(request.getOriginUrl(), errors)) {
+                return StorageResponseEvent.createSuccessResponse(request.getRequestId(),
+                                                                  request.getOriginUrl(),
+                                                                  request.getChecksum());
+            } else {
+                return StorageResponseEvent.createErrorResponse(request.getRequestId(),
+                                                                request.getOriginUrl(),
+                                                                request.getChecksum(),
+                                                                StorageResponseErrorEnum.INVALID_REQUEST_CONTENT,
+                                                                String.format("The file reference url %s format is not"
+                                                                              + " valid for storage location %s. "
+                                                                              + "Cause : %s",
+                                                                              request.getOriginUrl(),
+                                                                              request.getStorage(),
+                                                                              errors));
+            }
+        } catch (ModuleException e) {
+            LOGGER.error(e.getMessage(), e);
+            return StorageResponseEvent.createErrorResponse(request.getRequestId(),
+                                                            request.getOriginUrl(),
+                                                            request.getChecksum(),
+                                                            StorageResponseErrorEnum.INVALID_REQUEST_CONTENT,
+                                                            String.format("The file reference url %s reference the "
+                                                                          + "storage %s which does no exist or is not"
+                                                                          + " active",
+                                                                          request.getOriginUrl(),
+                                                                          request.getStorage()));
+        }
+    }
+
 }

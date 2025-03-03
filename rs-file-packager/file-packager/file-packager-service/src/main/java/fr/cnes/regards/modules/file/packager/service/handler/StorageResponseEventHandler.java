@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.file.packager.service.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.ISubscriberContract;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.file.packager.service.FilePackagerService;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
@@ -52,6 +53,9 @@ public class StorageResponseEventHandler
     @Value("${regards.file.packager.storage.response.bulk.size:50}")
     private int bulkSize;
 
+    @Value("${spring.application.name}")
+    private String applicationName;
+
     public StorageResponseEventHandler(ISubscriber subscriber, FilePackagerService filePackagerService) {
         this.subscriber = subscriber;
         this.filePackagerService = filePackagerService;
@@ -59,7 +63,10 @@ public class StorageResponseEventHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(StorageResponseEvent.class, this);
+        // Subscribe using the application name as the routing key prefix to avoid conflicts with other services
+        subscriber.subscribeTo(StorageResponseEvent.class,
+                               this,
+                               applicationName + ISubscriberContract.ROUTING_KEY_SUFFIX);
     }
 
     @Override

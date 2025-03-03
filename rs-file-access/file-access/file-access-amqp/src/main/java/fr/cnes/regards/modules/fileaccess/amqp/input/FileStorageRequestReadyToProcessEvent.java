@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.fileaccess.dto.input.FileStorageRequestReadyToPro
 public class FileStorageRequestReadyToProcessEvent extends FileStorageRequestReadyToProcessDto
     implements ISubscribable {
 
-    public FileStorageRequestReadyToProcessEvent(Long requestId,
+    public FileStorageRequestReadyToProcessEvent(String requestId,
                                                  String checksum,
                                                  String algorithm,
                                                  String originUrl,

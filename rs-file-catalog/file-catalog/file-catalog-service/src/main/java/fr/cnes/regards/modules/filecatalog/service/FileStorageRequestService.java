@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.filecatalog.service;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.utils.RoutingKeyUtils;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -98,6 +99,9 @@ public class FileStorageRequestService {
 
     @Value("${regards.file.catalog.requests.retry.page:1000}")
     private int pageRetrySize;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
 
     public FileStorageRequestService(RequestStatusService requestStatusService,
                                      FileReferenceRequestService fileReferenceRequestService,
@@ -370,7 +374,8 @@ public class FileStorageRequestService {
                                                                                                 .getHeight()).orElse(0),
                                                                      Optional.ofNullable(request.getMetaInfo()
                                                                                                 .getWidth()).orElse(0));
-        return new FileStorageRequestReadyToProcessEvent(request.getId(),
+        return new FileStorageRequestReadyToProcessEvent(RoutingKeyUtils.buildRequestIdFromId(applicationName,
+                                                                                              request.getId()),
                                                          request.getMetaInfo().getChecksum(),
                                                          request.getMetaInfo().getAlgorithm(),
                                                          request.getOriginUrl(),
@@ -551,8 +556,9 @@ public class FileStorageRequestService {
     @MultitenantTransactional
     public void processFileStorageSuccessResponses(List<StorageResponseEvent> events) {
         Map<Long, StorageResponseEvent> responseIdToEventMap = events.stream()
-                                                                     .collect(Collectors.toMap(StorageResponseEvent::getRequestId,
-                                                                                               Function.identity()));
+                                                                     .collect(Collectors.toMap(event -> RoutingKeyUtils.buildIdFromRequestId(
+                                                                         applicationName,
+                                                                         event.getRequestId()), Function.identity()));
         Map<Long, FileStorageRequestAggregation> requestIdToRequestMap = fileStorageRequestAggregationRepository.findAllById(
                                                                                                                     responseIdToEventMap.keySet())
                                                                                                                 .stream()
@@ -604,8 +610,9 @@ public class FileStorageRequestService {
     @MultitenantTransactional
     public void processFileStorageErrorResponses(List<StorageResponseEvent> events) {
         Map<Long, StorageResponseEvent> responseIdToEventMap = events.stream()
-                                                                     .collect(Collectors.toMap(StorageResponseEvent::getRequestId,
-                                                                                               Function.identity()));
+                                                                     .collect(Collectors.toMap(event -> RoutingKeyUtils.buildIdFromRequestId(
+                                                                         applicationName,
+                                                                         event.getRequestId()), Function.identity()));
         Map<Long, FileStorageRequestAggregation> requestIdToRequestMap = fileStorageRequestAggregationRepository.findAllById(
                                                                                                                     responseIdToEventMap.keySet())
                                                                                                                 .stream()
@@ -785,5 +792,4 @@ public class FileStorageRequestService {
                                    String session) {
 
     }
-
 }

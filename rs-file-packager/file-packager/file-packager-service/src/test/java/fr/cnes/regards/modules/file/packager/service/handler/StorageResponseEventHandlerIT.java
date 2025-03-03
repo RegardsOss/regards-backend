@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Assertions;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -66,6 +67,9 @@ public class StorageResponseEventHandlerIT extends AbstractMultitenantServiceIT 
 
     @Autowired
     IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
 
     @Before
     public void init() {
@@ -107,7 +111,9 @@ public class StorageResponseEventHandlerIT extends AbstractMultitenantServiceIT 
         FileInBuildingPackage savedFile2 = fileInBuildingPackageRepository.save(fileToSave);
 
         // Only the requestId and error fields are used in package storage.
-        StorageResponseEvent event = StorageResponseEvent.createSuccessResponse(savedPackage.getId(), "", "");
+        StorageResponseEvent event = StorageResponseEvent.createSuccessResponse(applicationName
+                                                                                + "."
+                                                                                + savedPackage.getId(), "", "");
 
         // When
         filePackagerService.updatePackageAfterCompletion(List.of(event));
@@ -163,7 +169,9 @@ public class StorageResponseEventHandlerIT extends AbstractMultitenantServiceIT 
 
         // Only the requestId and error fields are used in package storage.
         String errorMessage = "Error !";
-        StorageResponseEvent event = StorageResponseEvent.createErrorResponse(savedPackage.getId(),
+        StorageResponseEvent event = StorageResponseEvent.createErrorResponse(applicationName
+                                                                              + "."
+                                                                              + savedPackage.getId(),
                                                                               "",
                                                                               "",
                                                                               StorageResponseErrorEnum.WORKER_ERROR,

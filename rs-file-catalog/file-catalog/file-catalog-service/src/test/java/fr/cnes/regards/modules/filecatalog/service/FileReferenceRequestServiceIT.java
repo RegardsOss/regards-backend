@@ -64,7 +64,7 @@ public class FileReferenceRequestServiceIT extends AbstractFileCatalogIT {
     @Ignore("Not Implemented yet")
     @Test
     public void referenceFileDuringDeletion() throws InterruptedException, ExecutionException {
-        //FIXME this will need to be tested once deletion is implemented
+        //FIXME LOT 4 this will need to be tested once deletion is implemented
     }
 
     @Requirement("REGARDS_DSL_STOP_AIP_070")

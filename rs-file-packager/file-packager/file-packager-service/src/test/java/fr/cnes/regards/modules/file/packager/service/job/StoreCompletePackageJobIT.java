@@ -35,6 +35,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -71,6 +72,9 @@ public class StoreCompletePackageJobIT extends AbstractMultitenantServiceIT {
     @ClassRule
     public static TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    @Value("${spring.application.name}")
+    private String applicationName;
+    
     private String testFilesDir;
 
     private static final String SUBDIRECTORY = "/family/";
@@ -148,9 +152,9 @@ public class StoreCompletePackageJobIT extends AbstractMultitenantServiceIT {
         Mockito.verify(publisher, Mockito.times(1)).publish(publishedEventsCaptor.capture());
         FileStorageRequestReadyToProcessEvent storageRequest = publishedEventsCaptor.getValue();
 
-        Assertions.assertEquals(packageReference.getId(),
+        Assertions.assertEquals(applicationName + "." + packageReference.getId(),
                                 storageRequest.getRequestId(),
-                                "The requestId should be equal to the package id");
+                                "The requestId should be equal to the package id with the app name as routing key");
         Assertions.assertEquals(oPackage.get().getChecksum(),
                                 storageRequest.getChecksum(),
                                 "The checksums should be the same");

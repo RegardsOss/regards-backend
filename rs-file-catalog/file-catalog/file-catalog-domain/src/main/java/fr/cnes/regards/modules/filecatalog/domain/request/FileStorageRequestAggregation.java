@@ -49,6 +49,8 @@ public class FileStorageRequestAggregation {
 
     /**
      * Internal database unique identifier
+     * This id is used to construct the requestId (sometimes called correlationId) that will be used in amqp messages.
+     * requestId = [microservice-name]-id
      */
     @Id
     @SequenceGenerator(name = "fileStorageRequestSequence", initialValue = 1, sequenceName = "seq_file_storage_request")

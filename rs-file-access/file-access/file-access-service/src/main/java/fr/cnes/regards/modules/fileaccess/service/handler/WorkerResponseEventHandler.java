@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.fileaccess.service.handler;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageWorkerRequestEvent;
+import fr.cnes.regards.modules.fileaccess.service.FileAccessConstants;
 import fr.cnes.regards.modules.fileaccess.service.FileStorageService;
 import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent;
 import org.slf4j.Logger;
@@ -43,9 +44,8 @@ public class WorkerResponseEventHandler
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkerResponseEventHandler.class);
 
-    private static final String STORAGE_WORKER_EVENT_CONTENT_TYPE_PATTERN =
-        FilesStorageRequestReadyToProcessEventHandler.CONTENT_TYPE_HEADER_VALUE
-        + ".*";
+    private static final String STORAGE_WORKER_EVENT_CONTENT_TYPE_PATTERN = FileAccessConstants.CONTENT_TYPE_HEADER
+                                                                            + ".*";
 
     private final ISubscriber subscriber;
 
@@ -73,8 +73,6 @@ public class WorkerResponseEventHandler
 
         List<ResponseEvent> storageWorkerRequestEvent = keepOnlyStorageWorkerResponseEvent(messages);
         fileStorageService.filterWorkerResponse(storageWorkerRequestEvent);
-
-        LOGGER.info("[WORKER RESPONSE EVENT HANDLER] {} ResponseEvent received", messages.size());
 
         LOGGER.debug("[WORKER RESPONSE EVENT HANDLER] {} ResponseEvent handled in {} ms",
                      messages.size(),

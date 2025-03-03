@@ -28,7 +28,7 @@ import java.util.Objects;
  */
 public class FileStorageRequestReadyToProcessDto {
 
-    private final Long requestId;
+    private final String requestId;
 
     private final String checksum;
 
@@ -50,7 +50,7 @@ public class FileStorageRequestReadyToProcessDto {
 
     private final boolean reference;
 
-    public FileStorageRequestReadyToProcessDto(Long requestId,
+    public FileStorageRequestReadyToProcessDto(String requestId,
                                                String checksum,
                                                String algorithm,
                                                String originUrl,
@@ -74,7 +74,7 @@ public class FileStorageRequestReadyToProcessDto {
         this.reference = reference;
     }
 
-    public Long getRequestId() {
+    public String getRequestId() {
         return requestId;
     }
 

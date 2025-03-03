@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.fileaccess.dto.output.StorageResponseErrorEnum;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class StorageResponseEvent extends StorageResponseDto implements ISubscribable {
 
-    private StorageResponseEvent(Long requestId,
+    private StorageResponseEvent(String requestId,
                                  String url,
                                  String checksum,
                                  long size,
@@ -42,7 +42,7 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
         super(requestId, url, checksum, size, height, weight);
     }
 
-    private StorageResponseEvent(Long requestId,
+    private StorageResponseEvent(String requestId,
                                  String url,
                                  String checksum,
                                  long size,
@@ -53,11 +53,11 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
         super(requestId, url, checksum, size, height, weight, finalArchiveParentUrl, fileCachePath);
     }
 
-    private StorageResponseEvent(Long requestId, String url, String checksum) {
+    private StorageResponseEvent(String requestId, String url, String checksum) {
         super(requestId, url, checksum);
     }
 
-    private StorageResponseEvent(Long requestId,
+    private StorageResponseEvent(String requestId,
                                  String url,
                                  String checksum,
                                  StorageResponseErrorEnum errorType,
@@ -68,7 +68,7 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
     /**
      * Success event
      */
-    public static StorageResponseEvent createSuccessResponse(Long requestId,
+    public static StorageResponseEvent createSuccessResponse(String requestId,
                                                              String url,
                                                              String checksum,
                                                              long size,
@@ -80,7 +80,7 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
     /**
      * Success cache event
      */
-    public static StorageResponseEvent createSuccessCacheResponse(Long requestId,
+    public static StorageResponseEvent createSuccessCacheResponse(String requestId,
                                                                   String url,
                                                                   String checksum,
                                                                   long size,
@@ -101,14 +101,14 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
     /**
      * Success Reference event
      */
-    public static StorageResponseEvent createSuccessResponse(Long requestId, String url, String checksum) {
+    public static StorageResponseEvent createSuccessResponse(String requestId, String url, String checksum) {
         return new StorageResponseEvent(requestId, url, checksum);
     }
 
     /**
      * Error event
      */
-    public static StorageResponseEvent createErrorResponse(Long requestId,
+    public static StorageResponseEvent createErrorResponse(String requestId,
                                                            String url,
                                                            String checksum,
                                                            StorageResponseErrorEnum errorType,
@@ -119,7 +119,7 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
     /**
      * Error event without indicate url and checksum
      */
-    public static StorageResponseEvent createSimpleErrorResponse(Long requestId,
+    public static StorageResponseEvent createSimpleErrorResponse(String requestId,
                                                                  StorageResponseErrorEnum errorType,
                                                                  String error) {
         return new StorageResponseEvent(requestId, null, null, errorType, error);

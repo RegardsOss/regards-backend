@@ -39,6 +39,7 @@ import org.mockito.AdditionalAnswers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -81,6 +82,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
     @MockBean
     private FileReferenceEventPublisher fileReferenceEventPublisher;
 
+    @Value("${spring.application.name}")
+    private String applicationName = "rs-test";
+
     @Before
     @Override
     public void init() throws ModuleException {
@@ -94,7 +98,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(i));
         String storedUrl = createUrl(i);
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(request1.getId(),
+        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(applicationName
+                                                                                 + "."
+                                                                                 + request1.getId(),
                                                                                  storedUrl,
                                                                                  request1.getMetaInfo().getChecksum());
 
@@ -136,7 +142,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
             createFileStorageRequestAggregation(i));
         String storedUrl = createUrl(i);
         FileArchiveStatus archiveStatus = FileArchiveStatus.STORED;
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(request1.getId(),
+        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(applicationName
+                                                                                 + "."
+                                                                                 + request1.getId(),
                                                                                  storedUrl,
                                                                                  request1.getMetaInfo().getChecksum());
 
@@ -182,7 +190,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileArchiveStatus archiveStatus = FileArchiveStatus.TO_STORE;
         String finalArchiveParentUrl = "http://storage.com/" + request1.getStorageSubDirectory() + "12345.zip";
         String fileCachePath = "/workspace/" + request1.getStorageSubDirectory() + request1.getMetaInfo().getFileName();
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessCacheResponse(request1.getId(),
+        StorageResponseEvent event1 = StorageResponseEvent.createSuccessCacheResponse(applicationName
+                                                                                      + "."
+                                                                                      + request1.getId(),
                                                                                       storedUrl,
                                                                                       request1.getMetaInfo()
                                                                                               .getChecksum(),
@@ -235,7 +245,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         String finalArchiveParentUrl1 = "http://storage.com/" + request1.getStorageSubDirectory() + "12345.zip";
         String fileCachePath1 = "/workspace/" + request1.getStorageSubDirectory() + request1.getMetaInfo()
                                                                                             .getFileName();
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessCacheResponse(request1.getId(),
+        StorageResponseEvent event1 = StorageResponseEvent.createSuccessCacheResponse(applicationName
+                                                                                      + "."
+                                                                                      + request1.getId(),
                                                                                       storedUrl1,
                                                                                       request1.getMetaInfo()
                                                                                               .getChecksum(),
@@ -255,7 +267,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         String finalArchiveParentUrl2 = "http://storage.com/" + request2.getStorageSubDirectory() + "12345.zip";
         String fileCachePath2 = "/workspace/" + request2.getStorageSubDirectory() + request2.getMetaInfo()
                                                                                             .getFileName();
-        StorageResponseEvent event2 = StorageResponseEvent.createSuccessCacheResponse(request2.getId(),
+        StorageResponseEvent event2 = StorageResponseEvent.createSuccessCacheResponse(applicationName
+                                                                                      + "."
+                                                                                      + request2.getId(),
                                                                                       storedUrl2,
                                                                                       request2.getMetaInfo()
                                                                                               .getChecksum(),
@@ -310,7 +324,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(i));
         String storedUrl1 = createUrl(i);
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(request1.getId(),
+        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(applicationName
+                                                                                 + "."
+                                                                                 + request1.getId(),
                                                                                  storedUrl1,
                                                                                  request1.getMetaInfo().getChecksum(),
                                                                                  request1.getMetaInfo().getFileSize(),
@@ -321,7 +337,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request2 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(j));
         String storedUrl2 = createUrl(j);
-        StorageResponseEvent event2 = StorageResponseEvent.createSuccessResponse(request2.getId(),
+        StorageResponseEvent event2 = StorageResponseEvent.createSuccessResponse(applicationName
+                                                                                 + "."
+                                                                                 + request2.getId(),
                                                                                  storedUrl2,
                                                                                  request2.getMetaInfo().getChecksum(),
                                                                                  request2.getMetaInfo().getFileSize(),
@@ -369,7 +387,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(i));
         String storedUrl1 = createUrl(i);
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(request1.getId(),
+        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(applicationName
+                                                                                 + "."
+                                                                                 + request1.getId(),
                                                                                  storedUrl1,
                                                                                  request1.getMetaInfo().getChecksum(),
                                                                                  request1.getMetaInfo().getFileSize(),
@@ -380,7 +400,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request2 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(j));
         String storedUrl2 = createUrl(j);
-        StorageResponseEvent event2 = StorageResponseEvent.createSuccessResponse(request2.getId(),
+        StorageResponseEvent event2 = StorageResponseEvent.createSuccessResponse(applicationName
+                                                                                 + "."
+                                                                                 + request2.getId(),
                                                                                  storedUrl2,
                                                                                  request2.getMetaInfo().getChecksum(),
                                                                                  request2.getMetaInfo().getFileSize(),
@@ -432,7 +454,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         String finalArchiveParentUrl1 = "http://storage.com/" + request1.getStorageSubDirectory() + "12345.zip";
         String fileCachePath1 = "/workspace/" + request1.getStorageSubDirectory() + request1.getMetaInfo()
                                                                                             .getFileName();
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessCacheResponse(request1.getId(),
+        StorageResponseEvent event1 = StorageResponseEvent.createSuccessCacheResponse(applicationName
+                                                                                      + "."
+                                                                                      + request1.getId(),
                                                                                       storedUrl1,
                                                                                       request1.getMetaInfo()
                                                                                               .getChecksum(),
@@ -448,7 +472,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request2 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(j));
         String storedUrl2 = createUrl(j);
-        StorageResponseEvent event2 = StorageResponseEvent.createSuccessResponse(request2.getId(),
+        StorageResponseEvent event2 = StorageResponseEvent.createSuccessResponse(applicationName
+                                                                                 + "."
+                                                                                 + request2.getId(),
                                                                                  storedUrl2,
                                                                                  request2.getMetaInfo().getChecksum(),
                                                                                  request2.getMetaInfo().getFileSize(),
@@ -494,7 +520,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(1));
         String errorCause = "Error !!";
-        StorageResponseEvent event1 = StorageResponseEvent.createSimpleErrorResponse(request1.getId(),
+        StorageResponseEvent event1 = StorageResponseEvent.createSimpleErrorResponse(applicationName
+                                                                                     + "."
+                                                                                     + request1.getId(),
                                                                                      StorageResponseErrorEnum.WORKER_ERROR,
                                                                                      errorCause);
 
@@ -522,13 +550,17 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(1));
         String errorCause1 = "Error !!";
-        StorageResponseEvent event1 = StorageResponseEvent.createSimpleErrorResponse(request1.getId(),
+        StorageResponseEvent event1 = StorageResponseEvent.createSimpleErrorResponse(applicationName
+                                                                                     + "."
+                                                                                     + request1.getId(),
                                                                                      StorageResponseErrorEnum.WORKER_ERROR,
                                                                                      errorCause1);
         FileStorageRequestAggregation request2 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(2));
         String errorCause2 = "Big Mistake !!";
-        StorageResponseEvent event2 = StorageResponseEvent.createSimpleErrorResponse(request2.getId(),
+        StorageResponseEvent event2 = StorageResponseEvent.createSimpleErrorResponse(applicationName
+                                                                                     + "."
+                                                                                     + request2.getId(),
                                                                                      StorageResponseErrorEnum.UNKNOWN_STORAGE_LOCATION,
                                                                                      errorCause2);
 
@@ -558,7 +590,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(i));
         String storedUrl = createUrl(i);
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(request1.getId(),
+        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(applicationName
+                                                                                 + "."
+                                                                                 + request1.getId(),
                                                                                  storedUrl,
                                                                                  request1.getMetaInfo().getChecksum(),
                                                                                  request1.getMetaInfo().getFileSize(),
@@ -568,7 +602,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request2 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(2));
         String errorCause = "Big Mistake !!";
-        StorageResponseEvent event2 = StorageResponseEvent.createSimpleErrorResponse(request2.getId(),
+        StorageResponseEvent event2 = StorageResponseEvent.createSimpleErrorResponse(applicationName
+                                                                                     + "."
+                                                                                     + request2.getId(),
                                                                                      StorageResponseErrorEnum.UNKNOWN_STORAGE_LOCATION,
                                                                                      errorCause);
 

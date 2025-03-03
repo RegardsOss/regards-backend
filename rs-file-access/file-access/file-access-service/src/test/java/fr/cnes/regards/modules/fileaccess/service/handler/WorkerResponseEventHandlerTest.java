@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.fileaccess.service.handler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.cnes.regards.framework.amqp.Publisher;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageWorkerRequestEvent;
 import fr.cnes.regards.modules.fileaccess.dto.output.StorageResponseErrorEnum;
@@ -28,6 +30,7 @@ import fr.cnes.regards.modules.fileaccess.dto.output.worker.StorageWorkerRespons
 import fr.cnes.regards.modules.fileaccess.dto.output.worker.type.FileMetadata;
 import fr.cnes.regards.modules.fileaccess.dto.output.worker.type.FileProcessingMetadata;
 import fr.cnes.regards.modules.fileaccess.service.FileStorageService;
+import fr.cnes.regards.modules.fileaccess.service.StoragePluginConfigurationService;
 import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent;
 import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseStatus;
 import org.junit.Before;
@@ -55,7 +58,10 @@ public class WorkerResponseEventHandlerTest {
     public void before() {
         publisher = Mockito.mock(Publisher.class);
         Mockito.doCallRealMethod().when(publisher).publish(Mockito.anyList());
-        fileStorageService = new FileStorageService(publisher);
+        fileStorageService = new FileStorageService(publisher,
+                                                    Mockito.mock(StoragePluginConfigurationService.class),
+                                                    Mockito.mock(IRuntimeTenantResolver.class),
+                                                    Mockito.mock(IPluginService.class));
         workerResponseEventHandler = new WorkerResponseEventHandler(null, fileStorageService);
     }
 
@@ -182,7 +188,7 @@ public class WorkerResponseEventHandlerTest {
 
     private List<StorageResponseEvent> getEventPublished() {
         ArgumentCaptor<StorageResponseEvent> requestCaptor = ArgumentCaptor.forClass(StorageResponseEvent.class);
-        Mockito.verify(publisher).publish(requestCaptor.capture());
+        Mockito.verify(publisher).publish(requestCaptor.capture(), Mockito.anyString());
         return requestCaptor.getAllValues();
     }
 }

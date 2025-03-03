@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.file.packager.service;
 import com.google.common.base.Functions;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.utils.RoutingKeyUtils;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -42,7 +43,6 @@ import fr.cnes.regards.modules.file.packager.service.job.StoreCompletePackageJob
 import fr.cnes.regards.modules.file.packager.service.utils.FileStorageRequestReadyToProcessEventFactory;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
-import fr.cnes.regards.modules.fileaccess.dto.output.StorageResponseDto;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FileArchiveResponseEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileArchiveRequestEvent;
 import org.slf4j.Logger;
@@ -137,6 +137,9 @@ public class FilePackagerService {
      */
     @Value("${regards.file.packager.archive.directory:/archive}")
     private String archiveDirectory;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
 
     private final DateTimeFormatter archiveNameFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
 
@@ -252,7 +255,7 @@ public class FilePackagerService {
 
         // Send the storage request to file-access
         FileStorageRequestReadyToProcessEvent archiveStorageRequest = FileStorageRequestReadyToProcessEventFactory.createPackageRequestEvent(
-            packageId,
+            RoutingKeyUtils.buildRequestIdFromId(applicationName, packageId),
             storageSubdirectory,
             storage,
             checksum,
@@ -436,7 +439,9 @@ public class FilePackagerService {
     @MultitenantTransactional
     public void updatePackageAfterCompletion(List<StorageResponseEvent> responses) {
         List<PackageReference> packages = packageReferenceRepository.findAllByIdIn(responses.stream()
-                                                                                            .map(StorageResponseDto::getRequestId)
+                                                                                            .map(response -> RoutingKeyUtils.buildIdFromRequestId(
+                                                                                                applicationName,
+                                                                                                response.getRequestId()))
                                                                                             .toList());
         Map<Long, PackageReference> packagesById = packages.stream()
                                                            .collect(Collectors.toMap(PackageReference::getId,
@@ -446,23 +451,24 @@ public class FilePackagerService {
         List<FileInBuildingPackage> updatedFiles = new ArrayList<>();
 
         for (StorageResponseEvent response : responses) {
-            PackageReference packageReference = packagesById.get(response.getRequestId());
+            PackageReference packageReference = packagesById.get(RoutingKeyUtils.buildIdFromRequestId(applicationName,
+                                                                                                      response.getRequestId()));
             if (packageReference == null) {
-                // FIXME Review, qu'est-ce qu'on fait dans ce cas là ??
                 LOGGER.error("No package found with id {}. The event is ignored", response.getRequestId());
-            }
-            if (response.isRequestSuccessful()) {
-                packageReference.setStatus(PackageReferenceStatus.STORED);
-                successesIdByStorage.computeIfAbsent(packageReference.getStorage(), k -> new ArrayList<>())
-                                    .add(packageReference.getId());
             } else {
-                packageReference.setStatus(PackageReferenceStatus.STORE_ERROR);
-                packageReference.setErrorCause(response.getError());
-                LOGGER.error("An error occurred in file-access while storing the package with id {} : {}",
-                             packageReference.getId(),
-                             response.getError());
+                if (response.isRequestSuccessful()) {
+                    packageReference.setStatus(PackageReferenceStatus.STORED);
+                    successesIdByStorage.computeIfAbsent(packageReference.getStorage(), k -> new ArrayList<>())
+                                        .add(packageReference.getId());
+                } else {
+                    packageReference.setStatus(PackageReferenceStatus.STORE_ERROR);
+                    packageReference.setErrorCause(response.getError());
+                    LOGGER.error("An error occurred in file-access while storing the package with id {} : {}",
+                                 packageReference.getId(),
+                                 response.getError());
+                }
+                updatedPackages.add(packageReference);
             }
-            updatedPackages.add(packageReference);
         }
 
         // Retrieve the files associated with the updated package to notify catalog and set the files to be deleted

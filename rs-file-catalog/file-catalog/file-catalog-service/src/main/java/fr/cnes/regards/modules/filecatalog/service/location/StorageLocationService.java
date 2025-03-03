@@ -90,6 +90,10 @@ public class StorageLocationService {
             "[%s] Could not create storage config with name %s because it already exists",
             STORAGE_CONFIG_NOT_CREATED,
             storageLocationDto.getName());
+        StorageLocationConfigurationDto configurationForFileAccess = new StorageLocationConfigurationDto(
+            storageLocationDto.getName(),
+            storageLocationDto.getConfiguration().getPluginConfiguration(),
+            storageLocationDto.getConfiguration().getPriority());
 
         // Entity already exists in file-catalog
         if (storageLocationRepository.findByName(storageLocationDto.getName()).isPresent()) {
@@ -97,7 +101,7 @@ public class StorageLocationService {
         }
 
         ResponseEntity<EntityModel<StorageLocationConfigurationDto>> response = storageLocationConfigClient.createStorageLocationConfig(
-            storageLocationDto.getConfiguration());
+            configurationForFileAccess);
         // Received already exists in file-access
         if (response.getStatusCode().isSameCodeAs(HttpStatus.CONFLICT)) {
             throw new EntityAlreadyExistsException(alreadyExistsError);

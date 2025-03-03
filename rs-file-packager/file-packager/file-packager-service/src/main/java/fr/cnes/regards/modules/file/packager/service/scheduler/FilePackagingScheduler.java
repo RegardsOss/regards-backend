@@ -119,7 +119,7 @@ public class FilePackagingScheduler extends AbstractTaskScheduler {
                                     + DEFAULT_INITIAL_DELAY_IN_MS
                                     + "}",
                fixedDelayString = "${regards.file.packaging.schedule.delay.ms:" + DEFAULT_SCHEDULING_DELAY_IN_MS + "}")
-    private void scheduleFilePackaging() {
+    public void scheduleFilePackaging() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
