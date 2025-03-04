@@ -15,6 +15,8 @@ import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuota
 import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +47,8 @@ import static fr.cnes.regards.modules.storage.service.file.download.QuotaConfigu
 @MultitenantTransactional
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(QuotaManagerImpl.class);
 
     @Value("${regards.storage.rate.expiration.tick:120}")
     private long rateExpirationTick;
@@ -202,10 +206,16 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
             }
 
             // swap user gauges for fresh global gauge but keep working instance counter diff
-            newUserDiffs.forEach((q, r) -> userDiffs.compute(q, (ignored, l) -> UserDiffs.refresh(l, r)));
+            newUserDiffs.forEach((email, newUserQuotaDiff) ->
+                                     userDiffs.computeIfPresent(email,
+                                                                (ignored, oldUserQuotaDiff) ->
+                                                                    UserDiffs.refresh(oldUserQuotaDiff, newUserQuotaDiff)));
 
             // sync is finished, diffsAcc for current tenant can be cleared for next sync
             diffsAccumulatorByTenant.put(tenant, new HashMap<>());
+        } catch (Exception e) {
+            LOGGER.error("Error during quota synchronization", e);
+            throw e;
         } finally {
             // end critical section
             inSync.set(false);
@@ -224,7 +234,6 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Map<String, UserDiffs> flushSyncAndRefreshQuotas(Map<String, DiffSync> diffSyncs) {
         Map<String, UserDiffs> result = new HashMap<>();
-
         diffSyncs.forEach((email, sync) -> {
             // sync current instance quota/rate for user
             quotaRepository.upsertOrCombineDownloadQuota(instanceId, email, sync.quotaDiff);
@@ -368,7 +377,12 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
         }
 
         public static UserDiffs refresh(UserDiffs old, UserDiffs fresh) {
-            return new UserDiffs(fresh.rate, old.rateDiff, fresh.quota, old.quotaDiff);
+            // Replace rate and quota
+            // Keep rateDiff and quotaDiff if old is not null, otherwise take fresh values
+            return new UserDiffs(fresh.rate,
+                                 old != null ? old.rateDiff : fresh.rateDiff,
+                                 fresh.quota,
+                                 old != null ? old.quotaDiff : fresh.quotaDiff);
         }
 
         public static UserDiffs incrementQuotaAndRateDiffs(UserDiffs old) {
