@@ -1403,14 +1403,22 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
     private void launchTwoDisseminationRequestForProduct(ExecutorService executorService, String urn)
         throws InterruptedException, ExecutionException {
 
-        FeatureUpdateDisseminationRequest request = createFeatureUpdateDisseminationRequest(FeatureUniformResourceName.fromString(
-            urn), "recipient", false);
+        // Ensure before the test there is no dissemination
+        FeatureEntity feature = featureEntityWithDisseminationRepository.findByUrn(FeatureUniformResourceName.fromString(
+            urn));
+        Assertions.assertNotNull(feature, "The feature should exist");
+        Assert.assertTrue(feature.getDisseminationsInfo().isEmpty());
 
-        FeatureUpdateDisseminationRequest request1 = createFeatureUpdateDisseminationRequest(FeatureUniformResourceName.fromString(
+        FeatureUpdateDisseminationRequest request = createFeatureUpdateDisseminationRequest(FeatureUniformResourceName.fromString(
             urn), "recipient", false);
         featureUpdateDisseminationRequestRepository.save(request);
 
+        FeatureUpdateDisseminationRequest request1 = createFeatureUpdateDisseminationRequest(FeatureUniformResourceName.fromString(
+            urn), "recipient", false);
+        featureUpdateDisseminationRequestRepository.save(request1);
+
         Page<FeatureUpdateDisseminationRequest> page = new PageImpl<>(List.of(request));
+        Page<FeatureUpdateDisseminationRequest> page2 = new PageImpl<>(List.of(request1));
 
         // First thread that call the handleFeatureUpdateDisseminationRequests method
         Future<?> disseminationTask = executorService.submit(() -> {
@@ -1421,10 +1429,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // Second thread that simulate a concurrent update to the feature entity
         Future<?> updateTask = executorService.submit(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
-            FeatureEntity entityToUpdate = featureEntityWithDisseminationRepository.findByUrn(FeatureUniformResourceName.fromString(
-                urn));
-            entityToUpdate.getDisseminationsInfo().add(new FeatureDisseminationInfo(request1));
-            featureEntityWithDisseminationRepository.save(entityToUpdate);
+            featureUpdateDisseminationService.handleFeatureUpdateDisseminationRequests(page2);
         });
 
         // Wait for both threads to complete
