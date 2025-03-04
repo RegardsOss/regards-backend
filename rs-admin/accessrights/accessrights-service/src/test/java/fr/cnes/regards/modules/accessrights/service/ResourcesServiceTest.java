@@ -22,6 +22,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -75,6 +76,8 @@ public class ResourcesServiceTest {
      */
     private ITenantResolver tenantResolverMock;
 
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     private IAuthenticationResolver authResolver;
 
     /**
@@ -93,6 +96,8 @@ public class ResourcesServiceTest {
     private Set<ResourcesAccess> ras;
 
     private Role roleAdmin;
+
+    private Set<String> activeTenants = Set.of("tenant1", "tenant2", "tenant3");
 
     /**
      * Initialization of mocks and stubs
@@ -154,11 +159,18 @@ public class ResourcesServiceTest {
         final Set<String> tenants = new HashSet<>();
         tenants.add("tenant1");
         Mockito.when(tenantResolverMock.getAllTenants()).thenReturn(tenants);
+        Mockito.when(tenantResolverMock.getAllActiveTenants()).thenReturn(activeTenants);
 
         authResolver = Mockito.mock(IAuthenticationResolver.class);
         Mockito.when(authResolver.getRole()).thenReturn("ADMIN");
 
-        resourcesService = Mockito.spy(new ResourcesService(resourcesRepo, roleServiceMock, authResolver));
+        runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
+
+        resourcesService = Mockito.spy(new ResourcesService(resourcesRepo,
+                                                            roleServiceMock,
+                                                            authResolver,
+                                                            tenantResolverMock,
+                                                            runtimeTenantResolver));
     }
 
     @Purpose("Check that the collect resources functionnality is well done when no resources are collected")
@@ -212,6 +224,20 @@ public class ResourcesServiceTest {
         Assert.assertNotNull(page.getContent());
         Assert.assertEquals(4, page.getContent().size());
 
+    }
+
+    @Test
+    public void testDeleteMicroserviceResources() {
+        String msToDelete = "rs-microservice-to-delete";
+        Mockito.reset(runtimeTenantResolver);
+        Mockito.reset(resourcesRepo);
+        resourcesService.removeMicroserviceResourcesForAllTenant(msToDelete);
+        activeTenants.forEach(tenant -> {
+            Mockito.verify(runtimeTenantResolver, Mockito.times(1)).forceTenant(tenant);
+        });
+        Mockito.verify(runtimeTenantResolver, Mockito.times(activeTenants.size())).clearTenant();
+        Mockito.verify(resourcesRepo, Mockito.times(activeTenants.size()))
+               .deleteResourcesByMicroserviceName(msToDelete);
     }
 
 }

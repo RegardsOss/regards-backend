@@ -23,8 +23,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
 
@@ -36,18 +36,6 @@ import java.util.List;
  * @author Sébastien Binda
  */
 public interface IResourcesAccessRepository extends JpaRepository<ResourcesAccess, Long> {
-
-    /**
-     * Retrieve one resource by microservice, resource path and http verb
-     *
-     * @param microservice     Microservice name who own the resource
-     * @param resourceFullPath resource full path
-     * @param verb             Httverb of the resource
-     * @return ResourcesAccess
-     */
-    ResourcesAccess findOneByMicroserviceAndResourceAndVerb(String microservice,
-                                                            String resourceFullPath,
-                                                            RequestMethod verb);
 
     /**
      * Retrieve all resource for a given microservice
@@ -103,7 +91,6 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      *
      * @param microservice         microservice name
      * @param controllerSimpleName controller name
-     * @param excludedDefaultRole  excluded default role
      * @param roleName             role name
      * @return {@link List} of {@link ResourcesAccess} that can be managed by specified role
      */
@@ -131,4 +118,13 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
     @Query(value = "select distinct controller_name from {h-schema}t_resources_access res, {h-schema}ta_resource_role resrole, {h-schema}t_role role  where microservice = ?1 and defaultrole <> 'INSTANCE_ADMIN' and res.id = resrole.resource_id and resrole.role_id = role.id and role.name = ?2 order by controller_name",
            nativeQuery = true)
     List<String> findManageableControllers(String microservice, String roleName);
+
+    @Modifying
+    @Query(value = "delete from ResourcesAccess where microservice = ?1")
+    void deleteResourcesByMicroserviceName(String microserviceName);
+
+    @Modifying
+    @Query(value = "delete from {h-schema}ta_resource_role where resource_id in (select id from "
+                   + "{h-schema}t_resources_access where microservice = ?1)", nativeQuery = true)
+    void deleteResourcesRoleAssociationByMicroserviceName(String microserviceName);
 }

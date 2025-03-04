@@ -23,6 +23,8 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
@@ -73,15 +75,23 @@ public class ResourcesService implements IResourcesService {
      */
     private final IAuthenticationResolver authResolver;
 
+    private final ITenantResolver tenantResolver;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
     /**
      * Constructor
      */
     public ResourcesService(IResourcesAccessRepository resourceAccessRepo,
                             IRoleService roleService,
-                            IAuthenticationResolver authResolver) {
+                            IAuthenticationResolver authResolver,
+                            ITenantResolver tenantResolver,
+                            IRuntimeTenantResolver runtimeTenantResolver) {
         this.resourceAccessRepo = resourceAccessRepo;
         this.roleService = roleService;
         this.authResolver = authResolver;
+        this.tenantResolver = tenantResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
@@ -236,4 +246,20 @@ public class ResourcesService implements IResourcesService {
         roleService.removeResourcesAccesses(roleName, resourcesAccess);
     }
 
+    /**
+     * NOTE : Transaction is needed to ensure deletion coherence between resources and role association
+     */
+    @MultitenantTransactional
+    @Override
+    public void removeMicroserviceResourcesForAllTenant(String microserviceName) {
+        tenantResolver.getAllActiveTenants().forEach(tenant -> {
+            runtimeTenantResolver.forceTenant(tenant);
+            try {
+                resourceAccessRepo.deleteResourcesRoleAssociationByMicroserviceName(microserviceName);
+                resourceAccessRepo.deleteResourcesByMicroserviceName(microserviceName);
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        });
+    }
 }

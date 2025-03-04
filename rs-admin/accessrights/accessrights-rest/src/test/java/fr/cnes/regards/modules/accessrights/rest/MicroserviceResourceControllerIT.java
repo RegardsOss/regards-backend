@@ -24,10 +24,12 @@ import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -185,6 +187,32 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
                    customizer().expectStatusOk().expectIsArray(JSON_PATH_ROOT).expectIsEmpty(JSON_PATH_ROOT),
                    "Error retrieving endpoints controllers names for microservice",
                    "unkonwon-microservice");
+    }
+
+    @Test
+    @Purpose("Check that the microservice allows to delete microservice resources configuration for instance admin")
+    public void deleteMicroserviceResourcesTest() {
+        Assert.assertFalse(resourcesAccessRepository.findByMicroservice(DEFAULT_MICROSERVICE).isEmpty());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        performDelete(MicroserviceResourceController.TYPE_MAPPING,
+                      instanceToken,
+                      requestBuilderCustomizer,
+                      "Error deleting microservice resources",
+                      DEFAULT_MICROSERVICE);
+        Assert.assertTrue(resourcesAccessRepository.findByMicroservice(DEFAULT_MICROSERVICE).isEmpty());
+    }
+
+    @Test
+    @Purpose("Check that the deletion only delete the given microservice resources")
+    public void deleteOtherMicroserviceResourcesTest() {
+        Assert.assertFalse(resourcesAccessRepository.findByMicroservice(DEFAULT_MICROSERVICE).isEmpty());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        performDelete(MicroserviceResourceController.TYPE_MAPPING,
+                      instanceToken,
+                      requestBuilderCustomizer,
+                      "Error deleting microservice resources",
+                      "rs-other-microservice");
+        Assert.assertFalse(resourcesAccessRepository.findByMicroservice(DEFAULT_MICROSERVICE).isEmpty());
     }
 
 }

@@ -104,4 +104,11 @@ public interface IResourcesService {
      * @throws ModuleException if error occurs!
      */
     void removeRoleResourcesAccess(String pRoleName, Long pResourcesAccessId) throws ModuleException;
+
+    /**
+     * remove all resources for the given microservice
+     *
+     * @param microserviceName name of the microservice to remove resources
+     */
+    void removeMicroserviceResourcesForAllTenant(String microserviceName);
 }

@@ -27,8 +27,11 @@ import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -38,8 +41,6 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -70,20 +71,25 @@ public class MicroserviceResourceController implements IResourceController<Resou
     /**
      * Resource service
      */
-    @Autowired
-    private IResourcesService resourceService;
+    private final IResourcesService resourceService;
 
     /**
      * Resource service to manage visible hateoas links
      */
-    @Autowired
-    private IResourceService hateoasService;
+    private final IResourceService hateoasService;
 
     /**
      * Retrieve authentication information
      */
-    @Autowired
-    private IAuthenticationResolver authResolver;
+    private final IAuthenticationResolver authResolver;
+
+    public MicroserviceResourceController(IResourcesService resourceService,
+                                          IResourceService hateoasService,
+                                          IAuthenticationResolver authResolver) {
+        this.resourceService = resourceService;
+        this.hateoasService = hateoasService;
+        this.authResolver = authResolver;
+    }
 
     /**
      * Retrieve the resource accesses available to the user of the given microservice
@@ -94,7 +100,7 @@ public class MicroserviceResourceController implements IResourceController<Resou
      * @return list of user resource accesses for given microservice
      * @throws ModuleException if error occurs
      */
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the given microservice",
                     role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
@@ -111,7 +117,7 @@ public class MicroserviceResourceController implements IResourceController<Resou
      * @return {@link Void}
      * @throws ModuleException if error occurs
      */
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     @ResourceAccess(description = "Register all endpoints of a microservice", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> registerMicroserviceEndpoints(@PathVariable("microservicename") String microserviceName,
                                                               @RequestBody @Valid
@@ -127,7 +133,7 @@ public class MicroserviceResourceController implements IResourceController<Resou
      * @param microserviceName microservice
      * @return list of all controllers associated to the specified microservice
      */
-    @RequestMapping(method = RequestMethod.GET, value = CONTROLLERS_MAPPING)
+    @GetMapping(value = CONTROLLERS_MAPPING)
     @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller",
                     role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<String>> retrieveMicroserviceControllers(
@@ -145,7 +151,7 @@ public class MicroserviceResourceController implements IResourceController<Resou
      * @param controllerName   controller
      * @return List of accessible resources for the specified microservice and controller
      */
-    @RequestMapping(method = RequestMethod.GET, value = CONTROLLER_MAPPING)
+    @GetMapping(value = CONTROLLER_MAPPING)
     @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller",
                     role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
@@ -155,6 +161,18 @@ public class MicroserviceResourceController implements IResourceController<Resou
                                                                                                         controllerName,
                                                                                                         authResolver.getRole());
         return new ResponseEntity<>(toResources(resources), HttpStatus.OK);
+    }
+
+    @DeleteMapping
+    @Operation(summary = "Delete microservice resources for all active tenants",
+               description = "Delete microservice resources for all active tenants")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Resources successfully deleted."),
+                            @ApiResponse(responseCode = "403", description = "Access denied.") })
+    @ResourceAccess(description = "Delete microservice resources for all active tenants",
+                    role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> deleteMicroserviceEndpoints(@PathVariable("microservicename") String microserviceName) {
+        resourceService.removeMicroserviceResourcesForAllTenant(microserviceName);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
