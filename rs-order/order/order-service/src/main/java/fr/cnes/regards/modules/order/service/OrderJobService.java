@@ -185,6 +185,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
             if (!jobInfos.isEmpty()) {
                 for (JobInfo jobInfo : jobInfos) {
                     Long[] filesId = jobInfo.getParametersAsMap().get("files").getValue();
+                    // TODO ! ca peut ne pas exister !!!
                     Long orderId = orderDataFileRepository.getById(filesId[0]).getOrderId();
                     if (!isOrderPaused(orderId)) {
                         jobInfo.updateStatus(JobStatus.QUEUED);
@@ -201,6 +202,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
         // Current count of user jobs running, planned or to be run
         if (user != null) {
             try {
+                // TODO : Gerer TOUS les cas ou ca echoue !!!
                 LockServiceResponse<Object> lockResponse = lockService.runWithLock(String.format("run-suborders-%s",
                                                                                                  user),
                                                                                    () -> self.doManageUserOrderStorageFilesJobInfos(

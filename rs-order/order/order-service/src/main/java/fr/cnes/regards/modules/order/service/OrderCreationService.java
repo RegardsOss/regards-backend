@@ -50,6 +50,7 @@ import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -72,7 +73,8 @@ public class OrderCreationService implements IOrderCreationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderCreationService.class);
 
-    private static final int MAX_BUCKET_FILE_COUNT = 5_000;
+    @Value("${regards.order.files.bucket.size.limit:1000}")
+    private int maxBucketFileCount = 1_000;
 
     private final IOrderRepository orderRepository;
 
@@ -362,7 +364,7 @@ public class OrderCreationService implements IOrderCreationService {
                 dispatchFeatureFilesInBuckets(order, feature, storageBucketFiles, externalBucketFiles, dsSel);
 
                 // If sum of files size > storageBucketSize, add a new bucket
-                if ((storageBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || suborderSizeCounter.storageBucketTooBig(
+                if ((storageBucketFiles.size() >= maxBucketFileCount) || suborderSizeCounter.storageBucketTooBig(
                     storageBucketFiles)) {
                     orderCounts.addToInternalFilesCount(storageBucketFiles.size());
                     orderCounts.addTotalFileSizeOf(storageBucketFiles);
@@ -376,7 +378,7 @@ public class OrderCreationService implements IOrderCreationService {
                     storageBucketFiles.clear();
                 }
                 // If external bucket files count > MAX_EXTERNAL_BUCKET_FILE_COUNT, add a new bucket
-                if ((externalBucketFiles.size() >= MAX_BUCKET_FILE_COUNT) || suborderSizeCounter.externalBucketTooBig(
+                if ((externalBucketFiles.size() >= maxBucketFileCount) || suborderSizeCounter.externalBucketTooBig(
                     externalBucketFiles)) {
                     orderCounts.addToExternalFilesCount(externalBucketFiles.size());
                     orderCounts.addTotalFileSizeOf(externalBucketFiles);

@@ -172,6 +172,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
             if (this.semaphore.tryAcquire(nbHoursToWait, TimeUnit.HOURS)) {
                 logger.debug("All files ({}) are available.", dataFilesMultimap.keySet().size());
             } else {
+                // TODO gestion de l'erreur!!!
                 logger.error("All files are not available after waiting for {} hours", nbHoursToWait);
             }
         } catch (RuntimeException e) { // Feign or network or ... exception
