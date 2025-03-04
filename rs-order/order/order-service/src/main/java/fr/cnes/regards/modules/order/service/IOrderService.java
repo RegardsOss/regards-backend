@@ -189,4 +189,6 @@ public interface IOrderService {
     List<OrderStatusDto> findByIdsAndStatus(Collection<Long> orderIds, Collection<OrderStatus> orderStatuses);
 
     void updateErrorWithMessageIfNecessary(Long orderId, @Nullable String msg);
+
+    List<String> getUsersWithRunningOrders();
 }

@@ -25,11 +25,11 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.order.configuration.OrderAutoConfiguration;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
-import fr.cnes.regards.modules.order.configuration.OrderAutoConfiguration;
 import fr.cnes.regards.modules.order.domain.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
@@ -55,6 +55,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -68,6 +69,8 @@ import static fr.cnes.regards.modules.order.test.SearchClientMock.*;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { ServiceConfiguration.class, OrderAutoConfiguration.class })
+@TestPropertySource(properties = { "regards.order.computation.update.initial.delay.ms=50",
+                                   "regards.order.computation.update.rate.ms=500" })
 @ActiveProfiles("test")
 public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
 

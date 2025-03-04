@@ -19,13 +19,13 @@
 package fr.cnes.regards.modules.order.service;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -213,6 +213,36 @@ public class OrderServiceIT {
         jobInfoRepos.deleteAll();
     }
 
+    private Order createOrderWithStatus(String label, String owner, OrderStatus status) {
+        Order order = new Order();
+        order.setOwner(owner);
+        order.setLabel(label);
+        order.setStatus(status);
+        order.setCreationDate(OffsetDateTime.now());
+        order.setExpirationDate(OffsetDateTime.now().plusDays(3));
+        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
+        return orderRepos.save(order);
+    }
+
+    @Test
+    public void test_retrieve_users_with_running_orders() {
+        // Init orders
+        createOrderWithStatus("order1", "owner1", OrderStatus.DONE);
+        createOrderWithStatus("order2", "owner1", OrderStatus.RUNNING);
+        createOrderWithStatus("order1", "owner2", OrderStatus.RUNNING);
+        createOrderWithStatus("order1", "owner3", OrderStatus.ERROR);
+
+        // Search users
+        List<String> owners = orderService.getUsersWithRunningOrders();
+
+        // Then check owners
+        Assert.assertFalse(owners.isEmpty());
+        Assert.assertEquals(2, owners.size());
+        Assert.assertTrue(owners.contains("owner1"));
+        Assert.assertTrue(owners.contains("owner2"));
+        Assert.assertFalse(owners.contains("owner3"));
+    }
+
     @Purpose("Check that the admin users can access to any order, and others can only access to their own orders.")
     @Test
     public void test_hasCurrentUserAccessTo() {
@@ -251,14 +281,7 @@ public class OrderServiceIT {
 
     @Test
     public void testSearchOrders() {
-        Order order = new Order();
-        order.setOwner(USER_EMAIL);
-        order.setLabel("test order 1");
-        order.setStatus(OrderStatus.DONE);
-        order.setCreationDate(OffsetDateTime.now());
-        order.setExpirationDate(OffsetDateTime.now().plusDays(3));
-        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
-        orderRepos.save(order);
+        createOrderWithStatus("test order 1", USER_EMAIL, OrderStatus.DONE);
 
         PageRequest pr = PageRequest.of(0, 100);
         SearchRequestParameters srp = new SearchRequestParameters();
@@ -361,13 +384,8 @@ public class OrderServiceIT {
 
     @Test
     public void testMapping() throws URISyntaxException {
-        Order order = new Order();
-        order.setOwner(USER_EMAIL);
-        order.setLabel("ds1 order");
-        order.setCreationDate(OffsetDateTime.now());
-        order.setExpirationDate(OffsetDateTime.now().plusDays(3));
-        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
-        order = orderRepos.save(order);
+
+        Order order = createOrderWithStatus("ds1 order", USER_EMAIL, OrderStatus.PENDING);
 
         // Dataset order tasks
         DatasetTask ds1OrderTask = new DatasetTask();
@@ -517,14 +535,7 @@ public class OrderServiceIT {
     public void testEmailNotifications() {
 
         // Create an order with no available files count and no availableUpdateDate (null)
-        Order order = new Order();
-        order.setCreationDate(OffsetDateTime.now());
-        order.setExpirationDate(order.getCreationDate().plusDays(3));
-        order.setOwner(USER_EMAIL);
-        order.setLabel("Ego");
-        order.setStatus(OrderStatus.PENDING);
-        order.setCorrelationId(String.format(DEFAULT_CORRELATION_ID_FORMAT, UUID.randomUUID()));
-        order = orderRepos.save(order);
+        Order order = createOrderWithStatus("Ego", USER_EMAIL, OrderStatus.PENDING);
 
         orderMaintenanceService.sendPeriodicNotifications();
         // No mail should have been sent (order hasn't even been started)

@@ -41,7 +41,9 @@ import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.service.job.OrderJobPriority;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
 import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.OrderIdJobParameter;
 import fr.cnes.regards.modules.order.service.request.CancelOrderJob;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -184,11 +186,14 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
                                                                               count);
             if (!jobInfos.isEmpty()) {
                 for (JobInfo jobInfo : jobInfos) {
-                    Long[] filesId = jobInfo.getParametersAsMap().get("files").getValue();
-                    // TODO ! ca peut ne pas exister !!!
-                    Long orderId = orderDataFileRepository.getById(filesId[0]).getOrderId();
-                    if (!isOrderPaused(orderId)) {
-                        jobInfo.updateStatus(JobStatus.QUEUED);
+                    Long orderId = jobInfo.getParametersAsMap().get(OrderIdJobParameter.NAME).getValue();
+                    try {
+                        if (!isOrderPaused(orderId)) {
+                            LOGGER.info("New sub order job queued for user {} with order {}", user, orderId);
+                            jobInfo.updateStatus(JobStatus.QUEUED);
+                        }
+                    } catch (EntityNotFoundException e) {
+                        LOGGER.warn("Job {} associated to a missing order {}", jobInfo.getId(), user);
                     }
                 }
                 jobInfoRepository.saveAll(jobInfos);
@@ -202,25 +207,31 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
         // Current count of user jobs running, planned or to be run
         if (user != null) {
             try {
-                // TODO : Gerer TOUS les cas ou ca echoue !!!
                 LockServiceResponse<Object> lockResponse = lockService.runWithLock(String.format("run-suborders-%s",
                                                                                                  user),
                                                                                    () -> self.doManageUserOrderStorageFilesJobInfos(
                                                                                        user));
                 if (!lockResponse.isExecuted()) {
-                    LOGGER.error(String.format("Wait too long for a lock to run suborders of user %s.", user));
+                    // The manage of users subOrders will be done by another thread in
+                    // the OrderScheduler#updateCurrentOrdersComputations
+                    LOGGER.error("Wait too long for a lock to run suborders of user {}", user);
                 }
             } catch (InterruptedException e) {
-                LOGGER.error(String.format("Thread interrupted while waiting for lock to run new suborders. Cause : %s",
-                                           e.getMessage()), e);
+                // The manage of users subOrders will be done by another thread in the
+                // OrderScheduler#updateCurrentOrdersComputations
+                LOGGER.error("Thread interrupted while waiting for lock to run new suborders. Cause : {}",
+                             e.getMessage());
             }
         }
     }
 
     @Override
-    @MultitenantTransactional(readOnly = true)
-    public boolean isOrderPaused(Long orderId) {
-        Order order = orderRepository.getById(orderId);
+    @MultitenantTransactional(readOnly = true, noRollbackFor = { EntityNotFoundException.class })
+    public boolean isOrderPaused(Long orderId) throws EntityNotFoundException {
+        Order order = orderRepository.getReferenceById(orderId);
+        if (order == null) {
+            throw new EntityNotFoundException(orderId.toString());
+        }
         return order.getStatus().equals(OrderStatus.PAUSED);
     }
 

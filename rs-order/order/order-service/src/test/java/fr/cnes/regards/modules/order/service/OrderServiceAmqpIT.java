@@ -24,8 +24,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.service.commons.AbstractOrderServiceIT;
 import fr.cnes.regards.modules.order.test.OrderTestUtils;
@@ -54,6 +54,8 @@ import java.util.stream.IntStream;
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_test_amqp_it",
                                    "regards.amqp.enabled=true",
+                                   "regards.order.computation.update.initial.delay.ms=50",
+                                   "regards.order.computation.update.rate.ms=500",
                                    "regards.order.max.storage.files.jobs.per.user=1" })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD,
                 hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
@@ -61,8 +63,6 @@ public class OrderServiceAmqpIT extends AbstractOrderServiceIT {
 
     @Autowired
     private OrderMaintenanceService orderMaintenanceService;
-
-    @Autowired
 
     private static final String ORDER_OWNER = "owner";
 

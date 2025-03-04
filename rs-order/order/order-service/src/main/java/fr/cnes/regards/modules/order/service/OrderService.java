@@ -598,6 +598,11 @@ public class OrderService implements IOrderService {
         return orderRepository.findByIdInAndStatusIn(orderIds, orderStatuses);
     }
 
+    @Override
+    public List<String> getUsersWithRunningOrders() {
+        return orderRepository.findOwnersWithRunningOrders();
+    }
+
     public void updateErrorWithMessageIfNecessary(Long orderId, @Nullable String msg) {
         Order order = orderRepository.findSimpleById(orderId);
 

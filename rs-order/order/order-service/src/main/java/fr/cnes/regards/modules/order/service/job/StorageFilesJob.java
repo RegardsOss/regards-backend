@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.order.service.job.parameters.*;
 import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import io.vavr.control.Option;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
@@ -150,8 +151,15 @@ public class StorageFilesJob extends AbstractJob<Void> {
     @Override
     public void run() {
         // Ensure the order is not paused before starting computation
-        if (orderJobService.isOrderPaused(orderId)) {
-            logger.info("The job {} will not be run now as the order {} is paused", this.jobInfoId, this.orderId);
+        try {
+            if (orderJobService.isOrderPaused(orderId)) {
+                logger.info("The job {} will not be run now as the order {} is paused", this.jobInfoId, this.orderId);
+                Thread.currentThread().interrupt();
+                throw new CancellationException();
+            }
+        } catch (EntityNotFoundException e) {
+            // Cancel job.
+            logger.warn("Unable to run order storage job as order does not exists anymore. {}", e.getMessage());
             Thread.currentThread().interrupt();
             throw new CancellationException();
         }
@@ -172,8 +180,19 @@ public class StorageFilesJob extends AbstractJob<Void> {
             if (this.semaphore.tryAcquire(nbHoursToWait, TimeUnit.HOURS)) {
                 logger.debug("All files ({}) are available.", dataFilesMultimap.keySet().size());
             } else {
-                // TODO gestion de l'erreur!!!
-                logger.error("All files are not available after waiting for {} hours", nbHoursToWait);
+                // After timout waiting form storage for files available, change state to ERROR for each not
+                // available file
+                dataFilesMultimap.values().forEach(df -> {
+                    if (!availableHandledFiles.contains(df.getChecksum())
+                        && !unavailableHandledFiles.contains(df.getChecksum())) {
+                        df.setState(FileState.ERROR);
+                        unavailableHandledFiles.add(df.getChecksum());
+                        logger.error("File {} (checksum={}) is still not availabke after waiting for {} hours",
+                                     df.getFilename(),
+                                     df.getChecksum(),
+                                     nbHoursToWait);
+                    }
+                });
             }
         } catch (RuntimeException e) { // Feign or network or ... exception
             // Put All data files in ERROR and propagate exception to make job fail

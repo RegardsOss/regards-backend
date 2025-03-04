@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import jakarta.persistence.EntityNotFoundException;
+
 /**
  * Order job service.
  * This service is responsible of managing order jobs taken into account user restrictions on priorities and number of
@@ -51,5 +53,5 @@ public interface IOrderJobService {
     /**
      * Check if the given order is paused
      */
-    boolean isOrderPaused(Long orderId);
+    boolean isOrderPaused(Long orderId) throws EntityNotFoundException;
 }

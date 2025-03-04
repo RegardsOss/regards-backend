@@ -81,6 +81,8 @@ import static org.mockito.ArgumentMatchers.any;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_test_it",
                                    "regards.amqp.enabled=true",
                                    // "spring.jpa.show-sql=true",
+                                   "regards.order.computation.update.initial.delay.ms=50",
+                                   "regards.order.computation.update.rate.ms=500",
                                    "regards.order.max.storage.files.jobs.per.user=2" })
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class OrderServiceTestIT extends AbstractOrderServiceIT {

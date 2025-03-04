@@ -44,31 +44,39 @@ public class OrderScheduler {
 
     private final ITenantResolver tenantResolver;
 
+    private final OrderService orderService;
+
+    private final OrderJobService orderJobService;
+
     public OrderScheduler(OrderMaintenanceService orderMaintenanceService,
                           IRuntimeTenantResolver runtimeTenantResolver,
-                          ITenantResolver tenantResolver) {
+                          ITenantResolver tenantResolver,
+                          OrderService orderService,
+                          OrderJobService orderJobService) {
         this.orderMaintenanceService = orderMaintenanceService;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.tenantResolver = tenantResolver;
+        this.orderService = orderService;
+        this.orderJobService = orderJobService;
     }
 
     /**
      * Scheduled method to update all current running orders completions values and all order available files count
      * values into database
      */
-    @Scheduled(fixedDelayString = "${regards.order.computation.update.rate.ms:1000}")
+    @Scheduled(initialDelayString = "${regards.order.computation.update.initial.delay.ms:60000}",
+               fixedDelayString = "${regards.order.computation.update.rate.ms:10000}")
     public void updateCurrentOrdersComputations() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             try {
                 orderMaintenanceService.updateTenantOrdersComputations();
             } catch (Exception e) {
-                // FIXME - The Spring type of exception is not stable yet
-                // So the catch can be more specific once Spring will be updated 5.3.0
-                // @see https://github.com/spring-projects/spring-framework/issues/24064
                 LOGGER.warn("Failed to update orders as the database returned us a serialisation anomaly", e);
             }
+            // Check if there is user orders that can be updated.
+            // This can happen if a jobEvent have not been successfully handled.
+            orderService.getUsersWithRunningOrders().forEach(orderJobService::manageUserOrderStorageFilesJobInfos);
         }
     }
-
 }

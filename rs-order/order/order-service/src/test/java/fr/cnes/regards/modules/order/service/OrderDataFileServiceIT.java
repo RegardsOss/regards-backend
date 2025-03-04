@@ -23,10 +23,10 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
 import fr.cnes.regards.modules.order.dto.OrderControllerEndpointConfiguration;
+import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.service.commons.AbstractOrderServiceIT;
 import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
@@ -43,6 +43,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
@@ -59,6 +60,8 @@ import java.util.concurrent.TimeUnit;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
+@TestPropertySource(properties = { "regards.order.computation.update.initial.delay.ms=50",
+                                   "regards.order.computation.update.rate.ms=500" })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD,
                 hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
 public class OrderDataFileServiceIT extends AbstractOrderServiceIT {

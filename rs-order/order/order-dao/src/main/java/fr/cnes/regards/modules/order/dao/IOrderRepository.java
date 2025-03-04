@@ -191,6 +191,13 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
                                                                                    OrderStatus.FAILED);
     }
 
+    @Query("select distinct owner from Order where status = :status")
+    List<String> doFindOwnersWithRunningOrders(OrderStatus status);
+
+    default List<String> findOwnersWithRunningOrders() {
+        return doFindOwnersWithRunningOrders(OrderStatus.RUNNING);
+    }
+
     interface OrderIdOnly {
 
         Long getId();
