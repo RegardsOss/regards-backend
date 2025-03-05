@@ -35,8 +35,8 @@ import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.test.OrderTestUtils;
 import fr.cnes.regards.modules.order.test.ServiceConfigurationWithFilesNotAvailable;
 import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
@@ -61,6 +61,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
@@ -72,6 +73,8 @@ import java.util.concurrent.TimeUnit;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ServiceConfigurationWithFilesNotAvailable.class)
+@TestPropertySource(properties = { "regards.order.computation.update.initial.delay.ms=50",
+                                   "regards.order.computation.update.rate.ms=500" })
 @ActiveProfiles("test")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @DirtiesContext

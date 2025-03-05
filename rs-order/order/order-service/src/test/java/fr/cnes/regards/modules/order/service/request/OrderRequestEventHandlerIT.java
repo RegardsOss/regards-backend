@@ -101,6 +101,8 @@ import static org.mockito.ArgumentMatchers.any;
 @ActiveProfiles(value = { "default", "test", "testAmqp", "noscheduler", "nojobs" }, inheritProfiles = false)
 @ContextConfiguration(classes = ServiceConfiguration.class)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=order_request_handler_it",
+                                   "regards.order.computation.update.initial.delay.ms=50",
+                                   "regards.order.computation.update.rate.ms=500",
                                    "regards.amqp.enabled=true" })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJobIT {
