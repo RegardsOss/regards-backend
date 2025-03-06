@@ -23,6 +23,8 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.*;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilder;
@@ -36,25 +38,28 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
 import fr.cnes.regards.modules.accessrights.service.config.AccessRightsTemplateConfiguration;
-import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailService;
 import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailWrapper;
 import fr.cnes.regards.modules.accessrights.service.utils.AccountUtilsService;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.MimeTypeUtils;
 
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -99,7 +104,8 @@ public class ProjectUserService implements IProjectUserService {
 
     private final IPublisher publisher;
 
-    private final IEmailVerificationTokenService emailVerificationTokenService;
+    @Autowired
+    private INotificationClient notificationClient;
 
     /**
      * Configured instance administrator user email/login
@@ -116,7 +122,6 @@ public class ProjectUserService implements IProjectUserService {
                               AccessRightsEmailService accessRightsEmailService,
                               ProjectUserGroupService projectUserGroupService,
                               QuotaHelperService quotaHelperService,
-                              IEmailVerificationTokenService emailVerificationTokenService,
                               IPublisher publisher) {
         this.authenticationResolver = authenticationResolver;
         this.projectUserRepository = projectUserRepository;
@@ -127,7 +132,6 @@ public class ProjectUserService implements IProjectUserService {
         this.accessRightsEmailService = accessRightsEmailService;
         this.projectUserGroupService = projectUserGroupService;
         this.quotaHelperService = quotaHelperService;
-        this.emailVerificationTokenService = emailVerificationTokenService;
         this.publisher = publisher;
     }
 
@@ -471,8 +475,36 @@ public class ProjectUserService implements IProjectUserService {
                            .collect(Collectors.groupingBy(x -> counter.getAndIncrement() / pageSize))
                            .values()
                            .forEach(emailList -> projectUserRepository.findByEmailIn(emailList)
-                                                                      .forEach(projectUser -> projectUser.setCurrentQuota(
-                                                                          currentQuotaByEmail.get(projectUser.getEmail()))));
+                                                                      .forEach(updateQuotaAndCheckLimitReached(
+                                                                          currentQuotaByEmail)));
+    }
+
+    /**
+     * Update quota of the given projectUser with the new calculated quota and check if the quota max limit is reached.
+     *
+     * @param currentQuotaByEmail Map of quota per users
+     */
+    @NotNull
+    private Consumer<ProjectUser> updateQuotaAndCheckLimitReached(Map<String, Long> currentQuotaByEmail) {
+        return projectUser -> {
+            Long newValue = currentQuotaByEmail.get(projectUser.getEmail());
+            if (!Objects.equals(newValue, projectUser.getCurrentQuota())) {
+                projectUser.setCurrentQuota(newValue);
+                projectUserRepository.save(projectUser);
+                if (newValue >= projectUser.getMaxQuota()) {
+                    // Send quota notification to admin
+                    String message = String.format("Maximum quota value (%d) has been reached for user %s",
+                                                   projectUser.getMaxQuota(),
+                                                   projectUser.getEmail());
+                    notificationClient.notify(message,
+                                              "Quota exceeded",
+                                              NotificationLevel.ERROR,
+                                              MimeTypeUtils.TEXT_PLAIN,
+                                              DefaultRole.ADMIN,
+                                              DefaultRole.EXPLOIT);
+                }
+            }
+        };
     }
 
     @Override

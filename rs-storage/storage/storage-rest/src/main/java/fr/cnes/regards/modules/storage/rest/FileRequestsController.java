@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.storage.service.file.request.RequestStatusService
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
@@ -51,6 +52,7 @@ import java.util.Optional;
  *
  * @author Sébastien Binda
  */
+@Profile({ "!downloader" })
 @RestController
 @RequestMapping(FileRequestsController.REQUESTS_PATH)
 public class FileRequestsController implements IResourceController<FileRequestInfoDto> {

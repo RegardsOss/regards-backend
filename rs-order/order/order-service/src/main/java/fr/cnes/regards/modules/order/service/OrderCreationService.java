@@ -74,7 +74,7 @@ import static fr.cnes.regards.modules.order.service.utils.LogUtils.ORDER_ID_LOG_
 public class OrderCreationService implements IOrderCreationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderCreationService.class);
-
+    
     private static final int MAX_BUCKET_FILE_COUNT = 5_000;
 
     private final IOrderRepository orderRepository;

@@ -19,17 +19,20 @@
 package fr.cnes.regards.modules.storage.service.nearline;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.fileaccess.dto.availability.NearlineFileStatusDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
+import fr.cnes.regards.modules.fileaccess.dto.availability.NearlineFileStatusDto;
+import fr.cnes.regards.modules.fileaccess.dto.availability.NearlineFileStatusDtoStatus;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.*;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
-import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -56,15 +59,25 @@ public class StorageNearlineMocked implements INearlineStorageLocation {
     }
 
     @Override
-    public NearlineFileStatusDto checkAvailability(FileReferenceWithoutOwnersDto fileReference) {
+    public List<NearlineFileStatusDto> checkAvailability(List<FileReferenceWithoutOwnersDto> fileReferences) {
         // simulate T2 or T3 from the name of file ->
         // a file ending with T3 pattern will be considered not available (stored in T3), all others are available (stored in T2)
         checkAvailabilityCallNumber++;
-        if (fileReference.getMetaInfo().getFileName().endsWith(T3_PATTERN)) {
-            return new NearlineFileStatusDto(false, null, "file is not available");
-        } else {
-            return new NearlineFileStatusDto(true, OffsetDateTime.now().plusHours(1), "file is available");
+        List<NearlineFileStatusDto> results = new ArrayList<>();
+        for (FileReferenceWithoutOwnersDto fileReference : fileReferences) {
+            if (!fileReference.getMetaInfo().getFileName().endsWith(T3_PATTERN)) {
+                results.add(new NearlineFileStatusDto(fileReference.getChecksum(),
+                                                      NearlineFileStatusDtoStatus.AVAILABLE,
+                                                      OffsetDateTime.now().plusHours(1),
+                                                      "file is available"));
+            } else {
+                results.add(new NearlineFileStatusDto(fileReference.getChecksum(),
+                                                      NearlineFileStatusDtoStatus.UNAVAILABLE,
+                                                      null,
+                                                      "file is not available"));
+            }
         }
+        return results;
     }
 
     @Override

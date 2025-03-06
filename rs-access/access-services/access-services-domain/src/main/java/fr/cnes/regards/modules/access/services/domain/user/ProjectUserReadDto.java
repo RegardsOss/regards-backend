@@ -64,7 +64,11 @@ public class ProjectUserReadDto extends ProjectUserBaseDto {
         this.origin = projectUser.getOrigin();
         this.accessGroups = projectUser.getAccessGroups();
         this.maxQuota = projectUser.getMaxQuota();
-        this.currentQuota = projectUser.getCurrentQuota();
+        if (projectUser.getCurrentQuota() != null && maxQuota != null) {
+            this.currentQuota = Math.min(maxQuota, projectUser.getCurrentQuota());
+        } else {
+            this.currentQuota = projectUser.getCurrentQuota();
+        }
         this.rateLimit = rateLimit;
         this.currentRate = currentRate;
     }

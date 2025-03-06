@@ -117,6 +117,11 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
                           Mockito.any());
 
         ArgumentCaptor<ISubscribable> subscribableCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(subscribableCaptor.capture());
+        Assert.assertNotNull(subscribableCaptor.getValue());
+        if (subscribableCaptor.getValue() instanceof FileReferenceEvent fileReferenceEvent) {
+            Assert.assertTrue(FileReferenceEventType.AVAILABLE == fileReferenceEvent.getType());
+        }
 
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(subscribableCaptor.capture());
         List<FileReferenceEvent> fileReferenceEvents = subscribableCaptor.getAllValues()

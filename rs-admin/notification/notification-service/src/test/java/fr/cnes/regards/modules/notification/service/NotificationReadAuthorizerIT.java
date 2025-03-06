@@ -29,7 +29,6 @@ import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.NotificationReadAuthorizer;
-import fr.cnes.regards.modules.storage.client.IStorageDownloadQuotaRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -65,9 +64,6 @@ public class NotificationReadAuthorizerIT extends AbstractMultitenantServiceIT {
 
     @MockBean
     private IStorageSettingClient storageSettingClient;
-
-    @MockBean
-    private IStorageDownloadQuotaRestClient storageDownloadQuotaRestClient;
 
     @MockBean
     private IResourceService resourceService;

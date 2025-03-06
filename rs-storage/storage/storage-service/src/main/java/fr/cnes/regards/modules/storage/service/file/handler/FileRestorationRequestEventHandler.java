@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
@@ -37,6 +38,7 @@ import java.util.List;
  *
  * @author Sébastien Binda
  */
+@Profile({ "!downloader" })
 @Component
 public class FileRestorationRequestEventHandler
     implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesRestorationRequestEvent> {

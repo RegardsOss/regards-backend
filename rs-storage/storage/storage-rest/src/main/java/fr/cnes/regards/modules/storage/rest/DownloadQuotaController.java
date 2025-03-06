@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.storage.rest;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
@@ -62,9 +61,6 @@ public class DownloadQuotaController {
 
     @Autowired
     private IQuotaService<ResponseEntity<StreamingResponseBody>> quotaService;
-
-    @Autowired
-    private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
     private IAuthenticationResolver authResolver;

@@ -19,8 +19,7 @@
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.modules.storage.client.IStorageDownloadQuotaRestClient;
-import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
+import fr.cnes.regards.modules.storage.client.StorageDownloaderClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,14 +33,8 @@ public class QuotaHelperService {
 
     private static final Long MAX_QUOTA_DEFAULT_VALUE = -1L;
 
-    private final IStorageSettingClient storageSettingClient;
-
     @Autowired
-    IStorageDownloadQuotaRestClient quotaRestClient;
-
-    public QuotaHelperService(IStorageSettingClient storageSettingClient) {
-        this.storageSettingClient = storageSettingClient;
-    }
+    StorageDownloaderClient storageDownloaderClient;
 
     public Long getDefaultQuota() {
 
@@ -50,7 +43,7 @@ public class QuotaHelperService {
         try {
             FeignSecurityManager.asSystem();
 
-            ResponseEntity<Long> response = quotaRestClient.getMaxQuota();
+            ResponseEntity<Long> response = storageDownloaderClient.getMaxQuota();
             if (response != null && response.getStatusCode().is2xxSuccessful()) {
                 defaultQuota = response.getBody();
             }

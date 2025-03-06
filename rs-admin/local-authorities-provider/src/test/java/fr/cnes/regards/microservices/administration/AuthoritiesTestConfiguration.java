@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.storage.client.IStorageDownloaderRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import jakarta.mail.internet.MimeMessage;
 import org.mockito.Mockito;
@@ -101,6 +102,11 @@ public class AuthoritiesTestConfiguration {
     @Bean
     public IStorageRestClient mockStorageRestClient() {
         return Mockito.mock(IStorageRestClient.class);
+    }
+
+    @Bean
+    public IStorageDownloaderRestClient mockStorageDownloaderRestClient() {
+        return Mockito.mock(IStorageDownloaderRestClient.class);
     }
 
     @Bean

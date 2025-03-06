@@ -38,7 +38,8 @@ import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationLight;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParameters;
-import fr.cnes.regards.modules.storage.client.IStorageDownloadQuotaRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageDownloaderRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import org.junit.Assert;
 import org.junit.Before;
@@ -91,7 +92,10 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     private IStorageSettingClient storageSettingClient;
 
     @MockBean
-    private IStorageDownloadQuotaRestClient storageDownloadQuotaRestClient;
+    private IStorageRestClient storageDownloadQuotaRestClient;
+
+    @MockBean
+    private IStorageDownloaderRestClient storageDownloaderRestclient;
 
     @MockBean
     private IResourceService resourceService;

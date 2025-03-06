@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 import fr.cnes.regards.modules.configuration.service.SearchHistoryService;
 import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.StorageDownloaderClient;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -117,7 +117,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
 
     private final IProjectUsersClient projectUsersClient;
 
-    private final IStorageRestClient storageClient;
+    private final StorageDownloaderClient storageDownloaderClient;
 
     private final IResourceService resourceService;
 
@@ -144,13 +144,13 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     private String appName;
 
     public ProjectUsersController(IProjectUsersClient projectUsersClient,
-                                  IStorageRestClient storageClient,
+                                  StorageDownloaderClient storageDownloaderClient,
                                   IResourceService resourceService,
                                   IAuthenticationResolver authenticationResolver,
                                   IRolesClient rolesClient,
                                   SearchHistoryService searchHistoryService) {
         this.projectUsersClient = projectUsersClient;
-        this.storageClient = storageClient;
+        this.storageDownloaderClient = storageDownloaderClient;
         this.resourceService = resourceService;
         this.authenticationResolver = authenticationResolver;
         this.rolesClient = rolesClient;
@@ -227,7 +227,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                              .map(EntityModel::getContent)
                              .flatMap(user -> Try.run(() -> FeignSecurityManager.asUser(authenticationResolver.getUser(),
                                                                                         RoleAuthority.getSysRole(appName)))
-                                                 .map(unused -> storageClient.getCurrentQuotas(user.getEmail()))
+                                                 .map(unused -> storageDownloaderClient.getCurrentQuotas(user.getEmail()))
                                                  .andFinally(FeignSecurityManager::reset)
                                                  .transform(ignoreStorageQuotaErrors)
                                                  .map(limits -> new ProjectUserReadDto(user, limits)))
@@ -250,7 +250,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                                          description = "Returns the current authenticated project user") })
     public ResponseEntity<EntityModel<ProjectUserReadDto>> retrieveCurrentProjectUser() throws ModuleException {
         return combineProjectUserThenQuotaCalls(projectUsersClient::retrieveCurrentProjectUser,
-                                                storageClient::getCurrentQuotas,
+                                                storageDownloaderClient::getCurrentQuotas,
                                                 this::toResource);
     }
 
@@ -269,7 +269,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         @PathVariable("user_email") String userEmail) throws ModuleException {
         return combineProjectUserThenQuotaCalls(() -> projectUsersClient.retrieveProjectUserByEmail(userEmail), () -> {
             FeignSecurityManager.asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));
-            return storageClient.getCurrentQuotas(userEmail);
+            return storageDownloaderClient.getCurrentQuotas(userEmail);
         }, this::toResource);
     }
 
@@ -302,7 +302,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         Tuple2<ProjectUser, DownloadQuotaLimitsDto> t = makeProjectUserAndQuotaLimitsDto(updatedProjectUser);
         return combineQuotaThenProjectUserCalls(userEmail, () -> {
             FeignSecurityManager.asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));
-            return storageClient.upsertQuotaLimits(userEmail, t._2);
+            return storageDownloaderClient.upsertQuotaLimits(userEmail, t._2);
         }, () -> {
             FeignSecurityManager.asSystem();
             return projectUsersClient.updateProjectUser(userId, t._1);
@@ -328,7 +328,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         Tuple2<ProjectUser, DownloadQuotaLimitsDto> t = makeProjectUserAndQuotaLimitsDto(updatedProjectUser);
         return combineQuotaThenProjectUserCalls(userEmail, () -> {
             FeignSecurityManager.asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));
-            return storageClient.upsertQuotaLimits(userEmail, t._2);
+            return storageDownloaderClient.upsertQuotaLimits(userEmail, t._2);
         }, () -> projectUsersClient.updateCurrentProjectUser(t._1), this::toResourceRegisteredUser);
     }
 
@@ -362,7 +362,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                                                                   .setMaxQuota(projectUserCreateDto.getMaxQuota());
         return combineQuotaThenProjectUserCalls(email, () -> {
             FeignSecurityManager.asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));
-            return storageClient.upsertQuotaLimits(email, limits);
+            return storageDownloaderClient.upsertQuotaLimits(email, limits);
         }, () -> {
             FeignSecurityManager.asSystem();
             return projectUsersClient.createUser(accessRequestDto);
@@ -482,7 +482,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                              .flatMap(emails -> Try.run(() -> FeignSecurityManager.asUser(authenticationResolver.getUser(),
                                                                                           RoleAuthority.getSysRole(
                                                                                               appName)))
-                                                   .map(unused -> storageClient.getCurrentQuotasList(emails))
+                                                   .map(unused -> storageDownloaderClient.getCurrentQuotasList(emails))
                                                    .andFinally(FeignSecurityManager::reset)
                                                    .map(ResponseEntity::getBody)
                                                    // special value for frontend if any error on storage or storage not deploy
@@ -549,15 +549,18 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
 
         // Try to update storage quota
         Validation<ComposableClientException, UserCurrentQuotasDto> updateStorage = Try.ofSupplier(quotaLimitsCall)
-                                                                     .andFinally(FeignSecurityManager::reset)
-                                                                     .map(unit -> {
-                                                                         FeignSecurityManager.asUser(
-                                                                             authenticationResolver.getUser(),
-                                                                             RoleAuthority.getSysRole(appName));
-                                                                         return storageClient.getCurrentQuotas(userEmail);
-                                                                     })
-                                                                     .andFinally(FeignSecurityManager::reset)
-                                                                                       .transform(handleClientFailure(STORAGE_CLIENT));
+                                                                                       .andFinally(FeignSecurityManager::reset)
+                                                                                       .map(unit -> {
+                                                                                           FeignSecurityManager.asUser(
+                                                                                               authenticationResolver.getUser(),
+                                                                                               RoleAuthority.getSysRole(
+                                                                                                   appName));
+                                                                                           return storageDownloaderClient.getCurrentQuotas(
+                                                                                               userEmail);
+                                                                                       })
+                                                                                       .andFinally(FeignSecurityManager::reset)
+                                                                                       .transform(handleClientFailure(
+                                                                                           STORAGE_CLIENT));
 
         if (updateStorage.isValid()) {
             Validation<ComposableClientException, ProjectUser> updateAdmin = Try.ofSupplier(projectUsersCall)
@@ -566,10 +569,10 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                                                                                     ACCESSRIGHTS_CLIENT))
                                                                                 .map(EntityModel::getContent);
             return toResponse(updateStorage.combine(updateAdmin)
-                                  .ap(ProjectUserReadDto::new)
-                                  .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
-                                  .map(resourceMapper)
-                                  .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK)));
+                                           .ap(ProjectUserReadDto::new)
+                                           .mapError(s -> new ModuleException(s.reduce(ComposableClientException::compose)))
+                                           .map(resourceMapper)
+                                           .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK)));
         } else {
             LOGGER.error("Unable to update rs-storage quota.", updateStorage.getError().getCause());
             throw new ModuleException("Unable to update rs-storage quota.");

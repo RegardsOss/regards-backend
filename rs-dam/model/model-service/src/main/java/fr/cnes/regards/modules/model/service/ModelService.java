@@ -133,18 +133,30 @@ public class ModelService implements IModelService, IModelAttrAssocService {
 
     @Override
     public Model createModel(Model model) throws ModuleException {
+        return createModel(model, false);
+    }
+
+    @Override
+    public Model createModel(Model model, boolean allowUpdate) throws ModuleException {
+        Model resultModel;
         if (model.isIdentifiable()) {
             throw new EntityInvalidException(String.format("Model with name \"%s\" cannot have an identifier!",
                                                            model.getName()));
         }
         Model modelFromDb = modelRepository.findByName(model.getName());
+
         if (modelFromDb != null) {
-            throw new EntityAlreadyExistsException(String.format("Model with name \"%s\" already exists!",
-                                                                 model.getName()));
+            if (!allowUpdate) {
+                throw new EntityAlreadyExistsException(String.format("Model with name \"%s\" already exists!",
+                                                                     model.getName()));
+            }
+            resultModel = modelFromDb;
+        } else {
+            resultModel = modelRepository.save(model);
         }
         // Publish model change
         publisher.publish(new ModelChangeEvent(model.getName()));
-        return modelRepository.save(model);
+        return resultModel;
     }
 
     @Override
@@ -428,9 +440,9 @@ public class ModelService implements IModelService, IModelAttrAssocService {
         // Import model from input stream
         List<ModelAttrAssoc> modelAtts = XmlImportHelper.importModel(is, computationPluginService);
         // Create model once
-        Model newModel = createModel(modelAtts.get(0).getModel()); // List of model attributes cannot be empty here
+        Model newModel = createModel(modelAtts.get(0).getModel(), true); // List of model attributes cannot be empty
         // Create or control model attributes
-        addAllModelAttributes(modelAtts);
+        addAllModelAttributes(modelAtts, newModel);
         // Return created model
         LOGGER.info("New model \"{}\" with version \"{}\" created", newModel.getName(), newModel.getVersion());
         return newModel;
@@ -493,65 +505,64 @@ public class ModelService implements IModelService, IModelAttrAssocService {
      * @throws ModuleException if error occurs!
      */
     @Override
-    public void addAllModelAttributes(List<ModelAttrAssoc> modelAtts) throws ModuleException {
+    public void addAllModelAttributes(List<ModelAttrAssoc> modelAtts, Model model) throws ModuleException {
 
         // Keep fragment content to check fragment consistence
         Map<String, List<AttributeModel>> fragmentAttMap = new HashMap<>();
 
+        List<ModelAttrAssoc> existingModelAttrAssoc = modelAttributeRepository.findByModelId(model.getId());
+
         for (ModelAttrAssoc modelAtt : modelAtts) {
-
             AttributeModel imported = modelAtt.getAttribute();
+            boolean assocExists = existingModelAttrAssoc.stream()
+                                                        .anyMatch(assoc -> assoc.getAttribute().equals(imported));
 
-            AttributeModel existing = attributeModelService.findByNameAndFragmentName(imported.getName(),
-                                                                                      imported.getFragment().getName());
-            // Check if attribute already exists
-
-            if (existing != null) {
-                // Check compatibility if attribute already exists
-                if (checkCompatibility(imported, existing)) {
-                    LOGGER.info("Attribute model \"{}\" already exists and is compatible with imported one.",
-                                imported.getName());
-                    // Replace with existing
-                    modelAtt.setAttribute(existing);
+            // Does association exist in existing model ?
+            // If association already exists do not change it.
+            if (!assocExists) {
+                AttributeModel existing = attributeModelService.findByNameAndFragmentName(imported.getName(),
+                                                                                          imported.getFragment()
+                                                                                                  .getName());
+                // Check if attribute already exists
+                if (existing != null) {
+                    // Check compatibility if attribute already exists
+                    if (checkCompatibility(imported, existing)) {
+                        LOGGER.info("Attribute model \"{}\" already exists and is compatible with imported one.",
+                                    imported.getName());
+                        // Replace with existing
+                        modelAtt.setAttribute(existing);
+                    } else {
+                        String format = "Attribute model \"%s\" already exists but is not compatible with imported one.";
+                        String errorMessage = String.format(format, imported.getName());
+                        LOGGER.error(errorMessage);
+                        throw new ImportException(errorMessage);
+                    }
                 } else {
-                    String format = "Attribute model \"%s\" already exists but is not compatible with imported one.";
-                    String errorMessage = String.format(format, imported.getName());
-                    LOGGER.error(errorMessage);
-                    throw new ImportException(errorMessage);
+                    // Create attribute
+                    attributeModelService.addAttribute(modelAtt.getAttribute(), true);
                 }
-            } else {
-                // Create attribute
-                attributeModelService.addAttribute(modelAtt.getAttribute(), true);
-            }
-            // Bind attribute to model
-            // but before lets check correctness because of PluginConfiguration
-            switch (modelAtt.getMode()) {
-                case GIVEN:
-                    modelAtt.setComputationConf(null);
-                    break;
-                case COMPUTED:
-                    modelAtt.setComputationConf(eventualyCreateComputationConfiguration(modelAtt.getComputationConf()));
-                    break;
-                default:
-                    throw new IllegalArgumentException(modelAtt.getMode()
-                                                       + " is not a handled value of "
-                                                       + ComputationMode.class.getName()
-                                                       + " in "
-                                                       + getClass().getName());
-            }
-            // we have to check if it already exists because of logic to add modelAttrAssocs when we are adding a new
-            // attribute to a fragment
-            modelAttributeRepository.save(modelAtt);
+                // Bind attribute to model
+                // but before lets check correctness because of PluginConfiguration
+                switch (modelAtt.getMode()) {
+                    case GIVEN:
+                        modelAtt.setComputationConf(null);
+                        break;
+                    case COMPUTED:
+                        modelAtt.setComputationConf(eventualyCreateComputationConfiguration(modelAtt.getComputationConf()));
+                        break;
+                    default:
+                        throw new IllegalArgumentException(modelAtt.getMode()
+                                                           + " is not a handled value of "
+                                                           + ComputationMode.class.getName()
+                                                           + " in "
+                                                           + getClass().getName());
+                }
+                // we have to check if it already exists because of logic to add modelAttrAssocs when we are adding a new
+                // attribute to a fragment
+                modelAtt.setModel(model);
+                modelAttributeRepository.save(modelAtt);
 
-            addToFragment(fragmentAttMap, modelAtt.getAttribute());
-        }
-
-        for (Map.Entry<String, List<AttributeModel>> entry : fragmentAttMap.entrySet()) {
-            if (!containsExactly(entry.getKey(), entry.getValue())) {
-                String errorMessage = String.format("Imported fragment \"%s\" not compatible with existing one.",
-                                                    entry.getKey());
-                LOGGER.error(errorMessage);
-                throw new ImportException(errorMessage);
+                addToFragment(fragmentAttMap, modelAtt.getAttribute());
             }
         }
     }

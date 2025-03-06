@@ -24,6 +24,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Profiles;
 import org.springframework.validation.Errors;
 
 import java.util.List;
@@ -33,6 +35,7 @@ import java.util.List;
  *
  * @author Iliana Ghazali
  **/
+@Profile({ "!nosession" })
 public class SnapshotJobEventHandler implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<JobEvent> {
 
     @Autowired
@@ -43,7 +46,9 @@ public class SnapshotJobEventHandler implements ApplicationListener<ApplicationR
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(JobEvent.class, this);
+        if (!event.getApplicationContext().getEnvironment().acceptsProfiles(Profiles.of("nosession"))) {
+            subscriber.subscribeTo(JobEvent.class, this);
+        }
     }
 
     @Override

@@ -37,8 +37,7 @@ import java.util.stream.IntStream;
 @ActiveProfiles(value = { "default", "test", "noscheduler", "nojobs" }, inheritProfiles = false)
 public class FileAvailabilityControllerIT extends AbstractRegardsIT {
 
-    private static final String AVAILABILITY_ENDPOINT = "/"
-                                                        + FileDownloadController.DOWNLOAD_RESOURCE_PATH
+    private static final String AVAILABILITY_ENDPOINT = FileDownloadController.DOWNLOAD_RESOURCE_PATH
                                                         + FileDownloadController.STATUS_AVAILABILITY_PATH;
 
     @Test

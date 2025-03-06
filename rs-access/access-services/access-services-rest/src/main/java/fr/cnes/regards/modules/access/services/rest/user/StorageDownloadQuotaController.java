@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.StorageDownloaderClient;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.vavr.control.Try;
 import jakarta.validation.Valid;
@@ -56,7 +56,7 @@ public class StorageDownloadQuotaController {
      * Client handling storage quotas
      */
     @Autowired
-    private IStorageRestClient storageClient;
+    private StorageDownloaderClient storageClient;
 
     @Autowired
     private IAuthenticationResolver authenticationResolver;

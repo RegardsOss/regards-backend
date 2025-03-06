@@ -412,7 +412,8 @@ public final class DownloadUtils {
                          .flatMap(readResult -> readResult.matchReadResult(r -> toInputStream(r),
                                                                            unreachable -> Mono.error(new S3ClientException(
                                                                                "Unreachable server: "
-                                                                               + unreachable.toString())),
+                                                                               + unreachable.getThrowable()
+                                                                                            .getMessage())),
                                                                            notFound -> Mono.error(new FileNotFoundException(
                                                                                "Entry not found"))))
                          .block();

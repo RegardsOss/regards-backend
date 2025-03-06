@@ -20,6 +20,7 @@ import fr.cnes.regards.modules.notification.domain.dto.SearchNotificationParamet
 import fr.cnes.regards.modules.notification.service.INotificationService;
 import fr.cnes.regards.modules.notification.service.SendingScheduler;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.storage.client.IStorageDownloaderRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import org.hamcrest.Matchers;
@@ -58,6 +59,11 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         @Bean
         public IStorageRestClient storageRestClient() {
             return Mockito.mock(IStorageRestClient.class);
+        }
+
+        @Bean
+        public IStorageDownloaderRestClient mockStorageDownloaderRestClient() {
+            return Mockito.mock(IStorageDownloaderRestClient.class);
         }
 
         @Bean

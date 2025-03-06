@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.MimeType;
 
 import java.io.Closeable;
@@ -31,11 +29,6 @@ import java.io.InputStream;
  * @author Sébastien Binda
  */
 public abstract class DownloadableFile implements Closeable {
-
-    /**
-     * Class logger.
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadableFile.class);
 
     /**
      * Stream to read file content

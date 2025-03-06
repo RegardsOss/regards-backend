@@ -124,7 +124,12 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
         boolean shouldStartSchedulers = Arrays.stream(env.getActiveProfiles())
                                               .distinct() // maybe useless but I don't trust
                                               .noneMatch(profile -> profile.equals("noscheduler"));
-        if (shouldStartSchedulers) {
+
+        // Force start of scheduler if microservice is scheduler even if noscheduler is set.
+        // Cause downloader service use noscheduler to disable all schedulers in storage service.
+        boolean isDownloader = Arrays.stream(env.getActiveProfiles()).distinct() // maybe useless but I don't trust
+                                     .anyMatch(profile -> profile.equals("downloader"));
+        if (shouldStartSchedulers || isDownloader) {
             startGaugeExpirationScheduler();
             startDiffSyncScheduler();
         }

@@ -20,16 +20,16 @@ package fr.cnes.regards.modules.storage.client;
 
 import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FileAvailabilityStatusDto;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FilesAvailabilityRequestDto;
-import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Set;
 
@@ -37,7 +37,10 @@ import java.util.Set;
  * REST Client to access storage microservice
  *
  * @author Sébastien Binda
+ * @deprecated Download and quota management is deprecated on strorage microservice. Use rs-downloader service
+ * (IStorageDownloaderRestClient)
  */
+@Deprecated(since = "2.1.0")
 @RestClient(name = "rs-storage", contextId = "rs-storage.rest.client")
 public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
 
@@ -51,13 +54,15 @@ public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
 
     String LOCATIONS_PATH = "/{storage}/locations";
 
-    String STATUS_AVAILABILITY_PATH = "/resources/availability/status";
+    String STATUS_AVAILABILITY_PATH = "/availability/status";
 
     /**
      * Download a file by his checksum.
      *
      * @param checksum file to download
+     * @deprecated Files download is now deprecated, use the downloader service to download files
      */
+    @Deprecated(since = "2.1.0")
     @RequestMapping(method = RequestMethod.GET,
                     path = FILE_PATH + DOWNLOAD_PATH,
                     produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -77,8 +82,8 @@ public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
         @PathVariable(name = "storage") final String storage, @RequestBody final Set<String> checksums);
 
     @RequestMapping(method = RequestMethod.POST,
-                    path = STATUS_AVAILABILITY_PATH,
+                    path = FILE_PATH + STATUS_AVAILABILITY_PATH,
                     consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(@Valid @RequestBody
-                                                                          FilesAvailabilityRequestDto filesAvailabilityRequestDto);
+    ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(
+        @Valid @RequestBody FilesAvailabilityRequestDto filesAvailabilityRequestDto);
 }

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.rest;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.net.HttpHeaders;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -27,9 +28,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.fileaccess.plugin.domain.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FileAvailabilityStatusDto;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FilesAvailabilityRequestDto;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.NearlineFileNotAvailableException;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.service.DownloadTokenService;
@@ -38,19 +39,23 @@ import fr.cnes.regards.modules.storage.service.file.FileDownloadService;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaExceededReporter;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
 import fr.cnes.regards.modules.storage.service.file.exception.DownloadLimitExceededException;
+import io.jsonwebtoken.io.IOException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.vavr.control.Try;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.*;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import jakarta.validation.Valid;
-import java.io.ByteArrayInputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -64,13 +69,13 @@ import java.util.function.Function;
 @RequestMapping(FileDownloadController.DOWNLOAD_RESOURCE_PATH)
 public class FileDownloadController {
 
-    public static final String DOWNLOAD_RESOURCE_PATH = "resources";
-
     public static final String DOWNLOAD_PATH = "/{checksum}/download";
+
+    public static final String DOWNLOAD_RESOURCE_PATH = "/files";
 
     public static final String STATUS_AVAILABILITY_PATH = "/availability/status";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileDownloadController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceController.class);
 
     @Autowired
     private FileDownloadService downloadService;
@@ -79,7 +84,7 @@ public class FileDownloadController {
     private DownloadTokenService downloadTokenService;
 
     @Autowired
-    private IQuotaService<ResponseEntity<Resource>> downloadQuotaService;
+    private IQuotaService<ResponseEntity<StreamingResponseBody>> downloadQuotaService;
 
     @Autowired
     private IQuotaExceededReporter<DownloadableFile> quotaExceededReporter;
@@ -97,49 +102,59 @@ public class FileDownloadController {
      * End-point to Download a file referenced by a storage location with the given checksum.
      *
      * @param checksum checksum of the file to download
-     * @return {@link Resource}
+     * @return {@link InputStreamResource}
      */
     @RequestMapping(path = DOWNLOAD_PATH, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource> downloadFile(@PathVariable("checksum") String checksum,
-                                                 @RequestParam(name = "isContentInline", required = false)
-                                                 Boolean isContentInline) {
-        return downloadWithQuota(checksum, isContentInline).recover(EntityOperationForbiddenException.class, t -> {
-            LOGGER.error(String.format("File %s is not downloadable for now. Try again later.", checksum));
-            LOGGER.debug(t.getMessage(), t);
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
-        }).recover(EntityNotFoundException.class, t -> {
-            LOGGER.warn(String.format(
-                "Unable to download file with checksum=%s. Cause file does not exists on any known storage location",
-                checksum));
-            LOGGER.debug(t.getMessage(), t);
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }).recover(NearlineFileNotAvailableException.class, t -> {
-            LOGGER.warn(String.format(
-                "Unable to download nearline file with checksum=%s. Cause file is expired or does not exists on any known storage location",
-                checksum));
-            LOGGER.debug(t.getMessage(), t);
-            return new ResponseEntity<>(HttpStatus.GONE);
-        }).recover(ModuleException.class, t -> {
-            LOGGER.error(t.getMessage(), t);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }).get();
+    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("checksum") String checksum,
+                                                              @RequestParam(name = "isContentInline", required = false)
+                                                              Boolean isContentInline,
+                                                              HttpServletResponse response) {
+        return downloadWithQuota(checksum, isContentInline, response).recover(EntityOperationForbiddenException.class,
+                                                                              t -> {
+                                                                                  LOGGER.error(String.format(
+                                                                                      "File %s is not downloadable for now. Try again later.",
+                                                                                      checksum));
+                                                                                  LOGGER.debug(t.getMessage(), t);
+                                                                                  return new ResponseEntity<>(HttpStatus.ACCEPTED);
+                                                                              })
+                                                                     .recover(EntityNotFoundException.class, t -> {
+                                                                         LOGGER.warn(String.format(
+                                                                             "Unable to download file with checksum=%s. Cause file does not exists on any known storage location",
+                                                                             checksum));
+                                                                         LOGGER.debug(t.getMessage(), t);
+                                                                         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                                                                     })
+                                                                     .recover(NearlineFileNotAvailableException.class,
+                                                                              t -> {
+                                                                                  LOGGER.warn(String.format(
+                                                                                      "Unable to download nearline file with checksum=%s. Cause file is expired or does not exists on any known storage location",
+                                                                                      checksum));
+                                                                                  LOGGER.debug(t.getMessage(), t);
+                                                                                  return new ResponseEntity<>(HttpStatus.GONE);
+                                                                              })
+                                                                     .recover(ModuleException.class, t -> {
+                                                                         LOGGER.error(t.getMessage(), t);
+                                                                         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                                                                     })
+                                                                     .get();
     }
 
     /**
      * End-point to Download a file referenced by a storage location with the given checksum.
      *
      * @param checksum checksum of the file to download
-     * @return {@link Resource}
+     * @return {@link InputStreamResource}
      */
     @RequestMapping(path = FileDownloadService.DOWNLOAD_TOKEN_PATH,
                     method = RequestMethod.GET,
                     produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Resource> downloadFileWithToken(@PathVariable("checksum") String checksum,
-                                                          @RequestParam(name = FileDownloadService.TOKEN_PARAM)
-                                                          String token,
-                                                          boolean isContentInline) {
+    public ResponseEntity<StreamingResponseBody> downloadFileWithToken(@PathVariable("checksum") String checksum,
+                                                                       @RequestParam(name = FileDownloadService.TOKEN_PARAM,
+                                                                                     required = true) String token,
+                                                                       boolean isContentInline,
+                                                                       HttpServletResponse response) {
         if (!downloadTokenService.checkToken(checksum, token)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
@@ -147,7 +162,7 @@ public class FileDownloadController {
         // with no specific users (public access).
         return Try.of(() -> downloadService.downloadFile(checksum))
                   .mapTry(Callable::call)
-                  .flatMap(dlFile -> downloadFile(dlFile, isContentInline))
+                  .flatMap(dlFile -> downloadFile(dlFile, isContentInline, response))
                   .recover(NearlineFileNotAvailableException.class, t -> {
                       LOGGER.warn(String.format(
                           "Unable to download nearline file with checksum=%s. Cause file is expired or does not exists on any known storage location",
@@ -163,7 +178,9 @@ public class FileDownloadController {
     }
 
     @VisibleForTesting
-    protected Try<ResponseEntity<Resource>> downloadWithQuota(String checksum, Boolean isContentInline) {
+    protected Try<ResponseEntity<StreamingResponseBody>> downloadWithQuota(String checksum,
+                                                                           Boolean isContentInline,
+                                                                           HttpServletResponse response) {
         return Try.of(() -> downloadService.downloadFile(checksum)).mapTry(Callable::call).flatMap(dlFile -> {
             if (dlFile instanceof FileDownloadService.QuotaLimitedDownloadableFile) {
                 return downloadQuotaService.withQuota(authResolver.getUser(),
@@ -172,19 +189,22 @@ public class FileDownloadController {
                                                                            .map(d -> DownloadableFileWrapper.wrap(d,
                                                                                                                   quotaHandler))
                                                                            .flatMap(d -> downloadFile(d,
-                                                                                                      isContentInline))) // idempotent close of stream (and quotaHandler) if anything failed, just in case
+                                                                                                      isContentInline,
+                                                                                                      response))) // idempotent close of stream (and quotaHandler) if anything failed, just in case
                                            .onFailure(ignored -> Try.run(dlFile::close))
                                            .recover(DownloadLimitExceededException.class, t -> {
                                                quotaExceededReporter.report(t,
                                                                             dlFile,
                                                                             authResolver.getUser(),
                                                                             tenantResolver.getTenant());
-                                               return new ResponseEntity<>(new InputStreamResource(new ByteArrayInputStream(
-                                                   t.getMessage().getBytes())), HttpStatus.TOO_MANY_REQUESTS);
+                                               return new ResponseEntity<>(outputStream -> outputStream.write(t.getMessage()
+                                                                                                               .getBytes()),
+                                                                           HttpStatus.TOO_MANY_REQUESTS);
                                            });
+
             }
             // no quota handling, just download
-            return downloadFile(dlFile, isContentInline);
+            return downloadFile(dlFile, isContentInline, response);
         });
     }
 
@@ -196,33 +216,47 @@ public class FileDownloadController {
     }
 
     @VisibleForTesting
-    protected Try<ResponseEntity<Resource>> downloadFile(DownloadableFile downloadFile, Boolean isContentInline) {
+    protected Try<ResponseEntity<StreamingResponseBody>> downloadFile(DownloadableFile downloadFile,
+                                                                      Boolean isContentInline,
+                                                                      HttpServletResponse response) {
         return Try.of(() -> {
-            HttpHeaders headers = new HttpHeaders();
-            MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM; // Default value
+            response.setContentLengthLong(downloadFile.getRealFileSize());
+            response.setContentType(downloadFile.getMimeType().toString());
             // By default, return the attachment header, forcing browser to download the file
             if (isContentInline == null || !isContentInline) {
-                headers.add(HttpHeaders.CONTENT_DISPOSITION,
-                            ContentDisposition.builder("attachment")
-                                              .filename(downloadFile.getFileName())
-                                              .build()
-                                              .toString());
+                response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                                   ContentDisposition.builder("attachment")
+                                                     .filename(downloadFile.getFileName())
+                                                     .size(downloadFile.getRealFileSize())
+                                                     .build()
+                                                     .toString());
             } else {
-                // Override media type to get exact one
-                mediaType = MediaType.asMediaType(downloadFile.getMimeType());
-                headers.add(HttpHeaders.CONTENT_DISPOSITION,
-                            ContentDisposition.builder("inline")
-                                              .filename(downloadFile.getFileName())
-                                              .build()
-                                              .toString());
+                response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                                   ContentDisposition.builder("inline")
+                                                     .filename(downloadFile.getFileName())
+                                                     .size(downloadFile.getRealFileSize())
+                                                     .build()
+                                                     .toString());
                 // Allows iframe to display inside REGARDS interface
-                headers.add("X-Frame-Options", "SAMEORIGIN");
+                response.setHeader(HttpHeaders.X_FRAME_OPTIONS, "SAMEORIGIN");
             }
-            return ResponseEntity.ok()
-                                 .headers(headers)
-                                 .contentType(mediaType)
-                                 .contentLength(downloadFile.getRealFileSize().intValue())
-                                 .body(new InputStreamResource(downloadFile.getFileInputStream()));
+            StreamingResponseBody stream = out -> {
+                try (OutputStream outs = response.getOutputStream()) {
+                    byte[] bytes = new byte[1024];
+                    int length;
+                    while ((length = downloadFile.getFileInputStream().read(bytes)) >= 0) {
+                        outs.write(bytes, 0, length);
+                    }
+                } catch (final IOException e) {
+                    LOGGER.error("Exception while reading and streaming data of file url=[{}] size={}",
+                                 downloadFile.getFileName(),
+                                 downloadFile.getRealFileSize(),
+                                 e);
+                } finally {
+                    downloadFile.close();
+                }
+            };
+            return new ResponseEntity<>(stream, HttpStatus.OK);
         });
     }
 

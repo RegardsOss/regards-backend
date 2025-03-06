@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.search.service.LicenseAccessorService;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.DataAccessRightService;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.StorageDownloaderClient;
 import jakarta.servlet.http.HttpServletResponse;
 import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
@@ -75,7 +75,7 @@ public class CatalogDownloadTester {
         DataAccessRightService dataAccessRightService = mockAccessRightService(licenseAccessorServiceMock);
         ReflectionTestUtils.setField(controller, "dataAccessRightService", dataAccessRightService);
         ReflectionTestUtils.setField(controller, "licenseAccessor", licenseAccessorServiceMock);
-        ReflectionTestUtils.setField(controller, "storageRestClient", mockFileDownload(downloadStatus));
+        ReflectionTestUtils.setField(controller, "storageDownloaderClient", mockFileDownload(downloadStatus));
 
         servletResponse = mock(HttpServletResponse.class);
     }
@@ -142,10 +142,10 @@ public class CatalogDownloadTester {
         return licenseClient;
     }
 
-    private IStorageRestClient mockFileDownload(StorageDownloadStatus downloadStatus) {
+    private StorageDownloaderClient mockFileDownload(StorageDownloadStatus downloadStatus) {
         IStorageRestClientMock storageClient = new IStorageRestClientMock();
         storageClient.setup(downloadStatus);
-        return storageClient;
+        return new StorageDownloaderClient(storageClient, null, false);
     }
 
     public ResponseEntity<Download> downloadFile(String productUrn, String fileChecksum)

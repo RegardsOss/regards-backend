@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.s3.client;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import fr.cnes.regards.framework.s3.domain.GlacierFileStatus;
 import fr.cnes.regards.framework.s3.domain.RestorationStatus;
 import fr.cnes.regards.framework.s3.domain.StorageEntry;
@@ -28,6 +27,7 @@ import fr.cnes.regards.framework.s3.domain.multipart.UploadedPart;
 import fr.cnes.regards.framework.s3.dto.StorageConfigDto;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import io.vavr.collection.List;
+import jakarta.annotation.Nullable;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
@@ -39,16 +39,16 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.client.config.SdkAdvancedAsyncClientOption;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.retry.backoff.BackoffStrategy;
 import software.amazon.awssdk.core.retry.backoff.EqualJitterBackoffStrategy;
+import software.amazon.awssdk.http.async.SdkAsyncHttpClient;
+import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.*;
 
-import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -64,7 +64,8 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,14 +81,6 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
 
     private static final Logger LOGGER = LoggerFactory.getLogger(S3AsyncClientReactorWrapper.class);
 
-    static final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("s3-async-client-%d")
-                                                                         .setUncaughtExceptionHandler((t, e) -> LOGGER.error(
-                                                                             "Uncaught on thread {}: {}",
-                                                                             t.getName(),
-                                                                             e.getMessage(),
-                                                                             e))
-                                                                         .build();
-
     public static final Pattern HEAD_RESPONSE_RESTORE_ON_GOING_PATTERN = Pattern.compile(
         "^.*ongoing-request=\"([^\"]*)\"" + ".*$");
 
@@ -102,10 +95,13 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                                                                                               .appendPattern("]")
                                                                                               .toFormatter(Locale.ENGLISH);
 
-    static final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
+    private static final SdkAsyncHttpClient httpClient = NettyNioAsyncHttpClient.builder()
+                                                                                .writeTimeout(Duration.ZERO)
+                                                                                .maxConcurrency(1000)
+                                                                                .build();
 
     public S3AsyncClientReactorWrapper(StorageConfigDto config) {
-        super(3, config, S3AsyncClientReactorWrapper::createS3Client);
+        super(3, config, cfg -> S3AsyncClientReactorWrapper.createS3Client(cfg));
     }
 
     private static <T> Mono<T> fromFutureSupplier(Supplier<CompletableFuture<T>> futSupplier) {
@@ -120,6 +116,7 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                                                                     .baseDelay(Duration.ofSeconds(config.getRetryBackOffBaseDuration()))
                                                                     .maxBackoffTime(Duration.ofSeconds(config.getRetryBackOffMaxDuration()))
                                                                     .build();
+
         return ClientOverrideConfiguration.builder()
                                           .retryPolicy(builder -> builder.backoffStrategy(backoffStrategy)
                                                                          .throttlingBackoffStrategy(backoffStrategy)
@@ -129,15 +126,13 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
 
     private static S3AsyncClient createS3Client(StorageConfigDto config) {
         AwsBasicCredentials credentials = AwsBasicCredentials.create(config.getKey(), config.getSecret());
-
         return S3AsyncClient.builder()
                             .endpointOverride(URI.create(config.getEndpoint()))
                             .region(Region.of(config.getRegion()))
                             .credentialsProvider(StaticCredentialsProvider.create(credentials))
                             .serviceConfiguration(S3Configuration.builder().build())
-                            .asyncConfiguration(b -> b.advancedOption(SdkAdvancedAsyncClientOption.FUTURE_COMPLETION_EXECUTOR,
-                                                                      executor))
                             .overrideConfiguration(createRetryConfiguration(config))
+                            .httpClient(httpClient)
                             .build();
     }
 

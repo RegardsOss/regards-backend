@@ -30,11 +30,17 @@ import java.util.Objects;
  **/
 public class NearlineFileStatusDto {
 
+    private final String checksum;
+
     /**
-     * file availability.</br>
-     * if true, it means that the file is located in T2 or in the restoration cache (=external cache)
+     * File availability status.
+     * <ul>
+     * <li>AVAILABLE : File is available for download</li>
+     * <li>UNAVAILABLE : File is not available for download. A restore action must be processed first.</li>
+     * <li>ERROR : Error during availability status. File could be available or not.</li>
+     * </ul>
      */
-    private final boolean available;
+    private final NearlineFileStatusDtoStatus available;
 
     @Nullable
     private final OffsetDateTime expirationDate;
@@ -42,13 +48,21 @@ public class NearlineFileStatusDto {
     @Nullable
     private String message;
 
-    public NearlineFileStatusDto(boolean available, @Nullable OffsetDateTime expirationDate, @Nullable String message) {
+    public NearlineFileStatusDto(String checksum,
+                                 NearlineFileStatusDtoStatus available,
+                                 @Nullable OffsetDateTime expirationDate,
+                                 @Nullable String message) {
+        this.checksum = checksum;
         this.available = available;
         this.expirationDate = expirationDate;
         this.message = message;
     }
 
-    public boolean isAvailable() {
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public NearlineFileStatusDtoStatus getAvailable() {
         return available;
     }
 

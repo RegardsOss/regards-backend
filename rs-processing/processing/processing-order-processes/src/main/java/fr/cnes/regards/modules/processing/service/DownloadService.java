@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionEx
 import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
 import fr.cnes.regards.modules.processing.order.OrderInputFileMetadata;
 import fr.cnes.regards.modules.processing.order.OrderInputFileMetadataMapper;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.StorageDownloaderClient;
 import io.vavr.collection.Set;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -79,14 +79,14 @@ public class DownloadService implements IDownloadService {
 
     private final Set<String> nonProxyHosts;
 
-    private final IStorageRestClient storageClient;
+    private final StorageDownloaderClient storageClient;
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     public DownloadService(Proxy proxy,
                            @Qualifier("nonProxyHosts") Set<String> nonProxyHosts,
-                           IStorageRestClient storageClient,
+                           StorageDownloaderClient storageClient,
                            IRuntimeTenantResolver runtimeTenantResolver) {
         this.proxy = proxy;
         this.nonProxyHosts = nonProxyHosts;

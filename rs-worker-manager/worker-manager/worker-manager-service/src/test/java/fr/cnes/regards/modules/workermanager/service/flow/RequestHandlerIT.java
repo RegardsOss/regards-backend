@@ -85,6 +85,7 @@ public class RequestHandlerIT extends AbstractWorkerManagerIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         tenantSettingService.update(WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME, List.of(CONTENT_TYPE_TO_SKIP));
         workerConfigRepo.deleteAll();
+        stepPropertyUpdateRepository.deleteAll();
     }
 
     @Test

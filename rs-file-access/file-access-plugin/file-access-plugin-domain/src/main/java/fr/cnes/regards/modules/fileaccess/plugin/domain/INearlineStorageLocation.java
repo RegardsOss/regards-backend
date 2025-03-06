@@ -19,11 +19,12 @@
 package fr.cnes.regards.modules.fileaccess.plugin.domain;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.fileaccess.dto.availability.NearlineFileStatusDto;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceWithoutOwnersDto;
+import fr.cnes.regards.modules.fileaccess.dto.availability.NearlineFileStatusDto;
 import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Plugin to handle NEARLINE storage location. <br/>
@@ -45,9 +46,10 @@ public interface INearlineStorageLocation extends IStorageLocation {
     void retrieve(FileRestorationWorkingSubset workingSubset, IRestorationProgressManager progressManager);
 
     /**
-     * Download file if it is available (call {@link INearlineStorageLocation#checkAvailability(FileReferenceWithoutOwnersDto)}).
+     * Download file if it is available (call
+     * {@link INearlineStorageLocation#checkAvailability(List<FileReferenceWithoutOwnersDto>)}).
      *
-     * @param fileReference the file's reference
+     * @param fileReference the files reference list
      * @return input stream of file in cache
      * @throws NearlineFileNotAvailableException if the file is not available in the cache of NEARLINE storage
      * @throws NearlineDownloadException         if a error is raised during the downloading of file in the cache of NEARLINE storage
@@ -63,7 +65,7 @@ public interface INearlineStorageLocation extends IStorageLocation {
      * @param fileReference the file's reference
      * @return information about the file (availability, expiration_date)
      */
-    default NearlineFileStatusDto checkAvailability(FileReferenceWithoutOwnersDto fileReference) {
+    default List<NearlineFileStatusDto> checkAvailability(List<FileReferenceWithoutOwnersDto> fileReferences) {
         throw new NotImplementedException();
     }
 

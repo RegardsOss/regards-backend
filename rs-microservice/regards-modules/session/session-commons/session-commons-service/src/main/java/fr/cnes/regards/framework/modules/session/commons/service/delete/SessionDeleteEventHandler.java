@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.env.Profiles;
 
 import java.util.List;
 
@@ -51,7 +52,9 @@ public class SessionDeleteEventHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(SessionDeleteEvent.class, this);
+        if (!event.getApplicationContext().getEnvironment().acceptsProfiles(Profiles.of("nosession"))) {
+            subscriber.subscribeTo(SessionDeleteEvent.class, this);
+        }
     }
 
     @Override

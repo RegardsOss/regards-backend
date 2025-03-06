@@ -152,7 +152,9 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
     @Override
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler(this, runtimeTenantResolver));
+        if (!event.getApplicationContext().getEnvironment().acceptsProfiles("nojobs")) {
+            subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler(this, runtimeTenantResolver));
+        }
     }
 
     /**
@@ -163,6 +165,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
     @Async
     public Future<Void> manage() {
         // To avoid starvation, loop on each tenant before executing jobs
+        LOGGER.info("[JOBS MODULE] Starting Jobs service scheduler.");
         while (canManage) {
             boolean noJobAtAll = true;
             try {
@@ -217,7 +220,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                 }
             }
         }
-        LOGGER.warn("Job service puller just died");
+        LOGGER.warn("[JOBS MODULE] Jobs service scheduler just died.");
         return new AsyncResult<>(null);
     }
 

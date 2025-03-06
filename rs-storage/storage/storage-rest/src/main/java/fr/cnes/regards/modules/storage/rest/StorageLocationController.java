@@ -40,6 +40,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpStatus;
@@ -58,6 +59,7 @@ import java.util.Optional;
  *
  * @author Sébastien Binda
  */
+@Profile({ "!downloader" })
 @RestController
 @RequestMapping(StorageLocationController.BASE_PATH)
 public class StorageLocationController implements IResourceController<StorageLocationDto> {
@@ -130,9 +132,8 @@ public class StorageLocationController implements IResourceController<StorageLoc
      */
     @PostMapping
     @ResourceAccess(description = "Configure a storage location by his name", role = DefaultRole.ADMIN)
-    public ResponseEntity<EntityModel<StorageLocationDto>> configureLocation(@Valid @RequestBody
-                                                                             StorageLocationDto storageLocation)
-        throws ModuleException {
+    public ResponseEntity<EntityModel<StorageLocationDto>> configureLocation(
+        @Valid @RequestBody StorageLocationDto storageLocation) throws ModuleException {
         if (storageLocation.getName().equals(CacheService.CACHE_NAME)) {
             throw new EntityInvalidException(String.format("Storage location %s is a reserved name.",
                                                            CacheService.CACHE_NAME));

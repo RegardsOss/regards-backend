@@ -18,11 +18,13 @@
  */
 package fr.cnes.regards.modules.storage.service.location;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.downloader.service.StoragePluginConfEvent;
 import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
 import fr.cnes.regards.modules.storage.dao.IStorageLocationConfigurationRepostory;
@@ -54,6 +56,9 @@ public class StorageLocationConfigurationService {
 
     @Autowired
     private IStorageLocationConfigurationRepostory storageLocConfRepo;
+
+    @Autowired
+    private IPublisher publisher;
 
     /**
      * Creates a new configuration for a storage location.
@@ -260,10 +265,16 @@ public class StorageLocationConfigurationService {
         if (oldOne.getPluginConfiguration() != null) {
             if (updated.getPluginConfiguration() == null) {
                 pluginService.deletePluginConfiguration(oldOne.getPluginConfiguration().getBusinessId());
+                // Publish a specific event to inform other services that storage plugin conf has changed. Used for
+                // downloader service for example.
+                publisher.publish(new StoragePluginConfEvent(oldOne.getPluginConfiguration().getBusinessId()));
             } else {
                 if (Objects.equals(updated.getPluginConfiguration().getPluginId(),
                                    oldOne.getPluginConfiguration().getPluginId())) {
                     pluginService.updatePluginConfiguration(updated.getPluginConfiguration());
+                    // Publish a specific event to inform other services that storage plugin conf has changed. Used for
+                    // downloader service for example.
+                    publisher.publish(new StoragePluginConfEvent(updated.getPluginConfiguration().getBusinessId()));
                 } else {
                     throw new EntityInvalidException("Storage location plugin cannot be updated! "
                                                      + "If you made a mistake you have to delete the old one and create a new one.");
@@ -296,6 +307,9 @@ public class StorageLocationConfigurationService {
             storageLocConfRepo.delete(toDelete);
             if (toDelete.getPluginConfiguration() != null) {
                 pluginService.deletePluginConfiguration(toDelete.getPluginConfiguration().getBusinessId());
+                // Publish a specific event to inform other services that storage plugin conf has changed. Used for
+                // downloader service for example.
+                publisher.publish(new StoragePluginConfEvent(toDelete.getPluginConfiguration().getBusinessId()));
             }
             // Increase all the priorities of those which are less prioritized than the one to delete
             Set<StorageLocationConfiguration> lessPrioritizeds = storageLocConfRepo.findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(

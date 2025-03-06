@@ -79,7 +79,7 @@ public class FileReferenceControllerIT extends AbstractFileReferenceControllerIT
     @Test
     public void downloadFileError() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusNotFound();
-        performDefaultGet(FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH,
+        performDefaultGet(FileDownloadController.DOWNLOAD_RESOURCE_PATH + FileDownloadController.DOWNLOAD_PATH,
                           requestBuilderCustomizer,
                           "File download response status should be NOT_FOUND.",
                           UUID.randomUUID().toString());
@@ -91,7 +91,7 @@ public class FileReferenceControllerIT extends AbstractFileReferenceControllerIT
     @Purpose("Check file download")
     public void downloadFileSuccess() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        performDefaultGet(FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH,
+        performDefaultGet(FileDownloadController.DOWNLOAD_RESOURCE_PATH + FileDownloadController.DOWNLOAD_PATH,
                           requestBuilderCustomizer,
                           "File download response status should be OK",
                           storedFileChecksum);
@@ -107,7 +107,7 @@ public class FileReferenceControllerIT extends AbstractFileReferenceControllerIT
         long rateLimit = 10_000L;
         quotaRepository.save(new DownloadQuotaLimits(getDefaultTenant(), userEmail, maxQuota, rateLimit));
 
-        String urlTemplate = FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH;
+        String urlTemplate = FileDownloadController.DOWNLOAD_RESOURCE_PATH + FileDownloadController.DOWNLOAD_PATH;
         String authToken = manageSecurity(getDefaultTenant(),
                                           urlTemplate,
                                           RequestMethod.GET,
@@ -145,7 +145,7 @@ public class FileReferenceControllerIT extends AbstractFileReferenceControllerIT
         String userEmail = UUID.randomUUID().toString();
         quotaRepository.save(new DownloadQuotaLimits(getDefaultTenant(), userEmail, 10L, 0L));
 
-        String urlTemplate = FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH;
+        String urlTemplate = FileDownloadController.DOWNLOAD_RESOURCE_PATH + FileDownloadController.DOWNLOAD_PATH;
         String authToken = manageSecurity(getDefaultTenant(),
                                           urlTemplate,
                                           RequestMethod.GET,

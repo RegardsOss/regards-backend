@@ -38,12 +38,16 @@ public final class FileAvailabilityBuilder {
         return new FileAvailabilityStatusDto(fileReference.getMetaInfo().getChecksum(), true, null);
     }
 
-    public static FileAvailabilityStatusDto buildAvailable(FileReference fileReference, OffsetDateTime expirationDate) {
-        return new FileAvailabilityStatusDto(fileReference.getMetaInfo().getChecksum(), true, expirationDate);
+    public static FileAvailabilityStatusDto buildAvailable(String checksum, OffsetDateTime expirationDate) {
+        return new FileAvailabilityStatusDto(checksum, true, expirationDate);
     }
 
     public static FileAvailabilityStatusDto buildNotAvailable(FileReference fileReference) {
         return new FileAvailabilityStatusDto(fileReference.getMetaInfo().getChecksum(), false, null);
+    }
+
+    public static FileAvailabilityStatusDto buildNotAvailable(String checksum) {
+        return new FileAvailabilityStatusDto(checksum, false, null);
     }
 
     public static FileAvailabilityStatusDto buildAvailable(CacheFile file) {

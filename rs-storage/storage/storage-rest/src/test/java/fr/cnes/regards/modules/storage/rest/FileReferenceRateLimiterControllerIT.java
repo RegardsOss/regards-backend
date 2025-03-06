@@ -130,7 +130,7 @@ public class FileReferenceRateLimiterControllerIT extends AbstractFileReferenceC
                                                                                   RequestBuilderCustomizer requestBuilderCustomizer = customizer()
                                                                                       // let assertion pass, I want to accumulate status codes!
                                                                                       .expect(r -> assertTrue(true));
-                                                                                  String urlTemplate = FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH;
+                                                                                  String urlTemplate = FileDownloadController.DOWNLOAD_RESOURCE_PATH + FileDownloadController.DOWNLOAD_PATH;
                                                                                   String authToken = manageSecurity(getDefaultTenant(),
                                                                                                                     urlTemplate,
                                                                                                                     RequestMethod.GET,

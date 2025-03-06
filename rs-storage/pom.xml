@@ -56,6 +56,7 @@
     <modules>
         <module>storage</module>
         <module>bootstrap-storage</module>
+        <module>bootstrap-downloader</module>
         <module>storage-code-coverage</module>
     </modules>
 

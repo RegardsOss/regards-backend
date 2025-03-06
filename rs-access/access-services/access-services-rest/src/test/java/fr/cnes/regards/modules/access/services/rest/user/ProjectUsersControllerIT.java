@@ -167,18 +167,22 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     protected RequestBuilderCustomizer expectSingleUserFromClientMock(RequestBuilderCustomizer customizer) {
+        // Real current quota is hidden from admin service if current is over max limit.
+        long expectedCurrantQuota = Math.min(CURRENT_USER_QUOTA_STUB, USER_QUOTA_LIMITS_STUB_MAX_QUOTA);
         return customizer.expectValue("$.content.email", PROJECT_USER_STUB_EMAIL)
                          .expectValue("$.content.maxQuota", USER_QUOTA_LIMITS_STUB_MAX_QUOTA)
                          .expectValue("$.content.rateLimit", USER_QUOTA_LIMITS_STUB_RATE_LIMIT)
-                         .expectValue("$.content.currentQuota", CURRENT_USER_QUOTA_STUB)
+                         .expectValue("$.content.currentQuota", expectedCurrantQuota)
                          .expectValue("$.content.currentRate", CURRENT_USER_RATE_STUB);
     }
 
     protected RequestBuilderCustomizer expectPagedUserFromClientMock(RequestBuilderCustomizer customizer) {
+        // Real current quota is hidden from admin service if current is over max limit.
+        long expectedCurrantQuota = Math.min(CURRENT_USER_QUOTA_STUB, USER_QUOTA_LIMITS_STUB_MAX_QUOTA);
         return customizer.expectValue("$.content.[0].content.email", PROJECT_USER_STUB_EMAIL)
                          .expectValue("$.content.[0].content.maxQuota", USER_QUOTA_LIMITS_STUB_MAX_QUOTA)
                          .expectValue("$.content.[0].content.rateLimit", USER_QUOTA_LIMITS_STUB_RATE_LIMIT)
-                         .expectValue("$.content.[0].content.currentQuota", CURRENT_USER_QUOTA_STUB)
+                         .expectValue("$.content.[0].content.currentQuota", expectedCurrantQuota)
                          .expectValue("$.content.[0].content.currentRate", CURRENT_USER_RATE_STUB);
     }
 

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.service.location;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -35,8 +36,9 @@ import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfigurat
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.event.EventListener;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -50,7 +52,8 @@ import java.util.stream.Collectors;
  * @author Sébastien Binda
  */
 @Component
-public class StoragePluginConfigurationHandler implements IHandler<BroadcastPluginConfEvent> {
+public class StoragePluginConfigurationHandler
+    implements ApplicationListener<ApplicationReadyEvent>, IHandler<BroadcastPluginConfEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StoragePluginConfigurationHandler.class);
 
@@ -65,14 +68,19 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
     private ISubscriber subscriber;
 
     @Autowired
+    private IPublisher publisher;
+
+    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private ITenantResolver tenantResolver;
 
-    @EventListener(ApplicationStartedEvent.class)
-    public void init() {
-        subscriber.subscribeTo(BroadcastPluginConfEvent.class, this);
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        if (!event.getApplicationContext().getEnvironment().acceptsProfiles(Profiles.of("downloader"))) {
+            subscriber.subscribeTo(BroadcastPluginConfEvent.class, this);
+        }
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             try {
@@ -92,7 +100,6 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
         if ((wrapper.getContent().getPluginTypes().contains(IStorageLocation.class.getName()))) {
             runtimeTenantResolver.forceTenant(tenant);
             try {
-
                 switch (wrapper.getContent().getAction()) {
                     case CREATE:
                         PluginConfiguration conf = pluginService.getPluginConfiguration(wrapper.getContent()

@@ -14,6 +14,8 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.control.Try;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,6 +38,8 @@ import static fr.cnes.regards.modules.storage.service.file.download.QuotaConfigu
 @Component
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<DownloadableFile>, InitializingBean {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadQuotaExceededReporter.class);
 
     public static final String TITLE = "Download quota errors";
 
@@ -160,9 +164,9 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
                        DownloadableFile file,
                        String email,
                        String tenant) {
-        report(() -> String.format("Could not download file %s: download quota exceeded.", file.getFileName()),
-               email,
-               tenant);
+        String errorMessage = String.format("Could not download file %s: download quota exceeded.", file.getFileName());
+        LOGGER.error(errorMessage);
+        report(() -> errorMessage, email, tenant);
     }
 
     @Override
@@ -170,9 +174,9 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
                        DownloadableFile file,
                        String email,
                        String tenant) {
-        report(() -> String.format("Could not download file %s: download rate exceeded.", file.getFileName()),
-               email,
-               tenant);
+        String errorMessage = String.format("Could not download file %s: download rate exceeded.", file.getFileName());
+        LOGGER.error(errorMessage);
+        report(() -> errorMessage, email, tenant);
     }
 
     /**

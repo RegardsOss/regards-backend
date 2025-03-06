@@ -1,9 +1,13 @@
 package fr.cnes.regards.framework.s3.domain;
 
 import io.vavr.Function1;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 public interface StorageCommandResult {
+
+    Logger LOGGER = LoggerFactory.getLogger(StorageCommandResult.class);
 
     StorageCommand s3Cmd();
 
@@ -180,6 +184,7 @@ public interface StorageCommandResult {
 
         public UnreachableStorage(StorageCommand ioCmd, Throwable throwable) {
             super(ioCmd);
+            LOGGER.error("Unreachable " + throwable.getMessage(), throwable);
             this.throwable = throwable;
         }
 

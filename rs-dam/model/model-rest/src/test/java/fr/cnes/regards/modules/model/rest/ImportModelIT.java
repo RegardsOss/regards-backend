@@ -170,15 +170,19 @@ public class ImportModelIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    public void importCompatibleModels2() {
-        importModel(REFERENCE_MODEL);
-        importModel("model3.xml");
+    public void updateModelWithImport() {
+        importModel("model2.xml");
+        List<ModelAttrAssoc> assoc = modelAttributeService.getModelAttrAssocs("model2");
+        Assert.assertEquals(4, assoc.size());
+        importModel("model2-update.xml");
+        assoc = modelAttributeService.getModelAttrAssocs("model2");
+        Assert.assertEquals(5, assoc.size());
     }
 
     @Test
-    public void importIncompatibleModels() {
+    public void importCompatibleModels2() {
         importModel(REFERENCE_MODEL);
-        importModel("model4.xml", MockMvcResultMatchers.status().isBadRequest());
+        importModel("model3.xml");
     }
 
     // @Test(expected = ImportException.class)

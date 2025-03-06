@@ -41,6 +41,7 @@ import io.vavr.Tuple;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
+import jakarta.annotation.Nullable;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import reactor.core.publisher.Flux;
@@ -51,7 +52,6 @@ import reactor.util.function.Tuple2;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.RestoreObjectResponse;
 
-import jakarta.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
@@ -99,19 +99,14 @@ public class S3HighLevelReactiveClient implements AutoCloseable {
     }
 
     protected S3AsyncClientReactorWrapper getClient(StorageConfigDto config) {
-        return configManagers.get(config, S3AsyncClientReactorWrapper::new);
+        return configManagers.get(config, cfg -> new S3AsyncClientReactorWrapper(cfg));
     }
 
     public Mono<ReadResult> read(Read readCmd) {
-        return readingCallableMono(readCmd).subscribeOn(scheduler)
-                                           .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(
-                                               readCmd,
-                                               t)))
-                                           .log("storage.s3.read",
-                                                Level.FINE,
-                                                SignalType.ON_SUBSCRIBE,
-                                                SignalType.ON_NEXT,
-                                                SignalType.ON_ERROR);
+        return readingCallableMono(readCmd).subscribeOn(scheduler).onErrorResume(t -> {
+            LOGGER.error(String.format("Error reading file from S3 server. Root cause : %s", t.getMessage()), t);
+            return Mono.just(new StorageCommandResult.UnreachableStorage(readCmd, t));
+        }).log("storage.s3.read", Level.FINE, SignalType.ON_SUBSCRIBE, SignalType.ON_NEXT, SignalType.ON_ERROR);
     }
 
     /**

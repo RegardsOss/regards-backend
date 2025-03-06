@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Profiles;
 
 import java.util.List;
 
@@ -35,6 +37,7 @@ import java.util.List;
  *
  * @author Iliana Ghazali
  **/
+@Profile({ "!nosession" })
 public class SourceDeleteEventHandler
     implements ApplicationListener<ApplicationReadyEvent>, IHandler<SourceDeleteEvent> {
 
@@ -51,7 +54,9 @@ public class SourceDeleteEventHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(SourceDeleteEvent.class, this);
+        if (!event.getApplicationContext().getEnvironment().acceptsProfiles(Profiles.of("nosession"))) {
+            subscriber.subscribeTo(SourceDeleteEvent.class, this);
+        }
     }
 
     @Override

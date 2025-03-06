@@ -66,7 +66,7 @@ public class SessionCommonsServiceAutoConfiguration {
      */
 
     @Bean
-    @Profile("!nohandler")
+    @Profile({ "!nohandler & !nosession" })
     public SnapshotJobEventHandler snapshotJobEventHandler() {
         return new SnapshotJobEventHandler();
     }

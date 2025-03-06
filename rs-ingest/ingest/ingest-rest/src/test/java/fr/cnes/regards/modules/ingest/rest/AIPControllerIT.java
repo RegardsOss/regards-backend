@@ -56,6 +56,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.snippet.Attributes;
@@ -130,7 +131,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // resend the event of AppReady to reinit default data
         springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class),
                                                                null,
-                                                               null,
+                                                               new GenericApplicationContext(),
                                                                null));
     }
 

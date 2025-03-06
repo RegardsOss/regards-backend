@@ -42,7 +42,7 @@ import java.util.Set;
  * @author Sébastien Binda
  */
 @Component
-@Profile("!noscheduler")
+@Profile({ "!noscheduler", "!downloader" })
 @EnableScheduling
 public class CacheScheduler {
 

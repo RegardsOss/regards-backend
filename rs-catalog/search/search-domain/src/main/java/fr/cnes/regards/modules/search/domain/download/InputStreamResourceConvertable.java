@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.feign.ResponseStreamProxy;
 import org.springframework.core.io.InputStreamResource;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Extends the {@link InputStreamResource} in order to override {@link InputStreamResourceConvertable#contentLength()}
@@ -32,14 +33,14 @@ import java.io.IOException;
  */
 public abstract class InputStreamResourceConvertable extends InputStreamResource {
 
-    private final Integer contentLength;
+    private final long contentLength;
 
     /**
      * @param response response to proxy
      */
     public InputStreamResourceConvertable(Response response) throws IOException {
         super(new ResponseStreamProxy(response));
-        this.contentLength = response.body().length();
+        this.contentLength = Optional.ofNullable(response.body().length()).orElse(0);
     }
 
     /**

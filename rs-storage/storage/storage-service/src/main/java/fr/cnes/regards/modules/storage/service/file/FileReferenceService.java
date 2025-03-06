@@ -361,6 +361,14 @@ public class FileReferenceService {
     }
 
     /**
+     * Store modification of given files
+     */
+    @MultitenantTransactional
+    public void storeAll(List<FileReference> updatedFiles) {
+        fileRefRepo.saveAll(updatedFiles);
+    }
+
+    /**
      *
      */
     public boolean addOwner(Long id, String owner) {

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.availability;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
@@ -40,8 +39,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -78,9 +79,9 @@ public class FileAvailabilityService {
     /**
      * Compute file availability for all input files.
      */
-    @MultitenantTransactional
     public List<FileAvailabilityStatusDto> checkFileAvailability(FilesAvailabilityRequestDto filesAvailabilityRequestDto)
         throws EntityInvalidException {
+        long start = Instant.now().toEpochMilli();
         validateRequest(filesAvailabilityRequestDto);
         List<FileAvailabilityStatusDto> fileAvailabilityResponse = new ArrayList<>();
         Set<String> allInputChecksums = filesAvailabilityRequestDto.getChecksums();
@@ -94,6 +95,9 @@ public class FileAvailabilityService {
         // now build response for each file reference found
         fileAvailabilityResponse.addAll(buildAvailabilityStatusForFileReferences(fileReferences));
         // file not found in fileReference table is not managed (no availability status returned).
+        LOGGER.info("[Availability Monitoring] Check availability request for {} files processed in {} ms",
+                    fileReferences.size(),
+                    Instant.now().toEpochMilli() - start);
         return fileAvailabilityResponse;
     }
 
@@ -106,7 +110,6 @@ public class FileAvailabilityService {
         }
     }
 
-    @MultitenantTransactional
     public Collection<FileAvailabilityStatusDto> buildAvailabilityStatusForFileReferences(Set<FileReference> fileReferences) {
         Set<StorageLocationConfiguration> storagesUsed = searchAndComputeStoragesUsedOf(fileReferences);
         // retrieve storage configuration grouped by names
@@ -140,9 +143,9 @@ public class FileAvailabilityService {
         return storagesUsed;
     }
 
-    @MultitenantTransactional
     public List<FileAvailabilityStatusDto> manageAvailabilityStatusForNearlineFiles(List<FileReference> fileReferencesNearline,
                                                                                     Set<StorageLocationConfiguration> storageUsed) {
+        long start = Instant.now().toEpochMilli();
         List<FileAvailabilityStatusDto> fileAvailabilities = new ArrayList<>();
         if (fileReferencesNearline.isEmpty()) {
             return fileAvailabilities;
@@ -162,41 +165,80 @@ public class FileAvailabilityService {
         // for nearlineConfirmed to False or null, we don't know if file is store in Tier3, Tier2, or cache.
         // if a file is stored in Tier2 or cache, that means the file is available.
         // call the plugin to get this information.
-        fileAvailabilities.addAll(groups.getOrDefault(Boolean.FALSE, List.of())
-                                        .stream()
-                                        .map(file -> manageNotNearlineConfirmedFiles(file, storagePluginsIndexed))
-                                        .toList());
+        List<FileReference> filesToConfirm = groups.getOrDefault(Boolean.FALSE, List.of());
+        fileAvailabilities.addAll(manageNotNearlineConfirmedFiles(filesToConfirm, storagePluginsIndexed));
+        LOGGER.info("[Availability Monitoring] Manager availability for {} nearline files processed in {} ms",
+                    fileReferencesNearline.size(),
+                    Instant.now().toEpochMilli() - start);
         return fileAvailabilities;
     }
 
-    private FileAvailabilityStatusDto manageNotNearlineConfirmedFiles(FileReference file,
-                                                                      Map<String, Optional<INearlineStorageLocation>> storagePluginsIndexed) {
-        Optional<INearlineStorageLocation> optPlugin = storagePluginsIndexed.get(file.getLocation().getStorage());
-        if (optPlugin.isEmpty()) {
-            LOGGER.warn("Try to access to a not configured plugin {}", file.getLocation().getStorage());
-            // the plugin is not available, so the file is not available too.
-            return FileAvailabilityBuilder.buildNotAvailable(file);
-        } else {
-            try {
-                NearlineFileStatusDto fileAvailability = optPlugin.get().checkAvailability(file.toDtoWithoutOwners());
-                if (fileAvailability.isAvailable()) {
-                    return FileAvailabilityBuilder.buildAvailable(file, fileAvailability.getExpirationDate());
-                } else {
-                    // file is not available from storage, that means file is stored on T3 and need restoration
-                    // that means file is now nearline.
-                    file.setNearlineConfirmed(true);
-                    fileReferenceService.store(file);
-                    return FileAvailabilityBuilder.buildNotAvailable(file);
-                }
-            } catch (Exception e) {
-                LOGGER.error(
-                    "An error occurred while calling buildAvailable method of plugin of storage {}, for file {}",
-                    file.getLocation().getStorage(),
-                    file.getMetaInfo().getFileName(),
-                    e);
-                return FileAvailabilityBuilder.buildNotAvailable(file);
+    private List<FileAvailabilityStatusDto> manageNotNearlineConfirmedFiles(List<FileReference> files,
+                                                                            Map<String, Optional<INearlineStorageLocation>> storagePluginsIndexed) {
+
+        List<FileAvailabilityStatusDto> results = new ArrayList<>();
+        Map<Optional<INearlineStorageLocation>, List<FileReference>> filesByStorage = files.stream()
+                                                                                           .collect(Collectors.groupingBy(
+                                                                                               f -> (storagePluginsIndexed.get(
+                                                                                                   f.getLocation()
+                                                                                                    .getStorage()))));
+
+        for (Map.Entry<Optional<INearlineStorageLocation>, List<FileReference>> entry : filesByStorage.entrySet()) {
+            if (entry.getKey().isEmpty()) {
+                LOGGER.warn("Trying to access to access unknown plugins : {}",
+                            entry.getValue().stream().map(f -> f.getLocation().getStorage()).distinct().toList());
+                results.addAll(entry.getValue().stream().map(FileAvailabilityBuilder::buildNotAvailable).toList());
+            } else {
+                results.addAll(processFilesAvailability(entry));
+
             }
         }
+        return results;
+    }
+
+    private List<FileAvailabilityStatusDto> processFilesAvailability(Map.Entry<Optional<INearlineStorageLocation>, List<FileReference>> entry) {
+        List<FileAvailabilityStatusDto> results = new ArrayList<>();
+        Map<String, FileReference> checksumToFileMap = entry.getValue()
+                                                            .stream()
+                                                            .collect(Collectors.toMap(file -> file.getMetaInfo()
+                                                                                                  .getChecksum(),
+                                                                                      Function.identity()));
+
+        try {
+            List<NearlineFileStatusDto> filesAvailability = entry.getKey()
+                                                                 .get()
+                                                                 .checkAvailability(entry.getValue()
+                                                                                         .stream()
+                                                                                         .map(FileReference::toDtoWithoutOwners)
+                                                                                         .toList());
+            List<FileReference> filesToUpdate = new ArrayList<>();
+            for (NearlineFileStatusDto availability : filesAvailability) {
+                switch (availability.getAvailable()) {
+                    case AVAILABLE:
+                        results.add(FileAvailabilityBuilder.buildAvailable(availability.getChecksum(),
+                                                                           availability.getExpirationDate()));
+                        break;
+                    case UNAVAILABLE:
+                        // file is not available from storage, that means file is stored on T3 and need restoration
+                        // that means file is now nearline.
+                        FileReference fileReference = checksumToFileMap.get(availability.getChecksum());
+                        fileReference.setNearlineConfirmed(true);
+                        filesToUpdate.add(fileReference);
+                        results.add(FileAvailabilityBuilder.buildNotAvailable(fileReference));
+                        break;
+                    case ERROR:
+                        // There was an error, return notAvailable result but don't update the file reference in
+                        // database
+                        results.add(FileAvailabilityBuilder.buildNotAvailable(availability.getChecksum()));
+                        break;
+                }
+            }
+            fileReferenceService.storeAll(filesToUpdate);
+        } catch (Exception e) {
+            LOGGER.error("An error occurred while checking availability of files on storage : {}", entry.getKey(), e);
+            results.addAll(entry.getValue().stream().map(FileAvailabilityBuilder::buildNotAvailable).toList());
+        }
+        return results;
     }
 
     public Collection<? extends FileAvailabilityStatusDto> manageAvailabilityStatusForOfflineFiles(List<FileReference> fileReferencesOffline) {

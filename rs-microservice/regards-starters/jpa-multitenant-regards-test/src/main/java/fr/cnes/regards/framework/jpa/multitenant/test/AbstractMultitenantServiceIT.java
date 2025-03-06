@@ -34,6 +34,7 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -131,7 +132,7 @@ public abstract class AbstractMultitenantServiceIT extends AbstractDaoIT {
         String tenant = runtimeTenantResolver.getTenant();
         springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class),
                                                                null,
-                                                               null,
+                                                               new GenericApplicationContext(),
                                                                null));
         if (tenant != null) {
             runtimeTenantResolver.forceTenant(tenant);

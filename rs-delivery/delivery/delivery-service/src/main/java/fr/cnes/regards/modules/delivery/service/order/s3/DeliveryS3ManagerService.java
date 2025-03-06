@@ -43,9 +43,9 @@ import java.util.UUID;
 @Service
 public class DeliveryS3ManagerService {
 
-    public static final int MULTIPART_THRESHOLD_BYTES = 5_242_880;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DeliveryS3ManagerService.class);
+
+    public static final int MULTIPART_THRESHOLD_BYTES = 5_242_880;
 
     private final DeliverySettingService settingService;
 

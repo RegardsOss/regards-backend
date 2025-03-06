@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 import fr.cnes.regards.modules.search.service.LicenseAccessorService;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.DataAccessRightService;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.StorageDownloaderClient;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -59,7 +59,10 @@ import org.springframework.web.client.HttpServerErrorException;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -99,7 +102,7 @@ public class CatalogDownloadController {
     private ICatalogSearchService searchService;
 
     @Autowired
-    private IStorageRestClient storageRestClient;
+    private StorageDownloaderClient storageDownloaderClient;
 
     @Autowired
     private IAttachmentClient attachmentClient;
@@ -181,7 +184,8 @@ public class CatalogDownloadController {
             }
         } catch (EntityOperationForbiddenException e) { // NOSONAR
             status = HttpStatus.FORBIDDEN;
-        } catch (EntityNotFoundException e) { // NOSONAR
+        } catch (EntityNotFoundException e) { // NOSONAR286
+
             status = HttpStatus.NOT_FOUND;
         } catch (ExecutionException | AccessRightFilterException e) { // NOSONAR
             status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -295,7 +299,7 @@ public class CatalogDownloadController {
                                                     @Nullable String fileName,
                                                     Boolean isContentInline,
                                                     HttpServletResponse response) throws IOException {
-        Response storageResponse = storageRestClient.downloadFile(checksum, isContentInline);
+        Response storageResponse = storageDownloaderClient.downloadFile(checksum, isContentInline);
         addHeaders(storageResponse, fileName, response, isContentInline);
         return storageResponse.status() == HttpStatus.OK.value() ?
             CatalogDownloadResponse.successfulDownload(storageResponse) :

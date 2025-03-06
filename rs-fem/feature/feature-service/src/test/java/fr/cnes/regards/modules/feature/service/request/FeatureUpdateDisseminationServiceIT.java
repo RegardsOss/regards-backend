@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.feature.domain.IFeatureRequestToSchedule;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.event.in.DisseminationAckEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
@@ -302,6 +303,8 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
                                                     IProperty.buildBoolean("valid", Boolean.FALSE),
                                                     IProperty.buildDate("invalidation_date", OffsetDateTime.now())));
         });
+        // Force notification to true, to be able to simulate update requests waiting.
+        notificationSettingsService.setActiveNotification(true);
         this.featureUpdateService.registerRequests(updateEvents);
 
         List<DisseminationAckEvent> disseminationAckEvents = new ArrayList<>();
@@ -324,6 +327,16 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
                                0,
                                updateDisseminationRequests.size());
 
+        // Unlock update request simulating notification success.
+        waitForStep(featureUpdateRequestRepo, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, 50, 30_000);
+        featureNotificationService.sendToNotifier();
+        waitForStep(featureUpdateRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED, 50, 30_000);
+        mockNotificationResponseSuccess();
+
+        // Wait for update requests done
+        waitRequest(featureUpdateRequestRepo, 0, 30_000);
+
+        // Then wait for dissemination request can be done as update requests are done.
         Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             featureUpdateDisseminationService.handleRequests();

@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.order.metalink.schema.*;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.StorageDownloaderClient;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
@@ -107,7 +107,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
 
     private final IProjectsClient projectClient;
 
-    private final IStorageRestClient storageClient;
+    private final StorageDownloaderClient storageClient;
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -121,7 +121,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                                 IAuthenticationResolver authResolver,
                                 OrderHelperService orderHelperService,
                                 IProjectsClient projectClient,
-                                IStorageRestClient storageClient,
+                                StorageDownloaderClient storageClient,
                                 IRuntimeTenantResolver runtimeTenantResolver,
                                 IProcessingEventSender processingEventSender,
                                 IAttachmentClient attachmentClient) {

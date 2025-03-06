@@ -35,7 +35,9 @@ public interface IModelService {
 
     List<Model> getModels(EntityType pType);
 
-    Model createModel(Model pModel) throws ModuleException;
+    Model createModel(Model model) throws ModuleException;
+
+    Model createModel(Model model, boolean allowUpdate) throws ModuleException;
 
     Model getModel(Long id) throws ModuleException;
 
@@ -49,7 +51,7 @@ public interface IModelService {
 
     void exportModel(String modelName, OutputStream pOutputStream) throws ModuleException;
 
-    Model importModel(InputStream pInputStream) throws ModuleException;
+    Model importModel(InputStream inputStream) throws ModuleException;
 
     boolean isDeletable(Model model);
 }
