@@ -43,6 +43,7 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
+import io.micrometer.core.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -109,6 +110,7 @@ public class FileReferenceRequestService {
     /**
      * Initialize new reference requests from events.
      */
+    @Timed(value = "file_reference_request_amqp_handler", description = "FileReferenceRequestService#reference")
     public void reference(List<FilesReferenceEvent> list) {
         Set<FileReference> existingOnesWithSameChecksum = fileRefService.search(list.stream()
                                                                                     .map(FilesReferenceEvent::getFiles)

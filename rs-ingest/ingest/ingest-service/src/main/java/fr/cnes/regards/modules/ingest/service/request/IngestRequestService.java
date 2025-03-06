@@ -38,8 +38,8 @@ import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
 import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
 import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
+import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.dao.IAIPPostProcessRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
@@ -55,8 +55,8 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.StorageType;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
@@ -72,6 +72,8 @@ import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationServi
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.service.settings.IIngestSettingsService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +88,7 @@ import org.springframework.util.MultiValueMap;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -145,6 +148,21 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Autowired
     private IAIPNotificationService aipNotificationService;
+
+    @Autowired
+    public MeterRegistry meterRegistry;
+
+    private Timer myTimer;
+
+    public Timer getTimer() {
+        if (myTimer == null) {
+            myTimer = Timer.builder("ingest_request_scheduler")
+                           .description("IngestRequestService#scheduleRequestsFirstPage")
+                           .publishPercentileHistogram()
+                           .register(meterRegistry);
+        }
+        return myTimer;
+    }
 
     @Override
     public void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests) {
@@ -709,6 +727,7 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Override
     public boolean scheduleRequestsFirstPage(int pageSize) {
+        long start = System.currentTimeMillis();
         Page<IngestRequest> pageIngestRequestStep = findToSchedule(Pageable.ofSize(pageSize));
 
         List<IngestRequest> requestsReady = requestService.blockIngestRequests(pageIngestRequestStep.toList());
@@ -716,6 +735,9 @@ public class IngestRequestService implements IIngestRequestService {
                                                                                 .collect(Collectors.groupingBy(request -> request.getMetadata()
                                                                                                                                  .getIngestChain()));
         requestsReadyByChainMap.forEach(this::scheduleIngestProcessingJobByChain);
+        if (!pageIngestRequestStep.isEmpty()) {
+            getTimer().record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
+        }
         return pageIngestRequestStep.hasNext();
     }
 

@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.*;
 import fr.cnes.regards.modules.feature.service.dump.IFeatureMetadataService;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
+import io.micrometer.core.annotation.Timed;
 import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -202,6 +203,8 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
+    @Timed(value = "feature_request_handle_storage_storage_success",
+           description = "FeatureRequestService" + "#handleStorageSuccess")
     public void handleStorageSuccess(Set<RequestResultInfoDto> requestsInfo) {
         long scheduleStart = System.currentTimeMillis();
         LOGGER.trace("Handling {} storage success responses from storage", requestsInfo.size());
@@ -276,6 +279,8 @@ public class FeatureRequestService implements IFeatureRequestService {
     }
 
     @Override
+    @Timed(value = "feature_request_handle_storage_deletion_success",
+           description = "FeatureRequestService" + "#handleDeletionSuccess")
     public void handleDeletionSuccess(Set<String> groupIds) {
         featureDeletionService.processStorageRequests(groupIds);
     }

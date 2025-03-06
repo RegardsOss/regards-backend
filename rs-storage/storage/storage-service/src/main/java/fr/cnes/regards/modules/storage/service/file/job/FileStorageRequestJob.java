@@ -24,14 +24,16 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.CommonFileUtils;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
-import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 import fr.cnes.regards.modules.storage.service.glacier.GlacierArchiveService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Storage of file references job. This jobs is scheduled to store a bundle of file reference,
@@ -84,6 +87,21 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
 
     @Autowired
     private GlacierArchiveService glacierArchiveService;
+
+    @Autowired
+    public MeterRegistry meterRegistry;
+
+    private Timer myTimer;
+
+    public Timer getTimer() {
+        if (myTimer == null) {
+            myTimer = Timer.builder("file_storage_request_job")
+                           .description("FileStorageRequestJob#run")
+                           .publishPercentileHistogram()
+                           .register(meterRegistry);
+        }
+        return myTimer;
+    }
 
     private FileStorageWorkingSubset workingSubset;
 
@@ -140,6 +158,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                         System.currentTimeMillis() - start,
                         nbRequestToHandle);
         }
+        getTimer().record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
     }
 
     @Override

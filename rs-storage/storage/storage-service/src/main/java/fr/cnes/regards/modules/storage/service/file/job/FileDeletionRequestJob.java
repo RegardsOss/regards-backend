@@ -28,9 +28,12 @@ import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Deletion of file references job. This jobs his scheduled to delete a bundle of file reference,
@@ -62,6 +65,21 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
 
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    public MeterRegistry meterRegistry;
+
+    private Timer myTimer;
+
+    public Timer getTimer() {
+        if (myTimer == null) {
+            myTimer = Timer.builder("file_deletion_request_job")
+                           .description("FileDeletionRequestJob#run")
+                           .publishPercentileHistogram()
+                           .register(meterRegistry);
+        }
+        return myTimer;
+    }
 
     /**
      * The job parameters as a map
@@ -118,6 +136,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
                             nbRequestToHandle);
             }
         }
+        getTimer().record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
     }
 
     @Override

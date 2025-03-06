@@ -71,6 +71,7 @@ import fr.cnes.regards.modules.storage.service.template.StorageTemplatesConf;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.annotation.Timed;
 import jakarta.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -206,6 +207,7 @@ public class FileStorageRequestService {
      *
      * @param list storage requests
      */
+    @Timed(value = "file_storage_request_amqp_handler", description = "FileStorageRequestService#store")
     public void store(List<FilesStorageRequestEvent> list) {
         Set<String> checksums = list.stream()
                                     .map(FilesStorageRequestEvent::getFiles)

@@ -24,9 +24,9 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
 import fr.cnes.regards.modules.filecatalog.client.listener.IStorageRequestListener;
-import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+import io.micrometer.core.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,6 +116,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
     }
 
     @Override
+    @Timed(value = "ingest_storage_deletion_success", description = "StorageResponseFlowHandler#onDeletionSuccess")
     public void onDeletionSuccess(Set<RequestInfo> requests) {
         LOGGER.debug("[DELETION RESPONSE HANDLER] Handling {} deletion group requests", requests.size());
         deleteRequestService.handleRemoteDeleteSuccess(requests);
@@ -127,6 +129,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
     }
 
     @Override
+    @Timed(value = "ingest_storage_reference_success", description = "StorageResponseFlowHandler#onReferenceSuccess")
     public void onReferenceSuccess(Set<RequestInfo> requests) {
         LOGGER.debug("[REFERENCE RESPONSE HANDLER] Handling {} reference group requests", requests.size());
         ingestRequestService.handleRemoteReferenceSuccess(requests);
@@ -139,6 +142,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
     }
 
     @Override
+    @Timed(value = "ingest_storage_store_success", description = "StorageResponseFlowHandler#onStoreSuccess")
     public void onStoreSuccess(Set<RequestInfo> requestInfos) {
 
         long globalstart = System.currentTimeMillis();

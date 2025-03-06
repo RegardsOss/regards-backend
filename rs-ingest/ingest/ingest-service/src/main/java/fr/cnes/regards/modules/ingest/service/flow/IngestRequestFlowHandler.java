@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
+import io.micrometer.core.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,7 @@ public class IngestRequestFlowHandler extends AbstractRequestFlowHandler<IngestR
     }
 
     @Override
+    @Timed(value = "ingest_request_amqp_handler", description = "IngestRequestFlowHandler" + "#processBulk")
     protected void processBulk(List<IngestRequestFlowItem> items) {
         ingestService.handleIngestRequests(items);
     }

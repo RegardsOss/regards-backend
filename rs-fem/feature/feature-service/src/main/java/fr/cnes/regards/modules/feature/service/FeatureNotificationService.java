@@ -41,6 +41,8 @@ import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +59,7 @@ import org.springframework.validation.Validator;
 
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -106,6 +109,21 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
 
     @Autowired
     public IFeatureUpdateService featureUpdateService;
+
+    @Autowired
+    public MeterRegistry meterRegistry;
+
+    private Timer myTimer;
+
+    public Timer getTimer() {
+        if (myTimer == null) {
+            myTimer = Timer.builder("feature_notification_sender")
+                           .description("FeatureNotificationService#sendToNotifier")
+                           .publishPercentileHistogram()
+                           .register(meterRegistry);
+        }
+        return myTimer;
+    }
 
     @Override
     public int registerRequests(List<FeatureNotificationRequestEvent> events) {
@@ -262,6 +280,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                                               .collect(Collectors.toList())).forEach((urn, entity) -> featureSessionNotifier.incrementCount(
                 entity,
                 FeatureSessionProperty.RUNNING_NOTIFY_REQUESTS));
+            getTimer().record(System.currentTimeMillis() - sendingStart, TimeUnit.MILLISECONDS);
         }
         return requestsToSend.size();
     }

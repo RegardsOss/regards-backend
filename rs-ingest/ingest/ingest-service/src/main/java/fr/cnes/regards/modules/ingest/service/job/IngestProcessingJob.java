@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.ingest.service.job;
 
 import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
-import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -30,6 +28,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.IProcessingStep;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -43,11 +43,14 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.service.chain.step.*;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
@@ -77,6 +80,21 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     @Autowired
     private IAIPNotificationService aipNotificationService;
+
+    @Autowired
+    public MeterRegistry meterRegistry;
+
+    private io.micrometer.core.instrument.Timer myTimer;
+
+    public io.micrometer.core.instrument.Timer getTimer() {
+        if (myTimer == null) {
+            myTimer = Timer.builder("ingest_processing_job")
+                           .description("IngestProcessingJob#run")
+                           .publishPercentileHistogram()
+                           .register(meterRegistry);
+        }
+        return myTimer;
+    }
 
     private IngestProcessingChain ingestChain;
 
@@ -125,6 +143,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        long runStart = System.currentTimeMillis();
         // Lets prepare a fex things in case there is errors
         StringJoiner notifMsg = new StringJoiner("\n");
         notifMsg.add("Errors occurred during SIPs processing using " + ingestChain.getName() + ":");
@@ -172,7 +191,8 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                 List<AIPDto> aips;
                 // retry the process only from the step needed
                 switch (request.getStep()) {
-                    case LOCAL_SCHEDULED, LOCAL_INIT, LOCAL_PRE_PROCESSING, LOCAL_VALIDATION, LOCAL_GENERATION, LOCAL_AIP_STORAGE_METADATA_UPDATE, LOCAL_TAGGING, LOCAL_POST_PROCESSING -> {
+                    case LOCAL_SCHEDULED, LOCAL_INIT, LOCAL_PRE_PROCESSING, LOCAL_VALIDATION, LOCAL_GENERATION,
+                         LOCAL_AIP_STORAGE_METADATA_UPDATE, LOCAL_TAGGING, LOCAL_POST_PROCESSING -> {
                         ingestRequestService.handleIngestJobStart(request);
                         // Internal preparation step (no plugin involved)
                         currentEntity = initStep.execute(request);
@@ -247,6 +267,8 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         if (!notificationRequests.isEmpty()) {
             aipNotificationService.sendRequestsToNotifier(notificationRequests);
         }
+
+        getTimer().record(System.currentTimeMillis() - runStart, TimeUnit.MILLISECONDS);
     }
 
     @Override

@@ -29,6 +29,8 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.*;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +47,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -99,6 +102,21 @@ public class RequestsGroupService {
 
     @Autowired
     private SessionNotifier sessionNotifier;
+
+    @Autowired
+    public MeterRegistry meterRegistry;
+
+    private io.micrometer.core.instrument.Timer myTimer;
+
+    public io.micrometer.core.instrument.Timer getTimer() {
+        if (myTimer == null) {
+            myTimer = Timer.builder("storage_check_requests_groups_done")
+                           .description("RequestsGroupService#checkRequestsGroupsDone")
+                           .publishPercentileHistogram()
+                           .register(meterRegistry);
+        }
+        return myTimer;
+    }
 
     /**
      * Handle new request success for the given groupId.<br>
@@ -290,6 +308,7 @@ public class RequestsGroupService {
             LOGGER.info("[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}.",
                         System.currentTimeMillis() - start,
                         groupsDone.size());
+            getTimer().record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
         } else {
             LOGGER.debug("[REQUEST GROUPS] Checking request groups done in {}ms. No groups done.",
                          System.currentTimeMillis() - start);

@@ -61,6 +61,7 @@ import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import io.micrometer.core.annotation.Timed;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.slf4j.Logger;
@@ -140,6 +141,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     private EntityManager em;
 
     @Override
+    @Timed(value = "feature_creation_request_batch_handle", description = "FeatureCreationService#registerRequests")
     public RequestInfo<String> registerRequests(List<FeatureCreationRequestEvent> events) {
 
         long registrationStart = System.currentTimeMillis();
@@ -361,6 +363,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     }
 
     @Override
+    @Timed(value = "feature_creation_job_scheduler", description = "FeatureCreationService#scheduleRequests")
     public int scheduleRequests() {
 
         long scheduleStart = System.currentTimeMillis();
@@ -411,6 +414,7 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     }
 
     @Override
+    @Timed(value = "feature_creation_job", description = "FeatureCreationService#processRequests")
     public Set<FeatureEntity> processRequests(Set<Long> requestIds, FeatureCreationJob featureCreationJob) {
 
         Map<Boolean, List<FeatureCreationRequest>> requestByHasError = featureCreationRequestRepo.findAllById(requestIds)

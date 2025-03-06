@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
 import fr.cnes.regards.modules.feature.service.job.ScheduleFeatureDeletionJobsJob;
+import io.micrometer.core.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -97,6 +98,7 @@ public class FeatureService implements IFeatureService {
      */
     @Override
     @MultitenantTransactional(isolation = Isolation.REPEATABLE_READ)
+    @Timed(value = "feature_find_all", description = "Durée d'exécution de FeatureService#findAll")
     public Page<FeatureEntityDto> findAll(SearchFeatureSimpleEntityParameters filters, Pageable pageable) {
         // Workaround to avoid in-memory pagination with specification
         // 1. use simple entities with specification + pagination to get 1 page
