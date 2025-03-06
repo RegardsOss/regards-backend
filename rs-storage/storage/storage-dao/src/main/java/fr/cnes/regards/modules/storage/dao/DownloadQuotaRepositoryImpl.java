@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -173,6 +174,11 @@ public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
                                                                               .getSingleResult();
 
         return mapper.toDomain(entity);
+    }
+
+    @Override
+    public List<DownloadQuotaLimits> findAllQuotaLimit() {
+        return delegateQuotaLimitsRepo.findAll().stream().map(mapper::toDomain).toList();
     }
 
     @Override

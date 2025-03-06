@@ -67,4 +67,6 @@ public interface IQuotaService<T> {
 
         void stop();
     }
+
+    void updateUserQuotaLimitCache();
 }

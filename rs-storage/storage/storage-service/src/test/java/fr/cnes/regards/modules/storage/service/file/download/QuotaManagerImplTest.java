@@ -55,6 +55,9 @@ public class QuotaManagerImplTest {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Mock
+    private IQuotaService quotaService;
+
+    @Mock
     private ApplicationContext applicationContext;
 
     @Mock
@@ -79,6 +82,7 @@ public class QuotaManagerImplTest {
                                                 runtimeTenantResolver,
                                                 publisher,
                                                 env,
+                                                quotaService,
                                                 quotaManager));
 
         ReflectionTestUtils.setField(quotaManager, "self", quotaManager);

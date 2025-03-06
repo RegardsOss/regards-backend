@@ -290,6 +290,12 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
         });
     }
 
+    public void updateUserQuotaLimitCache() {
+        quotaRepository.findAllQuotaLimit().forEach(
+            quota -> cache.put(QuotaKey.make(quota.getTenant(), quota.getEmail()), quota)
+        );
+    }
+
     /**
      * In caller logic, we just got the quota and rate for this user but nothing prevents other thread from this instance to have modified them.
      * For example, this user has just finished downloading a file (started before we looked for quota and rate in this thread)

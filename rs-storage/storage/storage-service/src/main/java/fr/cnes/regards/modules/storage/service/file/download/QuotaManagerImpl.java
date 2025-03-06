@@ -18,6 +18,7 @@ import io.vavr.Tuple2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -53,7 +54,7 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
     @Value("${regards.storage.rate.expiration.tick:120}")
     private long rateExpirationTick;
 
-    @Value("${regards.storage.quota.sync.tick:30}")
+    @Value("${regards.storage.quota.sync.tick:10}")
     private long syncTick;
 
     // We want to be sure to always have our own thread pool to maintain quota and rate coherence between all storage instances
@@ -92,6 +93,8 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
     // are dumped into userDiffByTenant so things stay clean for the next sync attempt.
     private Map<String, Map<String, DiffSync>> diffsAccumulatorByTenant = new ConcurrentHashMap<>();
 
+    private final IQuotaService quotaService;
+
     public QuotaManagerImpl(
         @Qualifier(RATE_EXPIRATION_TICKING_SCHEDULER) ThreadPoolTaskScheduler rateExpirationTickingScheduler,
         @Qualifier(SYNC_TICKING_SCHEDULER) ThreadPoolTaskScheduler syncTickingScheduler,
@@ -100,6 +103,7 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
         IRuntimeTenantResolver runtimeTenantResolver,
         IPublisher publisher,
         Environment env,
+        IQuotaService quotaService,
         IQuotaManager quotaManager) {
         this.rateExpirationTickingScheduler = rateExpirationTickingScheduler;
         this.syncTickingScheduler = syncTickingScheduler;
@@ -108,6 +112,7 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.publisher = publisher;
         this.env = env;
+        this.quotaService = quotaService;
         this.self = quotaManager;
     }
 
@@ -218,9 +223,9 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
 
             // sync is finished, diffsAcc for current tenant can be cleared for next sync
             diffsAccumulatorByTenant.put(tenant, new HashMap<>());
-        } catch (Exception e) {
-            LOGGER.error("Error during quota synchronization", e);
-            throw e;
+
+            // Reload quota limit from Database
+            quotaService.updateUserQuotaLimitCache();
         } finally {
             // end critical section
             inSync.set(false);

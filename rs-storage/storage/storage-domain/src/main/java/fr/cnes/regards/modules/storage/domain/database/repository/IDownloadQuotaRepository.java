@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import fr.cnes.regards.modules.storage.domain.database.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -24,6 +25,8 @@ public interface IDownloadQuotaRepository {
     UserDownloadQuota upsertOrCombineDownloadQuota(String instanceId, String email, Long diff);
 
     UserDownloadRate upsertOrCombineDownloadRate(String instanceId, String email, Long diff, LocalDateTime expiry);
+
+    List<DownloadQuotaLimits> findAllQuotaLimit();
 
     void deleteExpiredRates();
 
