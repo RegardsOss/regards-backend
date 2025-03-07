@@ -144,7 +144,7 @@
         <!-- 6.2.1 available but database lock tests fail with this version -->
         <spring-integration-jdbc.version>5.5.20</spring-integration-jdbc.version>
         <asciidoctor-maven-plugin.version>2.2.4</asciidoctor-maven-plugin.version>
-        <jib-maven-plugin.version>3.4.1</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
 
         <!-- Specify version to avoid incompatibility between elasticsearch and spring ones -->
         <!-- log -->

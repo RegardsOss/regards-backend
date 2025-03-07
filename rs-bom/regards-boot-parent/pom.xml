@@ -68,6 +68,7 @@
                 <artifactId>jib-maven-plugin</artifactId>
                 <configuration>
                     <skip>false</skip>
+                    <allowInsecureRegistries>true</allowInsecureRegistries>
                     <from>
                         <image>${docker.registry.host}/${docker.registry.baseImage}:${docker.registry.tagImage}</image>
                     </from>
