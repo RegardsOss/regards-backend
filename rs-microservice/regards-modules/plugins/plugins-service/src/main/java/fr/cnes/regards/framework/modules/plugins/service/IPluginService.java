@@ -92,6 +92,20 @@ public interface IPluginService {
         throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
+     * Get a plugin instance for a given configuration id and dynamic plugin parameters.
+     * When this method fails to retrieve a plugin, the transaction is not rollback
+     *
+     * @param <T>                     a plugin instance
+     * @param businessId              business identifier of the {@link PluginConfiguration}.
+     * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
+     * @return a plugin instance
+     * @throws ModuleException                          thrown if we cannot find any PluginConfiguration corresponding to pId
+     * @throws NotAvailablePluginConfigurationException In case plugin configuration is not active
+     */
+    <T> PluginAndPluginId<T> getPluginAndId(String businessId, IPluginParam... dynamicPluginParameters)
+        throws ModuleException, NotAvailablePluginConfigurationException;
+
+    /**
      * Get a plugin instance for a given configuration and dynamic plugin parameters.
      * When this method fails to retrieve a plugin, the transaction is not rollback
      *
@@ -158,8 +172,7 @@ public interface IPluginService {
      * @param businessId business identifier of the {@link PluginConfiguration}.
      * @throws ModuleException Entity to delete does not exist
      */
-    void deletePluginConfiguration(String businessId) throws EntityNotFoundException,
-        EntityOperationForbiddenException;
+    void deletePluginConfiguration(String businessId) throws EntityNotFoundException, EntityOperationForbiddenException;
 
     /**
      * Update a {@link PluginConfiguration}.

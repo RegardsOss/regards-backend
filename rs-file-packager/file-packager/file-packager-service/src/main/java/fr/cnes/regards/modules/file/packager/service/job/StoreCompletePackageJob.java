@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.modules.file.packager.service.job;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.file.packager.service.FilePackagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -69,7 +71,12 @@ public class StoreCompletePackageJob extends AbstractJob<Void> {
     public void run() {
         long start = System.currentTimeMillis();
         logger.debug("[STORE COMPLETE PACKAGE JOB] Start StoreCompletePackageJob for package {}", packageId);
-        filePackagerService.storeCompletePackage(packageId, storageSubdirectory, creationDate, storage);
+        try {
+            filePackagerService.storeCompletePackage(packageId, storageSubdirectory, creationDate, storage);
+        } catch (ModuleException e) {
+            logger.error("Error while storing complete package", e);
+            throw new JobRuntimeException(e.getMessage());
+        }
         logger.debug("[STORE COMPLETE PACKAGE JOB] End StoreCompletePackageJob for package {} after {} ms",
                      packageId,
                      System.currentTimeMillis() - start);

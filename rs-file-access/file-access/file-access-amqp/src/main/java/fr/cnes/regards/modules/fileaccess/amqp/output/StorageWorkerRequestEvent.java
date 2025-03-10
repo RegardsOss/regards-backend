@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.fileaccess.amqp.output;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.dto.output.worker.StorageWorkerRequestDto;
 import fr.cnes.regards.modules.workermanager.amqp.events.EventHeadersHelper;
@@ -50,7 +50,7 @@ public class StorageWorkerRequestEvent extends StorageWorkerRequestDto
 
     public static final String SESSION_HEADER = EventHeadersHelper.SESSION_HEADER;
 
-    @GsonIgnore
+    @JsonIgnore
     @NotNull(message = "Message properties is required")
     protected MessageProperties messageProperties;
 

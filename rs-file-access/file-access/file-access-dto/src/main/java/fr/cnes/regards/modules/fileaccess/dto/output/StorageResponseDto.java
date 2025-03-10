@@ -37,7 +37,7 @@ public class StorageResponseDto {
 
     private final Integer height;
 
-    private final Integer weight;
+    private final Integer width;
 
     private final boolean storedInCache;
 
@@ -57,7 +57,7 @@ public class StorageResponseDto {
                               String checksum,
                               long size,
                               Integer height,
-                              Integer weight,
+                              Integer width,
                               boolean storedInCache,
                               String finalArchiveParentUrl,
                               String fileCachePath,
@@ -68,7 +68,7 @@ public class StorageResponseDto {
         this.checksum = checksum;
         this.size = size;
         this.height = height;
-        this.weight = weight;
+        this.width = width;
         this.storedInCache = storedInCache;
         this.finalArchiveParentUrl = finalArchiveParentUrl;
         this.fileCachePath = fileCachePath;
@@ -79,13 +79,8 @@ public class StorageResponseDto {
     /**
      * Fully stored Success constructor
      */
-    public StorageResponseDto(String requestId,
-                              String url,
-                              String checksum,
-                              long size,
-                              Integer height,
-                              Integer weight) {
-        this(requestId, url, checksum, size, height, weight, false, null, null, null, null);
+    public StorageResponseDto(String requestId, String url, String checksum, long size, Integer height, Integer width) {
+        this(requestId, url, checksum, size, height, width, false, null, null, null, null);
     }
 
     /**
@@ -96,17 +91,17 @@ public class StorageResponseDto {
                               String checksum,
                               long size,
                               Integer height,
-                              Integer weight,
+                              Integer width,
                               String finalArchiveParentUrl,
                               String fileCachePath) {
-        this(requestId, url, checksum, size, height, weight, true, finalArchiveParentUrl, fileCachePath, null, null);
+        this(requestId, url, checksum, size, height, width, true, finalArchiveParentUrl, fileCachePath, null, null);
     }
 
     /**
      * Reference success constructor
      */
     public StorageResponseDto(String requestId, String url, String checksum) {
-        this(requestId, url, checksum, 0, 0, 0, false, null, null, null, null);
+        this(requestId, url, checksum, 0, null, null, false, null, null, null, null);
     }
 
     /**
@@ -117,7 +112,7 @@ public class StorageResponseDto {
                               String checksum,
                               StorageResponseErrorEnum errorType,
                               String error) {
-        this(requestId, url, checksum, 0L, 0, 0, false, null, null, errorType, error);
+        this(requestId, url, checksum, 0L, null, null, false, null, null, errorType, error);
     }
 
     public String getRequestId() {
@@ -140,8 +135,8 @@ public class StorageResponseDto {
         return height;
     }
 
-    public Integer getWeight() {
-        return weight;
+    public Integer getWidth() {
+        return width;
     }
 
     public boolean isStoredInCache() {
@@ -183,7 +178,7 @@ public class StorageResponseDto {
                && Objects.equals(url, that.url)
                && Objects.equals(checksum, that.checksum)
                && Objects.equals(height, that.height)
-               && Objects.equals(weight, that.weight)
+               && Objects.equals(width, that.width)
                && Objects.equals(finalArchiveParentUrl, that.finalArchiveParentUrl)
                && Objects.equals(fileCachePath, that.fileCachePath)
                && errorType == that.errorType
@@ -197,7 +192,7 @@ public class StorageResponseDto {
                             checksum,
                             size,
                             height,
-                            weight,
+                            width,
                             storedInCache,
                             finalArchiveParentUrl,
                             fileCachePath,
@@ -220,8 +215,8 @@ public class StorageResponseDto {
                + size
                + ", height="
                + height
-               + ", weight="
-               + weight
+               + ", width="
+               + width
                + ", storedInCache="
                + storedInCache
                + ", finalArchiveParentUrl='"

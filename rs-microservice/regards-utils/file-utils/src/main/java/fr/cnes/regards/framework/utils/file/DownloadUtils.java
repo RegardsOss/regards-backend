@@ -600,6 +600,11 @@ public final class DownloadUtils {
                 return getInputStreamUsingTmpFile(downloadTmpConfig, urlConnection.getInputStream());
             }
         }
+        // Because this is not http, the file is already available locally
+        // If a tmp file is still needed, create a symlink
+        if (downloadTmpConfig != null && downloadTmpConfig.forceTmpFile() && !downloadTmpConfig.deleteTmpFile()) {
+            Files.createSymbolicLink(downloadTmpConfig.tmpFilePath(), Paths.get(source.getFile()));
+        }
 
         return urlConnection.getInputStream();
     }

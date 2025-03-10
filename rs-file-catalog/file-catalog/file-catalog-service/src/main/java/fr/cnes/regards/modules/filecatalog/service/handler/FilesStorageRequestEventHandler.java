@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.filecatalog.service.handler;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.filecatalog.service.FileStorageRequestService;
@@ -91,7 +92,12 @@ public class FilesStorageRequestEventHandler
                      messages.size());
         long start = System.currentTimeMillis();
 
-        fileStorageRequestService.createStorageRequests(messages);
+        try {
+            fileStorageRequestService.createStorageRequests(messages);
+        } catch (ModuleException e) {
+            LOGGER.error("[FILE STORAGE REQUEST EVENT HANDLER] Error while handling storage requests ");
+            throw new RuntimeException(e);
+        }
         LOGGER.info("[FILE STORAGE REQUEST EVENT HANDLER] {} FilesStorageRequestEvent handled in {} ms",
                     messages.size(),
                     System.currentTimeMillis() - start);

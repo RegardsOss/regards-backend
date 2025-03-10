@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.fileaccess.plugin.domain.*;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileCacheRequestDto;
 import fr.cnes.regards.modules.fileaccess.plugin.dto.FileDeletionRequestDto;
 import fr.cnes.regards.modules.fileaccess.service.FileStorageService;
+import fr.cnes.regards.modules.fileaccess.service.StoragePluginConfigurationDtoAndPluginId;
 import fr.cnes.regards.modules.fileaccess.service.StoragePluginConfigurationService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,14 +76,126 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
         pluginService = Mockito.mock(IPluginService.class);
 
         Mockito.when(storagePluginConfigurationService.getByName(STORAGE_NAME))
-               .thenReturn(Optional.of(new TestStoragePluginConfigurationDto("Storage1Value")));
+               .thenReturn(Optional.of(new StoragePluginConfigurationDtoAndPluginId(new TestStoragePluginConfigurationDto(
+                   "Storage1Value"), "Local")));
         Mockito.when(storagePluginConfigurationService.getByName("Storage2"))
-               .thenReturn(Optional.of(new TestStoragePluginConfigurationDto("Storage2Value")));
+               .thenReturn(Optional.of(new StoragePluginConfigurationDtoAndPluginId(new TestStoragePluginConfigurationDto(
+                   "Storage2Value"), "Local")));
         Mockito.when(tenantResolver.getTenant()).thenReturn("Tenant1");
         fileStorageService = new FileStorageService(publisher,
                                                     storagePluginConfigurationService,
                                                     tenantResolver,
                                                     pluginService);
+    }
+
+    @Test
+    public void test_1_ok_not_image() {
+
+        // Given
+        String requestId = "file-catalog.01";
+        String checksum = "checksum1";
+        String algorithm = "MD5";
+        String originUrl = "http://url1.com";
+        String subDirectory = "/sub/dir";
+        String owner = "owner1";
+        String session = "session1";
+        FileStorageMetaInfoDto metaInfoDto = new FileStorageMetaInfoDto("text/plain", "RAWDATA", 0, 0);
+        boolean activateSmallFilePackaging = false;
+        FileStorageRequestReadyToProcessEvent event1 = new FileStorageRequestReadyToProcessEvent(requestId,
+                                                                                                 checksum,
+                                                                                                 algorithm,
+                                                                                                 originUrl,
+                                                                                                 STORAGE_NAME,
+                                                                                                 subDirectory,
+                                                                                                 owner,
+                                                                                                 session,
+                                                                                                 activateSmallFilePackaging,
+                                                                                                 metaInfoDto,
+                                                                                                 false);
+        // When
+        fileStorageService.processStorageRequests(List.of(event1));
+
+        // Then
+
+        ArgumentCaptor<List> okEventsCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(publisher, Mockito.times(1))
+               .publish(okEventsCaptor.capture(), Mockito.anyString(), Mockito.any());
+        Assertions.assertEquals(1, okEventsCaptor.getValue().size(), "There should be 1 ok event");
+
+        // Events attributes
+        StorageWorkerRequestEvent okEvent = (StorageWorkerRequestEvent) okEventsCaptor.getValue().get(0);
+        Assertions.assertEquals(checksum, okEvent.getChecksum(), "The checksum should be the same one as the request");
+        Assertions.assertEquals(algorithm,
+                                okEvent.getAlgorithm(),
+                                "The algorithm should be the same one as the request");
+        Assertions.assertEquals(originUrl, okEvent.getUrl(), "The originUrl should be the same one as the request");
+        Assertions.assertEquals(subDirectory,
+                                okEvent.getDestinationDirectory(),
+                                "The subDirectory should be the same one as the request");
+        Assertions.assertEquals(activateSmallFilePackaging, okEvent.isActivateSmallFilePackaging());
+        Assertions.assertEquals(false, okEvent.isComputeImageSize());
+    }
+
+    @Test
+    public void test_1_ok_image_already_computed() {
+
+        FileStorageMetaInfoDto metaInfoDto = new FileStorageMetaInfoDto("image/png", "THUMBNAIL", 100, 100);
+        // Given
+        FileStorageRequestReadyToProcessEvent event1 = new FileStorageRequestReadyToProcessEvent("file-catalog.01",
+                                                                                                 "checksum1",
+                                                                                                 "MD5",
+                                                                                                 "http://url1.com",
+                                                                                                 STORAGE_NAME,
+                                                                                                 "/sub/dir",
+                                                                                                 " owner1",
+                                                                                                 "session1",
+                                                                                                 false,
+                                                                                                 metaInfoDto,
+                                                                                                 false);
+        // When
+        fileStorageService.processStorageRequests(List.of(event1));
+
+        // Then
+
+        ArgumentCaptor<List> okEventsCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(publisher, Mockito.times(1))
+               .publish(okEventsCaptor.capture(), Mockito.anyString(), Mockito.any());
+        Assertions.assertEquals(1, okEventsCaptor.getValue().size(), "There should be 1 ok event");
+
+        // Events attribute
+        StorageWorkerRequestEvent okEvent = (StorageWorkerRequestEvent) okEventsCaptor.getValue().get(0);
+        Assertions.assertEquals(false, okEvent.isComputeImageSize());
+    }
+
+    @Test
+    public void test_1_ok_image_not_computed() {
+
+        FileStorageMetaInfoDto metaInfoDto = new FileStorageMetaInfoDto("image/png", "THUMBNAIL", 0, 0);
+        // Given
+        FileStorageRequestReadyToProcessEvent event1 = new FileStorageRequestReadyToProcessEvent("file-catalog.01",
+                                                                                                 "checksum1",
+                                                                                                 "MD5",
+                                                                                                 "http://url1.com",
+                                                                                                 STORAGE_NAME,
+                                                                                                 "/sub/dir",
+                                                                                                 " owner1",
+                                                                                                 "session1",
+                                                                                                 false,
+                                                                                                 metaInfoDto,
+                                                                                                 false);
+        // When
+        fileStorageService.processStorageRequests(List.of(event1));
+
+        // Then
+
+        ArgumentCaptor<List> okEventsCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(publisher, Mockito.times(1))
+               .publish(okEventsCaptor.capture(), Mockito.anyString(), Mockito.any());
+        Assertions.assertEquals(1, okEventsCaptor.getValue().size(), "There should be 1 ok event");
+
+        // Events attribute
+        StorageWorkerRequestEvent okEvent = (StorageWorkerRequestEvent) okEventsCaptor.getValue().get(0);
+        Assertions.assertEquals(true, okEvent.isComputeImageSize());
     }
 
     @Test
@@ -141,15 +254,11 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
 
         // Then
         // Ok
-        ArgumentCaptor<List> publishedEventsCaptor = ArgumentCaptor.forClass(List.class);
-        Mockito.verify(publisher, Mockito.times(1)).publish(publishedEventsCaptor.capture());
-        List<List> allEvents = publishedEventsCaptor.getAllValues();
-        Optional<List> oOkList = allEvents.stream()
-                                          .filter(l -> l.get(0) instanceof StorageWorkerRequestEvent)
-                                          .findFirst();
-        Assertions.assertTrue(oOkList.isPresent());
-        List okList = oOkList.get();
-        Assertions.assertEquals(3, okList.size(), "There should be 3 requests");
+
+        ArgumentCaptor<List> okEventsCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(publisher, Mockito.times(1))
+               .publish(okEventsCaptor.capture(), Mockito.anyString(), Mockito.any());
+        Assertions.assertEquals(3, okEventsCaptor.getValue().size(), "There should be 3 ok events");
 
         // Nok
         ArgumentCaptor<StorageResponseEvent> publishedEventCaptor = ArgumentCaptor.forClass(StorageResponseEvent.class);

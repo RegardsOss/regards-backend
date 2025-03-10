@@ -36,32 +36,38 @@ public enum StorageRequestStatus {
     // See IFileStorageRequestAggregationRepository#findRequestChecksumToHandle()
 
     /**
-     * Request is valid. Ordinal 0
+     * The request is valid. Ordinal 0
      */
     GRANTED,
 
     /**
-     * Request can be handled. Ordinal 1
+     * The request can be handled. Ordinal 1
      */
     TO_HANDLE,
 
     /**
-     * Request is being handled. Ordinal 2
+     * The request is being handled. Ordinal 2
      */
     HANDLED,
 
     /**
-     * Request is delayed, waiting to be reactivated. Ordinal 3
+     * The request is delayed, waiting to be reactivated. Ordinal 3
      */
     DELAYED,
 
     /**
-     * Request is completed and can be deleted. Ordinal 4
+     * The request is partially completed, a success response was received but there is another process still being
+     * executed. Ordinal 4
+     */
+    PENDING_ARCHIVE,
+
+    /**
+     * The request is completed and can be deleted. Ordinal 5
      */
     TO_DELETE,
 
     /**
-     * Request is finished in error. Ordinal 5
+     * The request is finished in error. Ordinal 6
      */
     ERROR;
 

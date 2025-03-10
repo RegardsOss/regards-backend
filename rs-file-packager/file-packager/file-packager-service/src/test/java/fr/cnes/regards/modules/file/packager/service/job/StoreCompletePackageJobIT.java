@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.file.packager.service.job;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.file.packager.dao.FileInBuildingPackageRepository;
 import fr.cnes.regards.modules.file.packager.dao.PackageReferenceRepository;
@@ -26,6 +27,7 @@ import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackage;
 import fr.cnes.regards.modules.file.packager.domain.PackageReference;
 import fr.cnes.regards.modules.file.packager.domain.PackageReferenceStatus;
 import fr.cnes.regards.modules.file.packager.service.FilePackagerService;
+import fr.cnes.regards.modules.file.packager.service.utils.FileStorageRequestReadyToProcessEventFactory;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -74,7 +76,7 @@ public class StoreCompletePackageJobIT extends AbstractMultitenantServiceIT {
 
     @Value("${spring.application.name}")
     private String applicationName;
-    
+
     private String testFilesDir;
 
     private static final String SUBDIRECTORY = "/family/";
@@ -101,7 +103,7 @@ public class StoreCompletePackageJobIT extends AbstractMultitenantServiceIT {
     }
 
     @Test
-    public void test_store_complete_package() throws IOException {
+    public void test_store_complete_package() throws IOException, ModuleException {
         //Given
         String storage = "storage";
         String parentUrl = "https://datalake:9000/buckets/neobucket/files/family/";
@@ -158,8 +160,8 @@ public class StoreCompletePackageJobIT extends AbstractMultitenantServiceIT {
         Assertions.assertEquals(oPackage.get().getChecksum(),
                                 storageRequest.getChecksum(),
                                 "The checksums should be the same");
-        Assertions.assertEquals(Path.of(temporaryFolder.getRoot().toString(), SUBDIRECTORY, creationDate + ".zip")
-                                    .toString(),
+        Assertions.assertEquals(FileStorageRequestReadyToProcessEventFactory.FILE_PROTOCOL
+                                + Path.of(temporaryFolder.getRoot().toString(), SUBDIRECTORY, creationDate + ".zip"),
                                 storageRequest.getOriginUrl(),
                                 "The request archive originUrl is not the right one");
 

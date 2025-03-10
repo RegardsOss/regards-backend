@@ -180,8 +180,6 @@ CREATE TABLE t_request_group (
 
 CREATE INDEX idx_t_request_group ON t_request_group (id);
 
-CREATE SEQUENCE seq_request_group START WITH 1 INCREMENT 50;
-
 -- Create t_storage_location table
 
 CREATE TABLE IF NOT EXISTS t_storage_location (
@@ -201,3 +199,7 @@ ALTER TABLE ONLY t_storage_location
 CREATE INDEX IF NOT EXISTS idx_storage_location ON t_storage_location USING btree (name);
 
 CREATE SEQUENCE seq_storage_location START 1 INCREMENT 50;
+
+-- Create t_storage_location_monitoring_process table
+CREATE TABLE t_storage_location_monitoring_process (id int8 NOT NULL, last_file_reference_id int8, last_monitoring_date
+      TIMESTAMP, last_monitoring_duration int8, running boolean NOT NULL, PRIMARY KEY (id));

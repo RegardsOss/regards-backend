@@ -111,9 +111,11 @@ public class StorageResponseEventHandlerIT extends AbstractMultitenantServiceIT 
         FileInBuildingPackage savedFile2 = fileInBuildingPackageRepository.save(fileToSave);
 
         // Only the requestId and error fields are used in package storage.
-        StorageResponseEvent event = StorageResponseEvent.createSuccessResponse(applicationName
-                                                                                + "."
-                                                                                + savedPackage.getId(), "", "");
+        StorageResponseEvent event = StorageResponseEvent.createSuccessReferenceResponse(applicationName
+                                                                                         + "."
+                                                                                         + savedPackage.getId(),
+                                                                                         "",
+                                                                                         "");
 
         // When
         filePackagerService.updatePackageAfterCompletion(List.of(event));

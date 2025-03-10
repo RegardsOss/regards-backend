@@ -26,10 +26,12 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.file.packager.client.IFilePackagerClient;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
+import fr.cnes.regards.modules.filecatalog.service.location.StorageLocationMonitoringService;
 import fr.cnes.regards.modules.filecatalog.service.location.StorageLocationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -87,12 +89,20 @@ public class StorageLocationController implements IResourceController<StorageLoc
 
     private final StorageLocationService storageLocationService;
 
+    private final StorageLocationMonitoringService storageLocationMonitoringService;
+
+    private final IFilePackagerClient filePackagerClient;
+
     public StorageLocationController(IResourceService resourceService,
                                      IAuthenticationResolver authenticationResolver,
-                                     StorageLocationService storageLocationService) {
+                                     StorageLocationService storageLocationService,
+                                     StorageLocationMonitoringService storageLocationMonitoringService,
+                                     IFilePackagerClient filePackagerClient) {
         this.resourceService = resourceService;
         this.authenticationResolver = authenticationResolver;
         this.storageLocationService = storageLocationService;
+        this.storageLocationMonitoringService = storageLocationMonitoringService;
+        this.filePackagerClient = filePackagerClient;
     }
 
     /**
@@ -121,7 +131,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
     @ResourceAccess(description = "Force running of periodic tasks on storage locations",
                     role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> runPeriodicTasks() {
-        // FIXME call file-packager controller once its implemented
+        filePackagerClient.scheduleCompletePackage();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -268,8 +278,9 @@ public class StorageLocationController implements IResourceController<StorageLoc
                  description = "File requests in error state for the given source and session were retried successfully.")
     @ResourceAccess(description = "Endpoint to retry all files requests in error state for a given source and session",
                     role = DefaultRole.ADMIN)
-    public ResponseEntity<Void> retryErrorsBySourceAndSession(@Parameter(description = "Source name to retry") @RequestParam(name = "source") String source,
-                                                              @Parameter(description = "Session name to retry") @RequestParam(name = "session") String session) {
+    public ResponseEntity<Void> retryErrorsBySourceAndSession(
+        @Parameter(description = "Source name to retry") @RequestParam(name = "source") String source,
+        @Parameter(description = "Session name to retry") @RequestParam(name = "session") String session) {
         storageLocationService.retryErrorsBySourceAndSession(source, session);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -284,23 +295,15 @@ public class StorageLocationController implements IResourceController<StorageLoc
                description = "Run monitoring for storage locations to compute the number of files and space occupation. Optionally reset the monitoring.")
     @ApiResponse(responseCode = "200", description = "Storage location monitoring triggered successfully.")
     @ResourceAccess(description = "Manually run storage location monitoring.", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> runMonitoring(@RequestParam(name = RESET_PARAM, required = false) Boolean reset) {
-        storageLocationService.monitorStorageLocations(reset != null ? reset : false);
+    public ResponseEntity<Void> runMonitoring(@RequestParam(name = RESET_PARAM, required = false) Boolean reset)
+        throws ModuleException {
+        storageLocationMonitoringService.monitorStorageLocations(reset != null ? reset : false);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     public EntityModel<StorageLocationDto> toResource(StorageLocationDto location, Object... extras) {
         EntityModel<StorageLocationDto> resource = EntityModel.of(location);
-        if ((location.getName() != null)) {
-            resourceService.addLink(resource,
-                                    this.getClass(),
-                                    METHOD_DELETE_FILES,
-                                    LinkRelation.of(METHOD_DELETE_FILES),
-                                    MethodParamFactory.build(String.class, location.getName()),
-                                    MethodParamFactory.build(Boolean.class));
-            return resource;
-        }
         StorageType type = location.getConfiguration() != null ?
             location.getConfiguration().getStorageType() :
             StorageType.OFFLINE;

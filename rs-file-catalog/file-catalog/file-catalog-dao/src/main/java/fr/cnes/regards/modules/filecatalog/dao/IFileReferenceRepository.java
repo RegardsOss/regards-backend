@@ -19,6 +19,8 @@
 package fr.cnes.regards.modules.filecatalog.dao;
 
 import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
+import fr.cnes.regards.modules.filecatalog.dao.result.StorageLocationMonitoringResult;
+import fr.cnes.regards.modules.filecatalog.dao.result.StorageLocationPendingFilesMonitoringResult;
 import fr.cnes.regards.modules.filecatalog.domain.FileReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -90,5 +92,25 @@ public interface IFileReferenceRepository
 
     default void updateArchiveStatusStoredByStorageAndChecksumIn(String storage, List<String> checksums) {
         updateArchiveStatusByStorageAndChecksum(storage, checksums, FileArchiveStatus.STORED);
+    }
+
+    @Query("SELECT new fr.cnes.regards.modules.filecatalog.dao.result.StorageLocationMonitoringResult("
+           + "fref.location.storage, sum(fref.metaInfo.fileSize), count(1), max(fref.id)) "
+           + "FROM FileReference fref GROUP BY fref.location.storage")
+    List<StorageLocationMonitoringResult> getTotalFileSizeAggregation();
+
+    @Query("SELECT new fr.cnes.regards.modules.filecatalog.dao.result.StorageLocationMonitoringResult("
+           + "fref.location.storage, sum(fref.metaInfo.fileSize), count(1), max(fref.id)) "
+           + "FROM FileReference fref WHERE fref.id > :id GROUP BY fref.location.storage")
+    List<StorageLocationMonitoringResult> getTotalFileSizeAggregation(@Param("id") Long fromFileReferenceId);
+
+    @Query("SELECT new  fr.cnes.regards.modules.filecatalog.dao.result.StorageLocationPendingFilesMonitoringResult("
+           + "fref.location.storage, count(1)) "
+           + "FROM FileReference fref WHERE fref.location.fileArchiveStatus = :fileArchiveStatus GROUP BY fref.location.storage")
+    List<StorageLocationPendingFilesMonitoringResult> getPendingFilesAggregation(
+        @Param("fileArchiveStatus") FileArchiveStatus fileArchiveStatus);
+
+    default List<StorageLocationPendingFilesMonitoringResult> getPendingFilesAggregation() {
+        return getPendingFilesAggregation(FileArchiveStatus.TO_STORE);
     }
 }

@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.utils.RoutingKeyUtils;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
@@ -180,7 +181,7 @@ public class FilePackagerService {
      * storage and parentPath of the FileInBuildingPackage.
      */
     @MultitenantTransactional
-    public void associateFilesToPackage(Pageable page) {
+    public Pageable associateFilesToPackage(Pageable page) {
         // Get FilesToPackage
         Page<FileInBuildingPackage> filesPage = findFilesToPackage(page);
 
@@ -193,6 +194,7 @@ public class FilePackagerService {
 
         // Associate the files
         filePackageMap.forEach((key, value) -> associateFilesToPackage(key.storage(), key.path(), value));
+        return filesPage.nextPageable();
     }
 
     @MultitenantTransactional
@@ -224,46 +226,55 @@ public class FilePackagerService {
     }
 
     @MultitenantTransactional
-    public void storeCompletePackage(Long packageId, String storageSubdirectory, String creationDate, String storage) {
+    public void storeCompletePackage(Long packageId, String storageSubdirectory, String creationDate, String storage)
+        throws ModuleException {
         Path archivePath = getArchivePath(storageSubdirectory, creationDate);
 
-        // Delete archive if it exists (because this job was run earlier and failed)
         try {
-            Files.deleteIfExists(archivePath);
-        } catch (IOException e) {
-            throw new RuntimeException("Error while deleting the existing archive", e);
-        }
-
-        try {
-            Files.createDirectories(archivePath.getParent());
-            // Create the archive and add the files
-            try (FileOutputStream fileOutputStream = new FileOutputStream(archivePath.toFile());
-                ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
-                addFilesToArchive(packageId, zipOutputStream);
+            // Delete archive if it exists (because this job was run earlier and failed)
+            try {
+                Files.deleteIfExists(archivePath);
+            } catch (IOException e) {
+                throw new ModuleException("Error while deleting the existing archive", e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Error while adding files to the archive", e);
+
+            try {
+                Files.createDirectories(archivePath.getParent());
+                // Create the archive and add the files
+                try (FileOutputStream fileOutputStream = new FileOutputStream(archivePath.toFile());
+                    ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream)) {
+                    addFilesToArchive(packageId, zipOutputStream);
+                }
+            } catch (IOException e) {
+                throw new ModuleException("Error while adding files to the archive", e);
+            }
+
+            // Compute archive checksum
+            String checksum;
+            try {
+                checksum = ChecksumUtils.computeHexChecksum(archivePath, "MD5");
+            } catch (NoSuchAlgorithmException | IOException e) {
+                throw new ModuleException("Error while computing archive checksum", e);
+            }
+
+            // Send the storage request to file-access
+            FileStorageRequestReadyToProcessEvent archiveStorageRequest = FileStorageRequestReadyToProcessEventFactory.createPackageRequestEvent(
+                RoutingKeyUtils.buildRequestIdFromId(applicationName, packageId),
+                storageSubdirectory,
+                storage,
+                checksum,
+                archivePath);
+            publisher.publish(archiveStorageRequest);
+
+            // Update the archive in database
+            packageReferenceRepository.updatePackageChecksum(packageId, checksum);
+        } finally {
+            try {
+                Files.deleteIfExists(archivePath);
+            } catch (IOException e) {
+                throw new ModuleException("Error while deleting the archive", e);
+            }
         }
-
-        // Compute archive checksum
-        String checksum;
-        try {
-            checksum = ChecksumUtils.computeHexChecksum(archivePath, "MD5");
-        } catch (NoSuchAlgorithmException | IOException e) {
-            throw new RuntimeException("Error while computing archive checksum", e);
-        }
-
-        // Send the storage request to file-access
-        FileStorageRequestReadyToProcessEvent archiveStorageRequest = FileStorageRequestReadyToProcessEventFactory.createPackageRequestEvent(
-            RoutingKeyUtils.buildRequestIdFromId(applicationName, packageId),
-            storageSubdirectory,
-            storage,
-            checksum,
-            archivePath);
-        publisher.publish(archiveStorageRequest);
-
-        // Update the archive in database
-        packageReferenceRepository.updatePackageChecksum(packageId, checksum);
     }
 
     public Path getArchivePath(String storageSubdirectory, String creationDate) {
@@ -479,11 +490,15 @@ public class FilePackagerService {
                     successesIdByStorage.get(storage),
                     page);
                 for (FileInBuildingPackage file : filesInPackage.getContent()) {
-                    // FIXME Review, c'est bourin d'envoyer un event par fichier mais c'est l'alternative la plus
-                    //  performante je pense, à discuter
                     publisher.publish(new FileArchiveCompletionEvent(storage, file.getChecksum()));
                     file.setStatus(FileInBuildingPackageStatus.TO_LOCAL_DELETE);
+                    // Keep files at least one hour to prevent conflicts with a restoration
+                    if (file.getKeepInCacheUntilDate() == null || file.getKeepInCacheUntilDate()
+                                                                      .isBefore(OffsetDateTime.now().plusHours(1))) {
+                        file.setKeepInCacheUntilDate(OffsetDateTime.now().plusHours(1));
+                    }
                     updatedFiles.add(file);
+
                 }
                 page = filesInPackage.nextPageable();
             } while (page.isPaged());

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 import java.util.List;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
  *
  * @author Thibaud Michaudel
  **/
+@Component
 public class StorageResponseEventHandler
     implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<StorageResponseEvent> {
 
@@ -81,12 +83,14 @@ public class StorageResponseEventHandler
                                                                                    .collect(Collectors.groupingBy(
                                                                                        StorageResponseDto::isRequestSuccessful));
         // Handle successes
-        if (!responseBySuccessStatus.get(Boolean.TRUE).isEmpty()) {
-            fileStorageRequestService.processFileStorageSuccessResponses(responseBySuccessStatus.get(Boolean.TRUE));
+        List<StorageResponseEvent> successes = responseBySuccessStatus.get(Boolean.TRUE);
+        if (successes != null && !successes.isEmpty()) {
+            fileStorageRequestService.processFileStorageSuccessResponses(successes);
         }
         // Handle errors
-        if (!responseBySuccessStatus.get(Boolean.FALSE).isEmpty()) {
-            fileStorageRequestService.processFileStorageErrorResponses(responseBySuccessStatus.get(Boolean.FALSE));
+        List<StorageResponseEvent> errors = responseBySuccessStatus.get(Boolean.FALSE);
+        if (errors != null && !errors.isEmpty()) {
+            fileStorageRequestService.processFileStorageErrorResponses(errors);
         }
 
         LOGGER.info("[StorageResponseEvent HANDLER] {} storage response events handled in {} ms",

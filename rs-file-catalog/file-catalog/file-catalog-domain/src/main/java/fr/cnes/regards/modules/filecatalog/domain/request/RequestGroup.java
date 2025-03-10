@@ -35,8 +35,6 @@ import java.time.OffsetDateTime;
 public class RequestGroup {
 
     @Id
-    @SequenceGenerator(name = "requestGroupSequence", initialValue = 1, sequenceName = "seq_request_group")
-    @GeneratedValue(generator = "requestGroupSequence", strategy = GenerationType.SEQUENCE)
     private String id;
 
     @Column(nullable = false)

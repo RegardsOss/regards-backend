@@ -50,15 +50,18 @@ public interface PackageReferenceRepository extends JpaRepository<PackageReferen
      * Set given status to all packages older than the given date.
      */
     @Modifying
-    @Query("UPDATE PackageReference p SET p.status = :status WHERE p.creationDate < :oldestDate")
+    @Query(
+        "UPDATE PackageReference p SET p.status = :newStatus WHERE p.status = :oldStatus AND p.creationDate < :oldestDate")
     void updateOldPackagesStatus(@Param("oldestDate") OffsetDateTime oldestDate,
-                                 @Param("status") PackageReferenceStatus status);
+                                 @Param("oldStatus") PackageReferenceStatus oldStatus,
+                                 @Param("newStatus") PackageReferenceStatus newStatus);
 
     /**
-     * Set status {@link PackageReferenceStatus#TO_STORE} to all packages older than the given date.
+     * Set status {@link PackageReferenceStatus#TO_STORE} to all {@link PackageReferenceStatus#BUILDING BUILDING}
+     * packages older than the given date.
      */
     default void closeAllOldPackages(OffsetDateTime oldestDate) {
-        updateOldPackagesStatus(oldestDate, PackageReferenceStatus.TO_STORE);
+        updateOldPackagesStatus(oldestDate, PackageReferenceStatus.BUILDING, PackageReferenceStatus.TO_STORE);
     }
 
     /**

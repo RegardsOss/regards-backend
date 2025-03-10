@@ -43,11 +43,16 @@ public interface IRequestGroupRepository extends JpaRepository<RequestGroup, Str
 
     /**
      * Retrieve all terminated {@link RequestGroup}. <br/>
-     * A {@link RequestGroup} is terminated if there is no more running request associated to.
+     * A {@link RequestGroup} is terminated if there is no more running request associated to it.
+     * Running requests are requests in any status but
+     * {@link fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus#ERROR ERROR} (ordinal 6)
+     * or {@link fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus#PENDING_ARCHIVE PENDING_ARCHIVE}
+     * (ordinal 4)
      *
      * @param limit Maximum number of terminated groups to return
      * @return List of terminated {@link RequestGroup}s
      */
+    // FIXME TODO LOT 2 & 4 also check other type of requests
     @Query(value = """
         SELECT * FROM t_request_group groups 
         WHERE NOT EXISTS (
@@ -55,28 +60,12 @@ public interface IRequestGroupRepository extends JpaRepository<RequestGroup, Str
             INNER JOIN t_file_storage_request storage_request
                 ON storage_request.id = ta_storage_request.file_storage_request_id
             WHERE groups.id = ta_storage_request.group_id
-            AND storage_request.status != 'ERROR'
-        )
-        AND NOT EXISTS (
-            SELECT * FROM ta_file_cache_request_group_id ta_file_cache_request
-            INNER JOIN t_file_cache_request cache_requests
-                ON cache_requests.id = ta_file_cache_request.file_cache_request_id
-            WHERE groups.id = ta_file_cache_request.group_id
-            AND cache_requests.status != 'ERROR'
-        )
-        AND NOT EXISTS (
-            SELECT * FROM t_file_deletion_request del_requests
-            WHERE groups.id = del_requests.group_id 
-            AND del_requests.status != 'ERROR'
-        )
-        AND NOT EXISTS (
-            SELECT * FROM t_file_copy_request copy_requests
-            WHERE groups.id = copy_requests.group_id 
-            AND copy_requests.status != 'ERROR'
+            AND storage_request.status != 6
+            AND storage_request.status != 4
         )
         LIMIT :limit
         """, nativeQuery = true)
-    List<RequestGroup> findGroupDones(@Param("limit") Integer limit);
+    List<RequestGroup> findDoneGroups(@Param("limit") Integer limit);
 
     Page<RequestGroup> findByExpirationDateLessThanEqual(OffsetDateTime expirationDate, Pageable page);
 }

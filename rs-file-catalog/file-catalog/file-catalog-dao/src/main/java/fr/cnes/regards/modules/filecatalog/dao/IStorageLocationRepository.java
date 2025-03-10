@@ -21,13 +21,17 @@ package fr.cnes.regards.modules.filecatalog.dao;
 import fr.cnes.regards.modules.filecatalog.domain.StorageLocation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 /**
  * JPA Repository to handle access to {@link StorageLocation} entities.
  *
- * @author Sébatien Binda
+ * @author Sébatien Binda, Thibaud Michaudel
  */
 public interface IStorageLocationRepository
     extends JpaRepository<StorageLocation, Long>, JpaSpecificationExecutor<StorageLocation> {
@@ -44,4 +48,12 @@ public interface IStorageLocationRepository
 
     void deleteByName(String name);
 
+    @Query("UPDATE StorageLocation sl SET "
+           + "sl.numberOfReferencedFiles = 0, "
+           + "sl.totalSizeOfReferencedFiles = 0, "
+           + "sl.numberOfPendingFiles = 0, "
+           + "sl.lastUpdateDate = :currentTime, "
+           + "sl.pendingActionRemaining = false ")
+    @Modifying
+    void resetAll(@Param("currentTime") OffsetDateTime currentTime);
 }

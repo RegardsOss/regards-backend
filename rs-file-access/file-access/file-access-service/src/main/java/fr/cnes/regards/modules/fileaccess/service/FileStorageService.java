@@ -30,11 +30,11 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageWorkerRequestEvent;
-import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.dto.output.StorageResponseErrorEnum;
 import fr.cnes.regards.modules.fileaccess.dto.output.worker.StorageWorkerResponseDto;
 import fr.cnes.regards.modules.fileaccess.dto.output.worker.type.ImageFileMetadata;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
+import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
 import fr.cnes.regards.modules.workermanager.amqp.events.out.ResponseEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,10 +124,10 @@ public class FileStorageService {
                                           message.getRequestId());
                     } else {
                         Integer height = null;
-                        Integer weight = null;
+                        Integer width = null;
                         if (workerResponseContent.getStoreFileMetadata() instanceof ImageFileMetadata imageFileMetadata) {
                             height = imageFileMetadata.getHeightInPx();
-                            weight = imageFileMetadata.getWidthInPx();
+                            width = imageFileMetadata.getWidthInPx();
                         }
                         if (isStoredInCache(workerResponseContent)) {
                             publisher.publish(StorageResponseEvent.createSuccessCacheResponse(message.getRequestId(),
@@ -138,7 +138,7 @@ public class FileStorageService {
                                                                                               workerResponseContent.getStoreFileMetadata()
                                                                                                                    .getFileSizeInBytes(),
                                                                                               height,
-                                                                                              weight,
+                                                                                              width,
                                                                                               workerResponseContent.getFileProcessingMetadata()
                                                                                                                    .getStoreParentUrl(),
                                                                                               workerResponseContent.getFileProcessingMetadata()
@@ -153,7 +153,7 @@ public class FileStorageService {
                                                                                          workerResponseContent.getStoreFileMetadata()
                                                                                                               .getFileSizeInBytes(),
                                                                                          height,
-                                                                                         weight),
+                                                                                         width),
                                               message.getRequestId());
                         }
 
@@ -186,11 +186,11 @@ public class FileStorageService {
      */
     public void processStorageRequests(List<FileStorageRequestReadyToProcessEvent> messages) {
         List<StorageWorkerRequestEvent> workerEventsToSend = new ArrayList<>();
-        Map<String, Optional<AbstractStoragePluginConfigurationDto>> configurations = new HashMap<>();
+        Map<String, Optional<StoragePluginConfigurationDtoAndPluginId>> configurations = new HashMap<>();
         Map<String, IStorageLocation> storageLocations = new HashMap<>();
         for (FileStorageRequestReadyToProcessEvent message : messages) {
-            Optional<AbstractStoragePluginConfigurationDto> oConfiguration = configurations.computeIfAbsent(message.getStorage(),
-                                                                                                            storagePluginConfigurationService::getByName);
+            Optional<StoragePluginConfigurationDtoAndPluginId> oConfiguration = configurations.computeIfAbsent(message.getStorage(),
+                                                                                                               storagePluginConfigurationService::getByName);
             if (oConfiguration.isEmpty()) {
                 String errorMessage = String.format(
                     "Error while processing storage request for file %s. No configuration found for %s",
@@ -216,12 +216,14 @@ public class FileStorageService {
             }
         }
         if (!workerEventsToSend.isEmpty()) {
-            publisher.publish(workerEventsToSend);
+            publisher.publish(workerEventsToSend,
+                              "regards.broadcast." + RequestEvent.class.getName(),
+                              Optional.empty());
         }
     }
 
     private StorageWorkerRequestEvent createWorkerEvent(FileStorageRequestReadyToProcessEvent message,
-                                                        AbstractStoragePluginConfigurationDto configuration) {
+                                                        StoragePluginConfigurationDtoAndPluginId configuration) {
         // Body
         boolean needToComputeImageSize = MediaType.parseMediaType(message.getMetadata().getMimeType())
                                                   .getType()
@@ -236,10 +238,10 @@ public class FileStorageService {
                                                                               message.getSubDirectory(),
                                                                               needToComputeImageSize,
                                                                               message.isActivateSmallFilePackaging(),
-                                                                              configuration);
+                                                                              configuration.storagePluginConfigurationDto());
         // Headers
         eventToSend.setHeader(StorageWorkerRequestEvent.CONTENT_TYPE_HEADER,
-                              FileAccessConstants.CONTENT_TYPE_HEADER + message.getStorage());
+                              FileAccessConstants.CONTENT_TYPE_HEADER + configuration.pluginId());
         eventToSend.setHeader(StorageWorkerRequestEvent.REQUEST_ID_HEADER, message.getRequestId());
         eventToSend.setHeader(StorageWorkerRequestEvent.TENANT_HEADER, runtimeTenantResolver.getTenant());
         eventToSend.setHeader(StorageWorkerRequestEvent.OWNER_HEADER, message.getOwner());
@@ -272,9 +274,9 @@ public class FileStorageService {
             }
 
             if (storagePlugin.isValidUrl(request.getOriginUrl(), errors)) {
-                return StorageResponseEvent.createSuccessResponse(request.getRequestId(),
-                                                                  request.getOriginUrl(),
-                                                                  request.getChecksum());
+                return StorageResponseEvent.createSuccessReferenceResponse(request.getRequestId(),
+                                                                           request.getOriginUrl(),
+                                                                           request.getChecksum());
             } else {
                 return StorageResponseEvent.createErrorResponse(request.getRequestId(),
                                                                 request.getOriginUrl(),

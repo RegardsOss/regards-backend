@@ -134,6 +134,18 @@ public class StorageLocationService {
     @MultitenantTransactional(readOnly = true)
     public StorageLocationDto findStorageLocationByName(String storageName) throws ModuleException {
         // Get storage location configs through feign
+        StorageLocationConfigurationDto storageConfigDto = getStorageLocationConfiguration(storageName);
+
+        // Get corresponding storage location
+        StorageLocation storageLocation = storageLocationRepository.findByName(storageName)
+                                                                   .orElseThrow(() -> new EntityNotFoundException(
+                                                                       "Storage location with name "
+                                                                       + storageName
+                                                                       + " not found"));
+        return getStorageLocationDto(storageName, storageConfigDto, storageLocation);
+    }
+
+    public StorageLocationConfigurationDto getStorageLocationConfiguration(String storageName) throws ModuleException {
         StorageLocationConfigurationDto storageConfigDto = storageLocationConfigurationCache.getIfPresent(storageName);
 
         if (storageConfigDto == null) {
@@ -162,14 +174,7 @@ public class StorageLocationService {
                                                                              response));
             storageLocationConfigurationCache.put(storageConfigDto.getName(), storageConfigDto);
         }
-
-        // Get corresponding storage location
-        StorageLocation storageLocation = storageLocationRepository.findByName(storageName)
-                                                                   .orElseThrow(() -> new EntityNotFoundException(
-                                                                       "Storage location with name "
-                                                                       + storageName
-                                                                       + " not found"));
-        return getStorageLocationDto(storageName, storageConfigDto, storageLocation);
+        return storageConfigDto;
     }
 
     /**
@@ -318,13 +323,6 @@ public class StorageLocationService {
      */
     public void retryErrorsBySourceAndSession(String source, String session) {
         this.fileStorageRequestService.retryErrorsBySourceAndSession(source, session);
-    }
-
-    /**
-     * Monitor all storage locations to calculate information about stored files.
-     */
-    public void monitorStorageLocations(boolean reset) {
-        //FIXME TODO NeoStorage Lot 1
     }
 
     public void invalidateCache() {

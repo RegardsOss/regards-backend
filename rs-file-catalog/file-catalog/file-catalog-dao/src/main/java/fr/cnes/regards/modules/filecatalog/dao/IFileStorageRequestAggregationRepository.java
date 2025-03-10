@@ -57,6 +57,8 @@ public interface IFileStorageRequestAggregationRepository extends JpaRepository<
 
     Set<FileStorageRequestAggregation> findByMetaInfoChecksumAndStorage(String checksum, String storage);
 
+    Set<FileStorageRequestAggregation> findAllByGroupIdsContaining(String groupId);
+
     Page<FileStorageRequestAggregation> findAllByStorageAndStatus(String storage,
                                                                   StorageRequestStatus status,
                                                                   Pageable page);

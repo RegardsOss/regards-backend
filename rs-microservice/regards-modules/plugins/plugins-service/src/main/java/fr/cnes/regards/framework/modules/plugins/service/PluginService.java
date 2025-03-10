@@ -25,7 +25,10 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.*;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
@@ -522,6 +525,19 @@ public class PluginService implements IPluginService, InitializingBean {
     @Override
     @MultitenantTransactional(noRollbackFor = { ModuleException.class })
     public <T> T getPlugin(String businessId, IPluginParam... dynamicParameters) throws ModuleException {
+        PluginConfiguration plgConf = getConfiguration(businessId);
+        return getPlugin(plgConf, dynamicParameters);
+    }
+
+    @Override
+    @MultitenantTransactional(noRollbackFor = { ModuleException.class })
+    public <T> PluginAndPluginId<T> getPluginAndId(String businessId, IPluginParam... dynamicParameters)
+        throws ModuleException {
+        PluginConfiguration plgConf = getConfiguration(businessId);
+        return new PluginAndPluginId<T>(getPlugin(plgConf, dynamicParameters), plgConf.getPluginId());
+    }
+
+    private PluginConfiguration getConfiguration(String businessId) throws EntityNotFoundException {
         PluginConfiguration plgConf = loadPluginConfiguration(businessId);
         if (plgConf == null) {
             LOGGER.error(
@@ -529,9 +545,9 @@ public class PluginService implements IPluginService, InitializingBean {
                 businessId);
             throw new EntityNotFoundException(businessId, PluginConfiguration.class);
         }
-        return getPlugin(plgConf, dynamicParameters);
+        return plgConf;
     }
-
+    
     @Override
     public <T> Optional<T> getOptionalPlugin(String businessId, IPluginParam... dynamicPluginParameters)
         throws NotAvailablePluginConfigurationException {

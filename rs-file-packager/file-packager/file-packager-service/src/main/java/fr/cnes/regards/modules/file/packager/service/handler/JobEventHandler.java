@@ -126,9 +126,9 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
                 }
             }
         }
-        LOGGER.debug("[FILE-PACKAGER JOB EVENT HANDLER] {} JobEvents in error handled in {} ms",
-                     nbJobError,
-                     System.currentTimeMillis() - start);
+        LOGGER.info("[FILE-PACKAGER JOB EVENT HANDLER] {} JobEvents in error handled in {} ms",
+                    nbJobError,
+                    System.currentTimeMillis() - start);
     }
 
     @Override

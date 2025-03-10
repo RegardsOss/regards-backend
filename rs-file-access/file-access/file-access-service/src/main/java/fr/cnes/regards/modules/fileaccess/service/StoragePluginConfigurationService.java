@@ -20,16 +20,15 @@ package fr.cnes.regards.modules.fileaccess.service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.service.PluginAndPluginId;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.fileaccess.dao.IStorageLocationConfigurationRepository;
 import fr.cnes.regards.modules.fileaccess.dto.AbstractStoragePluginConfigurationDto;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
+import jakarta.transaction.NotSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import jakarta.transaction.NotSupportedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,10 +76,12 @@ public class StoragePluginConfigurationService {
         return configurations;
     }
 
-    public Optional<AbstractStoragePluginConfigurationDto> getByName(String storageName) {
+    public Optional<StoragePluginConfigurationDtoAndPluginId> getByName(String storageName) {
         try {
-            IStorageLocation plugin = pluginService.getPlugin(storageName);
-            return Optional.of(plugin.createWorkerStoreConfiguration());
+            PluginAndPluginId<IStorageLocation> pluginAndId = pluginService.getPluginAndId(storageName);
+            return Optional.of(new StoragePluginConfigurationDtoAndPluginId(pluginAndId.plugin()
+                                                                                       .createWorkerStoreConfiguration(),
+                                                                            pluginAndId.pluginId()));
         } catch (ModuleException e) {
             LOGGER.error("Error while attempting to retrieve plugin {}", storageName, e);
         } catch (NotSupportedException e) {

@@ -73,8 +73,8 @@ public class FilesStorageRequestReadyToProcessEventHandler
 
         fileStorageService.processStorageRequests(messages);
 
-        LOGGER.debug("[STORAGE REQUEST EVENT HANDLER] {} FileReferenceEvent handled in {} ms",
-                     messages.size(),
-                     System.currentTimeMillis() - start);
+        LOGGER.info("[STORAGE REQUEST EVENT HANDLER] {} FileReferenceEvent handled in {} ms",
+                    messages.size(),
+                    System.currentTimeMillis() - start);
     }
 }

@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.file.packager.service.scheduler;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.file.packager.service.FilePackagerService;
@@ -45,18 +44,19 @@ import java.time.Instant;
 @Component
 @Profile("!noscheduler")
 @EnableScheduling
-@MultitenantTransactional
 public class CompletePackageScheduler extends AbstractTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CompletePackageScheduler.class);
 
     private static final String DEFAULT_INITIAL_DELAY_IN_MS = "30000";
 
-    private static final String DEFAULT_SCHEDULING_DELAY_IN_MS = "1000";
+    private static final String DEFAULT_SCHEDULING_DELAY_IN_MS = 6 * 60 * 60 * 1000 + ""; // 6 hours
+
+    private static final long TRY_ACQUIRE_LOCK_TIME_IN_MS = 10 * 60 * 1000; // 10 minutes
 
     private static final String LOCK_ACTIONS = "FILE PACKAGER STORE COMPLETE PACKAGE ACTIONS";
 
-    private final LockingTaskExecutor.Task completePackageTask;
+    private final LockingTaskExecutor.TaskWithResult<Void> completePackageTask;
 
     private final ILockingTaskExecutors lockingTaskExecutors;
 
@@ -66,7 +66,7 @@ public class CompletePackageScheduler extends AbstractTaskScheduler {
 
     private final FilePackagerService filePackagerService;
 
-    @Value("${regards.file.packager.complete.package.lock.duration.in.seconds.:300}")
+    @Value("${regards.file.packager.complete.package.lock.duration.in.seconds:300}")
     private int lockDurationInSeconds;
 
     public CompletePackageScheduler(ILockingTaskExecutors lockingTaskExecutors,
@@ -76,6 +76,7 @@ public class CompletePackageScheduler extends AbstractTaskScheduler {
         completePackageTask = () -> {
             lockingTaskExecutors.assertLocked();
             completePackage();
+            return null;
         };
         this.lockingTaskExecutors = lockingTaskExecutors;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -96,11 +97,22 @@ public class CompletePackageScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, LOCK_ACTIONS);
-                lockingTaskExecutors.executeWithLock(completePackageTask,
-                                                     new LockConfiguration(Instant.now(),
-                                                                           FilePackagerSchedulersLock.LOCK_ID,
-                                                                           Duration.ofSeconds(lockDurationInSeconds),
-                                                                           Duration.ZERO));
+                long start = System.currentTimeMillis();
+                boolean wasExecuted = false;
+                while (!wasExecuted && System.currentTimeMillis() - start < TRY_ACQUIRE_LOCK_TIME_IN_MS) {
+                    wasExecuted = lockingTaskExecutors.executeWithLock(completePackageTask,
+                                                                       new LockConfiguration(Instant.now(),
+                                                                                             FilePackagerSchedulersLock.LOCK_ID,
+                                                                                             Duration.ofSeconds(
+                                                                                                 lockDurationInSeconds),
+                                                                                             Duration.ZERO))
+                                                      .wasExecuted();
+                    Thread.sleep(50);
+                }
+                if (!wasExecuted) {
+                    LOGGER.warn("[Complete Package Scheduler] Couldn't acquire lock after {}ms.",
+                                TRY_ACQUIRE_LOCK_TIME_IN_MS);
+                }
             } catch (Throwable e) {
                 handleSchedulingError(LOCK_ACTIONS, FilePackagerSchedulersLock.LOCK_TITLE, e);
             } finally {

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.fileaccess.amqp.output;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -33,13 +34,32 @@ import fr.cnes.regards.modules.fileaccess.dto.output.StorageResponseErrorEnum;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class StorageResponseEvent extends StorageResponseDto implements ISubscribable {
 
-    private StorageResponseEvent(String requestId,
-                                 String url,
-                                 String checksum,
-                                 long size,
-                                 Integer height,
-                                 Integer weight) {
-        super(requestId, url, checksum, size, height, weight);
+    /**
+     * Full constructor for jackson
+     */
+    @JsonCreator
+    public StorageResponseEvent(String requestId,
+                                String url,
+                                String checksum,
+                                long size,
+                                Integer height,
+                                Integer width,
+                                boolean storedInCache,
+                                String finalArchiveParentUrl,
+                                String fileCachePath,
+                                StorageResponseErrorEnum errorType,
+                                String error) {
+        super(requestId,
+              url,
+              checksum,
+              size,
+              height,
+              width,
+              storedInCache,
+              finalArchiveParentUrl,
+              fileCachePath,
+              errorType,
+              error);
     }
 
     private StorageResponseEvent(String requestId,
@@ -47,10 +67,19 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
                                  String checksum,
                                  long size,
                                  Integer height,
-                                 Integer weight,
+                                 Integer width) {
+        super(requestId, url, checksum, size, height, width);
+    }
+
+    private StorageResponseEvent(String requestId,
+                                 String url,
+                                 String checksum,
+                                 long size,
+                                 Integer height,
+                                 Integer width,
                                  String finalArchiveParentUrl,
                                  String fileCachePath) {
-        super(requestId, url, checksum, size, height, weight, finalArchiveParentUrl, fileCachePath);
+        super(requestId, url, checksum, size, height, width, finalArchiveParentUrl, fileCachePath);
     }
 
     private StorageResponseEvent(String requestId, String url, String checksum) {
@@ -73,8 +102,8 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
                                                              String checksum,
                                                              long size,
                                                              Integer height,
-                                                             Integer weight) {
-        return new StorageResponseEvent(requestId, url, checksum, size, height, weight);
+                                                             Integer width) {
+        return new StorageResponseEvent(requestId, url, checksum, size, height, width);
     }
 
     /**
@@ -85,7 +114,7 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
                                                                   String checksum,
                                                                   long size,
                                                                   Integer height,
-                                                                  Integer weight,
+                                                                  Integer width,
                                                                   String finalArchiveParentUrl,
                                                                   String fileCachePath) {
         return new StorageResponseEvent(requestId,
@@ -93,7 +122,7 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
                                         checksum,
                                         size,
                                         height,
-                                        weight,
+                                        width,
                                         finalArchiveParentUrl,
                                         fileCachePath);
     }
@@ -101,7 +130,7 @@ public class StorageResponseEvent extends StorageResponseDto implements ISubscri
     /**
      * Success Reference event
      */
-    public static StorageResponseEvent createSuccessResponse(String requestId, String url, String checksum) {
+    public static StorageResponseEvent createSuccessReferenceResponse(String requestId, String url, String checksum) {
         return new StorageResponseEvent(requestId, url, checksum);
     }
 

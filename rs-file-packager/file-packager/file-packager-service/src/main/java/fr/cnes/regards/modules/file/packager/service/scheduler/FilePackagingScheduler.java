@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.file.packager.service.scheduler;
 
 import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.file.packager.domain.FileInBuildingPackage;
@@ -35,8 +34,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -54,9 +54,9 @@ import java.time.Instant;
  *
  * @author Thibaud Michaudel
  **/
-@Service
-@MultitenantTransactional
+@Component
 @Profile("!noscheduler")
+@EnableScheduling
 public class FilePackagingScheduler extends AbstractTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FilePackagingScheduler.class);
@@ -104,8 +104,7 @@ public class FilePackagingScheduler extends AbstractTaskScheduler {
 
         Pageable page = PageRequest.of(0, pageSize);
         do {
-            filePackagerService.associateFilesToPackage(page);
-            page.next();
+            page = filePackagerService.associateFilesToPackage(page);
         } while (page.isPaged());
 
         LOGGER.trace("[FILE PACKAGING SCHEDULER] Requests packaged in {} ms", System.currentTimeMillis() - start);
@@ -116,7 +115,7 @@ public class FilePackagingScheduler extends AbstractTaskScheduler {
     }
 
     @Scheduled(initialDelayString = "${regards.file.packaging.schedule.initial.delay.ms:"
-                                    + DEFAULT_INITIAL_DELAY_IN_MS
+                                    + (DEFAULT_INITIAL_DELAY_IN_MS)
                                     + "}",
                fixedDelayString = "${regards.file.packaging.schedule.delay.ms:" + DEFAULT_SCHEDULING_DELAY_IN_MS + "}")
     public void scheduleFilePackaging() {

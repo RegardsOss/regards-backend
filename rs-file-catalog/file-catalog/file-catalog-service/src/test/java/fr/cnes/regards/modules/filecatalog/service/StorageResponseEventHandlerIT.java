@@ -22,10 +22,8 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
-import fr.cnes.regards.modules.fileaccess.dto.FileArchiveStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.output.StorageResponseErrorEnum;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileArchiveRequestEvent;
@@ -44,7 +42,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
-import org.springframework.util.MimeTypeUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,6 +57,8 @@ import java.util.stream.IntStream;
                                    + ".default_schema=storage_response_event_handler_tests" },
                     locations = { "classpath:application-test.properties" })
 public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
+
+    public static final long FILE_SIZE = 1024L;
 
     @Autowired
     private FileStorageRequestService fileStorageRequestService;
@@ -98,11 +97,7 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(i));
         String storedUrl = createUrl(i);
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(applicationName
-                                                                                 + "."
-                                                                                 + request1.getId(),
-                                                                                 storedUrl,
-                                                                                 request1.getMetaInfo().getChecksum());
+        StorageResponseEvent event1 = createStorageResponseEvent(request1, storedUrl);
 
         // Mock
         FileReferenceResult mockedReference = mockReferenceResponse(request1,
@@ -115,7 +110,7 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         // Then
 
         // Verify fileReferenceRequestService.reference() is called as expected
-        verifyReferenceCall(new ReferenceCallRecord(request1, storedUrl, null));
+        verifyReferenceCall(new ReferenceCallRecord(request1, storedUrl));
 
         // Verify requestsGroupService.requestSuccess() is called as expected
         verifyGroupsRequestSuccessCall(request1, mockedReference);
@@ -141,17 +136,11 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(i));
         String storedUrl = createUrl(i);
-        FileArchiveStatus archiveStatus = FileArchiveStatus.STORED;
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(applicationName
-                                                                                 + "."
-                                                                                 + request1.getId(),
-                                                                                 storedUrl,
-                                                                                 request1.getMetaInfo().getChecksum());
+        StorageResponseEvent event1 = createStorageResponseEvent(request1, storedUrl);
 
         // Mock
         FileReferenceResult mockedReference = mockReferenceResponse(request1,
                                                                     storedUrl,
-                                                                    archiveStatus,
                                                                     FileReferenceResultStatusEnum.UNMODIFIED);
 
         // When
@@ -160,7 +149,7 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         // Then
 
         // Verify fileReferenceRequestService.reference() is called as expected
-        verifyReferenceCall(new ReferenceCallRecord(request1, storedUrl, archiveStatus));
+        verifyReferenceCall(new ReferenceCallRecord(request1, storedUrl));
 
         // Verify requestsGroupService.requestSuccess() is called as expected
         verifyGroupsRequestSuccessCall(request1, mockedReference);
@@ -187,50 +176,21 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(i));
         String storedUrl = createUrl(i);
-        FileArchiveStatus archiveStatus = FileArchiveStatus.TO_STORE;
         String finalArchiveParentUrl = "http://storage.com/" + request1.getStorageSubDirectory() + "12345.zip";
         String fileCachePath = "/workspace/" + request1.getStorageSubDirectory() + request1.getMetaInfo().getFileName();
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessCacheResponse(applicationName
-                                                                                      + "."
-                                                                                      + request1.getId(),
-                                                                                      storedUrl,
-                                                                                      request1.getMetaInfo()
-                                                                                              .getChecksum(),
-                                                                                      request1.getMetaInfo()
-                                                                                              .getFileSize(),
-                                                                                      request1.getMetaInfo()
-                                                                                              .getHeight(),
-                                                                                      request1.getMetaInfo().getWidth(),
-                                                                                      finalArchiveParentUrl,
-                                                                                      fileCachePath);
-
-        // Mock
-        FileReferenceResult mockedReference = mockReferenceResponse(request1,
-                                                                    storedUrl,
-                                                                    archiveStatus,
-                                                                    FileReferenceResultStatusEnum.CREATED);
+        StorageResponseEvent event1 = createCacheStorageResponseEvent(request1,
+                                                                      storedUrl,
+                                                                      finalArchiveParentUrl,
+                                                                      fileCachePath);
 
         // When
         fileStorageRequestService.processFileStorageSuccessResponses(Arrays.asList(event1));
 
         // Then
 
-        // Verify fileReferenceRequestService.reference() is called as expected
-        verifyReferenceCall(new ReferenceCallRecord(request1, storedUrl, archiveStatus));
+        verifyHandleSuccessNeverCalled();
 
-        // Verify requestsGroupService.requestSuccess() is called as expected
-        verifyGroupsRequestSuccessCall(request1, mockedReference);
-
-        // Verify sessionNotifier.decrementRunningRequests() is called as expected
-        verifySessionNotifierDecrementRunningRequestsCall(request1);
-
-        // Verify sessionNotifier.incrementStoredFiles() is called as expected
-        verifySessionNotifierIncrementStoredFilesCall(request1);
-
-        // Verify notificationClient.notifyRoles() is called as expected
-        verifyNotificationClientNotifyRolesCall(storedUrl);
-
-        // Verify that no archive event was sent
+        // Verify that one archive event was sent
         verifyPublisherPublishCall(request1, finalArchiveParentUrl, fileCachePath);
     }
 
@@ -241,77 +201,34 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(i));
         String storedUrl1 = createUrl(i);
-        FileArchiveStatus archiveStatus1 = FileArchiveStatus.TO_STORE;
         String finalArchiveParentUrl1 = "http://storage.com/" + request1.getStorageSubDirectory() + "12345.zip";
         String fileCachePath1 = "/workspace/" + request1.getStorageSubDirectory() + request1.getMetaInfo()
                                                                                             .getFileName();
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessCacheResponse(applicationName
-                                                                                      + "."
-                                                                                      + request1.getId(),
-                                                                                      storedUrl1,
-                                                                                      request1.getMetaInfo()
-                                                                                              .getChecksum(),
-                                                                                      request1.getMetaInfo()
-                                                                                              .getFileSize(),
-                                                                                      request1.getMetaInfo()
-                                                                                              .getHeight(),
-                                                                                      request1.getMetaInfo().getWidth(),
-                                                                                      finalArchiveParentUrl1,
-                                                                                      fileCachePath1);
+        StorageResponseEvent event1 = createCacheStorageResponseEvent(request1,
+                                                                      storedUrl1,
+                                                                      finalArchiveParentUrl1,
+                                                                      fileCachePath1);
 
         int j = 2;
         FileStorageRequestAggregation request2 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(j));
         String storedUrl2 = createUrl(j);
-        FileArchiveStatus archiveStatus2 = FileArchiveStatus.TO_STORE;
         String finalArchiveParentUrl2 = "http://storage.com/" + request2.getStorageSubDirectory() + "12345.zip";
         String fileCachePath2 = "/workspace/" + request2.getStorageSubDirectory() + request2.getMetaInfo()
                                                                                             .getFileName();
-        StorageResponseEvent event2 = StorageResponseEvent.createSuccessCacheResponse(applicationName
-                                                                                      + "."
-                                                                                      + request2.getId(),
-                                                                                      storedUrl2,
-                                                                                      request2.getMetaInfo()
-                                                                                              .getChecksum(),
-                                                                                      request2.getMetaInfo()
-                                                                                              .getFileSize(),
-                                                                                      request2.getMetaInfo()
-                                                                                              .getHeight(),
-                                                                                      request2.getMetaInfo().getWidth(),
-                                                                                      finalArchiveParentUrl2,
-                                                                                      fileCachePath2);
-
-        // Mock
-        List<FileReferenceResult> mockedReferences = mockReferenceResponses(Arrays.asList(request1, request2),
-                                                                            Arrays.asList(storedUrl1, storedUrl2),
-                                                                            Arrays.asList(archiveStatus1,
-                                                                                          archiveStatus2),
-                                                                            Arrays.asList(FileReferenceResultStatusEnum.CREATED,
-                                                                                          FileReferenceResultStatusEnum.CREATED));
+        StorageResponseEvent event2 = createCacheStorageResponseEvent(request2,
+                                                                      storedUrl2,
+                                                                      finalArchiveParentUrl2,
+                                                                      fileCachePath2);
 
         // When
         fileStorageRequestService.processFileStorageSuccessResponses(Arrays.asList(event1, event2));
 
         // Then
 
-        // Verify fileReferenceRequestService.reference() is called as expected
-        verifyReferenceCalls(Arrays.asList(new ReferenceCallRecord(request1, storedUrl1, archiveStatus1),
-                                           new ReferenceCallRecord(request2, storedUrl2, archiveStatus2)));
+        verifyHandleSuccessNeverCalled();
 
-        // Verify requestsGroupService.requestSuccess() is called as expected
-        verifyGroupsRequestSuccessCalls(Arrays.asList(request1, request2),
-                                        Arrays.asList(mockedReferences.get(0), mockedReferences.get(1)));
-
-        // Verify sessionNotifier.decrementRunningRequests() is called as expected
-        verifySessionNotifierDecrementRunningRequestsCalls(Arrays.asList(request1, request2));
-
-        // Verify sessionNotifier.incrementStoredFiles() is called as expected
-        verifySessionNotifierIncrementStoredFilesCalls(Arrays.asList(request1, request2));
-
-        // Verify notificationClient.notifyRoles() is called as expected
-        verifyNotificationClientNotifyRolesCalls(Arrays.asList(storedUrl1, storedUrl2));
-
-        // Verify that no archive event was sent
+        // Verify that two archive events were sent
         verifyPublisherPublishCalls(Arrays.asList(request1, request2),
                                     Arrays.asList(finalArchiveParentUrl1, finalArchiveParentUrl2),
                                     Arrays.asList(fileCachePath1, fileCachePath2));
@@ -324,27 +241,13 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(i));
         String storedUrl1 = createUrl(i);
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(applicationName
-                                                                                 + "."
-                                                                                 + request1.getId(),
-                                                                                 storedUrl1,
-                                                                                 request1.getMetaInfo().getChecksum(),
-                                                                                 request1.getMetaInfo().getFileSize(),
-                                                                                 request1.getMetaInfo().getHeight(),
-                                                                                 request1.getMetaInfo().getWidth());
+        StorageResponseEvent event1 = createStorageResponseEvent(request1, storedUrl1);
 
         int j = 2;
         FileStorageRequestAggregation request2 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(j));
         String storedUrl2 = createUrl(j);
-        StorageResponseEvent event2 = StorageResponseEvent.createSuccessResponse(applicationName
-                                                                                 + "."
-                                                                                 + request2.getId(),
-                                                                                 storedUrl2,
-                                                                                 request2.getMetaInfo().getChecksum(),
-                                                                                 request2.getMetaInfo().getFileSize(),
-                                                                                 request2.getMetaInfo().getHeight(),
-                                                                                 request2.getMetaInfo().getWidth());
+        StorageResponseEvent event2 = createStorageResponseEvent(request2, storedUrl2);
 
         // Mock
         List<FileReferenceResult> mockedReferences = mockReferenceResponses(Arrays.asList(request1, request2),
@@ -358,8 +261,8 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         // Then
 
         // Verify fileReferenceRequestService.reference() is called as expected
-        verifyReferenceCalls(Arrays.asList(new ReferenceCallRecord(request1, storedUrl1, null),
-                                           new ReferenceCallRecord(request2, storedUrl2, null)));
+        verifyReferenceCalls(Arrays.asList(new ReferenceCallRecord(request1, storedUrl1),
+                                           new ReferenceCallRecord(request2, storedUrl2)));
 
         // Verify requestsGroupService.requestSuccess() is called as expected
         verifyGroupsRequestSuccessCalls(Arrays.asList(request1, request2),
@@ -387,27 +290,13 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(i));
         String storedUrl1 = createUrl(i);
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(applicationName
-                                                                                 + "."
-                                                                                 + request1.getId(),
-                                                                                 storedUrl1,
-                                                                                 request1.getMetaInfo().getChecksum(),
-                                                                                 request1.getMetaInfo().getFileSize(),
-                                                                                 request1.getMetaInfo().getHeight(),
-                                                                                 request1.getMetaInfo().getWidth());
+        StorageResponseEvent event1 = createStorageResponseEvent(request1, storedUrl1);
 
         int j = 2;
         FileStorageRequestAggregation request2 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(j));
         String storedUrl2 = createUrl(j);
-        StorageResponseEvent event2 = StorageResponseEvent.createSuccessResponse(applicationName
-                                                                                 + "."
-                                                                                 + request2.getId(),
-                                                                                 storedUrl2,
-                                                                                 request2.getMetaInfo().getChecksum(),
-                                                                                 request2.getMetaInfo().getFileSize(),
-                                                                                 request2.getMetaInfo().getHeight(),
-                                                                                 request2.getMetaInfo().getWidth());
+        StorageResponseEvent event2 = createStorageResponseEvent(request2, storedUrl2);
 
         // Mock
         List<FileReferenceResult> mockedReferences = mockReferenceResponses(Arrays.asList(request1, request2),
@@ -421,8 +310,8 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         // Then
 
         // Verify fileReferenceRequestService.reference() is called as expected
-        verifyReferenceCalls(Arrays.asList(new ReferenceCallRecord(request1, storedUrl1, null),
-                                           new ReferenceCallRecord(request2, storedUrl2, null)));
+        verifyReferenceCalls(Arrays.asList(new ReferenceCallRecord(request1, storedUrl1),
+                                           new ReferenceCallRecord(request2, storedUrl2)));
 
         // Verify requestsGroupService.requestSuccess() is called as expected
         verifyGroupsRequestSuccessCalls(Arrays.asList(request1, request2),
@@ -450,43 +339,24 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(i));
         String storedUrl1 = createUrl(i);
-        FileArchiveStatus archiveStatus1 = FileArchiveStatus.TO_STORE;
         String finalArchiveParentUrl1 = "http://storage.com/" + request1.getStorageSubDirectory() + "12345.zip";
         String fileCachePath1 = "/workspace/" + request1.getStorageSubDirectory() + request1.getMetaInfo()
                                                                                             .getFileName();
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessCacheResponse(applicationName
-                                                                                      + "."
-                                                                                      + request1.getId(),
-                                                                                      storedUrl1,
-                                                                                      request1.getMetaInfo()
-                                                                                              .getChecksum(),
-                                                                                      request1.getMetaInfo()
-                                                                                              .getFileSize(),
-                                                                                      request1.getMetaInfo()
-                                                                                              .getHeight(),
-                                                                                      request1.getMetaInfo().getWidth(),
-                                                                                      finalArchiveParentUrl1,
-                                                                                      fileCachePath1);
+        StorageResponseEvent event1 = createCacheStorageResponseEvent(request1,
+                                                                      storedUrl1,
+                                                                      finalArchiveParentUrl1,
+                                                                      fileCachePath1);
 
         int j = 2;
         FileStorageRequestAggregation request2 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(j));
         String storedUrl2 = createUrl(j);
-        StorageResponseEvent event2 = StorageResponseEvent.createSuccessResponse(applicationName
-                                                                                 + "."
-                                                                                 + request2.getId(),
-                                                                                 storedUrl2,
-                                                                                 request2.getMetaInfo().getChecksum(),
-                                                                                 request2.getMetaInfo().getFileSize(),
-                                                                                 request2.getMetaInfo().getHeight(),
-                                                                                 request2.getMetaInfo().getWidth());
+        StorageResponseEvent event2 = createStorageResponseEvent(request2, storedUrl2);
 
         // Mock
-        List<FileReferenceResult> mockedReferences = mockReferenceResponses(Arrays.asList(request1, request2),
-                                                                            Arrays.asList(storedUrl1, storedUrl2),
-                                                                            Arrays.asList(archiveStatus1, null),
-                                                                            Arrays.asList(FileReferenceResultStatusEnum.CREATED,
-                                                                                          FileReferenceResultStatusEnum.CREATED));
+        List<FileReferenceResult> mockedReferences = mockReferenceResponses(List.of(request2),
+                                                                            List.of(storedUrl2),
+                                                                            List.of(FileReferenceResultStatusEnum.CREATED));
 
         // When
         fileStorageRequestService.processFileStorageSuccessResponses(Arrays.asList(event1, event2));
@@ -494,23 +364,21 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         // Then
 
         // Verify fileReferenceRequestService.reference() is called as expected
-        verifyReferenceCalls(Arrays.asList(new ReferenceCallRecord(request1, storedUrl1, null),
-                                           new ReferenceCallRecord(request2, storedUrl2, null)));
+        verifyReferenceCalls(Arrays.asList(new ReferenceCallRecord(request2, storedUrl2)));
 
         // Verify requestsGroupService.requestSuccess() is called as expected
-        verifyGroupsRequestSuccessCalls(Arrays.asList(request1, request2),
-                                        Arrays.asList(mockedReferences.get(0), mockedReferences.get(1)));
+        verifyGroupsRequestSuccessCalls(Arrays.asList(request2), Arrays.asList(mockedReferences.get(0)));
 
         // Verify sessionNotifier.decrementRunningRequests() is called as expected
-        verifySessionNotifierDecrementRunningRequestsCalls(Arrays.asList(request1, request2));
+        verifySessionNotifierDecrementRunningRequestsCalls(Arrays.asList(request2));
 
         // Verify sessionNotifier.incrementStoredFiles() is called as expected
-        verifySessionNotifierIncrementStoredFilesCalls(Arrays.asList(request1, request2));
+        verifySessionNotifierIncrementStoredFilesCalls(Arrays.asList(request2));
 
         // Verify notificationClient.notifyRoles() is called as expected
-        verifyNotificationClientNotifyRolesCall(storedUrl1);
+        verifyNotifyRolesNeverCalled();
 
-        // Verify that no archive event was sent
+        // Verify that one archive event was sent
         verifyPublisherPublishCall(request1, finalArchiveParentUrl1, fileCachePath1);
     }
 
@@ -590,14 +458,7 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileStorageRequestAggregation request1 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(i));
         String storedUrl = createUrl(i);
-        StorageResponseEvent event1 = StorageResponseEvent.createSuccessResponse(applicationName
-                                                                                 + "."
-                                                                                 + request1.getId(),
-                                                                                 storedUrl,
-                                                                                 request1.getMetaInfo().getChecksum(),
-                                                                                 request1.getMetaInfo().getFileSize(),
-                                                                                 request1.getMetaInfo().getHeight(),
-                                                                                 request1.getMetaInfo().getWidth());
+        StorageResponseEvent event1 = createStorageResponseEvent(request1, storedUrl);
 
         FileStorageRequestAggregation request2 = fileStorageRequestAggregationRepository.save(
             createFileStorageRequestAggregation(2));
@@ -620,7 +481,7 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         // Then
 
         // Verify fileReferenceRequestService.reference() is called as expected
-        verifyReferenceCall(new ReferenceCallRecord(request1, storedUrl, null));
+        verifyReferenceCall(new ReferenceCallRecord(request1, storedUrl));
 
         // Verify fileReferenceEventPublisher.storeError() is called as expected
         verifyFileReferenceEventPublisherCall(request2, errorCause);
@@ -643,6 +504,29 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         // Verify that no archive event was sent
         Mockito.verify(publisher, Mockito.never()).publish((List<? extends ISubscribable>) Mockito.any());
 
+    }
+
+    private StorageResponseEvent createStorageResponseEvent(FileStorageRequestAggregation request, String storedUrl) {
+        return StorageResponseEvent.createSuccessResponse(applicationName + "." + request.getId(),
+                                                          storedUrl,
+                                                          request.getMetaInfo().getChecksum(),
+                                                          FILE_SIZE,
+                                                          null,
+                                                          null);
+    }
+
+    private StorageResponseEvent createCacheStorageResponseEvent(FileStorageRequestAggregation request,
+                                                                 String storedUrl,
+                                                                 String finalArchiveParentUrl,
+                                                                 String fileCachePath) {
+        return StorageResponseEvent.createSuccessCacheResponse(applicationName + "." + request.getId(),
+                                                               storedUrl,
+                                                               request.getMetaInfo().getChecksum(),
+                                                               FILE_SIZE,
+                                                               null,
+                                                               null,
+                                                               finalArchiveParentUrl,
+                                                               fileCachePath);
     }
 
     private void verifyFileReferenceEventPublisherCall(FileStorageRequestAggregation request, String errorCause) {
@@ -717,7 +601,7 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
             Assertions.assertEquals(request.getStorageSubDirectory(), capturedEvent.getStorageSubDirectory());
             Assertions.assertEquals(finalArchiveParentUrl, capturedEvent.getFinalArchiveParentUrl());
             Assertions.assertEquals(fileCachePath, capturedEvent.getFileCachePath());
-            Assertions.assertEquals(request.getMetaInfo().getFileSize(), capturedEvent.getFileSize());
+            Assertions.assertEquals(FILE_SIZE, capturedEvent.getFileSize());
         }
     }
 
@@ -727,48 +611,6 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         verifyPublisherPublishCalls(Arrays.asList(request),
                                     Arrays.asList(finalArchiveParentUrl),
                                     Arrays.asList(fileCachePath));
-    }
-
-    private void verifyNotificationClientNotifyRolesCalls(List<String> storedUrls) {
-        // Captors for the arguments
-        ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> titleCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<NotificationLevel> levelCaptor = ArgumentCaptor.forClass(NotificationLevel.class);
-        ArgumentCaptor<MimeType> mimeTypeCaptor = ArgumentCaptor.forClass(MimeType.class);
-        ArgumentCaptor<Set<String>> rolesArgumentCaptor = ArgumentCaptor.forClass(Set.class);
-
-        // Verify the number of calls and capture arguments
-        Mockito.verify(notificationClient, Mockito.times(1))
-               .notifyRoles(messageCaptor.capture(),
-                            titleCaptor.capture(),
-                            levelCaptor.capture(),
-                            mimeTypeCaptor.capture(),
-                            rolesArgumentCaptor.capture());
-
-        // Get all captured values
-        String capturedMessage = messageCaptor.getValue();
-        String capturedTitle = titleCaptor.getValue();
-        NotificationLevel capturedLevel = levelCaptor.getValue();
-        MimeType capturedMimeType = mimeTypeCaptor.getValue();
-        Set<String> capturedRoles = rolesArgumentCaptor.getValue();
-        // Verify message contains the stored URL
-        for (String storedUrl : storedUrls) {
-            Assertions.assertTrue(capturedMessage.contains(storedUrl), "Message does not contain the stored URL.");
-        }
-        // Verify other fields
-        Assertions.assertEquals("Storage not completed", capturedTitle);
-        Assertions.assertEquals(NotificationLevel.ERROR, capturedLevel);
-        Assertions.assertEquals(MimeTypeUtils.TEXT_HTML, capturedMimeType);
-
-        // Verify roles
-        Assertions.assertEquals(1, capturedRoles.size(), "Roles size mismatch.");
-        Assertions.assertEquals(DefaultRole.PROJECT_ADMIN.toString(),
-                                capturedRoles.iterator().next(),
-                                "Role mismatch.");
-    }
-
-    private void verifyNotificationClientNotifyRolesCall(String storedUrl) {
-        verifyNotificationClientNotifyRolesCalls(Arrays.asList(storedUrl));
     }
 
     private void verifySessionNotifierIncrementStoredFilesCall(FileStorageRequestAggregation request) {
@@ -1014,12 +856,10 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         // Verify each invocation
         for (int i = 0; i < callRecords.size(); i++) {
             FileStorageRequestAggregation request = callRecords.get(i).request();
-
             Assertions.assertEquals(request.getOwner(), capturedOwners.get(i));
             Assertions.assertEquals(request.getMetaInfo(), capturedMetaInfos.get(i));
-            Assertions.assertEquals(new FileLocation(request.getStorage(),
-                                                     callRecords.get(i).storedUrl(),
-                                                     callRecords.get(i).archiveStatus()), capturedLocations.get(i));
+            Assertions.assertEquals(new FileLocation(request.getStorage(), callRecords.get(i).storedUrl(), null),
+                                    capturedLocations.get(i));
 
             Collection<String> groupIds = capturedGroupIds.get(i);
             Assertions.assertEquals(1, groupIds.size());
@@ -1034,6 +874,63 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         verifyReferenceCalls(Arrays.asList(referenceCallRecord));
     }
 
+    private void verifyReferenceNeverCalled() throws ModuleException {
+        Mockito.verify(fileReferenceRequestService, Mockito.never())
+               .reference(Mockito.anyString(),
+                          Mockito.any(FileReferenceMetaInfo.class),
+                          Mockito.any(FileLocation.class),
+                          Mockito.anyCollection(),
+                          Mockito.anyString(),
+                          Mockito.anyString());
+    }
+
+    private void verifyNotifyRolesNeverCalled() {
+        Mockito.verify(notificationClient, Mockito.never())
+               .notifyRoles(Mockito.anyString(),
+                            Mockito.anyString(),
+                            Mockito.any(NotificationLevel.class),
+                            Mockito.any(MimeType.class),
+                            Mockito.anySet());
+    }
+
+    private void verifyIncrementStoredFilesNeverCalled() {
+        Mockito.verify(sessionNotifier, Mockito.never())
+               .incrementStoredFiles(Mockito.anyString(), Mockito.anyString(), Mockito.anyInt());
+    }
+
+    private void verifyDecrementRunningRequestsNeverCalled() {
+        Mockito.verify(sessionNotifier, Mockito.never())
+               .decrementRunningRequests(Mockito.anyString(), Mockito.anyString());
+    }
+
+    private void verifyRequestSuccessNeverCalled() {
+        Mockito.verify(requestsGroupService, Mockito.never())
+               .requestSuccess(Mockito.anyString(),
+                               Mockito.any(FileRequestType.class),
+                               Mockito.anyString(),
+                               Mockito.anyString(),
+                               Mockito.anyString(),
+                               Mockito.anyCollection(),
+                               Mockito.any(FileReference.class));
+    }
+
+    private void verifyHandleSuccessNeverCalled() throws ModuleException {
+        // Verify fileReferenceRequestService.reference() is never called
+        verifyReferenceNeverCalled();
+
+        // Verify requestsGroupService.requestSuccess() is never called
+        verifyRequestSuccessNeverCalled();
+
+        // Verify sessionNotifier.decrementRunningRequests() is never called
+        verifyDecrementRunningRequestsNeverCalled();
+
+        // Verify sessionNotifier.incrementStoredFiles() is never called
+        verifyIncrementStoredFilesNeverCalled();
+
+        // Verify notificationClient.notifyRoles() is never called
+        verifyNotifyRolesNeverCalled();
+    }
+
     private static String createUrl(int i) {
         return "http://storage.com/sub/dir/file" + i + ".txt";
     }
@@ -1042,7 +939,7 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(RandomChecksumUtils.generateRandomChecksum(),
                                                                    "MD5",
                                                                    "file" + number + ".txt",
-                                                                   1024L,
+                                                                   0L,
                                                                    MimeType.valueOf("text/plain"));
 
         return new FileStorageRequestAggregation("testOwner",
@@ -1060,47 +957,9 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
                                                       String storedUrl,
                                                       FileReferenceResultStatusEnum resultStatus)
         throws ModuleException {
-        return mockReferenceResponses(Arrays.asList(request),
-                                      Arrays.asList(storedUrl),
-                                      Arrays.asList(resultStatus)).get(0);
-    }
-
-    private FileReferenceResult mockReferenceResponse(FileStorageRequestAggregation request,
-                                                      String storedUrl,
-                                                      FileArchiveStatus archiveStatus,
-                                                      FileReferenceResultStatusEnum resultStatus)
-        throws ModuleException {
-        return mockReferenceResponses(Arrays.asList(request),
-                                      Arrays.asList(storedUrl),
-                                      Arrays.asList(resultStatus)).get(0);
-    }
-
-    private List<FileReferenceResult> mockReferenceResponses(List<FileStorageRequestAggregation> requests,
-                                                             List<String> storedUrls,
-                                                             List<FileArchiveStatus> archiveStatuses,
-                                                             List<FileReferenceResultStatusEnum> resultStatuses)
-        throws ModuleException {
-
-        List<FileReferenceResult> mockedResults = new ArrayList<>();
-
-        // Create mocked results
-        for (int i = 0; i < requests.size(); i++) {
-            FileStorageRequestAggregation request = requests.get(i);
-
-            mockedResults.add(FileReferenceResult.build(new FileReference(request.getOwner(),
-                                                                          request.getMetaInfo(),
-                                                                          new FileLocation(request.getStorage(),
-                                                                                           storedUrls.get(i),
-                                                                                           archiveStatuses.get(i))),
-                                                        resultStatuses.get(i)));
-        }
-
-        // Iterate of the mocked result when answering mocked method call
-        Mockito.doAnswer(AdditionalAnswers.returnsElementsOf(mockedResults))
-               .when(fileReferenceRequestService)
-               .reference(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
-
-        return mockedResults;
+        return mockReferenceResponses(Collections.singletonList(request),
+                                      Collections.singletonList(storedUrl),
+                                      Collections.singletonList(resultStatus)).get(0);
     }
 
     private List<FileReferenceResult> mockReferenceResponses(List<FileStorageRequestAggregation> requests,
@@ -1113,7 +972,7 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
         // Create mocked results
         for (int i = 0; i < requests.size(); i++) {
             FileStorageRequestAggregation request = requests.get(i);
-
+            request.getMetaInfo().setFileSize(FILE_SIZE);
             mockedResults.add(FileReferenceResult.build(new FileReference(request.getOwner(),
                                                                           request.getMetaInfo(),
                                                                           new FileLocation(request.getStorage(),
@@ -1131,8 +990,7 @@ public class StorageResponseEventHandlerIT extends AbstractFileCatalogIT {
     }
 
     private static record ReferenceCallRecord(FileStorageRequestAggregation request,
-                                              String storedUrl,
-                                              FileArchiveStatus archiveStatus) {
+                                              String storedUrl) {
 
     }
 }

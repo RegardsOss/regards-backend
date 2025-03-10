@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.modules.plugins.service.PluginAndPluginId;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -72,6 +73,12 @@ public class InMemoryPluginService implements IPluginService {
     }
 
     @Override
+    public <T> PluginAndPluginId<T> getPluginAndId(String businessId, IPluginParam... dynamicPluginParameters)
+        throws ModuleException, NotAvailablePluginConfigurationException {
+        throw new NotImplementedException("tbd");
+    }
+
+    @Override
     public <T> T getPlugin(PluginConfiguration plgConf, IPluginParam... dynamicPluginParameters)
         throws ModuleException, NotAvailablePluginConfigurationException {
         throw new NotImplementedException("tbd");
@@ -105,8 +112,8 @@ public class InMemoryPluginService implements IPluginService {
     }
 
     @Override
-    public void deletePluginConfiguration(String businessId) throws EntityNotFoundException,
-        EntityOperationForbiddenException {
+    public void deletePluginConfiguration(String businessId)
+        throws EntityNotFoundException, EntityOperationForbiddenException {
         savedPlugins.removeIf(p -> p.getBusinessId().equals(businessId));
     }
 

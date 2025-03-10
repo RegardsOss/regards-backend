@@ -33,6 +33,8 @@ public final class FileStorageRequestReadyToProcessEventFactory {
 
     private static final String JOB_REQUEST_OWNER = "FilePackager";
 
+    public static final String FILE_PROTOCOL = "file:///";
+
     private FileStorageRequestReadyToProcessEventFactory() {
     }
 
@@ -48,7 +50,7 @@ public final class FileStorageRequestReadyToProcessEventFactory {
         return new FileStorageRequestReadyToProcessEvent(requestId,
                                                          checksum,
                                                          "MD5",
-                                                         archivePath.toString(),
+                                                         FILE_PROTOCOL + archivePath.toString(),
                                                          storage,
                                                          storageSubdirectory,
                                                          JOB_REQUEST_OWNER,

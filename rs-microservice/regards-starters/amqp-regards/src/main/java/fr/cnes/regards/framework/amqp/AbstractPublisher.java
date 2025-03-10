@@ -157,12 +157,22 @@ public abstract class AbstractPublisher implements IPublisherContract {
     @Transactional
     public void publish(ISubscribable event, String routingKey) {
         String tenant = resolveTenant();
-        if (tenant != null) {
-            publishMessageByTenant(tenant, event.getClass().getName(), routingKey, event, DEFAULT_PRIORITY, null);
-        } else {
-            String errorMessage = "Unable to publish events because there is no defined tenant.";
-            LOGGER.error(errorMessage);
-            throw new IllegalArgumentException(errorMessage);
+        try {
+            if (tenant != null) {
+                rabbitVirtualHostAdmin.bind(resolveVirtualHost(tenant));
+                publishMessageByTenant(tenant,
+                                       amqpAdmin.getBroadcastExchangeName(event.getClass().getName(), null),
+                                       routingKey,
+                                       event,
+                                       DEFAULT_PRIORITY,
+                                       null);
+            } else {
+                String errorMessage = "Unable to publish events because there is no defined tenant.";
+                LOGGER.error(errorMessage);
+                throw new IllegalArgumentException(errorMessage);
+            }
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
         }
     }
 

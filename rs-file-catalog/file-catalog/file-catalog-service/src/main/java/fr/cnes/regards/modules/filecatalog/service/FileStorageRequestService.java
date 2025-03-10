@@ -58,6 +58,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeTypeUtils;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -100,6 +101,9 @@ public class FileStorageRequestService {
     @Value("${regards.file.catalog.requests.retry.page:1000}")
     private int pageRetrySize;
 
+    @Value("${regards.file.catalog.storage.requests.days.before.expiration:5}")
+    private Integer nbDaysBeforeExpiration;
+
     @Value("${spring.application.name}")
     private String applicationName;
 
@@ -125,20 +129,33 @@ public class FileStorageRequestService {
         this.publisher = publisher;
     }
 
-    public void createStorageRequests(List<FilesStorageRequestEvent> messages) {
+    @MultitenantTransactional
+    public void createStorageRequests(List<FilesStorageRequestEvent> messages) throws ModuleException {
         for (FilesStorageRequestEvent message : messages) {
             for (FileStorageRequestDto file : message.getFiles()) {
                 createNewFileStorageRequest(file.getOwner(),
                                             FileReferenceMetaInfo.buildFromDto(file.getMetaInfo()),
                                             file.getOriginUrl(),
                                             file.getStorage(),
-                                            Optional.of(file.getSubDirectory()),
+                                            Optional.ofNullable(file.getSubDirectory()),
                                             message.getGroupId(),
                                             Optional.empty(),
                                             Optional.of(StorageRequestStatus.GRANTED),
                                             file.getSessionOwner(),
                                             file.getSession());
             }
+            requestsGroupService.granted(message.getGroupId(),
+                                         FileRequestType.STORAGE,
+                                         message.getFiles().size(),
+                                         getRequestExpirationDate());
+        }
+    }
+
+    public OffsetDateTime getRequestExpirationDate() {
+        if ((nbDaysBeforeExpiration != null) && (nbDaysBeforeExpiration > 0)) {
+            return OffsetDateTime.now().plusDays(nbDaysBeforeExpiration);
+        } else {
+            return null;
         }
     }
 
@@ -155,7 +172,6 @@ public class FileStorageRequestService {
      * @param sessionOwner        session owner to which belongs created storage request
      * @param session             session to which belongs created storage request
      */
-    @MultitenantTransactional
     public FileStorageRequestAggregation createNewFileStorageRequest(String owner,
                                                                      FileReferenceMetaInfo fileMetaInfo,
                                                                      String originUrl,
@@ -383,7 +399,7 @@ public class FileStorageRequestService {
                                                          request.getStorageSubDirectory(),
                                                          request.getOwner(),
                                                          request.getSession(),
-                                                         false,
+                                                         true,
                                                          metaData,
                                                          request.isReference());
     }
@@ -414,7 +430,7 @@ public class FileStorageRequestService {
                 FileReferenceMetaInfo fileMeta = new FileReferenceMetaInfo(reqMetaInfos.getChecksum(),
                                                                            reqMetaInfos.getAlgorithm(),
                                                                            reqMetaInfos.getFileName(),
-                                                                           request.getMetaInfo().getFileSize(),
+                                                                           result.fileSizeInBytes,
                                                                            reqMetaInfos.getMimeType());
                 fileMeta.setHeight(reqMetaInfos.getHeight());
                 fileMeta.setWidth(reqMetaInfos.getWidth());
@@ -569,6 +585,7 @@ public class FileStorageRequestService {
 
         List<FileStorageResult> successesStorage = new ArrayList<>();
         List<FileArchiveRequestEvent> archiveEventsToSend = new ArrayList<>();
+        List<FileStorageRequestAggregation> requestsToUpdate = new ArrayList<>();
 
         for (Long requestId : responseIdToEventMap.keySet()) {
             FileStorageRequestAggregation request = requestIdToRequestMap.get(requestId);
@@ -579,13 +596,8 @@ public class FileStorageRequestService {
                     requestId,
                     event.getChecksum());
             } else {
-
-                successesStorage.add(new FileStorageResult(request,
-                                                           event.getUrl(),
-                                                           event.isStoredInCache() ? FileArchiveStatus.TO_STORE : null,
-                                                           event.isStoredInCache()));
-                // If the file is only stored locally, an event is sent to the file packager
                 if (event.isStoredInCache()) {
+                    // If the file is only stored locally, an event is sent to the file packager
                     archiveEventsToSend.add(new FileArchiveRequestEvent(requestId,
                                                                         request.getStorage(),
                                                                         request.getMetaInfo().getChecksum(),
@@ -593,12 +605,39 @@ public class FileStorageRequestService {
                                                                         request.getStorageSubDirectory(),
                                                                         event.getFinalArchiveParentUrl(),
                                                                         event.getFileCachePath(),
-                                                                        request.getMetaInfo().getFileSize()));
+                                                                        event.getSize()));
+                    // Update the file size using the real size computed by the worker for later uses.
+                    request.getMetaInfo().setFileSize(event.getSize());
+                    request.setStatus(StorageRequestStatus.PENDING_ARCHIVE);
+                    requestsToUpdate.add(request);
+                } else {
+                    // If the file is fully stored, handle success and delete the request
+
+                    // Update the request using image metadata and size computed by the storage worker if needed
+                    request.getMetaInfo().setFileSize(event.getSize());
+                    if (request.getMetaInfo().getHeight() == null || request.getMetaInfo().getWidth() == null) {
+                        // If the file is not an image, the height and width are null anyway so we don't need to check
+                        // the file mimetype
+                        request.getMetaInfo().setHeight(event.getHeight());
+                        request.getMetaInfo().setWidth(event.getWidth());
+                    }
+                    successesStorage.add(new FileStorageResult(request,
+                                                               event.getUrl(),
+                                                               event.getSize(),
+                                                               event.isStoredInCache() ?
+                                                                   FileArchiveStatus.TO_STORE :
+                                                                   null,
+                                                               event.isStoredInCache()));
                 }
             }
         }
 
-        handleSuccess(successesStorage);
+        if (!successesStorage.isEmpty()) {
+            handleSuccess(successesStorage);
+        }
+        if (!requestsToUpdate.isEmpty()) {
+            fileStorageRequestAggregationRepository.saveAll(requestsToUpdate);
+        }
         if (!archiveEventsToSend.isEmpty()) {
             publisher.publish(archiveEventsToSend);
         }
@@ -651,6 +690,9 @@ public class FileStorageRequestService {
         List<FileStorageResult> resultList = messages.stream()
                                                      .map(message -> new FileStorageResult(requestMap.get(message.getRequestId()),
                                                                                            message.getFileUrl(),
+                                                                                           requestMap.get(message.getRequestId())
+                                                                                                     .getMetaInfo()
+                                                                                                     .getFileSize(),
                                                                                            FileArchiveStatus.TO_STORE,
                                                                                            true))
                                                      .toList();
@@ -660,6 +702,7 @@ public class FileStorageRequestService {
 
     private record FileStorageResult(FileStorageRequestAggregation request,
                                      String fileUrl,
+                                     Long fileSizeInBytes,
                                      FileArchiveStatus storageStatus,
                                      boolean notifyActionRemainingToAdmin) {
 

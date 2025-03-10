@@ -62,7 +62,8 @@ public class FilePackagerController {
     @ResourceAccess(description = "Endpoint to schedule storage request of small file packages that are complete (or too old)",
                     role = DefaultRole.ADMIN)
     public ResponseEntity<Void> scheduleStoreCompletePackage() {
-        completePackageScheduler.scheduleCompletePackage();
+        // Schedule the job asynchronously so the request can return ok immediately
+        new Thread(completePackageScheduler::scheduleCompletePackage).start();
         return ResponseEntity.ok().build();
     }
 

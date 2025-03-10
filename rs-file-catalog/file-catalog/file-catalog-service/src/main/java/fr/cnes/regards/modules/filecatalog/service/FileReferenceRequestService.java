@@ -287,7 +287,7 @@ public class FileReferenceRequestService {
                                          String session) throws ModuleException {
         Optional<FileReference> oFileRef = fileRefService.search(location.getStorage(), metaInfo.getChecksum());
         Optional<FileDeletionRequest> oFileDelReq = Optional.empty();
-        // TODO later, update using neo storage way of handling deletion requests
+        // TODO FIXME Lot 4, update using neo storage way of handling deletion requests
         //        if (oFileRef.isPresent()) {
         //            oFileDelReq = fileDeletionRequestService.search(oFileRef.get());
         //        }
