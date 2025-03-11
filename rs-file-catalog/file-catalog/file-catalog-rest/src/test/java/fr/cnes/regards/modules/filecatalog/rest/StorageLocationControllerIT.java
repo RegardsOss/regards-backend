@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.modules.plugins.dto.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.file.packager.client.IFilePackagerClient;
 import fr.cnes.regards.modules.fileaccess.client.IStorageLocationConfigurationClient;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.StorageLocationConfigurationDto;
@@ -88,6 +89,9 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     @MockBean
     private IStorageLocationRepository storageLocationRepository;
 
+    @MockBean
+    private IFilePackagerClient filePackagerClient;
+    
     private void clear() throws IOException {
         // Delete existing jobs if any
         jobInfoRepository.deleteAll();
