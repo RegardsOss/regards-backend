@@ -16,7 +16,7 @@ public class DatasetEvent extends AbstractEntityEvent {
         super();
     }
 
-    public DatasetEvent(UniformResourceName... ipIds) {
-        super(ipIds);
+    public DatasetEvent(String userToNotify, String roleToNotify, UniformResourceName... ipIds) {
+        super(userToNotify, roleToNotify, ipIds);
     }
 }

@@ -58,9 +58,6 @@ public class GeometryIT implements InitializingBean {
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
-    private ICrawlerAndIngesterService crawlerService;
-
-    @Autowired
     private Gson gson;
 
     @Autowired
@@ -84,7 +81,6 @@ public class GeometryIT implements InitializingBean {
             esRepos.deleteIndex(TENANT);
         }
         esRepos.createIndex(TENANT);
-        crawlerService.setConsumeOnlyMode(true);
     }
 
     @Before

@@ -23,6 +23,7 @@ package fr.cnes.regards.modules.crawler.service.job;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.crawler.service.service.CatalogResetService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

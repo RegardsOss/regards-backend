@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.dam.service.entities;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
@@ -171,6 +172,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
      */
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
+    private final IAuthenticationResolver authenticationResolver;
+
     /**
      * The plugin's class name of type {@link IStorageService} used to store AIP entities
      */
@@ -199,6 +202,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                                     EntityManager em,
                                     IPublisher publisher,
                                     IRuntimeTenantResolver runtimeTenantResolver,
+                                    IAuthenticationResolver authenticationResolver,
                                     IAbstractEntityRequestRepository abstractEntityRequestRepo) {
         super(modelFinder);
         this.entityRepository = entityRepository;
@@ -212,6 +216,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         this.em = em;
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.authenticationResolver = authenticationResolver;
         this.abstractEntityRequestRepo = abstractEntityRequestRepo;
     }
 
@@ -443,13 +448,15 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                                                    .filter(ipId -> ipId.getEntityType() == EntityType.DATASET)
                                                    .toArray(UniformResourceName[]::new);
         if (datasetsIpIds.length > 0) {
-            publisher.publish(new DatasetEvent(datasetsIpIds));
+            publisher.publish(new DatasetEvent(authenticationResolver.getUser(), authenticationResolver.getRole(),
+                                               datasetsIpIds));
         }
         UniformResourceName[] notDatasetsIpIds = ipIds.stream()
                                                       .filter(ipId -> ipId.getEntityType() != EntityType.DATASET)
                                                       .toArray(UniformResourceName[]::new);
         if (notDatasetsIpIds.length > 0) {
-            publisher.publish(new NotDatasetEntityEvent(notDatasetsIpIds));
+            publisher.publish(new NotDatasetEntityEvent(authenticationResolver.getUser(),
+                                                        authenticationResolver.getRole(), notDatasetsIpIds));
         }
         publisher.publish(new BroadcastEntityEvent(eventType, ipIds.toArray(new UniformResourceName[0])));
     }

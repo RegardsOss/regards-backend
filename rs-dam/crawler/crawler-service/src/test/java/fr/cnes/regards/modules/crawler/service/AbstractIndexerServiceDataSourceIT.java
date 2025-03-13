@@ -30,14 +30,14 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.plugins.TestDataSourcePlugin;
+import fr.cnes.regards.modules.crawler.service.service.IDatasourceIngesterService;
+import fr.cnes.regards.modules.crawler.service.service.IngesterService;
 import fr.cnes.regards.modules.crawler.test.CrawlerConfiguration;
 import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourcePluginConstants;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.event.DatasetEvent;
-import fr.cnes.regards.modules.dam.domain.entities.event.NotDatasetEntityEvent;
 import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
@@ -158,7 +158,7 @@ public abstract class AbstractIndexerServiceDataSourceIT {
     protected IngesterService ingesterService;
 
     @Autowired
-    protected ICrawlerAndIngesterService crawlerService;
+    protected IDatasourceIngesterService datasourceIngesterService;
 
     @Autowired
     protected IAbstractEntityRepository<AbstractEntity<?>> entityRepos;
@@ -213,11 +213,7 @@ public abstract class AbstractIndexerServiceDataSourceIT {
         }
         esRepos.createIndex(tenant);
 
-        crawlerService.setConsumeOnlyMode(false);
         ingesterService.setConsumeOnlyMode(true);
-
-        publisher.purgeQueue(DatasetEvent.class);
-        publisher.purgeQueue(NotDatasetEntityEvent.class);
 
         datasetRepos.deleteAll();
         entityRepos.deleteAll();

@@ -254,13 +254,11 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
      */
     protected void computePropertyMap(String tenant) {
         List<AttributeModel> attributeModels = null;
-        try {
-            runtimeTenantResolver.forceTenant(tenant);
-            // Retrieve the list of attribute models
-            attributeModels = attributeHelper.getAllAttributes();
-        } finally {
-            runtimeTenantResolver.clearTenant();
-        }
+
+        runtimeTenantResolver.forceTenant(tenant);
+        // Retrieve the list of attribute models
+        attributeModels = attributeHelper.getAllAttributes();
+
         // Build or rebuild the maps
         Map<String, AttributeModel> tenantMap = new HashMap<>();
         Multimap<PropertyType, AttributeModel> tenantTypeMap = ArrayListMultimap.create();

@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.crawler.service;
+package fr.cnes.regards.modules.crawler.service.service;
 
 import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;

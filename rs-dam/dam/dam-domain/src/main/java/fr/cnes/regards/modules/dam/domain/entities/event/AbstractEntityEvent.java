@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.dam.domain.entities.event;
 
-import fr.cnes.regards.framework.amqp.event.IPollable;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
@@ -28,24 +28,38 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
  * @author oroussel
  * @author Sylvain Vissiere-Guerinet
  */
-public abstract class AbstractEntityEvent implements IPollable {
+public abstract class AbstractEntityEvent implements ISubscribable {
+
+    private String roleToNotify;
+
+    private String userToNotify;
 
     /**
      * Business id identifying an entity
      */
     private UniformResourceName[] ipIds;
 
-    private AbstractEntityEvent() {
+    protected AbstractEntityEvent() {
         super();
     }
 
-    public AbstractEntityEvent(UniformResourceName... ipIds) {
+    public AbstractEntityEvent(String userToNotify, String roleToNotify, UniformResourceName... ipIds) {
         this();
         this.ipIds = ipIds;
+        this.userToNotify = userToNotify;
+        this.roleToNotify = roleToNotify;
     }
 
     public UniformResourceName[] getIpIds() {
         return ipIds;
+    }
+
+    public String getRoleToNotify() {
+        return roleToNotify;
+    }
+
+    public String getUserToNotify() {
+        return userToNotify;
     }
 
     @SuppressWarnings("unused")

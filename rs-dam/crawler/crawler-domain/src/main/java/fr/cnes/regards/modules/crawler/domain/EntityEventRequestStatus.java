@@ -16,22 +16,31 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.crawler.service;
-
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.EnableScheduling;
+package fr.cnes.regards.modules.crawler.domain;
 
 /**
- * Scheduling configuration
+ * Status
  *
- * @author Marc Sordi
- */
-@Configuration
-@EnableScheduling
-@EnableAsync
-@Profile("!noscheduler")
-public class CrawlerServiceSchedulingConfiguration {
+ * @author Thibaud Michaudel
+ **/
+public enum EntityEventRequestStatus {
+    /**
+     * The request is not being processed yet
+     */
+    TO_DO,
 
+    /**
+     * A job that will process this request is scheduled
+     */
+    SCHEDULED,
+
+    /**
+     * A job processing this request is running
+     */
+    RUNNING,
+
+    /**
+     * The job processing for this request failed after retry
+     */
+    FAILED
 }

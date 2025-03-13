@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.dam.service.entities;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -103,6 +104,7 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
                           EntityManager em,
                           IPublisher publisher,
                           IRuntimeTenantResolver runtimeTenantResolver,
+                          IAuthenticationResolver authenticationResolver,
                           IOpenSearchService openSearchService,
                           IAbstractEntityRequestRepository abstractEntityRequestRepo,
                           IDamSettingsService damSettingsService) {
@@ -118,6 +120,7 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
               em,
               publisher,
               runtimeTenantResolver,
+              authenticationResolver,
               abstractEntityRequestRepo);
         this.openSearchService = openSearchService;
         this.pluginService = pluginService;

@@ -44,7 +44,7 @@ public class IndexerServiceDataSourceDeleteIT extends AbstractIndexerServiceData
         dsIngestionRepos.save(dsi);
 
         // Ingest datas
-        crawlerService.ingest(dsi.getId()).orElseThrow();
+        datasourceIngesterService.ingest(dsi.getId()).orElseThrow();
 
         // Check ingested datas
         Long datasourceId = dataSourcePluginConf.getId();

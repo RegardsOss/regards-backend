@@ -50,7 +50,7 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.modules.crawler.plugins.TestDataAccessRightPlugin;
 import fr.cnes.regards.modules.crawler.plugins.TestDataSourcePlugin;
-import fr.cnes.regards.modules.crawler.service.IEntityIndexerService;
+import fr.cnes.regards.modules.crawler.service.service.IEntityIndexerService;
 import fr.cnes.regards.modules.crawler.service.session.SessionNotifierPropertyEnum;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessGroupRepository;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;

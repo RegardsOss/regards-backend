@@ -16,26 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.modules.crawler.service.service;
 
-package fr.cnes.regards.modules.crawler.service.job;
+import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import java.time.OffsetDateTime;
 
 /**
- * Interface to reset the catalog
+ * Ingestion parameters
  *
- * @author Iliana Ghazali
+ * @author oroussel
  */
+record IngestionParameters(OffsetDateTime lastUpdateDate,
+                          String tenant,
+                          IDataSourcePlugin dsPlugin,
+                          Long datasourceId,
+                          OffsetDateTime ingestionStart) {
 
-public interface ICatalogResetService {
-
-    /**
-     * Schedule the reset of all the catalog in the crawling service
-     */
-    void scheduleCatalogReset();
-
-    /**
-     * Delete existing indexes, recreate entities and clear all datasource ingestions
-     */
-    void resetCatalog() throws ModuleException;
 }
+

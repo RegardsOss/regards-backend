@@ -18,7 +18,7 @@
  */
 
 
-package fr.cnes.regards.modules.crawler.service.job;
+package fr.cnes.regards.modules.crawler.service.service;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -27,8 +27,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
-import fr.cnes.regards.modules.crawler.service.IDatasourceIngesterService;
-import fr.cnes.regards.modules.crawler.service.IEntityIndexerService;
+import fr.cnes.regards.modules.crawler.service.job.CatalogResetJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

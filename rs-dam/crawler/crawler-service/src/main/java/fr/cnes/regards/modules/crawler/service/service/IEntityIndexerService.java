@@ -16,15 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.crawler.service;
+package fr.cnes.regards.modules.crawler.service.service;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
+import fr.cnes.regards.modules.crawler.domain.EntityEventRequest;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -81,10 +84,10 @@ public interface IEntityIndexerService {
     /**
      * Transactional method updating a set of datasets
      *
-     * @param minLastUpdateCriteria Take into account only more recent minLastUpdateCriteria than provided
-     * @param updateDate                update date saved inside data objects
-     * @param forceDataObjectsUpdate    true to force all associated data objects update
-     * @param dsiId                     datasetIngestion id   @throws ModuleException
+     * @param minLastUpdateCriteria  Take into account only more recent minLastUpdateCriteria than provided
+     * @param updateDate             update date saved inside data objects
+     * @param forceDataObjectsUpdate true to force all associated data objects update
+     * @param dsiId                  datasetIngestion id   @throws ModuleException
      */
     void updateDatasets(String tenant,
                         Collection<Dataset> datasets,
@@ -173,4 +176,34 @@ public interface IEntityIndexerService {
      * Delete index and recreate entities
      */
     void deleteIndexNRecreateEntities(String tenant) throws ModuleException;
+
+    /**
+     * Schedule {@link fr.cnes.regards.modules.crawler.service.job.UpdateEntityIntoEsJob}s for each {@link EntityEventRequest}
+     */
+    Page<EntityEventRequest> scheduleUpdateEntityIntoEsJob(Pageable page);
+
+    /**
+     * Save {@link EntityEventRequest} to handle later using {@link #updateEntityIntoEs}
+     */
+    void saveEntityUpdateRequests(List<EntityEventRequest> entityEventRequests);
+
+    /**
+     * Remove isRunning status to the given {@link EntityEventRequest} urn so it can be processed again
+     */
+    void retryEntityUpdateRequests(String urn);
+
+    /**
+     * Delete the request with the given urn
+     */
+    void deleteEntityRequest(String urn);
+
+    /**
+     * Set the request with the given urn to {@link fr.cnes.regards.modules.crawler.domain.EntityEventRequestStatus#RUNNING}
+     */
+    void runEntityRequest(String urn);
+
+    /**
+     * Set isRunning status to FAILED for the given {@link EntityEventRequest} urn so it can not be processed again
+     */
+    void failedEntityUpdateRequests(String urn);
 }

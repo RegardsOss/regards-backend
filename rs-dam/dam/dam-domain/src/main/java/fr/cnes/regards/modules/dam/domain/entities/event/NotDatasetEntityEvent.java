@@ -16,7 +16,7 @@ public class NotDatasetEntityEvent extends AbstractEntityEvent {
         super();
     }
 
-    public NotDatasetEntityEvent(UniformResourceName... ipIds) {
-        super(ipIds);
+    public NotDatasetEntityEvent(String userToNotify, String roleToNotify, UniformResourceName... ipIds) {
+        super(userToNotify, roleToNotify, ipIds);
     }
 }

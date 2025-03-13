@@ -16,15 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.crawler.service;
+package fr.cnes.regards.modules.crawler.service.service;
 
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.geojson.GeoJsonType;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepLight;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
@@ -36,9 +40,13 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
+import fr.cnes.regards.modules.crawler.dao.IEntityEventRequestRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
+import fr.cnes.regards.modules.crawler.domain.EntityEventRequest;
+import fr.cnes.regards.modules.crawler.domain.EntityEventRequestStatus;
 import fr.cnes.regards.modules.crawler.service.consumer.*;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
+import fr.cnes.regards.modules.crawler.service.job.UpdateEntityIntoEsJob;
 import fr.cnes.regards.modules.crawler.service.session.SessionNotifier;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.plugins.IDataObjectAccessFilterPlugin;
@@ -189,6 +197,15 @@ public class EntityIndexerService implements IEntityIndexerService {
 
     @Autowired
     private IndexService indexService;
+
+    @Autowired
+    private IEntityEventRequestRepository entityEventRequestRepository;
+
+    @Autowired
+    private JobInfoService jobInfoService;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     private static List<String> toErrors(Errors errorsObject) {
         List<String> errors = new ArrayList<>(errorsObject.getErrorCount());
@@ -454,7 +471,7 @@ public class EntityIndexerService implements IEntityIndexerService {
 
         // Update dataset access groups for dynamic plugin access rights
         try {
-            manageDatasetUpdateFilteredAccessrights(tenant,
+            manageDatasetUpdateFilteredAccessRights(tenant,
                                                     dataset,
                                                     updateDate,
                                                     executor,
@@ -485,7 +502,7 @@ public class EntityIndexerService implements IEntityIndexerService {
     /**
      * Handle Access rights filter for the given dataset. An Access right filter is an accessRight with a {@link IDataObjectAccessFilterPlugin}.
      */
-    private void manageDatasetUpdateFilteredAccessrights(String tenant,
+    private void manageDatasetUpdateFilteredAccessRights(String tenant,
                                                          Dataset dataset,
                                                          OffsetDateTime updateDate,
                                                          ExecutorService executor,
@@ -509,7 +526,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                        dsiId,
                                                        group.getGroupName(),
                                                        searchFilter);
-                        // Handle specific dataobjet groups by access filter plugin
+                        // Handle specific dataobject groups by access filter plugin
                         addOrUpdateDataObectGroupAssoc(dataset,
                                                        updateDate,
                                                        searchKey,
@@ -520,7 +537,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                        searchFilter);
                     }
                 } catch (ModuleException e) {
-                    // Plugin conf doesn't exists anymore, so remove all group assoc
+                    // Plugin conf doesn't exist anymore, so remove all group assoc
                     removeOldDataObjectsGroupAssoc(dataset,
                                                    updateDate,
                                                    searchKey,
@@ -842,6 +859,110 @@ public class EntityIndexerService implements IEntityIndexerService {
         OffsetDateTime updateDate = OffsetDateTime.now();
         updateAllDatasets(tenant, updateDate);
         updateAllCollections(tenant, updateDate);
+    }
+
+    @Override
+    @MultitenantTransactional
+    public Page<EntityEventRequest> scheduleUpdateEntityIntoEsJob(Pageable page) {
+        Page<EntityEventRequest> requestsPage = entityEventRequestRepository.findByStatusToDoOrderByUrnAsc(page);
+        if (!requestsPage.hasContent()) {
+            return requestsPage;
+        }
+        List<EntityEventRequest> requests = requestsPage.getContent();
+        // distinct requests in TO_DO states
+        List<EntityEventRequest> distinctToDoRequests = new ArrayList<>();
+
+        List<EntityEventRequest> requestsToSchedule = new ArrayList<>();
+        List<EntityEventRequest> requestsToRemove = new ArrayList<>();
+
+        // Get a single request for each distinct urn, keep the duplicated ones to remove them
+        for (EntityEventRequest request : requests) {
+            if (!distinctToDoRequests.contains(request)) {
+                distinctToDoRequests.add(request);
+            } else {
+                // It's a duplicate
+                requestsToRemove.add(request);
+            }
+        }
+
+        // Get existing requests in SCHEDULED or RUNNING status
+        List<EntityEventRequest> existingRequests = entityEventRequestRepository.findByUrnInAndStatusNotToDo(
+            distinctToDoRequests.stream().map(EntityEventRequest::getUrn).toList());
+        Map<String, EntityEventRequest> existingRequestsUrn = existingRequests.stream()
+                                                                                          .collect(Collectors.toMap(
+                                                                                              EntityEventRequest::getUrn, Function.identity()));
+
+        // Remove the requests for which a job with the same urn is already scheduled and ignore the ones for which a
+        // job is already running, they can't be run now but still need to be run later.
+        for (EntityEventRequest request : distinctToDoRequests) {
+            EntityEventRequest existingRequest = existingRequestsUrn.get(request.getUrn());
+            EntityEventRequestStatus existingRequestStatus = existingRequest.getStatus();
+            if (existingRequestStatus == null) {
+                // No existing request with the same urn,
+                // schedule this one
+                requestsToSchedule.add(request);
+            } else {
+                switch (existingRequestStatus) {
+                    case SCHEDULED -> requestsToRemove.add(request); // Already a scheduled request so its a duplicate
+                    case FAILED -> {
+                        if (!requestsToRemove.contains(existingRequest)) {
+                            requestsToRemove.add(existingRequest); // Remove the existing failed request
+                        }
+                    }
+                    case RUNNING -> { // Already a running request so this one can't be scheduled for now
+                    }
+                }
+            }
+        }
+
+        // Schedule jobs
+        for (EntityEventRequest request : requestsToSchedule) {
+            Set<JobParameter> parameters = new HashSet<>();
+            parameters.add(new JobParameter(UpdateEntityIntoEsJob.URN_PARAMETER, request.getUrn()));
+            parameters.add(new JobParameter(UpdateEntityIntoEsJob.USER_TO_NOTIFY_PARAMETER, request.getUserToNotify()));
+            parameters.add(new JobParameter(UpdateEntityIntoEsJob.ROLE_TO_NOTIFY_PARAMETER, request.getRoleToNotify()));
+            jobInfoService.createAsQueued(new JobInfo(false,
+                                                      0,
+                                                      parameters,
+                                                      authResolver.getUser(),
+                                                      UpdateEntityIntoEsJob.class.getName()));
+            entityEventRequestRepository.scheduleRequest(request.getUrn());
+        }
+
+        // Remove duplicates and scheduled requests
+        entityEventRequestRepository.deleteAllInBatch(requestsToRemove);
+
+        return requestsPage;
+    }
+
+    @MultitenantTransactional
+    @Override
+    public void saveEntityUpdateRequests(List<EntityEventRequest> entityEventRequests) {
+        entityEventRequestRepository.saveAll(entityEventRequests);
+    }
+
+    @MultitenantTransactional
+    @Override
+    public void retryEntityUpdateRequests(String urn) {
+        entityEventRequestRepository.retryRequest(urn);
+    }
+
+    @MultitenantTransactional
+    @Override
+    public void deleteEntityRequest(String urn) {
+        entityEventRequestRepository.deleteRunningEntityRequest(urn);
+    }
+
+    @MultitenantTransactional
+    @Override
+    public void runEntityRequest(String urn) {
+        entityEventRequestRepository.runRequest(urn);
+    }
+
+    @MultitenantTransactional
+    @Override
+    public void failedEntityUpdateRequests(String urn) {
+        entityEventRequestRepository.requestFailed(urn);
     }
 
     /**

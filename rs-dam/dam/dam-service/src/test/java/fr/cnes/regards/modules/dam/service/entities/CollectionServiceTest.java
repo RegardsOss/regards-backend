@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.dam.service.entities;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -122,6 +123,9 @@ public class CollectionServiceTest {
 
         IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("Tenant");
+        IAuthenticationResolver authenticationResolver = Mockito.mock(IAuthenticationResolver.class);
+        Mockito.when(authenticationResolver.getUser()).thenReturn("userTest");
+        Mockito.when(authenticationResolver.getRole()).thenReturn("roleTest");
 
         collectionServiceMocked = new CollectionService(Mockito.mock(IModelFinder.class),
                                                         entitiesRepositoryMocked,
@@ -134,6 +138,7 @@ public class CollectionServiceTest {
                                                         null,
                                                         publisherMocked,
                                                         runtimeTenantResolver,
+                                                        authenticationResolver,
                                                         Mockito.mock(IAbstractEntityRequestRepository.class));
     }
 

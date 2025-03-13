@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
-import fr.cnes.regards.modules.crawler.service.ICrawlerAndIngesterService;
+import fr.cnes.regards.modules.crawler.service.service.IDatasourceIngesterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -54,7 +54,7 @@ public class CrawlerController implements IResourceController<DatasourceIngestio
      * Crawler service
      */
     @Autowired
-    private ICrawlerAndIngesterService crawlerService;
+    private IDatasourceIngesterService ingesterService;
 
     /**
      * HATEOAS service
@@ -73,7 +73,7 @@ public class CrawlerController implements IResourceController<DatasourceIngestio
                                          description = "All crawler datasources were retrieved.") })
     @ResourceAccess(description = "List all crawler datasources.")
     public ResponseEntity<List<EntityModel<DatasourceIngestion>>> getAllDatasourceIngestion() {
-        return ResponseEntity.ok(toResources(crawlerService.getDatasourceIngestions()));
+        return ResponseEntity.ok(toResources(ingesterService.getDatasourceIngestions()));
     }
 
     /**
@@ -85,7 +85,7 @@ public class CrawlerController implements IResourceController<DatasourceIngestio
     @ResourceAccess(description = "Delete selected datasource.")
     @RequestMapping(method = RequestMethod.DELETE, value = INGESTION_ID)
     public ResponseEntity<Void> deleteDatasourceIngestion(@PathVariable("ingestion_id") String ingestionId) {
-        crawlerService.deleteDatasourceIngestion(ingestionId);
+        ingesterService.deleteDatasourceIngestion(ingestionId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -98,7 +98,7 @@ public class CrawlerController implements IResourceController<DatasourceIngestio
     @ResourceAccess(description = "Schedule datasource to be ingested as soon as possible.")
     @RequestMapping(method = RequestMethod.PUT, value = INGESTION_ID)
     public ResponseEntity<Void> scheduleNowDatasourceIngestion(@PathVariable("ingestion_id") String ingestionId) {
-        crawlerService.scheduleNowDatasourceIngestion(ingestionId);
+        ingesterService.scheduleNowDatasourceIngestion(ingestionId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
