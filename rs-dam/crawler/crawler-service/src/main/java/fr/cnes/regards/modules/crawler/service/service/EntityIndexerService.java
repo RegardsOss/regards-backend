@@ -43,7 +43,6 @@ import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.dao.IEntityEventRequestRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.EntityEventRequest;
-import fr.cnes.regards.modules.crawler.domain.EntityEventRequestStatus;
 import fr.cnes.regards.modules.crawler.service.consumer.*;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.job.UpdateEntityIntoEsJob;
@@ -889,20 +888,19 @@ public class EntityIndexerService implements IEntityIndexerService {
         List<EntityEventRequest> existingRequests = entityEventRequestRepository.findByUrnInAndStatusNotToDo(
             distinctToDoRequests.stream().map(EntityEventRequest::getUrn).toList());
         Map<String, EntityEventRequest> existingRequestsUrn = existingRequests.stream()
-                                                                                          .collect(Collectors.toMap(
-                                                                                              EntityEventRequest::getUrn, Function.identity()));
+                                                                              .collect(Collectors.toMap(
+                                                                                  EntityEventRequest::getUrn,
+                                                                                  Function.identity()));
 
         // Remove the requests for which a job with the same urn is already scheduled and ignore the ones for which a
         // job is already running, they can't be run now but still need to be run later.
         for (EntityEventRequest request : distinctToDoRequests) {
             EntityEventRequest existingRequest = existingRequestsUrn.get(request.getUrn());
-            EntityEventRequestStatus existingRequestStatus = existingRequest.getStatus();
-            if (existingRequestStatus == null) {
-                // No existing request with the same urn,
-                // schedule this one
+            if (existingRequest == null || existingRequest.getStatus() == null) {
+                // No existing request with the same urn,schedule this one
                 requestsToSchedule.add(request);
             } else {
-                switch (existingRequestStatus) {
+                switch (existingRequest.getStatus()) {
                     case SCHEDULED -> requestsToRemove.add(request); // Already a scheduled request so its a duplicate
                     case FAILED -> {
                         if (!requestsToRemove.contains(existingRequest)) {
