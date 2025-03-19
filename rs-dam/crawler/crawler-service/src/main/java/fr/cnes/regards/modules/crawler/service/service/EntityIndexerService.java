@@ -302,8 +302,21 @@ public class EntityIndexerService implements IEntityIndexerService {
             LOGGER.debug("Elasticsearch saving result : {}", created);
             if ((entity instanceof Dataset) && needAssociatedDataObjectsUpdate) {
                 // Subsetting clause is needed by many things
+                LOGGER.info("Running dataset entity {} - {} data objects association calculation into elasticsearch. "
+                            + "Cause : force calculation = {}, calculation needed cause of dataset update = {}",
+                            entity.getLabel(),
+                            entity.getId(),
+                            forceAssociatedEntitiesUpdate,
+                            needAssociatedDataObjectsUpdate);
                 ((Dataset) entity).setSubsettingClause(savedSubsettingClause);
                 manageDatasetUpdate((Dataset) entity, minLastUpdateCriteria, updateDate, dsiId);
+            } else {
+                LOGGER.info("Avoid dataset entity {} - {} data objects association calculation into elasticsearch. "
+                            + "Cause : force calculation = {}, calculation needed cause of dataset update = {}",
+                            entity.getLabel(),
+                            entity.getId(),
+                            forceAssociatedEntitiesUpdate,
+                            needAssociatedDataObjectsUpdate);
             }
         }
         LOGGER.info(ipId + " managed into Elasticsearch");
