@@ -43,6 +43,7 @@ import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.dao.IEntityEventRequestRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.EntityEventRequest;
+import fr.cnes.regards.modules.crawler.domain.EntityEventRequestStatus;
 import fr.cnes.regards.modules.crawler.service.consumer.*;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.job.UpdateEntityIntoEsJob;
@@ -889,7 +890,7 @@ public class EntityIndexerService implements IEntityIndexerService {
 
         // Get a single request for each distinct urn, keep the duplicated ones to remove them
         for (EntityEventRequest request : requests) {
-            if (!distinctToDoRequests.contains(request)) {
+            if (distinctToDoRequests.stream().noneMatch(r -> r.getUrn().equals(request.getUrn()))) {
                 distinctToDoRequests.add(request);
             } else {
                 // It's a duplicate
@@ -897,33 +898,35 @@ public class EntityIndexerService implements IEntityIndexerService {
             }
         }
 
-        // Get existing requests in SCHEDULED or RUNNING status
-        List<EntityEventRequest> existingRequests = entityEventRequestRepository.findByUrnInAndStatusNotToDo(
+        // Get existing requests in SCHEDULED, RUNNING or FAILED status
+        List<EntityEventRequest> allExistingRequests = entityEventRequestRepository.findByUrnInAndStatusNotToDo(
             distinctToDoRequests.stream().map(EntityEventRequest::getUrn).toList());
-        Map<String, EntityEventRequest> existingRequestsUrn = existingRequests.stream()
-                                                                              .collect(Collectors.toMap(
-                                                                                  EntityEventRequest::getUrn,
-                                                                                  Function.identity()));
+        Map<String, List<EntityEventRequest>> existingRequestsByUrn = allExistingRequests.stream()
+                                                                                         .collect(Collectors.groupingBy(
+                                                                                             EntityEventRequest::getUrn));
 
         // Remove the requests for which a job with the same urn is already scheduled and ignore the ones for which a
-        // job is already running, they can't be run now but still need to be run later.
+        // job is already running, they can't be run now but still need to be run later. Also remove the failed
+        // requests with the same urn.
         for (EntityEventRequest request : distinctToDoRequests) {
-            EntityEventRequest existingRequest = existingRequestsUrn.get(request.getUrn());
-            if (existingRequest == null || existingRequest.getStatus() == null) {
-                // No existing request with the same urn,schedule this one
+            List<EntityEventRequest> existingRequests = existingRequestsByUrn.getOrDefault(request.getUrn(),
+                                                                                           new ArrayList<>());
+            // Remove all failed request as one for the same urn will be scheduled
+            List<EntityEventRequest> existingFailedRequests = existingRequests.stream()
+                                                                              .filter(r -> r.getStatus()
+                                                                                           == EntityEventRequestStatus.FAILED)
+                                                                              .toList();
+            requestsToRemove.addAll(existingFailedRequests);
+            if (existingRequests.stream().anyMatch(r -> r.getStatus() == EntityEventRequestStatus.SCHEDULED)) {
+                // If there is a SCHEDULED request we can remove this one
+                requestsToRemove.add(request);
+            } else if (existingRequests.stream().noneMatch(r -> r.getStatus() == EntityEventRequestStatus.RUNNING)) {
+                // If there is no RUNNING request we can schedule this one (this mean there is either no existing
+                // requests or only FAILED ones)
                 requestsToSchedule.add(request);
-            } else {
-                switch (existingRequest.getStatus()) {
-                    case SCHEDULED -> requestsToRemove.add(request); // Already a scheduled request so its a duplicate
-                    case FAILED -> {
-                        if (!requestsToRemove.contains(existingRequest)) {
-                            requestsToRemove.add(existingRequest); // Remove the existing failed request
-                        }
-                    }
-                    case RUNNING -> { // Already a running request so this one can't be scheduled for now
-                    }
-                }
             }
+            // Else we can't schedule the request for now as there is one job already running. It will be scheduled
+            // in a later iteration of the scheduler.
         }
 
         // Schedule jobs
@@ -932,12 +935,13 @@ public class EntityIndexerService implements IEntityIndexerService {
             parameters.add(new JobParameter(UpdateEntityIntoEsJob.URN_PARAMETER, request.getUrn()));
             parameters.add(new JobParameter(UpdateEntityIntoEsJob.USER_TO_NOTIFY_PARAMETER, request.getUserToNotify()));
             parameters.add(new JobParameter(UpdateEntityIntoEsJob.ROLE_TO_NOTIFY_PARAMETER, request.getRoleToNotify()));
+            parameters.add(new JobParameter(UpdateEntityIntoEsJob.REQUEST_ID_PARAMETER, request.getId()));
             jobInfoService.createAsQueued(new JobInfo(false,
                                                       0,
                                                       parameters,
                                                       authResolver.getUser(),
                                                       UpdateEntityIntoEsJob.class.getName()));
-            entityEventRequestRepository.scheduleRequest(request.getUrn());
+            entityEventRequestRepository.scheduleRequest(request.getId());
         }
 
         // Remove duplicates and scheduled requests
@@ -954,26 +958,26 @@ public class EntityIndexerService implements IEntityIndexerService {
 
     @MultitenantTransactional
     @Override
-    public void retryEntityUpdateRequests(String urn) {
-        entityEventRequestRepository.retryRequest(urn);
+    public void retryEntityUpdateRequests(Long requestId) {
+        entityEventRequestRepository.retryRequest(requestId);
     }
 
     @MultitenantTransactional
     @Override
-    public void deleteEntityRequest(String urn) {
-        entityEventRequestRepository.deleteRunningEntityRequest(urn);
+    public void deleteEntityRequest(Long requestId) {
+        entityEventRequestRepository.deleteById(requestId);
     }
 
     @MultitenantTransactional
     @Override
-    public void runEntityRequest(String urn) {
-        entityEventRequestRepository.runRequest(urn);
+    public void runEntityRequest(Long requestId) {
+        entityEventRequestRepository.runRequest(requestId);
     }
 
     @MultitenantTransactional
     @Override
-    public void failedEntityUpdateRequests(String urn) {
-        entityEventRequestRepository.requestFailed(urn);
+    public void failedEntityUpdateRequests(Long requestId) {
+        entityEventRequestRepository.requestFailed(requestId);
     }
 
     /**

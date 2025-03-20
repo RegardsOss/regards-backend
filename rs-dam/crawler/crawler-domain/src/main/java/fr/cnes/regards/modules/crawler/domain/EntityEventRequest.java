@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.crawler.domain;
 
-import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import jakarta.persistence.*;
 
 import java.util.Objects;
 
 /**
- * Entity for a request event (create, update...) on an entity (identified by its urn) that need to be 
+ * Entity for a request event (create, update...) on an entity (identified by its urn) that need to be
  * updated in the elasticsearch repository.
  *
  * @author Thibaud Michaudel
@@ -67,6 +66,10 @@ public class EntityEventRequest {
         // empty constructor for Spring
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public String getUrn() {
         return urn;
     }
@@ -106,7 +109,18 @@ public class EntityEventRequest {
 
     @Override
     public String toString() {
-        return "EntityEventRequest{" + "id=" + id + ", urn='" + urn + ", userToNotify='" + userToNotify + ", roleToNotify='" + roleToNotify + '\'' +
-               ", status=" + status + '}';
+        return "EntityEventRequest{"
+               + "id="
+               + id
+               + ", urn='"
+               + urn
+               + ", userToNotify='"
+               + userToNotify
+               + ", roleToNotify='"
+               + roleToNotify
+               + '\''
+               + ", status="
+               + status
+               + '}';
     }
 }

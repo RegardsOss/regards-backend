@@ -190,20 +190,21 @@ public interface IEntityIndexerService {
     /**
      * Remove isRunning status to the given {@link EntityEventRequest} urn so it can be processed again
      */
-    void retryEntityUpdateRequests(String urn);
+    void retryEntityUpdateRequests(Long requestId);
 
     /**
-     * Delete the request with the given urn
+     * Delete the request with the given id
      */
-    void deleteEntityRequest(String urn);
+    void deleteEntityRequest(Long requestId);
 
     /**
-     * Set the request with the given urn to {@link fr.cnes.regards.modules.crawler.domain.EntityEventRequestStatus#RUNNING}
+     * Set the request with the given id to
+     * {@link fr.cnes.regards.modules.crawler.domain.EntityEventRequestStatus#RUNNING}
      */
-    void runEntityRequest(String urn);
+    void runEntityRequest(Long requestId);
 
     /**
-     * Set isRunning status to FAILED for the given {@link EntityEventRequest} urn so it can not be processed again
+     * Set isRunning status to FAILED for the given {@link EntityEventRequest} id so it can not be processed again
      */
-    void failedEntityUpdateRequests(String urn);
+    void failedEntityUpdateRequests(Long requestId);
 }

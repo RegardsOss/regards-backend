@@ -84,15 +84,16 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
                 if (jobInfo.getClassName().equals(UpdateEntityIntoEsJob.class.getName())) {
                     try {
                         nbJobError++;
-                        String urn = IJob.getValue(jobInfo.getParametersAsMap(),
-                                                   UpdateEntityIntoEsJob.URN_PARAMETER);
+                        String urn = IJob.getValue(jobInfo.getParametersAsMap(), UpdateEntityIntoEsJob.URN_PARAMETER);
+                        Long requestId = IJob.getValue(jobInfo.getParametersAsMap(),
+                                                       UpdateEntityIntoEsJob.REQUEST_ID_PARAMETER);
                         // Get retry number for this urn from cache
                         AtomicInteger nbRetry = cacheRetryNumberByUrn.get(urn, key -> new AtomicInteger(0));
                         // Retry if max number of retry is not reached
                         if (nbRetry.incrementAndGet() <= nbMaxRetry) {
-                            entityIndexerService.retryEntityUpdateRequests(urn);
+                            entityIndexerService.retryEntityUpdateRequests(requestId);
                         } else {
-                            entityIndexerService.failedEntityUpdateRequests(urn);
+                            entityIndexerService.failedEntityUpdateRequests(requestId);
                         }
                     } catch (JobParameterMissingException | JobParameterInvalidException e) {
                         LOGGER.error("Unable to retrieve urn to retry the job {}", jobInfo.getId(), e);

@@ -49,28 +49,24 @@ public interface IEntityEventRequestRepository extends JpaRepository<EntityEvent
     }
 
     @Modifying
-    @Query("UPDATE EntityEventRequest r SET r.status = :status WHERE r.urn = :urn")
-    void updateRequestStatus(@Param("urn") String urn, @Param("status") EntityEventRequestStatus status);
+    @Query("UPDATE EntityEventRequest r SET r.status = :status WHERE r.id = :requestId")
+    void updateRequestStatus(@Param("requestId") Long requestId, @Param("status") EntityEventRequestStatus status);
 
-    void deleteEntityEventRequestByUrnAndStatus(String urn, EntityEventRequestStatus status);
-
-    default void retryRequest(String urn) {
-        updateRequestStatus(urn, EntityEventRequestStatus.TO_DO);
+    default void retryRequest(Long requestId) {
+        updateRequestStatus(requestId, EntityEventRequestStatus.TO_DO);
     }
 
-    default void runRequest(String urn) {
-        updateRequestStatus(urn, EntityEventRequestStatus.RUNNING);
+    default void runRequest(Long requestId) {
+        updateRequestStatus(requestId, EntityEventRequestStatus.RUNNING);
     }
 
-    default void scheduleRequest(String urn) {
-        updateRequestStatus(urn, EntityEventRequestStatus.SCHEDULED);
+    default void scheduleRequest(Long requestId) {
+        updateRequestStatus(requestId, EntityEventRequestStatus.SCHEDULED);
     }
 
-    default void requestFailed(String urn) {
-        updateRequestStatus(urn, EntityEventRequestStatus.FAILED);
+    default void requestFailed(Long requestId) {
+        updateRequestStatus(requestId, EntityEventRequestStatus.FAILED);
     }
 
-    default void deleteRunningEntityRequest(String urn) {
-        deleteEntityEventRequestByUrnAndStatus(urn, EntityEventRequestStatus.RUNNING);
-    }
+    void deleteById(Long requestId);
 }
