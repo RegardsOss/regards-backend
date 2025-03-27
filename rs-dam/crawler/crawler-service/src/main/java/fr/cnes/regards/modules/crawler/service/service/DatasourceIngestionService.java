@@ -373,6 +373,11 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                                                                     .plus(refreshRate, ChronoUnit.SECONDS));
                     dsIngestionRepos.save(dsIngestion);
                 }
+                case INACTIVE -> {
+                    dsIngestion.setStatus(IngestionStatus.NEW);
+                    dsIngestion.setNextPlannedIngestDate(OffsetDateTime.now());
+                    dsIngestionRepos.save(dsIngestion);
+                }
                 // STARTED: Already in progress
                 // NEW: dsIngestion just been created with a next planned date as now() ie launch as soon as possible
                 case STARTED, NEW -> {
@@ -461,10 +466,10 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                 mergeNeeded = esRepos.count(searchKey, ICriterion.all()) != 0;
             }
             saveResult = readDatasource(new IngestionParameters(lastUpdateDate,
-                                                               tenant,
-                                                               dsPlugin,
-                                                               datasourceId,
-                                                               ingestionStart), dsi, mergeNeeded);
+                                                                tenant,
+                                                                dsPlugin,
+                                                                datasourceId,
+                                                                ingestionStart), dsi, mergeNeeded);
 
             // Only update dataset if new docs are indexed
             if (saveResult.getSavedDocsCount() > 0) {
@@ -640,8 +645,6 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                                            null,
                                            null);
     }
-
-
 
     /**
      * Read datasource since given date page setting ipId to each objects
