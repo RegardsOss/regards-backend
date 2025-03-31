@@ -33,6 +33,8 @@ import fr.cnes.regards.framework.module.manager.*;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,8 +48,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -205,6 +205,7 @@ public class ModuleManagerController {
             for (IModuleManager<?> manager : managers) {
                 if (manager.isApplicable(module)) {
                     Set<String> resetErrors = Sets.newHashSet();
+                    // Check resetBeforeImport
                     if (module.isResetBeforeImport()) {
                         resetErrors = manager.resetConfiguration();
                     }

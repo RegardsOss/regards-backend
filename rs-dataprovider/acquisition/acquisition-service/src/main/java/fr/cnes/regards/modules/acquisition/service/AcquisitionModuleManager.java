@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
@@ -74,5 +75,12 @@ public class AcquisitionModuleManager extends AbstractModuleManager<Void> {
             configuration.add(ModuleConfigurationItem.build(apc));
         }
         return ModuleConfiguration.build(info, configuration);
+    }
+
+    @Override
+    public Set<String> resetConfiguration() {
+        Set<String> errors = Sets.newHashSet();
+        errors.add("[Warning] resetBeforeImport parameter is not implemented yet.");
+        return errors;
     }
 }
