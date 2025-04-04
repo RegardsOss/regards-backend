@@ -83,7 +83,7 @@ public final class S3ServerUtils {
                 try {
                     s3server = matchingS3Servers.stream()
                                                 .filter(s3Server -> extractRegexpGroupFromUrl(url,
-                                                                                              s3Server,
+                                                                                              s3Server.getPattern(),
                                                                                               compileS3ServerPattern(
                                                                                                   s3Server.getPattern(),
                                                                                                   url.toString()),
@@ -136,8 +136,7 @@ public final class S3ServerUtils {
         LOGGER.debug("Bucket [{}] from the configuration file from S3 server ", bucket);
         if (StringUtils.isBlank(bucket)) {
             try {
-                bucket = extractRegexpGroupFromUrl(source, s3Server, matcher, S3Server.REGEX_GROUP_BUCKET);
-                s3Server.setBucket(bucket);
+                bucket = extractRegexpGroupFromUrl(source, s3Server.getPattern(), matcher, S3Server.REGEX_GROUP_BUCKET);
             } catch (PatternSyntaxException e) {
                 throw new PatternSyntaxS3Exception(String.format(S3_PATTERN_EXCEPTION_MSG_FORMAT, pattern), e);
             }
@@ -146,11 +145,13 @@ public final class S3ServerUtils {
         // Retrieve the path with filename
         String filePath;
         try {
-            filePath = extractRegexpGroupFromUrl(source, s3Server, matcher, S3Server.REGEX_GROUP_PATHFILENAME);
+            filePath = extractRegexpGroupFromUrl(source,
+                                                 s3Server.getPattern(),
+                                                 matcher,
+                                                 S3Server.REGEX_GROUP_PATHFILENAME);
         } catch (PatternSyntaxException e) {
             throw new PatternSyntaxS3Exception(String.format(S3_PATTERN_EXCEPTION_MSG_FORMAT, pattern), e);
         }
-
         return new KeyAndStorage(filePath,
                                  new StorageConfigBuilder(s3Server.getEndpoint(),
                                                           s3Server.getRegion(),
@@ -185,14 +186,11 @@ public final class S3ServerUtils {
     /**
      * Generic method to extract a group from the provided url with the corresponding matcher.
      */
-    private static String extractRegexpGroupFromUrl(URL source,
-                                                    S3Server s3Server,
-                                                    Matcher matcher,
-                                                    String requiredGroup) {
+    private static String extractRegexpGroupFromUrl(URL source, String pattern, Matcher matcher, String requiredGroup) {
         String value = matcher.group(requiredGroup);
         if (StringUtils.isBlank(value)) {
             throw new PatternSyntaxException(String.format("Could not retrieve %s from url %s", requiredGroup, source),
-                                             s3Server.getPattern(),
+                                             pattern,
                                              0);
         }
         return value;
