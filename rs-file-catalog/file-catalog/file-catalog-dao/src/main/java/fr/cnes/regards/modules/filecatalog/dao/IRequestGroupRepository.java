@@ -46,8 +46,6 @@ public interface IRequestGroupRepository extends JpaRepository<RequestGroup, Str
      * A {@link RequestGroup} is terminated if there is no more running request associated to it.
      * Running requests are requests in any status but
      * {@link fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus#ERROR ERROR} (ordinal 6)
-     * or {@link fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus#PENDING_ARCHIVE PENDING_ARCHIVE}
-     * (ordinal 4)
      *
      * @param limit Maximum number of terminated groups to return
      * @return List of terminated {@link RequestGroup}s
@@ -61,7 +59,6 @@ public interface IRequestGroupRepository extends JpaRepository<RequestGroup, Str
                 ON storage_request.id = ta_storage_request.file_storage_request_id
             WHERE groups.id = ta_storage_request.group_id
             AND storage_request.status != 6
-            AND storage_request.status != 4
         )
         LIMIT :limit
         """, nativeQuery = true)
