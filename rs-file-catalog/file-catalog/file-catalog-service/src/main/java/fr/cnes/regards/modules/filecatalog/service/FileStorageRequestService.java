@@ -33,16 +33,20 @@ import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.StorageRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.input.FileStorageMetaInfoDto;
+import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FileArchiveResponseEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileArchiveRequestEvent;
 import fr.cnes.regards.modules.filecatalog.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.filecatalog.dao.IFileStorageRequestAggregationRepository;
+import fr.cnes.regards.modules.filecatalog.dao.RequestResultInfoRepository;
 import fr.cnes.regards.modules.filecatalog.dao.result.RequestAndMaxStatus;
 import fr.cnes.regards.modules.filecatalog.domain.*;
+import fr.cnes.regards.modules.filecatalog.domain.request.FileDeletionRequest;
 import fr.cnes.regards.modules.filecatalog.domain.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.filecatalog.dto.FileArchiveResponseDto;
+import fr.cnes.regards.modules.filecatalog.service.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.filecatalog.service.template.StorageTemplatesConf;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
@@ -94,9 +98,13 @@ public class FileStorageRequestService {
 
     private final IFileStorageRequestAggregationRepository fileStorageRequestAggregationRepository;
 
+    private final RequestResultInfoRepository requestResultInfoRepository;
+
     private final IFileReferenceRepository fileReferenceRepository;
 
     private final IPublisher publisher;
+
+    private final FileDeletionRequestService fileDeletionRequestService;
 
     @Value("${regards.file.catalog.requests.retry.page:1000}")
     private int pageRetrySize;
@@ -115,8 +123,10 @@ public class FileStorageRequestService {
                                      INotificationClient notificationClient,
                                      FileReferenceEventPublisher eventPublisher,
                                      IFileStorageRequestAggregationRepository fileStorageRequestAggregationRepository,
+                                     RequestResultInfoRepository requestResultInfoRepository,
                                      IFileReferenceRepository fileReferenceRepository,
-                                     IPublisher publisher) {
+                                     IPublisher publisher,
+                                     FileDeletionRequestService fileDeletionRequestService) {
         this.requestStatusService = requestStatusService;
         this.fileReferenceRequestService = fileReferenceRequestService;
         this.requestsGroupService = requestsGroupService;
@@ -125,8 +135,10 @@ public class FileStorageRequestService {
         this.notificationClient = notificationClient;
         this.eventPublisher = eventPublisher;
         this.fileStorageRequestAggregationRepository = fileStorageRequestAggregationRepository;
+        this.requestResultInfoRepository = requestResultInfoRepository;
         this.fileReferenceRepository = fileReferenceRepository;
         this.publisher = publisher;
+        this.fileDeletionRequestService = fileDeletionRequestService;
     }
 
     @MultitenantTransactional
@@ -236,6 +248,7 @@ public class FileStorageRequestService {
             Set<FileReference> existingFileRefs = fileReferenceRepository.findByLocationStorageAndMetaInfoChecksumIn(
                 storage,
                 requests.stream().map(request -> request.getMetaInfo().getChecksum()).toList());
+            Set<FileDeletionRequest> existingDeletionRequests = fileDeletionRequestService.search(existingFileRefs);
             for (FileStorageRequestAggregation request : requests) {
                 Optional<FileReference> oExistingFileReference = existingFileRefs.stream()
                                                                                  .filter(fileRef -> request.getMetaInfo()
@@ -245,9 +258,9 @@ public class FileStorageRequestService {
                                                                                                                       .getChecksum()))
                                                                                  .findAny();
                 if (oExistingFileReference.isPresent()) {
-                    // The file doesn't need to be stored, just add the owner to the existing file reference
-                    fileReferenceRepository.addOwner(oExistingFileReference.get().getId(), request.getOwner());
-                    requestsToDeleteIds.add(request.getId());
+                    if (handleAlreadyStored(oExistingFileReference.get(), existingDeletionRequests, request)) {
+                        requestsToDeleteIds.add(request.getId());
+                    }
                 } else {
                     // The file need to be stored
                     requestsToUpdateIds.add(request.getId());
@@ -288,6 +301,7 @@ public class FileStorageRequestService {
             Set<FileReference> existingFileRefs = fileReferenceRepository.findByLocationStorageAndMetaInfoChecksumIn(
                 storage,
                 requests.stream().map(request -> request.getMetaInfo().getChecksum()).toList());
+            Set<FileDeletionRequest> existingDeletionRequests = fileDeletionRequestService.search(existingFileRefs);
             for (FileStorageRequestAggregation request : requests) {
                 Optional<FileReference> oExistingFileReference = existingFileRefs.stream()
                                                                                  .filter(fileRef -> request.getMetaInfo()
@@ -296,13 +310,11 @@ public class FileStorageRequestService {
                                                                                                                fileRef.getMetaInfo()
                                                                                                                       .getChecksum()))
                                                                                  .findAny();
+                // Handle specific case of file already stored
                 if (oExistingFileReference.isPresent()) {
-                    // The file has been stored by another request, just add the owner to the existing file
-                    // reference
-                    fileReferenceRepository.addOwner(oExistingFileReference.get().getId(), request.getOwner());
-                    requestsToDeleteIds.add(request.getId());
-                } else {
-                    // The file has not yet be stored, nothing to do
+                    if (handleAlreadyStored(oExistingFileReference.get(), existingDeletionRequests, request)) {
+                        requestsToDeleteIds.add(request.getId());
+                    }
                 }
             }
         }
@@ -810,6 +822,57 @@ public class FileStorageRequestService {
 
         // Retry all deletion requests in error
         // FIXME TODO NeoStorage Lot 4
+    }
+
+    /**
+     * If the fileReference is not currently owned bu the request owner, add the request owner to the fileReference.
+     * Then, handle the request as a success, by creating a new request result for each request group associated to
+     * the request.
+     *
+     * @param fileReference existing file reference
+     * @param request       request associated to already existing file
+     */
+    private boolean handleAlreadyStored(FileReference fileReference,
+                                        Set<FileDeletionRequest> fileDeletionRequests,
+                                        FileStorageRequestAggregation request) {
+
+        // Check if a deletion requests exists for the given file reference.
+        Optional<FileDeletionRequest> oFileDeleteRequest = fileDeletionRequests.stream()
+                                                                               .filter(r -> Objects.equals(r.getFileReference()
+                                                                                                            .getId(),
+                                                                                                           fileReference.getId()))
+                                                                               .findFirst();
+
+        FileReferenceRequestDto fileReferenceRequestDto = FileReferenceRequestDto.build(request.getMetaInfo()
+                                                                                               .getFileName(),
+                                                                                        request.getMetaInfo()
+                                                                                               .getChecksum(),
+                                                                                        request.getMetaInfo()
+                                                                                               .getAlgorithm(),
+                                                                                        request.getMetaInfo()
+                                                                                               .getMimeType()
+                                                                                               .toString(),
+                                                                                        fileReference.getMetaInfo()
+                                                                                                     .getFileSize(),
+                                                                                        request.getOwner(),
+                                                                                        request.getStorage(),
+                                                                                        request.getOriginUrl(),
+                                                                                        request.getSessionOwner(),
+                                                                                        request.getSession());
+        try {
+            fileReferenceRequestService.handleAlreadyExists(fileReference,
+                                                            oFileDeleteRequest,
+                                                            fileReferenceRequestDto,
+                                                            request.getGroupIds());
+            return true;
+        } catch (ModuleException e) {
+            String errorMessage = String.format("Unable to reference a file that already exstis but is being deleted."
+                                                + " Cause = "
+                                                + "%s", e.getMessage());
+            LOGGER.error(errorMessage, e);
+            handleError(request, errorMessage);
+            return false;
+        }
     }
 
     /**
