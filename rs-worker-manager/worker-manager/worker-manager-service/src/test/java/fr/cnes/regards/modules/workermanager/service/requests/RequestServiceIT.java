@@ -73,6 +73,7 @@ public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsIT {
     /**
      * Custom test initialization to override
      */
+    @Override
     protected void doInit() throws Exception {
         // Override to init something
         LOGGER.info("=========================> BEGIN INIT DATA FOR TESTS <=====================");
@@ -252,7 +253,7 @@ public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsIT {
         workerConf.setContentTypeInputs(Set.of(contentType));
         workerConf.setKeepErrors(false);
         // keepErrors is by default to true
-        Mockito.when(workerConfigService.search(Mockito.anyList())).thenReturn(List.of(workerConf));
+        Mockito.when(workerConfigService.searchByInputContentType(Mockito.anySet())).thenReturn(List.of(workerConf));
         Mockito.when(workerConfigCacheService.getWorkerType(Mockito.any())).thenReturn(Optional.of("contentType1"));
         // WHEN
         requestService.handleWorkersResponses(List.of(workerResponseEvent));
