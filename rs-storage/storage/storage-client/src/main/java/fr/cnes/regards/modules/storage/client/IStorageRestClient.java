@@ -37,11 +37,10 @@ import java.util.Set;
  * REST Client to access storage microservice
  *
  * @author Sébastien Binda
- * @deprecated Download and quota management is deprecated on strorage microservice. Use rs-downloader service
+ * Download and quota management are deprecated on storage microservice. Use rs-downloader service
  * (IStorageDownloaderRestClient)
  */
-@Deprecated(since = "2.1.0")
-@RestClient(name = "rs-storage", contextId = "rs-storage.rest.client")
+@RestClient(name = "${regards.feign.storage.host:rs-storage}", contextId = "rs-storage.rest.client")
 public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
 
     String FILE_PATH = "/files";
