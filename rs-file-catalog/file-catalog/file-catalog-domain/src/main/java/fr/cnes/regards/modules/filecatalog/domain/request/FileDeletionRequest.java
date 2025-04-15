@@ -42,6 +42,8 @@ import java.time.OffsetDateTime;
                                                columnNames = { "file_reference" }) })
 public class FileDeletionRequest {
 
+    private static final int MAX_ERROR_CAUSE_LENGTH = 32768;
+
     @Id
     @SequenceGenerator(name = "fileDeletionSequence", initialValue = 1, sequenceName = "seq_file_deletion")
     @GeneratedValue(generator = "fileDeletionSequence", strategy = GenerationType.SEQUENCE)
@@ -67,7 +69,7 @@ public class FileDeletionRequest {
     @Column(name = "force_delete")
     private boolean forceDelete = false;
 
-    @Column(name = "error_cause", length = 512)
+    @Column(name = "error_cause", length = MAX_ERROR_CAUSE_LENGTH)
     private String errorCause;
 
     @Column(name = "creation_date")
@@ -170,8 +172,8 @@ public class FileDeletionRequest {
     }
 
     public void setErrorCause(String errorCause) {
-        if (errorCause != null && errorCause.length() > 512) {
-            this.errorCause = errorCause.substring(0, 511);
+        if (errorCause != null && errorCause.length() > MAX_ERROR_CAUSE_LENGTH) {
+            this.errorCause = errorCause.substring(0, MAX_ERROR_CAUSE_LENGTH);
         } else {
             this.errorCause = errorCause;
         }
