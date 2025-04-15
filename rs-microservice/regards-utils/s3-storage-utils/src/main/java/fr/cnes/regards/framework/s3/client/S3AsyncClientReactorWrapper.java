@@ -105,6 +105,12 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                                                                                     20))
                                                                                 .build();
 
+    // Timeout for write and delete requests
+    private static final int WRITE_TIMEOUT_IN_MINUTES = 5;
+
+    // Timeout for read requests
+    private static final int READ_TIMEOUT_IN_SECONDS = 30;
+
     public S3AsyncClientReactorWrapper(StorageConfigDto config) {
         super(3, config, cfg -> S3AsyncClientReactorWrapper.createS3Client(cfg));
     }
@@ -314,11 +320,13 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
         return withClient(client -> {
             GetObjectRequest request = GetObjectRequest.builder().bucket(bucket).key(key).build();
             return fromFutureSupplier(() -> client.getObject(request, new GetResponseAndStream(rateLimit))
-                                                  .orTimeout(30, TimeUnit.SECONDS)).onErrorMap(SdkClientException.class,
-                                                                                               S3ClientException::new)
-                                                                                   .onErrorMap(TimeoutException.class,
-                                                                                               t -> new S3ClientException(
-                                                                                                   "Timeout waiting for s3 server getObject response"));
+                                                  .orTimeout(READ_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS)).onErrorMap(
+                                                                                                            SdkClientException.class,
+                                                                                                            S3ClientException::new)
+                                                                                                        .onErrorMap(
+                                                                                                            TimeoutException.class,
+                                                                                                            t -> new S3ClientException(
+                                                                                                                "Timeout waiting for s3 server getObject response"));
         });
     }
 
@@ -442,17 +450,18 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                                                            .build();
         AsyncRequestBody requestBody = AsyncRequestBody.fromBytes(partBytes);
 
-        return withClient(client -> fromFutureSupplier(() -> client.uploadPart(uploadRequest,
-                                                                               requestBody)).map(resp -> new UploadedPart(
-                                                                                                CompletedPart.builder().eTag(resp.eTag()).partNumber(partId).build(),
-                                                                                                requestBody.contentLength().orElse(0L)))
-                                                                                            .doOnNext(etag -> LOGGER.debug(
-                                                                                                "Multipart {} - Finished uploading part {} of multipart upload to {}/{}, got tag {}",
-                                                                                                uploadId,
-                                                                                                partId,
-                                                                                                bucket,
-                                                                                                path,
-                                                                                                etag)));
+        return withClient(client -> fromFutureSupplier(() -> client.uploadPart(uploadRequest, requestBody)
+                                                                   .orTimeout(WRITE_TIMEOUT_IN_MINUTES,
+                                                                              TimeUnit.MINUTES)).map(resp -> new UploadedPart(
+                                                                                                    CompletedPart.builder().eTag(resp.eTag()).partNumber(partId).build(),
+                                                                                                    requestBody.contentLength().orElse(0L)))
+                                                                                                .doOnNext(etag -> LOGGER.debug(
+                                                                                                    "Multipart {} - Finished uploading part {} of multipart upload to {}/{}, got tag {}",
+                                                                                                    uploadId,
+                                                                                                    partId,
+                                                                                                    bucket,
+                                                                                                    path,
+                                                                                                    etag)));
     }
 
     /**
@@ -502,17 +511,18 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
          */
 
         digest.update(partBytes);
-        return withClient(client -> fromFutureSupplier(() -> client.uploadPart(uploadRequest,
-                                                                               requestBody)).map(resp -> new UploadedPart(
-                                                                                                CompletedPart.builder().eTag(resp.eTag()).partNumber(partId).build(),
-                                                                                                requestBody.contentLength().orElse(0L)))
-                                                                                            .doOnNext(etag -> LOGGER.debug(
-                                                                                                "Multipart {} - Finished uploading part {} of multipart upload to {}/{}, got tag {}",
-                                                                                                uploadId,
-                                                                                                partId,
-                                                                                                bucket,
-                                                                                                path,
-                                                                                                etag)));
+        return withClient(client -> fromFutureSupplier(() -> client.uploadPart(uploadRequest, requestBody)
+                                                                   .orTimeout(WRITE_TIMEOUT_IN_MINUTES,
+                                                                              TimeUnit.MINUTES)).map(resp -> new UploadedPart(
+                                                                                                    CompletedPart.builder().eTag(resp.eTag()).partNumber(partId).build(),
+                                                                                                    requestBody.contentLength().orElse(0L)))
+                                                                                                .doOnNext(etag -> LOGGER.debug(
+                                                                                                    "Multipart {} - Finished uploading part {} of multipart upload to {}/{}, got tag {}",
+                                                                                                    uploadId,
+                                                                                                    partId,
+                                                                                                    bucket,
+                                                                                                    path,
+                                                                                                    etag)));
     }
 
     /**
@@ -568,7 +578,9 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
 
     public Mono<DeleteObjectResponse> deleteContent(String bucket, String path) {
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucket).key(path).build();
-        return withClient(client -> fromFutureSupplier(() -> client.deleteObject(deleteObjectRequest)));
+        return withClient(client -> fromFutureSupplier(() -> client.deleteObject(deleteObjectRequest)
+                                                                   .orTimeout(WRITE_TIMEOUT_IN_MINUTES,
+                                                                              TimeUnit.MINUTES)));
     }
 
     public Flux<DeleteObjectResponse> deleteContentWithPrefix(String bucket, String prefix) {
