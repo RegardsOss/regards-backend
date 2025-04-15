@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
@@ -60,10 +61,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -168,10 +168,33 @@ public class AccessRightService implements IAccessRightService {
 
     }
 
+    private String computeSetChecksum(Set<IPluginParam> set) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            // Tri pour avoir un ordre stable, car HashSet n’est pas ordonné
+            List<String> elements = new ArrayList<>();
+            for (IPluginParam obj : set) {
+                elements.add(obj.toString());
+            }
+            Collections.sort(elements);
+
+            for (String element : elements) {
+                md.update(element.getBytes());
+            }
+
+            byte[] digest = md.digest();
+            return Base64.getEncoder().encodeToString(digest);
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 non disponible", e);
+        }
+    }
     private void calculateAccessRights(AccessRight accessRight, DatasetMetadata metadata) {
         String metadataPluginId = null;
+        String metadataPluginChecksum = null;
         if (accessRight.getDataAccessPlugin() != null) {
             metadataPluginId = accessRight.getDataAccessPlugin().getBusinessId();
+            metadataPluginChecksum = computeSetChecksum(accessRight.getDataAccessPlugin().getParameters());
         }
 
         boolean datasetAccess;
@@ -202,7 +225,7 @@ public class AccessRightService implements IAccessRightService {
                                     fileAccess,
                                     dataObjectAccess,
                                     metadataPluginId,
-                                    null);
+                                    metadataPluginChecksum);
     }
 
     private boolean getFileAccess(AccessLevel dataAccessLevel, FileAccessLevel fileAccessLevel) {

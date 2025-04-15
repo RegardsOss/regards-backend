@@ -40,14 +40,14 @@ public class DatasetMetadata {
                                    Boolean dataFileAccess,
                                    Boolean dataObjectAccess,
                                    String metaDataObjectAccessFilterPlugin,
-                                   String dataObjectAccessFilterPlugin) {
+                                   String metadataPluginChecksum) {
         this.dataObjectsGroups.put(groupName,
                                    new DataObjectGroup(groupName,
                                                        datasetAccess,
                                                        dataFileAccess,
                                                        dataObjectAccess,
                                                        metaDataObjectAccessFilterPlugin,
-                                                       dataObjectAccessFilterPlugin));
+                                                       metadataPluginChecksum));
     }
 
     public Map<String, DataObjectGroup> getDataObjectsGroups() {

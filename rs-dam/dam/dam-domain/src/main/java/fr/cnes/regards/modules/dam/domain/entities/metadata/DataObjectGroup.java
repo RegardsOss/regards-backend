@@ -49,15 +49,15 @@ public class DataObjectGroup {
     private Boolean datasetAccess;
 
     /**
-     * Does the group have access to the dataobjects metadatas ?
+     * Identifier of the plugin configuration used to define specific access to data objects metadatas.<br/>
+     * Can be null, in this case all dataobjects of the dataset are available for the group.
      */
     private String metaDataObjectAccessFilterPluginBusinessId;
 
     /**
-     * Identifier of the plugin configuration used to define specific access to data objects metadatas.<br/>
-     * Can be null, in this case all dataobjects of the dataset are available for the group.
+     * Checksum with all IPluginParam parameters used to filter data objects.<br/>
      */
-    private String dataObjectAccessFilterPluginBusinessId;
+    private String metaDataObjectAccessFilterPluginParamsChecksum;
 
     /**
      * Needed for jsonIter deserialization
@@ -69,15 +69,15 @@ public class DataObjectGroup {
                            Boolean datasetAccess,
                            Boolean dataFileAccess,
                            Boolean dataObjectAccess,
-                           String metaDataObjectAccessFilterPlugin,
-                           String dataObjectAccessFilterPlugin) {
+                           String metaDataObjectAccessFilterPluginBusinessId,
+                           String metaDataObjectAccessFilterPluginParamsChecksum) {
         super();
         this.groupName = groupName;
         this.dataFileAccess = dataFileAccess;
         this.dataObjectAccess = dataObjectAccess;
         this.datasetAccess = datasetAccess;
-        this.metaDataObjectAccessFilterPluginBusinessId = metaDataObjectAccessFilterPlugin;
-        this.dataObjectAccessFilterPluginBusinessId = dataObjectAccessFilterPlugin;
+        this.metaDataObjectAccessFilterPluginBusinessId = metaDataObjectAccessFilterPluginBusinessId;
+        this.metaDataObjectAccessFilterPluginParamsChecksum = metaDataObjectAccessFilterPluginParamsChecksum;
     }
 
     public String getGroupName() {
@@ -88,9 +88,11 @@ public class DataObjectGroup {
         return dataFileAccess;
     }
 
-    public String getDataObjectAccessFilterPluginBusinessId() {
-        return dataObjectAccessFilterPluginBusinessId;
+
+    public String getMetaDataObjectAccessFilterPluginParamsChecksum() {
+        return metaDataObjectAccessFilterPluginParamsChecksum;
     }
+
 
     public Boolean getDatasetAccess() {
         return datasetAccess;
@@ -119,8 +121,8 @@ public class DataObjectGroup {
                && Objects.equals(datasetAccess, that.datasetAccess)
                && Objects.equals(Optional.ofNullable(metaDataObjectAccessFilterPluginBusinessId).orElse(""),
                                  Optional.ofNullable(that.metaDataObjectAccessFilterPluginBusinessId).orElse(""))
-               && Objects.equals(Optional.ofNullable(dataObjectAccessFilterPluginBusinessId).orElse(""),
-                                 Optional.ofNullable(that.dataObjectAccessFilterPluginBusinessId).orElse(""));
+               && Objects.equals(Optional.ofNullable(metaDataObjectAccessFilterPluginParamsChecksum).orElse(""),
+                                 Optional.ofNullable(that.metaDataObjectAccessFilterPluginParamsChecksum).orElse(""));
     }
 
     @Override
@@ -130,6 +132,6 @@ public class DataObjectGroup {
                             dataObjectAccess,
                             datasetAccess,
                             Optional.ofNullable(metaDataObjectAccessFilterPluginBusinessId).orElse(""),
-                            Optional.ofNullable(dataObjectAccessFilterPluginBusinessId).orElse(""));
+                            Optional.ofNullable(metaDataObjectAccessFilterPluginParamsChecksum).orElse(""));
     }
 }
