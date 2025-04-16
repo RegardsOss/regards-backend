@@ -138,6 +138,7 @@ public class IngesterService implements IHandler<PluginConfEvent> {
      */
     @Scheduled(initialDelayString = "${regards.ingester.rate.init.ms:300000}",
                fixedDelayString = "${regards.ingester.rate.ms:60000}")
+    @SuppressWarnings("java:S1181") // guarding against plugin errors requires catching all Throwables
     public void manage() {
         if (startup.get()) {
             // Service is starting. Wait ...
@@ -172,7 +173,7 @@ public class IngesterService implements IHandler<PluginConfEvent> {
                                 Optional<IngestionResult> summary = ingest(dsId);
                                 summary.ifPresent(ingestionResult -> dsIngestionService.updateIngesterResult(dsId,
                                                                                                              ingestionResult));
-                            } catch (Exception e) {
+                            } catch (Throwable e) {
                                 // Catch all other possible exceptions to set ingestion to error status
                                 setDatasourceIngestInError(dsId, e);
                             }
@@ -240,7 +241,7 @@ public class IngesterService implements IHandler<PluginConfEvent> {
         }
     }
 
-    private void setDatasourceIngestInError(String dsId, Exception e) {
+    private void setDatasourceIngestInError(String dsId, Throwable e) {
         LOGGER.error(e.getMessage(), e);
         try (StringWriter sw = new StringWriter()) {
             e.printStackTrace(new PrintWriter(sw));
