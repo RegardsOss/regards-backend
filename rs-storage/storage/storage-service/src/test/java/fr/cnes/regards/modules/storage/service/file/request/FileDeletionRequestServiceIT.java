@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
@@ -84,7 +85,7 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
         String owner = "first-owner";
         Long nbFiles = 20L;
         for (int i = 0; i < nbFiles; i++) {
-            generateStoredFileReference(UUID.randomUUID().toString(),
+            generateStoredFileReference(RandomChecksumUtils.generateRandomChecksum(),
                                         owner,
                                         String.format("file-%d.test", i),
                                         ONLINE_CONF_LABEL,

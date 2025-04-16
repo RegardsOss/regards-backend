@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.storage.service.file;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
@@ -104,7 +105,7 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
     @Test
     public void downloadFileReferenceOffLine() {
         // Given
-        FileReference fileRef = referenceFile(UUID.randomUUID().toString(),
+        FileReference fileRef = referenceFile(RandomChecksumUtils.generateRandomChecksum(),
                                               "owner",
                                               null,
                                               "file.test",
@@ -249,7 +250,7 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
         // Given
         Assert.assertTrue(downloadTokenRepo.findAll().isEmpty());
         // When
-        downloadTokenService.generateDownloadUrl(UUID.randomUUID().toString());
+        downloadTokenService.generateDownloadUrl(RandomChecksumUtils.generateRandomChecksum());
         // Then
         assertEquals(1, downloadTokenRepo.findAll().size());
 
@@ -271,7 +272,7 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
 
         IntStream.range(0, 50).forEach(i -> Try.run(() -> {
             DataType type = typesCache[random.nextInt(typesCache.length)];
-            FileReference fileRef = generateStoredFileReference(UUID.randomUUID().toString(),
+            FileReference fileRef = generateStoredFileReference(RandomChecksumUtils.generateRandomChecksum(),
                                                                 "someone",
                                                                 "file.test",
                                                                 ONLINE_CONF_LABEL,

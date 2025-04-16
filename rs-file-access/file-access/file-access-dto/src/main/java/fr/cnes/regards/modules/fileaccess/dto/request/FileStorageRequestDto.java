@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.fileaccess.dto.request;
 
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
 import fr.cnes.regards.modules.fileaccess.dto.validation.ValidFileStorageRequestChecksum;
+import fr.cnes.regards.modules.fileaccess.dto.validation.ValidFileStorageRequestUrl;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -41,6 +42,8 @@ import java.util.Optional;
  *
  * @author Sébastien Binda
  */
+@ValidFileStorageRequestUrl(message = "The file storage request url is not valid. URL can not contains # or ? "
+                                      + "character")
 @ValidFileStorageRequestChecksum(message = "The file storage request checksum is not valid for this algorithm")
 public class FileStorageRequestDto {
 

@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
@@ -125,10 +126,10 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
 
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(subscribableCaptor.capture());
         List<FileReferenceEvent> fileReferenceEvents = subscribableCaptor.getAllValues()
-                                                                            .stream()
-                                                                            .filter(event -> event instanceof FileReferenceEvent)
-                                                                            .map(event -> (FileReferenceEvent) event)
-                                                                            .toList();
+                                                                         .stream()
+                                                                         .filter(event -> event instanceof FileReferenceEvent)
+                                                                         .map(event -> (FileReferenceEvent) event)
+                                                                         .toList();
 
         Assert.assertNotNull(fileReferenceEvents);
         Assert.assertEquals(FileReferenceEventType.AVAILABLE, fileReferenceEvents.get(0).getType());
@@ -846,7 +847,7 @@ public class FileCacheRequestServiceIT extends AbstractStorageIT {
 
         String cacheRequestsGroupId = UUID.randomUUID().toString();
         for (int index = 0; index < 7; index++) {
-            cacheFiles.add(CacheFile.buildFileInternalCache(UUID.randomUUID().toString(),
+            cacheFiles.add(CacheFile.buildFileInternalCache(RandomChecksumUtils.generateRandomChecksum(),
                                                             1024L,
                                                             "file",
                                                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),

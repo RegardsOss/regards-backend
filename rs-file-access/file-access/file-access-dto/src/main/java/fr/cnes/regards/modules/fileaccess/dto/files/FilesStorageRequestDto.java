@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.fileaccess.dto.files;
 
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
+import jakarta.validation.Valid;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -34,6 +35,7 @@ public class FilesStorageRequestDto {
     /**
      * Information about files to store
      */
+    @Valid
     private final Set<FileStorageRequestDto> files = new HashSet<>();
 
     /**

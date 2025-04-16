@@ -343,7 +343,7 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
 
         String owner = "someone";
         // Add a file reference request for a file that will not be handled by the storage plugin (ignored by his name in the test plugin)
-        String checksumNotHandled = UUID.randomUUID().toString();
+        String checksumNotHandled = RandomChecksumUtils.generateRandomChecksum();
         String fileNameNotHandled = "doNotHandle.file.test";
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksumNotHandled,
                                                                        "MD5",
@@ -360,7 +360,7 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
                                     UUID.randomUUID().toString());
         // Add a valid one for storage
         String fileNameHandled = "file.test";
-        String checksumHandled = UUID.randomUUID().toString();
+        String checksumHandled = RandomChecksumUtils.generateRandomChecksum();
         fileMetaInfo = new FileReferenceMetaInfo(checksumHandled,
                                                  "MD5",
                                                  fileNameHandled,

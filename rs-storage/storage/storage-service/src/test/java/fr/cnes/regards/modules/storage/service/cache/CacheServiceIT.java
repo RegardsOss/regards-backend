@@ -169,7 +169,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
         // Given
         OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1);
         for (int i = 0; i < 10; i++) {
-            cacheService.addFile(UUID.randomUUID().toString(),
+            cacheService.addFile(RandomChecksumUtils.generateRandomChecksum(),
                                  10L,
                                  "test.file.test",
                                  MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
@@ -197,7 +197,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
 
         // When
         Files.copy(pathFileTest, cacheService.getTenantCachePath().resolve(fileName));
-        cacheFileRepository.save(CacheFile.buildFileInternalCache(UUID.randomUUID().toString(),
+        cacheFileRepository.save(CacheFile.buildFileInternalCache(RandomChecksumUtils.generateRandomChecksum(),
                                                                   pathFileTest.toFile().length(),
                                                                   pathFileTest.getFileName().toString(),
                                                                   MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
@@ -420,7 +420,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
 
     private CacheFile createFakeInternalCacheFile(int index, OffsetDateTime expirationDate)
         throws MalformedURLException {
-        return CacheFile.buildFileInternalCache(UUID.randomUUID().toString(),
+        return CacheFile.buildFileInternalCache(RandomChecksumUtils.generateRandomChecksum(),
                                                 10L,
                                                 "file" + index + ".test.internal",
                                                 MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
@@ -432,7 +432,7 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
 
     private CacheFile createFakeExternalCacheFile(int index, OffsetDateTime expirationDate)
         throws MalformedURLException {
-        return CacheFile.buildFileExternalCache(UUID.randomUUID().toString(),
+        return CacheFile.buildFileExternalCache(RandomChecksumUtils.generateRandomChecksum(),
                                                 10L,
                                                 "file" + index + ".test.external",
                                                 MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),

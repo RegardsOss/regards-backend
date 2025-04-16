@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
@@ -205,7 +206,7 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
 
     @Test
     public void referenceFileWithInvalidURL() {
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(),
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(RandomChecksumUtils.generateRandomChecksum(),
                                                                        "MD5",
                                                                        "file.test",
                                                                        1024L,

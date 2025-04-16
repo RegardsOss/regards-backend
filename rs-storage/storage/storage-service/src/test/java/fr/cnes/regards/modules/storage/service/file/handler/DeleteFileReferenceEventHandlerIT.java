@@ -102,7 +102,7 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
      */
     @Test
     public void delete_file_not_existing() {
-        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(UUID.randomUUID().toString(),
+        FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(RandomChecksumUtils.generateRandomChecksum(),
                                                                                "some-stprage",
                                                                                "owner",
                                                                                SESSION_OWNER_1,

@@ -18,6 +18,7 @@ package fr.cnes.regards.modules.storage.service.file.handler;/*
  */
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
@@ -30,7 +31,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -52,7 +52,7 @@ public class CancelRequestGroupIT extends AbstractStorageIT {
 
     @Test
     public void test_group_cancel() throws ExecutionException, InterruptedException {
-        this.generateStoredFileReference(UUID.randomUUID().toString(),
+        this.generateStoredFileReference(RandomChecksumUtils.generateRandomChecksum(),
                                          "regards",
                                          "file.test",
                                          ONLINE_CONF_LABEL,
@@ -80,7 +80,7 @@ public class CancelRequestGroupIT extends AbstractStorageIT {
 
     @Test
     public void test_group_cancel_on_pending_request() throws ExecutionException, InterruptedException {
-        this.generateStoredFileReference(UUID.randomUUID().toString(),
+        this.generateStoredFileReference(RandomChecksumUtils.generateRandomChecksum(),
                                          "regards",
                                          "file.test",
                                          ONLINE_CONF_LABEL,

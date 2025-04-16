@@ -36,7 +36,6 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -216,7 +215,7 @@ public class FileReferenceServiceIT extends AbstractStorageIT {
             referenceFile(checksum, owner, type, fileName + i, storage, sessionOwner, session, false);
         }
         // reference other file
-        referenceFile(UUID.randomUUID().toString(),
+        referenceFile(RandomChecksumUtils.generateRandomChecksum(),
                       owner,
                       type,
                       fileName + "other",

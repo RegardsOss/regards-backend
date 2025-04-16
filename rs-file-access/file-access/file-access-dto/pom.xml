@@ -62,7 +62,7 @@
             <groupId>fr.cnes.regards.framework.utils</groupId>
             <artifactId>validation-utils</artifactId>
         </dependency>
-        
+
         <!-- External -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -79,6 +79,13 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

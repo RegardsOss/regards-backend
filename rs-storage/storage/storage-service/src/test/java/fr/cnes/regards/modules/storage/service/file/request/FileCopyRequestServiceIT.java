@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileCopyDto;
@@ -86,7 +87,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         String owner = "first-owner";
         Long nbFiles = 20L;
         for (int i = 0; i < nbFiles; i++) {
-            generateStoredFileReference(UUID.randomUUID().toString(),
+            generateStoredFileReference(RandomChecksumUtils.generateRandomChecksum(),
                                         owner,
                                         String.format("file-%d.test", i),
                                         ONLINE_CONF_LABEL,
@@ -96,7 +97,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
                                         SESSION);
         }
         for (int i = 0; i < 5; i++) {
-            generateStoredFileReference(UUID.randomUUID().toString(),
+            generateStoredFileReference(RandomChecksumUtils.generateRandomChecksum(),
                                         owner,
                                         String.format("file-%d.test", i),
                                         ONLINE_CONF_LABEL,
@@ -444,7 +445,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     @Test
     public void copyFile_error_unknownFile() {
         String storage = "somewhere";
-        String unknownChecksum = UUID.randomUUID().toString();
+        String unknownChecksum = RandomChecksumUtils.generateRandomChecksum();
         Set<FileCopyDto> requests = Sets.newHashSet(FileCopyDto.build(unknownChecksum,
                                                                       storage,
                                                                       SESSION_OWNER,

@@ -465,8 +465,8 @@ public class StoreFileEventIT extends AbstractStorageIT {
     public void store_files() {
         // Create a new bus message File reference request
         Set<FileStorageRequestDto> requests = Sets.newHashSet();
-        String cs1 = UUID.randomUUID().toString();
-        String cs2 = UUID.randomUUID().toString();
+        String cs1 = RandomChecksumUtils.generateRandomChecksum();
+        String cs2 = RandomChecksumUtils.generateRandomChecksum();
         requests.add(FileStorageRequestDto.build("file.name",
                                                  cs1,
                                                  "MD5",
@@ -677,7 +677,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
 
         // Create a new bus message File reference request
         files.add(FileStorageRequestDto.build("file1.test",
-                                              UUID.randomUUID().toString(),
+                                              RandomChecksumUtils.generateRandomChecksum(),
                                               "MD5",
                                               "application/octet-stream",
                                               owner,
@@ -687,7 +687,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
                                               storageDestination,
                                               Optional.empty()));
         files.add(FileStorageRequestDto.build("file2.test",
-                                              UUID.randomUUID().toString(),
+                                              RandomChecksumUtils.generateRandomChecksum(),
                                               "MD5",
                                               "application/octet-stream",
                                               owner,
@@ -697,7 +697,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
                                               storageDestination,
                                               Optional.empty()));
         files.add(FileStorageRequestDto.build("file3.test",
-                                              UUID.randomUUID().toString(),
+                                              RandomChecksumUtils.generateRandomChecksum(),
                                               "MD5",
                                               "application/octet-stream",
                                               owner,
@@ -745,7 +745,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
         Set<FileStorageRequestDto> files = Sets.newHashSet();
         // Create a new bus message File reference request
         files.add(FileStorageRequestDto.build("file1.test",
-                                              UUID.randomUUID().toString(),
+                                              RandomChecksumUtils.generateRandomChecksum(),
                                               "MD5",
                                               "application/octet-stream",
                                               owners.get(0),
@@ -755,7 +755,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
                                               storageDestination,
                                               Optional.empty()));
         files.add(FileStorageRequestDto.build("file2.test",
-                                              UUID.randomUUID().toString(),
+                                              RandomChecksumUtils.generateRandomChecksum(),
                                               "MD5",
                                               "application/octet-stream",
                                               owners.get(1),
@@ -765,7 +765,7 @@ public class StoreFileEventIT extends AbstractStorageIT {
                                               storageDestination,
                                               Optional.empty()));
         files.add(FileStorageRequestDto.build("file3.test",
-                                              UUID.randomUUID().toString(),
+                                              RandomChecksumUtils.generateRandomChecksum(),
                                               "MD5",
                                               "application/octet-stream",
                                               owners.get(2),
@@ -774,7 +774,8 @@ public class StoreFileEventIT extends AbstractStorageIT {
                                               originUrl,
                                               storageDestination,
                                               Optional.empty()));
-        FilesStorageRequestEvent item = new FilesStorageRequestEvent(files, UUID.randomUUID().toString());
+        FilesStorageRequestEvent item = new FilesStorageRequestEvent(files,
+                                                                     RandomChecksumUtils.generateRandomChecksum());
         List<FilesStorageRequestEvent> items = new ArrayList<>();
         items.add(item);
         storeHandler.handleBatch(items);

@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.service.file.request;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
@@ -69,8 +70,9 @@ public class RequestStatusServiceIT extends AbstractStorageIT {
         // Given
         List<FileStorageRequestAggregation> newRequests = new ArrayList<>();
         String id = UUID.randomUUID().toString();
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
         IntStream.range(0, 10)
-                 .forEach(i -> newRequests.add(generateRandomStorageRequest(id, id, FileRequestStatus.DELAYED)));
+                 .forEach(i -> newRequests.add(generateRandomStorageRequest(id, checksum, FileRequestStatus.DELAYED)));
         fileStorageRequestRepo.saveAll(newRequests);
 
         // With try to un delayed possible requests
@@ -95,7 +97,8 @@ public class RequestStatusServiceIT extends AbstractStorageIT {
     public void test_delayed_success_requests() {
         // Given
         String id = UUID.randomUUID().toString();
-        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(id,
+        String checksum = RandomChecksumUtils.generateRandomChecksum();
+        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum,
                                                                    "MD5",
                                                                    id,
                                                                    1000L,
