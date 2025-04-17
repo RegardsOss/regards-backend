@@ -230,7 +230,6 @@ public class FilePackagerService {
         throws ModuleException {
         Path archivePath = getArchivePath(storageSubdirectory, creationDate);
 
-        IOException deletionException = null;
         try {
             // Delete archive if it exists (because this job was run earlier and failed)
             try {
@@ -269,17 +268,13 @@ public class FilePackagerService {
 
             // Update the archive in database
             packageReferenceRepository.updatePackageChecksum(packageId, checksum);
-        } finally {
+        } catch (Exception e) {
             try {
                 Files.deleteIfExists(archivePath);
-            } catch (IOException e) {
-                // Don't imediatly throw the exception to prevent overriden the original exception (per Sonar Rule)
-                deletionException = e;
-                LOGGER.error("Error while deleting the archive", e);
+            } catch (IOException io) {
+                LOGGER.error("Error while deleting the archive", io);
             }
-        }
-        if (deletionException != null) {
-            throw new ModuleException("Error while deleting the existing archive", deletionException);
+            throw e;
         }
     }
 
