@@ -5,7 +5,7 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSimpleD
 import fr.cnes.regards.modules.dam.domain.settings.DamSettings;
 import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageLocationRestClient;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +16,12 @@ import java.util.List;
 @Component
 public class StorageLocationSettingCustomizer extends AbstractSimpleDynamicSettingCustomizer {
 
-    private final IStorageRestClient storageRestClient;
+    private IStorageLocationRestClient storageLocationRestClient;
 
-    public StorageLocationSettingCustomizer(IStorageRestClient storageRestClient) {
+    public StorageLocationSettingCustomizer(IStorageLocationRestClient storageLocationRestClient) {
         super(DamSettings.STORAGE_LOCATION,
               "parameter [storage location] can be null or must be a valid string or existing online location");
-        this.storageRestClient = storageRestClient;
+        this.storageLocationRestClient = storageLocationRestClient;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class StorageLocationSettingCustomizer extends AbstractSimpleDynamicSetti
     }
 
     private boolean isOnlineLocation(String location) {
-        ResponseEntity<List<EntityModel<StorageLocationDto>>> responseEntity = storageRestClient.retrieve();
+        ResponseEntity<List<EntityModel<StorageLocationDto>>> responseEntity = storageLocationRestClient.retrieve();
         if (!responseEntity.hasBody()) {
             return false;
         } else {
