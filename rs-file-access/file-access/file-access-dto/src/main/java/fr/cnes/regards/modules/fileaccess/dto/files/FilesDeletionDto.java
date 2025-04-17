@@ -87,8 +87,6 @@ public class FilesDeletionDto {
 
     @Override
     public String toString() {
-        return "FilesDeletionDto [" + (files != null ? "files=" + files + ", " : "") + (groupId != null ?
-            "groupId=" + groupId :
-            "") + "]";
+        return "FilesDeletionDto{" + "files=" + files + ", groupId='" + groupId + '\'' + '}';
     }
 }

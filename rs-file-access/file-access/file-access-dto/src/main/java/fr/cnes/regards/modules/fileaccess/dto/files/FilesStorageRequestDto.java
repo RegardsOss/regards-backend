@@ -79,9 +79,6 @@ public class FilesStorageRequestDto {
 
     @Override
     public String toString() {
-        return "FilesStorageRequestDto [" + (files != null ? "files=" + files + ", " : "") + (groupId != null ?
-            "groupId=" + groupId :
-            "") + "]";
+        return "FilesStorageRequestDto{" + "files=" + files + ", groupId='" + groupId + '\'' + '}';
     }
-
 }
