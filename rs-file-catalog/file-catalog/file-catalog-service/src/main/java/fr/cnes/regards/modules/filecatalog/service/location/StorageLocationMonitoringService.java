@@ -42,9 +42,9 @@ import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -108,12 +108,10 @@ public class StorageLocationMonitoringService {
                                                                                      StorageLocation::getName,
                                                                                      Function.identity()));
 
-        List<StorageLocation> storageLocationsToUpdate = monitorStorageLocationsSpace(storageLocations,
-                                                                                      storageLocationMonitoring,
-                                                                                      monitoringDate);
-        storageLocationsToUpdate.addAll(monitorPendingFiles(storageLocations));
+        monitorStorageLocationsSpace(storageLocations, storageLocationMonitoring, monitoringDate);
+        monitorPendingFiles(storageLocations);
 
-        storageLocationRepository.saveAll(storageLocationsToUpdate);
+        storageLocationRepository.saveAll(storageLocations.values());
         long finish = System.currentTimeMillis();
         storageLocationMonitoring.setLastMonitoringDuration(finish - start);
         storageLocationMonitoring.setLastMonitoringDate(monitoringDate);
@@ -125,10 +123,9 @@ public class StorageLocationMonitoringService {
      * Monitor all storage locations to calculate information about stored files.
      * May complete the storageLocationsMap with new StorageLocations.
      */
-    private List<StorageLocation> monitorStorageLocationsSpace(Map<String, StorageLocation> storageLocations,
-                                                               StorageLocationMonitoring storageLocationMonitoring,
-                                                               OffsetDateTime monitoringDate) throws ModuleException {
-        List<StorageLocation> storageLocationsToUpdate = new ArrayList<>();
+    private void monitorStorageLocationsSpace(Map<String, StorageLocation> storageLocations,
+                                              StorageLocationMonitoring storageLocationMonitoring,
+                                              OffsetDateTime monitoringDate) throws ModuleException {
         List<StorageLocationMonitoringResult> aggregations = aggregateFilesSizePerStorage(storageLocationMonitoring.getLastFileReferenceIdMonitored());
         for (StorageLocationMonitoringResult monitoringResult : aggregations) {
             // Retrieve associated storageLocation if exists
@@ -148,44 +145,49 @@ public class StorageLocationMonitoringService {
             }
 
             // Check for occupation ratio limit reached
-            StorageLocationConfigurationDto conf = storageLocationService.getStorageLocationConfiguration(
+            Optional<StorageLocationConfigurationDto> oConfiguration = storageLocationService.getStorageLocationConfiguration(
                 monitoringResult.storage());
-            if (conf.getAllocatedSizeInKo() != null && conf.getAllocatedSizeInKo() > 0L) {
-                Double ratio = (Double.valueOf(storageLocation.getTotalSizeOfReferencedFilesInKo())
-                                / (conf.getAllocatedSizeInKo())) * 100;
-                if (ratio >= criticalThreshold) {
-                    String message = String.format(
-                        "Storage location %s has reach its disk usage critical threshold. %nActual occupation: %.2f%%, critical threshold: %s%%",
-                        storageLocation.getName(),
-                        ratio,
-                        criticalThreshold);
-                    LOGGER.error(message);
-                    notifyAdmins(String.format("Data storageLocation %s is full", storageLocation.getName()),
-                                 message,
-                                 NotificationLevel.ERROR,
-                                 MimeTypeUtils.TEXT_PLAIN);
-                    MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
-                } else if (ratio >= threshold) {
-                    String message = String.format("Storage location %s has reach its "
-                                                   + "disk usage threshold. %nActual occupation: %.2f%%, threshold: %s%%",
-                                                   storageLocation.getName(),
-                                                   ratio,
-                                                   criticalThreshold);
-                    LOGGER.warn(message);
-                    notifyAdmins(String.format("Data storageLocation %s is almost full", storageLocation.getName()),
-                                 message,
-                                 NotificationLevel.WARNING,
-                                 MimeTypeUtils.TEXT_PLAIN);
+            // If no plugin configuration is found, it's a virtual storage location with no limits
+            if (oConfiguration.isPresent()) {
+                StorageLocationConfigurationDto storageLocationConfiguration = oConfiguration.get();
+                if (storageLocationConfiguration.getAllocatedSizeInKo() != null
+                    && storageLocationConfiguration.getAllocatedSizeInKo() > 0L) {
+                    Double ratio = (Double.valueOf(storageLocation.getTotalSizeOfReferencedFilesInKo())
+                                    / (storageLocationConfiguration.getAllocatedSizeInKo())) * 100;
+                    if (ratio >= criticalThreshold) {
+                        String message = String.format(
+                            "Storage location %s has reach its disk usage critical threshold. %nActual occupation: %.2f%%, critical threshold: %s%%",
+                            storageLocation.getName(),
+                            ratio,
+                            criticalThreshold);
+                        LOGGER.error(message);
+                        notifyAdmins(String.format("Data storageLocation %s is full", storageLocation.getName()),
+                                     message,
+                                     NotificationLevel.ERROR,
+                                     MimeTypeUtils.TEXT_PLAIN);
+                        MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
+                    } else if (ratio >= threshold) {
+                        String message = String.format("Storage location %s has reach its "
+                                                       + "disk usage threshold. %nActual occupation: %.2f%%, threshold: %s%%",
+                                                       storageLocation.getName(),
+                                                       ratio,
+                                                       criticalThreshold);
+                        LOGGER.warn(message);
+                        notifyAdmins(String.format("Data storageLocation %s is almost full", storageLocation.getName()),
+                                     message,
+                                     NotificationLevel.WARNING,
+                                     MimeTypeUtils.TEXT_PLAIN);
+                    } else {
+                        LOGGER.trace("Storage location {} monitoring done with no warnings.",
+                                     storageLocation.getName());
+                    }
                 } else {
-                    LOGGER.trace("Storage location {} monitoring done with no warnings.", storageLocation.getName());
+                    LOGGER.warn(
+                        "[STORAGE LOCATION] Ratio calculation for {} storageLocation disabled cause storageLocation allowed size is not configured.",
+                        storageLocation.getName());
                 }
-            } else {
-                LOGGER.warn(
-                    "[STORAGE LOCATION] Ratio calculation for {} storageLocation disabled cause storageLocation allowed size is not configured.",
-                    storageLocation.getName());
             }
         }
-        return storageLocationsToUpdate;
     }
 
     private @NotNull StorageLocationMonitoring getStorageLocationMonitoring(Boolean reset,
@@ -218,8 +220,7 @@ public class StorageLocationMonitoringService {
         }
     }
 
-    private List<StorageLocation> monitorPendingFiles(Map<String, StorageLocation> storageLocations) {
-        List<StorageLocation> storageLocationsToUpdate = new ArrayList<>();
+    private void monitorPendingFiles(Map<String, StorageLocation> storageLocations) {
         long start = System.currentTimeMillis();
         LOGGER.debug("Start monitoring storage pending files ...");
         List<StorageLocationPendingFilesMonitoringResult> pendingAggregations = fileReferenceRepository.getPendingFilesAggregation();
@@ -227,10 +228,8 @@ public class StorageLocationMonitoringService {
             StorageLocation storageLocation = storageLocations.computeIfAbsent(monitoringResult.storage(),
                                                                                StorageLocation::new);
             storageLocation.setNumberOfPendingFiles(monitoringResult.numberOfPendingFiles());
-            storageLocationsToUpdate.add(storageLocation);
         }
         LOGGER.debug("Monitoring of storage pending files done in {}ms", System.currentTimeMillis() - start);
-        return storageLocationsToUpdate;
     }
 
     private void notifyAdmins(String title, String message, NotificationLevel type, MimeType mimeType) {

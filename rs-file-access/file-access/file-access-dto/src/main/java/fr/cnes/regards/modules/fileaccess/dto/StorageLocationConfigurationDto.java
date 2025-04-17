@@ -53,7 +53,7 @@ public class StorageLocationConfigurationDto {
         this.priority = priority;
         this.allocatedSizeInKo = allocatedSizeInKo;
     }
-
+    
     public StorageLocationConfigurationDto(String name,
                                            @Nullable PluginConfigurationDto pluginConfiguration,
                                            Long priority,

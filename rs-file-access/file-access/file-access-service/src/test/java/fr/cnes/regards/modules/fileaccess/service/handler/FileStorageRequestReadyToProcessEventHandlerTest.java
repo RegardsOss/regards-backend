@@ -285,7 +285,7 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
         String pluginBusinessId = STORAGE_NAME;
         String url = "http://url1.com";
 
-        Mockito.when(pluginService.getPlugin(pluginBusinessId)).thenReturn(new TestStorageLocation(true));
+        Mockito.when(pluginService.getPlugin(pluginBusinessId)).thenReturn(Optional.of(new TestStorageLocation(true)));
 
         FileStorageMetaInfoDto metaInfoDto = new FileStorageMetaInfoDto("text/plain", "RAWDATA", 0, 0);
 
@@ -325,7 +325,7 @@ public class FileStorageRequestReadyToProcessEventHandlerTest {
         String pluginBusinessId = "storage-test";
         String url = "http://url1.com";
 
-        Mockito.when(pluginService.getPlugin(pluginBusinessId)).thenReturn(new TestStorageLocation(false));
+        Mockito.when(pluginService.getPlugin(pluginBusinessId)).thenReturn(Optional.of(new TestStorageLocation(false)));
 
         FileStorageMetaInfoDto metaInfoDto = new FileStorageMetaInfoDto("text/plain", "RAWDATA", 0, 0);
 

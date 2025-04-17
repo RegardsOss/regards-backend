@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.fileaccess.dto.input.FileStorageMetaInfoDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FileArchiveResponseEvent;
+import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesStorageRequestEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileArchiveRequestEvent;
 import fr.cnes.regards.modules.filecatalog.dao.IFileReferenceRepository;
@@ -60,6 +61,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
 import java.time.OffsetDateTime;
@@ -154,7 +156,35 @@ public class FileStorageRequestService {
                                             Optional.empty(),
                                             Optional.of(StorageRequestStatus.GRANTED),
                                             file.getSessionOwner(),
-                                            file.getSession());
+                                            file.getSession(),
+                                            false);
+            }
+            requestsGroupService.granted(message.getGroupId(),
+                                         FileRequestType.STORAGE,
+                                         message.getFiles().size(),
+                                         getRequestExpirationDate());
+        }
+    }
+
+    @MultitenantTransactional
+    public void createReferenceRequests(List<FilesReferenceEvent> messages) throws ModuleException {
+        for (FilesReferenceEvent message : messages) {
+            for (FileReferenceRequestDto file : message.getFiles()) {
+                createNewFileStorageRequest(file.getOwner(),
+                                            new FileReferenceMetaInfo(file.getChecksum(),
+                                                                      file.getAlgorithm(),
+                                                                      file.getFileName(),
+                                                                      file.getFileSize(),
+                                                                      MimeType.valueOf(file.getMimeType())),
+                                            file.getUrl(),
+                                            file.getStorage(),
+                                            Optional.empty(),
+                                            message.getGroupId(),
+                                            Optional.empty(),
+                                            Optional.of(StorageRequestStatus.GRANTED),
+                                            file.getSessionOwner(),
+                                            file.getSession(),
+                                            true);
             }
             requestsGroupService.granted(message.getGroupId(),
                                          FileRequestType.STORAGE,
@@ -193,7 +223,8 @@ public class FileStorageRequestService {
                                                                      Optional<String> errorCause,
                                                                      Optional<StorageRequestStatus> status,
                                                                      String sessionOwner,
-                                                                     String session) {
+                                                                     String session,
+                                                                     boolean reference) {
         long start = System.currentTimeMillis();
         FileStorageRequestAggregation fileStorageRequest = new FileStorageRequestAggregation(owner,
                                                                                              fileMetaInfo,
@@ -203,7 +234,7 @@ public class FileStorageRequestService {
                                                                                              groupId,
                                                                                              sessionOwner,
                                                                                              session,
-                                                                                             false);
+                                                                                             reference);
         fileStorageRequest.setStatus(requestStatusService.getNewStatus(fileStorageRequest, status));
         fileStorageRequest.setErrorCause(errorCause.orElse(null));
         // notify request is running to the session agent

@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.fileaccess.amqp.input.FileStorageRequestReadyToProcessEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageWorkerRequestEvent;
@@ -187,33 +186,36 @@ public class FileStorageService {
     public void processStorageRequests(List<FileStorageRequestReadyToProcessEvent> messages) {
         List<StorageWorkerRequestEvent> workerEventsToSend = new ArrayList<>();
         Map<String, Optional<StoragePluginConfigurationDtoAndPluginId>> configurations = new HashMap<>();
-        Map<String, IStorageLocation> storageLocations = new HashMap<>();
+        Map<String, Optional<IStorageLocation>> storageLocations = new HashMap<>();
         for (FileStorageRequestReadyToProcessEvent message : messages) {
-            Optional<StoragePluginConfigurationDtoAndPluginId> oConfiguration = configurations.computeIfAbsent(message.getStorage(),
-                                                                                                               storagePluginConfigurationService::getByName);
-            if (oConfiguration.isEmpty()) {
-                String errorMessage = String.format(
-                    "Error while processing storage request for file %s. No configuration found for %s",
-                    message.getChecksum(),
-                    message.getStorage());
-                LOGGER.error(errorMessage);
-                publisher.publish(StorageResponseEvent.createErrorResponse(message.getRequestId(),
-                                                                           message.getOriginUrl(),
-                                                                           message.getChecksum(),
-                                                                           StorageResponseErrorEnum.UNKNOWN_STORAGE_LOCATION,
-                                                                           errorMessage), message.getRequestId());
-
+            if (message.isReference()) {
+                // This is a reference request (no physical storage will be done, the file
+                // just need to be validated).
+                Optional<IStorageLocation> oStorageLocation = storageLocations.computeIfAbsent(message.getStorage(),
+                                                                                               this::getPluginIfExists);
+                publisher.publish(validateReferenceUrl(message, oStorageLocation), message.getRequestId());
             } else {
+                Optional<StoragePluginConfigurationDtoAndPluginId> oConfiguration = configurations.computeIfAbsent(
+                    message.getStorage(),
+                    storagePluginConfigurationService::getByName);
+                if (oConfiguration.isEmpty()) {
+                    String errorMessage = String.format(
+                        "Error while processing storage request for file %s. No configuration found for %s",
+                        message.getChecksum(),
+                        message.getStorage());
+                    LOGGER.error(errorMessage);
+                    publisher.publish(StorageResponseEvent.createErrorResponse(message.getRequestId(),
+                                                                               message.getOriginUrl(),
+                                                                               message.getChecksum(),
+                                                                               StorageResponseErrorEnum.UNKNOWN_STORAGE_LOCATION,
+                                                                               errorMessage), message.getRequestId());
 
-                if (message.isReference()) {
-                    // This is a reference request (no physical storage will be done, the file just need to be
-                    // validated).
-                    publisher.publish(validateReferenceUrl(message, storageLocations), message.getRequestId());
                 } else {
                     // This is a physical storage request (the worker will handle the storage)
                     workerEventsToSend.add(createWorkerEvent(message, oConfiguration.get()));
                 }
             }
+
         }
         if (!workerEventsToSend.isEmpty()) {
             publisher.publish(workerEventsToSend,
@@ -250,30 +252,10 @@ public class FileStorageService {
     }
 
     private StorageResponseEvent validateReferenceUrl(FileStorageRequestReadyToProcessEvent request,
-                                                      Map<String, IStorageLocation> storageLocations) {
-        try {
-            Set<String> errors = Sets.newHashSet();
-            IStorageLocation storagePlugin = storageLocations.get(request.getStorage());
-            if (storagePlugin == null) {
-                try {
-                    storagePlugin = pluginService.getPlugin(request.getStorage());
-                } catch (NotAvailablePluginConfigurationException e) {
-                    String error = String.format("Error while processing storage request"
-                                                 + " for file %s. No plugin found for %s",
-                                                 request.getOriginUrl(),
-                                                 request.getStorage());
-                    LOGGER.error(error, e.getMessage());
-                    return StorageResponseEvent.createErrorResponse(request.getRequestId(),
-                                                                    request.getOriginUrl(),
-                                                                    request.getChecksum(),
-                                                                    StorageResponseErrorEnum.UNKNOWN_STORAGE_LOCATION,
-                                                                    error);
-                }
-            } else {
-                storageLocations.put(request.getStorage(), storagePlugin);
-            }
-
-            if (storagePlugin.isValidUrl(request.getOriginUrl(), errors)) {
+                                                      Optional<IStorageLocation> storageLocation) {
+        Set<String> errors = Sets.newHashSet();
+        if (storageLocation.isPresent()) {
+            if (storageLocation.get().isValidUrl(request.getOriginUrl(), errors)) {
                 return StorageResponseEvent.createSuccessReferenceResponse(request.getRequestId(),
                                                                            request.getOriginUrl(),
                                                                            request.getChecksum());
@@ -289,18 +271,19 @@ public class FileStorageService {
                                                                               request.getStorage(),
                                                                               errors));
             }
-        } catch (ModuleException e) {
-            LOGGER.error(e.getMessage(), e);
-            return StorageResponseEvent.createErrorResponse(request.getRequestId(),
-                                                            request.getOriginUrl(),
-                                                            request.getChecksum(),
-                                                            StorageResponseErrorEnum.INVALID_REQUEST_CONTENT,
-                                                            String.format("The file reference url %s reference the "
-                                                                          + "storage %s which does no exist or is not"
-                                                                          + " active",
-                                                                          request.getOriginUrl(),
-                                                                          request.getStorage()));
+        } else {
+            // The request reference a virtual Storage Location, no validation required
+            return StorageResponseEvent.createSuccessReferenceResponse(request.getRequestId(),
+                                                                       request.getOriginUrl(),
+                                                                       request.getChecksum());
         }
     }
 
+    private Optional<IStorageLocation> getPluginIfExists(String storageName) {
+        try {
+            return pluginService.getPlugin(storageName);
+        } catch (ModuleException e) {
+            return Optional.empty();
+        }
+    }
 }

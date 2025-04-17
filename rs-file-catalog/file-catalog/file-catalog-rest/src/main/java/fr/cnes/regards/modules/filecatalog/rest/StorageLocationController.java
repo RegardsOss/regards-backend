@@ -314,9 +314,6 @@ public class StorageLocationController implements IResourceController<StorageLoc
                                     LinkRelation.of(METHOD_DELETE_FILES),
                                     MethodParamFactory.build(String.class, location.getName()),
                                     MethodParamFactory.build(Boolean.class));
-        }
-        // If storage location is configured so delete & edit End-point is also available
-        if ((location.getConfiguration() != null)) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     METHOD_UPDATE_LOCATION_CONFIGURATION,
@@ -325,15 +322,14 @@ public class StorageLocationController implements IResourceController<StorageLoc
                                     MethodParamFactory.build(StorageLocationDto.class));
             resourceService.addLink(resource,
                                     this.getClass(),
-                                    METHOD_DELETE,
-                                    LinkRels.DELETE,
-                                    MethodParamFactory.build(String.class, location.getName()));
-        } else {
-            resourceService.addLink(resource,
-                                    this.getClass(),
                                     METHOD_CONFIGURE_LOCATION,
                                     LinkRels.UPDATE,
                                     MethodParamFactory.build(StorageLocationDto.class));
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    METHOD_DELETE,
+                                    LinkRels.DELETE,
+                                    MethodParamFactory.build(String.class, location.getName()));
         }
         return resource;
     }

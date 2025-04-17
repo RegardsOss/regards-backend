@@ -925,7 +925,7 @@ public class FileStorageRequestService {
     }
 
     public void handleSuccess(Collection<FileStorageRequestResultDto> results) {
-        Set<String> files = new HashSet<>();
+        Set<String> filesWithActionRemaining = new HashSet<>();
         for (FileStorageRequestResultDto result : results) {
             boolean isHandleSuccess = true;
             // As the request is rebuilt from the dto, the status information is not available and the request need
@@ -991,7 +991,7 @@ public class FileStorageRequestService {
             this.sessionNotifier.incrementStoredFiles(sessionOwner, session, nbFilesStored);
 
             if (result.isNotifyActionRemainingToAdmin()) {
-                files.add(result.getStoredUrl());
+                filesWithActionRemaining.add(result.getStoredUrl());
             }
 
             // Delete the FileRefRequest as it has been handled
@@ -1001,10 +1001,10 @@ public class FileStorageRequestService {
             }
         }
 
-        if (!files.isEmpty()) {
-            notificationClient.notifyRoles(createStorageActionPendingNotification(files),
+        if (!filesWithActionRemaining.isEmpty()) {
+            notificationClient.notifyRoles(createStorageActionPendingNotification(filesWithActionRemaining),
                                            "Storage not completed",
-                                           NotificationLevel.ERROR,
+                                           NotificationLevel.INFO,
                                            MimeTypeUtils.TEXT_HTML,
                                            Sets.newHashSet(DefaultRole.PROJECT_ADMIN.toString()));
         }

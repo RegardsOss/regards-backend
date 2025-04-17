@@ -282,12 +282,7 @@ public class FileAvailabilityService {
     private Map<StorageType, List<FileReference>> groupFileByStorageType(Set<FileReference> fileReferenceSet,
                                                                          Set<StorageLocationConfiguration> storagesUsed) {
         Map<String, StorageLocationConfiguration> storagesUsedIndexed = indexStorageConfigurations(storagesUsed);
-        // manage the special case of "web" storage.This storage is not real,
-        // and all files in "web" are considered unavailable
-        List<FileReference> fileReferences = fileReferenceSet.stream()
-                                                             .filter(file -> !"web".equalsIgnoreCase(file.getLocation()
-                                                                                                         .getStorage()))
-                                                             .toList();
+        List<FileReference> fileReferences = fileReferenceSet.stream().toList();
         // keep only files with the highest storage type priority
         fileReferences = sortFileReferenceByStoragePriority(fileReferences, storagesUsedIndexed);
         fileReferences = deleteDuplicatedFileReference(fileReferences);
