@@ -40,7 +40,7 @@ import java.util.List;
  * Download and quota management are deprecated on storage microservice. Use rs-downloader service
  * (IStorageDownloaderRestClient)
  */
-@RestClient(name = "${regards.feign.storage.location.host:rs-storage}", contextId = "rs-storage.rest.client")
+@RestClient(name = "${regards.feign.storage.location.host:rs-storage}", contextId = "rs-storage.location.rest.client")
 public interface IStorageLocationRestClient {
 
     String STORAGES_PATH = "/storages";
