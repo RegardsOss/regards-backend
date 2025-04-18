@@ -29,14 +29,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import java.util.List;
 
 /**
- * REST Client to access storage microservice
+ * REST Client to access storage microservice or file-access microservice.
+ * Difference with IStorageRestClient is :
+ * - for rs-storage microservice : no difference the both clients call rs-storage service
+ * - for neotstorage microservices : this one calls rs-file-access, IStorageRestClient calls rs-file-catalog
+ * <p>
+ * Service to call is configured in inventory thanks to regards.feign.storage.host property.
  *
  * @author Sébastien Binda
  * Download and quota management are deprecated on storage microservice. Use rs-downloader service
  * (IStorageDownloaderRestClient)
  */
 @RestClient(name = "${regards.feign.storage.location.host:rs-storage}", contextId = "rs-storage.rest.client")
-public interface IStorageLocationRestClient extends IStorageDownloadQuotaRestClient {
+public interface IStorageLocationRestClient {
 
     String STORAGES_PATH = "/storages";
 

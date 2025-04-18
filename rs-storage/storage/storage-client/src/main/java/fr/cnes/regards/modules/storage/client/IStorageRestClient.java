@@ -34,7 +34,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * REST Client to access storage microservice
+ * REST Client to access storage or rs-file-catalog microservice
+ * Difference with IStorageLocationRestClient is :
+ * - for rs-storage microservice : no difference the both clients call rs-storage service
+ * - for neotstorage microservices : this one calls rs-file-catalog, IStorageRestClient calls rs-file-access
+ * <p>
+ * Service to call is configured in inventory thanks to regards.feign.storage.host property.
  *
  * @author Sébastien Binda
  * Download and quota management are deprecated on storage microservice. Use rs-downloader service
