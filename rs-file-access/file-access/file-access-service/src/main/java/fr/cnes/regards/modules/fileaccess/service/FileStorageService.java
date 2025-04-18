@@ -281,7 +281,7 @@ public class FileStorageService {
 
     private Optional<IStorageLocation> getPluginIfExists(String storageName) {
         try {
-            return pluginService.getPlugin(storageName);
+            return Optional.of(pluginService.getPlugin(storageName));
         } catch (ModuleException e) {
             return Optional.empty();
         }
