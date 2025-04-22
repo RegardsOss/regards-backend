@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.client.IStorageDownloaderRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageLocationRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
@@ -81,6 +82,11 @@ public class EntityIndexerServiceConfiguration {
     @Bean
     public IStorageDownloaderRestClient mockStorageDownloaderRestClient() {
         return Mockito.mock(IStorageDownloaderRestClient.class);
+    }
+
+    @Bean
+    public IStorageLocationRestClient storageLocationRestClient() {
+        return Mockito.mock(IStorageLocationRestClient.class);
     }
 
     @Bean
