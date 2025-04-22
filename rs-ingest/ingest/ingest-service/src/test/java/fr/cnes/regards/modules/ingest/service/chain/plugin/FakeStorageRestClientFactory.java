@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.fileaccess.dto.StorageType;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageLocationRestClient;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import org.mockito.Mockito;
 import org.springframework.hateoas.EntityModel;
@@ -37,8 +37,8 @@ import java.util.List;
  */
 public class FakeStorageRestClientFactory {
 
-    public static IStorageRestClient create(List<EntityModel<StorageLocationDto>> mockStorageLocationContent) {
-        IStorageRestClient client = Mockito.mock(IStorageRestClient.class);
+    public static IStorageLocationRestClient create(List<EntityModel<StorageLocationDto>> mockStorageLocationContent) {
+        IStorageLocationRestClient client = Mockito.mock(IStorageLocationRestClient.class);
         Mockito.when(client.retrieve()).thenReturn(new ResponseEntity<>(mockStorageLocationContent, HttpStatus.OK));
         return client;
     }
