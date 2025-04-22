@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.storage.client.IStorageLocationRestClient;
 import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
@@ -120,6 +121,11 @@ public class EngineTestConfiguration {
     @Bean
     public IAttachmentClient attachmentClient() {
         return Mockito.mock(IAttachmentClient.class);
+    }
+
+    @Bean
+    public IStorageLocationRestClient storageLocationRestClient() {
+        return Mockito.mock(IStorageLocationRestClient.class);
     }
 
 }
