@@ -57,10 +57,10 @@ public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSel
     private int objectsCount = 0;
 
     @Column(name = "files_count")
-    private final long filesCount = 0;
+    private final long filesCount = 0; // NOSONAR : property unused in REGARDS ??
 
     @Column(name = "files_size")
-    private final long filesSize = 0;
+    private final long filesSize = 0; // NOSONAR : property unused in REGARDS ??
 
     @Type(JsonBinaryType.class)
     @Column(columnDefinition = "jsonb", name = "file_types_sizes")

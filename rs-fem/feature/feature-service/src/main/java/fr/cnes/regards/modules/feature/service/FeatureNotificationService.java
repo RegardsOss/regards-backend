@@ -57,6 +57,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -166,7 +167,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
      * @param existingRequestIds   list of existing request in database
      */
     private void prepareNotificationRequest(FeatureNotificationRequestEvent item,
-                                            FeatureEntity featureToNotify,
+                                            @Nullable FeatureEntity featureToNotify,
                                             List<FeatureNotificationRequest> notificationsRequest,
                                             Set<String> existingRequestIds) {
         // Validate event
@@ -213,9 +214,9 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
                                                                                   RequestState.GRANTED);
 
             request.setRecipientIds(item.getRecipients());
-            request.setToNotify(featureToNotify.getFeature());
-            request.setSessionToNotify(featureToNotify.getSession());
-            request.setSourceToNotify(featureToNotify.getSessionOwner());
+            request.setToNotify(featureToNotify.getFeature()); // NOSONAR : impossible NullPointerException featureToNotify
+            request.setSessionToNotify(featureToNotify.getSession()); // NOSONAR : impossible NullPointerException featureToNotify
+            request.setSourceToNotify(featureToNotify.getSessionOwner()); // NOSONAR : impossible NullPointerException featureToNotify
             // Monitoring log
             FeatureLogger.notificationGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
             // Publish GRANTED request
@@ -230,7 +231,8 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
             // Add new request id to existing ones
             existingRequestIds.add(request.getRequestId());
             // Update session properties
-            featureSessionNotifier.incrementCount(featureToNotify, FeatureSessionProperty.NOTIFY_REQUESTS);
+            featureSessionNotifier.incrementCount(featureToNotify,
+                                                  FeatureSessionProperty.NOTIFY_REQUESTS); // NOSONAR : impossible NullPointerException featureToNotify
         }
     }
 
