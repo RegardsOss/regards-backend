@@ -9,14 +9,16 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 
-@Service
-@MultitenantTransactional
 /**
  * FIXME Lot 2
  * Uses 0 quota for now
- */ public class DownloadQuotaService<T> {
+ */
+@Service
+@MultitenantTransactional
+public class DownloadQuotaService<T> {
 
     public DownloadQuotaService() {
+        // empty constructor
     }
 
     public Try<DownloadQuotaLimitsDto> getDownloadQuotaLimits(String userEmail) {
