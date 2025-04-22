@@ -748,7 +748,7 @@ public class FileStorageRequestService {
                                      Long fileSizeInBytes,
                                      FileArchiveStatus storageStatus,
                                      boolean notifyActionRemainingToAdmin) {
-
+        // NOSONAR
     }
 
     @MultitenantTransactional(readOnly = true)
@@ -927,6 +927,7 @@ public class FileStorageRequestService {
 
     private record SessionAndOwner(String sessionOwner,
                                    String session) {
+        // NO SONAR
 
     }
 }

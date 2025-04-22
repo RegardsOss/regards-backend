@@ -135,37 +135,26 @@ public class FileStorageRequestDto {
                                               String storage,
                                               Optional<String> subDirectory) {
 
-        Assert.notNull(fileName, "File name is mandatory.");
-        Assert.notNull(checksum, "Checksum is mandatory.");
-        Assert.notNull(algorithm, "Algorithm is mandatory.");
-        Assert.notNull(mimeType, "MimeType is mandatory.");
-        Assert.notNull(owner, "Owner is mandatory.");
-        Assert.notNull(originUrl, "Origin url is mandatory.");
-        Assert.notNull(storage, "Destination storage location is mandatory");
+        FileReferenceMetaInfoDto metaInfo = new FileReferenceMetaInfoDto(checksum,
+                                                                         algorithm,
+                                                                         fileName,
+                                                                         null,
+                                                                         null,
+                                                                         null,
+                                                                         mimeType,
+                                                                         null);
 
-        FileStorageRequestDto request = new FileStorageRequestDto();
-        request.fileName = fileName;
-        request.checksum = checksum;
-        request.algorithm = algorithm;
-        request.mimeType = mimeType;
-        request.owner = owner;
-        request.originUrl = originUrl;
-        request.storage = storage;
-        request.metaInfo = new FileReferenceMetaInfoDto(checksum,
-                                                        algorithm,
-                                                        fileName,
-                                                        null,
-                                                        null,
-                                                        null,
-                                                        mimeType,
-                                                        null);
-        request.session = session;
-        request.sessionOwner = sessionOwner;
-        if (subDirectory != null) {
-            request.subDirectory = subDirectory.orElse(null);
-        }
-        request.reference = false;
-        return request;
+        return build(fileName,
+                     checksum,
+                     algorithm,
+                     mimeType,
+                     owner,
+                     sessionOwner,
+                     session,
+                     originUrl,
+                     storage,
+                     metaInfo,
+                     subDirectory);
     }
 
     /**

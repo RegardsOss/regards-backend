@@ -41,6 +41,8 @@ import java.util.List;
 @Component
 public class StorageDownloaderClient {
 
+    public static final String NO_CLIENT_FOR_QUOTA_ERROR = "No storage client available for quota !";
+
     /**
      * Variable to choose storage or downloader service.
      */
@@ -83,7 +85,7 @@ public class StorageDownloaderClient {
         if (storageRestClient != null) {
             return storageRestClient.getQuotaLimits(userEmail);
         }
-        throw new RsRuntimeException("No storage client available for quota !");
+        throw new RsRuntimeException(NO_CLIENT_FOR_QUOTA_ERROR);
     }
 
     public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail,
@@ -94,7 +96,7 @@ public class StorageDownloaderClient {
         if (storageRestClient != null) {
             return storageRestClient.upsertQuotaLimits(userEmail, quotaLimits);
         }
-        throw new RsRuntimeException("No storage client available for quota !");
+        throw new RsRuntimeException(NO_CLIENT_FOR_QUOTA_ERROR);
     }
 
     public ResponseEntity<List<DownloadQuotaLimitsDto>> getQuotaLimits(String[] userEmails) {
@@ -104,7 +106,7 @@ public class StorageDownloaderClient {
         if (storageRestClient != null) {
             return storageRestClient.getQuotaLimits(userEmails);
         }
-        throw new RsRuntimeException("No storage client available for quota !");
+        throw new RsRuntimeException(NO_CLIENT_FOR_QUOTA_ERROR);
     }
 
     public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits() {
@@ -114,7 +116,7 @@ public class StorageDownloaderClient {
         if (storageRestClient != null) {
             return storageRestClient.getQuotaLimits();
         }
-        throw new RsRuntimeException("No storage client available for quota !");
+        throw new RsRuntimeException(NO_CLIENT_FOR_QUOTA_ERROR);
     }
 
     public ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas() {
@@ -124,7 +126,7 @@ public class StorageDownloaderClient {
         if (storageRestClient != null) {
             return storageRestClient.getCurrentQuotas();
         }
-        throw new RsRuntimeException("No storage client available for quota !");
+        throw new RsRuntimeException(NO_CLIENT_FOR_QUOTA_ERROR);
     }
 
     public ResponseEntity<UserCurrentQuotasDto> getCurrentQuotas(String userEmail) {
@@ -134,7 +136,7 @@ public class StorageDownloaderClient {
         if (storageRestClient != null) {
             return storageRestClient.getCurrentQuotas(userEmail);
         }
-        throw new RsRuntimeException("No storage client available for quota !");
+        throw new RsRuntimeException(NO_CLIENT_FOR_QUOTA_ERROR);
     }
 
     public ResponseEntity<Long> getMaxQuota() {
@@ -144,7 +146,7 @@ public class StorageDownloaderClient {
         if (storageRestClient != null) {
             return storageRestClient.getMaxQuota();
         }
-        throw new RsRuntimeException("No storage client available for quota !");
+        throw new RsRuntimeException(NO_CLIENT_FOR_QUOTA_ERROR);
     }
 
     public ResponseEntity<List<UserCurrentQuotasDto>> getCurrentQuotasList(String[] userEmails) {
@@ -154,7 +156,7 @@ public class StorageDownloaderClient {
         if (storageRestClient != null) {
             return storageRestClient.getCurrentQuotasList(userEmails);
         }
-        throw new RsRuntimeException("No storage client available for quota !");
+        throw new RsRuntimeException(NO_CLIENT_FOR_QUOTA_ERROR);
     }
 
 }

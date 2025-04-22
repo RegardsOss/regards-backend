@@ -80,6 +80,7 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
     private StorageSettingService storageSettingService;
 
     public DownloadQuotaService() {
+        // empty constructor
     }
 
     @Autowired
@@ -291,9 +292,8 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
     }
 
     public void updateUserQuotaLimitCache() {
-        quotaRepository.findAllQuotaLimit().forEach(
-            quota -> cache.put(QuotaKey.make(quota.getTenant(), quota.getEmail()), quota)
-        );
+        quotaRepository.findAllQuotaLimit()
+                       .forEach(quota -> cache.put(QuotaKey.make(quota.getTenant(), quota.getEmail()), quota));
     }
 
     /**

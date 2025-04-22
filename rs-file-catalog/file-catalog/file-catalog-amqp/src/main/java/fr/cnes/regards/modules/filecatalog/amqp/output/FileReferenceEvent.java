@@ -38,7 +38,7 @@ public class FileReferenceEvent extends FileReferenceDto implements ISubscribabl
                               FileReferenceEventType type,
                               String message) {
         super(storageDate, metaInfo, location, owners);
-        this.getGroupIds().addAll(groupIds);
+        this.groupIds.addAll(groupIds);
         this.type = type;
         this.message = message;
     }
@@ -55,7 +55,7 @@ public class FileReferenceEvent extends FileReferenceDto implements ISubscribabl
         this.type = type;
         this.message = message;
     }
-    
+
     public FileReferenceEventType getType() {
         return type;
     }

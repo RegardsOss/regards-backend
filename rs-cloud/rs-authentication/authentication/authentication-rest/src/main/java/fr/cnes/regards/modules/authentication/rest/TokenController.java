@@ -63,6 +63,7 @@ public class TokenController {
                                      String password,
                                      String scope,
                                      String grant_type) {
+        // NOSONAR
 
     }
 

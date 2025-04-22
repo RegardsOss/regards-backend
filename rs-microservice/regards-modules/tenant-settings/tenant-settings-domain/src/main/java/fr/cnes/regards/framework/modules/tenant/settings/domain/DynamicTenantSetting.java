@@ -72,8 +72,14 @@ public class DynamicTenantSetting {
         this.id = id; // do not remove this field it is used to update entity
         this.name = name;
         this.description = description;
-        setDefaultValue(defaultValue);
-        setValue(value);
+        if (defaultValue != null) {
+            this.className = defaultValue.getClass().getName();
+        }
+        this.defaultValue = GsonUtil.toString(defaultValue);
+        if (value != null && className == null) {
+            this.className = value.getClass().getName();
+        }
+        this.value = GsonUtil.toString(value);
         this.containsSensitiveParameters = containsSensitiveParameters;
     }
 

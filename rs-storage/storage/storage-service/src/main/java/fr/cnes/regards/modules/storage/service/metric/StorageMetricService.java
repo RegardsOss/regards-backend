@@ -45,6 +45,10 @@ public class StorageMetricService extends AbstractMetricService {
 
     private static final String STORAGE_RESTORE_ERROR_COUNTER_NAME = "storage_restore_request_error_counter";
 
+    public static final String NAME = "name";
+
+    public static final String TENANT = "tenant";
+
     public StorageMetricService(MeterRegistry registry) {
         super(registry);
     }
@@ -53,50 +57,50 @@ public class StorageMetricService extends AbstractMetricService {
      * Increment the counter of received storage requests
      */
     public void incrementStorageRequests(String storageName, String tenant) {
-        incrementCounter(STORAGE_REQUEST_COUNTER_NAME, Map.of("name", storageName, "tenant", tenant), 1);
+        incrementCounter(STORAGE_REQUEST_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant), 1);
         // Initialize success and error counters to 0 for Grafana visualization
         //If the counters already exists, meterRegistry does not reinitialize it
-        initializeCounterIfAbsent(STORAGE_REQUEST_SUCCESS_COUNTER_NAME, Map.of("name", storageName, "tenant", tenant));
-        initializeCounterIfAbsent(STORAGE_REQUEST_ERROR_COUNTER_NAME, Map.of("name", storageName, "tenant", tenant));
+        initializeCounterIfAbsent(STORAGE_REQUEST_SUCCESS_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant));
+        initializeCounterIfAbsent(STORAGE_REQUEST_ERROR_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant));
     }
 
     /**
      * Increment the counter of finished storage requests in success
      */
     public void incrementStorageRequestSuccess(String storageName, String tenant) {
-        incrementCounter(STORAGE_REQUEST_SUCCESS_COUNTER_NAME, Map.of("name", storageName, "tenant", tenant), 1);
+        incrementCounter(STORAGE_REQUEST_SUCCESS_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant), 1);
     }
 
     /**
      * Increment the counter of finished storage requests in error
      */
     public void incrementStorageRequestError(String storageName, String tenant) {
-        incrementCounter(STORAGE_REQUEST_ERROR_COUNTER_NAME, Map.of("name", storageName, "tenant", tenant), 1);
+        incrementCounter(STORAGE_REQUEST_ERROR_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant), 1);
     }
 
     /**
      * Increment the counter of received storage restoration requests
      */
     public void incrementRestorationRequests(String storageName, String tenant) {
-        incrementCounter(STORAGE_RESTORE_REQUEST_COUNTER_NAME, Map.of("name", storageName, "tenant", tenant), 1);
+        incrementCounter(STORAGE_RESTORE_REQUEST_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant), 1);
         // Initialize success and error counters to 0 for Grafana visualization
         //If the counters already exists, meterRegistry does not reinitialize it
-        initializeCounterIfAbsent(STORAGE_RESTORE_SUCCESS_COUNTER_NAME, Map.of("name", storageName, "tenant", tenant));
-        initializeCounterIfAbsent(STORAGE_RESTORE_ERROR_COUNTER_NAME, Map.of("name", storageName, "tenant", tenant));
+        initializeCounterIfAbsent(STORAGE_RESTORE_SUCCESS_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant));
+        initializeCounterIfAbsent(STORAGE_RESTORE_ERROR_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant));
     }
 
     /**
      * Increment the counter of finished storage restoration requests in success
      */
     public void incrementRestorationRequestSuccess(String storageName, String tenant) {
-        incrementCounter(STORAGE_RESTORE_SUCCESS_COUNTER_NAME, Map.of("name", storageName, "tenant", tenant), 1);
+        incrementCounter(STORAGE_RESTORE_SUCCESS_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant), 1);
     }
 
     /**
      * Increment the counter of finished storage restoration requests in error
      */
     public void incrementRestorationRequestError(String storageName, String tenant) {
-        incrementCounter(STORAGE_RESTORE_ERROR_COUNTER_NAME, Map.of("name", storageName, "tenant", tenant), 1);
+        incrementCounter(STORAGE_RESTORE_ERROR_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant), 1);
     }
 
 }

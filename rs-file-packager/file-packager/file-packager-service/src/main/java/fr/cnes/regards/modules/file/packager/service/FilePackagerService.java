@@ -543,6 +543,7 @@ public class FilePackagerService {
 
     private record StorageAndPath(String storage,
                                   String path) {
+        // NOSONAR
 
     }
 }

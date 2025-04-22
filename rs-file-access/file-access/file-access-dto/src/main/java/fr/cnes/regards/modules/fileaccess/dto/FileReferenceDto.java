@@ -59,7 +59,7 @@ public class FileReferenceDto {
      * See FilesStorageRequestEvent, FilesDeletionEvent and FilesReferenceEvent for more information about
      * file requests.
      */
-    private final Set<String> groupIds = new HashSet<>();
+    protected final Set<String> groupIds = new HashSet<>();
 
     private boolean referenced = false;
 

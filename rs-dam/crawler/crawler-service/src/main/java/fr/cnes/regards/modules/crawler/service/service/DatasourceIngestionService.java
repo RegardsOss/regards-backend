@@ -429,6 +429,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
 
     private record DatasourceIdAndErrorCause(String id,
                                              String cause) {
+        // NOSONAR
 
     }
 

@@ -60,6 +60,8 @@ import static fr.cnes.regards.modules.filecatalog.service.FileCatalogErrorType.*
 @Service
 public class StorageLocationService {
 
+    public static final String CREATION_ERROR_MESSAGE = "[%s] Could not create storage config with name %s. Got response: %s.";
+
     protected final IStorageLocationConfigurationClient storageLocationConfigClient;
 
     protected final IStorageLocationRepository storageLocationRepository;
@@ -108,8 +110,7 @@ public class StorageLocationService {
         }
         // Received unknown error from file-access
         if (!response.getStatusCode().is2xxSuccessful()) {
-            throw new ModuleException(String.format("[%s] Could not create storage config with name %s. Got response: "
-                                                    + "%s.",
+            throw new ModuleException(String.format(CREATION_ERROR_MESSAGE,
                                                     STORAGE_CONFIG_NOT_CREATED,
                                                     storageLocationDto.getName(),
                                                     response));
@@ -118,8 +119,7 @@ public class StorageLocationService {
         storageLocationRepository.save(storageLocation);
         StorageLocationConfigurationDto storageConfigDto = ResponseEntityUtils.extractContentOrThrow(response,
                                                                                                      String.format(
-                                                                                                         "[%s] Could not extract storage config with name %s. Got response: "
-                                                                                                         + "%s.",
+                                                                                                         "[%s] Could not extract storage config with name %s. Got response: %s.",
                                                                                                          STORAGE_CONFIG_NOT_CREATED,
                                                                                                          storageLocationDto.getName(),
                                                                                                          response));
