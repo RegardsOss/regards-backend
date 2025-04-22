@@ -88,6 +88,16 @@ public class WorkerConfigService {
     }
 
     /**
+     * Search for the configuration of workers that support any of the given input content types.
+     *
+     * @param contentTypes list of input content types
+     * @return {@link WorkerConfig}
+     */
+    public List<WorkerConfig> searchByInputContentType(Set<String> contentTypes) {
+        return workerConfigRepository.findAllByContentTypeInputsIn(contentTypes);
+    }
+
+    /**
      * Save the worker config provided into repo
      *
      * @param workerConfig entity to update

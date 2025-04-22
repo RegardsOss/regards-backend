@@ -229,9 +229,6 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
     @MultitenantTransactional(readOnly = true, noRollbackFor = { EntityNotFoundException.class })
     public boolean isOrderPaused(Long orderId) throws EntityNotFoundException {
         Order order = orderRepository.getReferenceById(orderId);
-        if (order == null) {
-            throw new EntityNotFoundException(orderId.toString());
-        }
         return order.getStatus().equals(OrderStatus.PAUSED);
     }
 

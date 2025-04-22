@@ -253,4 +253,9 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
         return exportedDatasets;
     }
 
+    @Override
+    protected Set<String> resetConfiguration(Set<String> errors) {
+        errors.add("[Warning] rs-dam resets only its dynamic tenant settings.");
+        return errors;
+    }
 }

@@ -96,4 +96,10 @@ public class StorageModuleManager extends AbstractModuleManagerWithTenantSetting
                     .map(i -> (StorageLocationConfiguration) i.getTypedValue())
                     .collect(Collectors.toSet());
     }
+
+    @Override
+    protected Set<String> resetConfiguration(Set<String> errors) {
+        errors.add("[Warning] rs-storage resets only its dynamic tenant settings.");
+        return errors;
+    }
 }

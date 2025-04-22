@@ -60,6 +60,8 @@ import static fr.cnes.regards.modules.filecatalog.service.FileCatalogErrorType.*
 @Service
 public class StorageLocationService {
 
+    public static final String CREATION_ERROR_MESSAGE = "[%s] Could not create storage config with name %s. Got response: %s.";
+
     protected final IStorageLocationConfigurationClient storageLocationConfigClient;
 
     protected final IStorageLocationRepository storageLocationRepository;
@@ -108,8 +110,7 @@ public class StorageLocationService {
         }
         // Received unknown error from file-access
         if (!response.getStatusCode().is2xxSuccessful()) {
-            throw new ModuleException(String.format("[%s] Could not create storage config with name %s. Got response: "
-                                                    + "%s.",
+            throw new ModuleException(String.format(CREATION_ERROR_MESSAGE,
                                                     STORAGE_CONFIG_NOT_CREATED,
                                                     storageLocationDto.getName(),
                                                     response));
@@ -118,8 +119,7 @@ public class StorageLocationService {
         storageLocationRepository.save(storageLocation);
         StorageLocationConfigurationDto storageConfigDto = ResponseEntityUtils.extractContentOrThrow(response,
                                                                                                      String.format(
-                                                                                                         "[%s] Could not extract storage config with name %s. Got response: "
-                                                                                                         + "%s.",
+                                                                                                         "[%s] Could not extract storage config with name %s. Got response: %s.",
                                                                                                          STORAGE_CONFIG_NOT_CREATED,
                                                                                                          storageLocationDto.getName(),
                                                                                                          response));
@@ -134,18 +134,28 @@ public class StorageLocationService {
     @MultitenantTransactional(readOnly = true)
     public StorageLocationDto findStorageLocationByName(String storageName) throws ModuleException {
         // Get storage location configs through feign
-        StorageLocationConfigurationDto storageConfigDto = getStorageLocationConfiguration(storageName);
+        Optional<StorageLocationConfigurationDto> oStorageLocationConfiguration = getStorageLocationConfiguration(
+            storageName);
 
+        if (oStorageLocationConfiguration.isEmpty()) {
+            throw new ModuleException(String.format("[%s] Could not find storage location with name %s",
+                                                    STORAGE_CONFIG_NOT_FOUND,
+                                                    storageName));
+        }
         // Get corresponding storage location
         StorageLocation storageLocation = storageLocationRepository.findByName(storageName)
                                                                    .orElseThrow(() -> new EntityNotFoundException(
                                                                        "Storage location with name "
                                                                        + storageName
                                                                        + " not found"));
-        return getStorageLocationDto(storageName, storageConfigDto, storageLocation);
+        return getStorageLocationDto(storageName, oStorageLocationConfiguration.get(), storageLocation);
     }
 
-    public StorageLocationConfigurationDto getStorageLocationConfiguration(String storageName) throws ModuleException {
+    /**
+     * Find the StorageLocationConfiguration using its name, return an empty Optional if the storage location is not found
+     */
+    public Optional<StorageLocationConfigurationDto> getStorageLocationConfiguration(String storageName)
+        throws ModuleException {
         StorageLocationConfigurationDto storageConfigDto = storageLocationConfigurationCache.getIfPresent(storageName);
 
         if (storageConfigDto == null) {
@@ -153,9 +163,9 @@ public class StorageLocationService {
             ResponseEntity<EntityModel<StorageLocationConfigurationDto>> response = storageLocationConfigClient.retrieveStorageLocationConfigByName(
                 storageName);
 
-            // Received not found from file access
+            // Received not found from file access, this is a virtual storage location
             if (response.getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)) {
-                throw new EntityNotFoundException("Storage location with name " + storageName + " not found");
+                return Optional.empty();
             }
 
             // Received unknown error from file access
@@ -174,7 +184,7 @@ public class StorageLocationService {
                                                                              response));
             storageLocationConfigurationCache.put(storageConfigDto.getName(), storageConfigDto);
         }
-        return storageConfigDto;
+        return Optional.of(storageConfigDto);
     }
 
     /**
@@ -250,7 +260,10 @@ public class StorageLocationService {
     private StorageLocationDto getStorageLocationDto(String storageName,
                                                      StorageLocationConfigurationDto storageConfigDto,
                                                      StorageLocation storageLocation) {
-        return StorageLocationDto.build(storageName, storageConfigDto)
+        return StorageLocationDto.build(storageName,
+                                        storageConfigDto != null ?
+                                            storageConfigDto :
+                                            new StorageLocationConfigurationDto(storageName, null, null))
                                  .withFilesInformation(storageLocation.getNumberOfReferencedFiles(),
                                                        storageLocation.getNumberOfPendingFiles(),
                                                        storageLocation.getTotalSizeOfReferencedFilesInKo())

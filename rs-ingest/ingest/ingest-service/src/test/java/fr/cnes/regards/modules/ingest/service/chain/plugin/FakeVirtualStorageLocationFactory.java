@@ -39,7 +39,7 @@ public class FakeVirtualStorageLocationFactory {
         ReflectionTestUtils.setField(virtualStorageLocation, "virtualStorageName", virtualStorageLocationLabel);
         ReflectionTestUtils.setField(virtualStorageLocation, "realStorageLocations", realStorageLocations);
         ReflectionTestUtils.setField(virtualStorageLocation,
-                                     "storageRestClient",
+                                     "storageLocationRestClient",
                                      FakeStorageRestClientFactory.create(mockStorageLocationContent));
 
         virtualStorageLocation.init();

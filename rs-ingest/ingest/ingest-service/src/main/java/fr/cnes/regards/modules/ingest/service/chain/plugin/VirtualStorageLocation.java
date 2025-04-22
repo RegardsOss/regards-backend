@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAIPStorageMetadataUpdate;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import fr.cnes.regards.modules.storage.client.IStorageLocationRestClient;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +78,7 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
     private List<StorageMetadata> realStorageLocations;
 
     @Autowired
-    private IStorageRestClient storageRestClient;
+    private IStorageLocationRestClient storageLocationRestClient;
 
     /**
      * Plugin init method
@@ -92,7 +92,7 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
 
     private void validateStorageLocationsUsingStorageMicroservice() throws PluginInitException {
         FeignSecurityManager.asSystem();
-        ResponseEntity<List<EntityModel<StorageLocationDto>>> response = storageRestClient.retrieve();
+        ResponseEntity<List<EntityModel<StorageLocationDto>>> response = storageLocationRestClient.retrieve();
         if (!response.hasBody() || !response.getStatusCode().is2xxSuccessful()) {
             throw new PluginInitException("Failed to retrieve Storage location list from Storage microservice");
         } else {

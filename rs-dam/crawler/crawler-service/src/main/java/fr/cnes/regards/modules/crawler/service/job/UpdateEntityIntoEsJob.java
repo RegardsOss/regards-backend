@@ -46,11 +46,15 @@ public class UpdateEntityIntoEsJob extends AbstractJob<Void> {
 
     public static final String URN_PARAMETER = "urn";
 
+    public static final String REQUEST_ID_PARAMETER = "requestId";
+
     public static final String USER_TO_NOTIFY_PARAMETER = "userToNotify";
 
     public static final String ROLE_TO_NOTIFY_PARAMETER = "roleToNotify";
 
     private String datasetUrn;
+
+    private Long requestId;
 
     private String userToNotify;
 
@@ -69,15 +73,16 @@ public class UpdateEntityIntoEsJob extends AbstractJob<Void> {
     public void setParameters(Map<String, JobParameter> parameters)
         throws JobParameterMissingException, JobParameterInvalidException {
         datasetUrn = getValue(parameters, URN_PARAMETER);
-        userToNotify = getValue(parameters, USER_TO_NOTIFY_PARAMETER);
-        roleToNotify = getValue(parameters, ROLE_TO_NOTIFY_PARAMETER);
+        requestId = getValue(parameters, REQUEST_ID_PARAMETER);
+        userToNotify = (String) getOptionalValue(parameters, USER_TO_NOTIFY_PARAMETER, String.class).orElse(null);
+        roleToNotify = (String) getOptionalValue(parameters, ROLE_TO_NOTIFY_PARAMETER, String.class).orElse(null);
     }
 
     @Override
     public void run() {
         logger.info("[UPDATE ENTITY INTO ES JOB] Running job to update {}", datasetUrn);
         long start = System.currentTimeMillis();
-        entityIndexerService.runEntityRequest(datasetUrn);
+        entityIndexerService.runEntityRequest(requestId);
         try {
             notifyDatasetUpdateBeginning();
             entityIndexerService.updateEntityIntoEs(runtimeTenantResolver.getTenant(),
@@ -85,15 +90,15 @@ public class UpdateEntityIntoEsJob extends AbstractJob<Void> {
                                                     OffsetDateTime.now(),
                                                     false);
             notifyDatasetUpdateDone();
-            entityIndexerService.deleteEntityRequest(datasetUrn);
+            entityIndexerService.deleteEntityRequest(requestId);
         } catch (ModuleException e) {
             logger.error("Error while updating entity {}", datasetUrn);
             notifyDatasetUpdateError(e);
             throw new RsRuntimeException(e);
         }
         logger.info("[UPDATE ENTITY INTO ES JOB] Job handled for {} update in {}ms",
-                     datasetUrn,
-                     System.currentTimeMillis() - start);
+                    datasetUrn,
+                    System.currentTimeMillis() - start);
     }
 
     private void notifyDatasetUpdateError(ModuleException e) {
@@ -124,7 +129,11 @@ public class UpdateEntityIntoEsJob extends AbstractJob<Void> {
             notificationClient.notify(message, title, level, List.of(userToNotify).toArray(new String[0]));
         } else if (roleToNotify != null) {
             // Dataset {} has been modified. Users having group {} ....
-            notificationClient.notifyRoles(message, title, level, MimeTypeUtils.TEXT_PLAIN, Sets.newHashSet(roleToNotify));
+            notificationClient.notifyRoles(message,
+                                           title,
+                                           level,
+                                           MimeTypeUtils.TEXT_PLAIN,
+                                           Sets.newHashSet(roleToNotify));
         }
     }
 }

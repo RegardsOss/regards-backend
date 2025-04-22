@@ -60,7 +60,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -148,8 +147,7 @@ public abstract class AbstractFileReferenceControllerIT extends AbstractRegardsT
     }
 
     @Before
-    public void init()
-        throws NoSuchAlgorithmException, FileNotFoundException, IOException, InterruptedException, ModuleException {
+    public void init() throws NoSuchAlgorithmException, IOException, ModuleException {
         tenantResolver.forceTenant(getDefaultTenant());
         clear();
         initDataStoragePluginConfiguration();

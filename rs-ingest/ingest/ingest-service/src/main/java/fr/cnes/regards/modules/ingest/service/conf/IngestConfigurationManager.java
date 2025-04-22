@@ -91,13 +91,14 @@ public class IngestConfigurationManager extends AbstractModuleManagerWithTenantS
     }
 
     @Override
-    protected Set<String> resetConfiguration(Set<String> errors) {
-        // Ingest chains cannot be removed easily
-        return errors;
-    }
-
-    @Override
     protected Logger getLogger() {
         return LOGGER;
     }
+
+    @Override
+    protected Set<String> resetConfiguration(Set<String> errors) {
+        errors.add("[Warning] rs-ingest resets only its dynamic tenant settings.");
+        return errors;
+    }
+
 }

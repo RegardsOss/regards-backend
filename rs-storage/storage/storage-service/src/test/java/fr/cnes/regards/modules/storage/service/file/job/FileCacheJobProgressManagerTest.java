@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.service.file.job;
 
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
@@ -40,7 +41,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collections;
-import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -233,7 +233,7 @@ public class FileCacheJobProgressManagerTest {
     // ---------------------
 
     private FileCacheRequest createFileCacheRequest() {
-        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(),
+        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(RandomChecksumUtils.generateRandomChecksum(),
                                                                    "UUID",
                                                                    "file.test",
                                                                    10L,

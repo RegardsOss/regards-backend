@@ -115,7 +115,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
             // Insert many refs
             Set<FileReference> toSave = Sets.newHashSet();
             for (Long i = 0L; i < 1_000_000; i++) {
-                FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(),
+                FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(RandomChecksumUtils.generateRandomChecksum(),
                                                                            "UUID",
                                                                            "file_" + i + ".test",
                                                                            i,

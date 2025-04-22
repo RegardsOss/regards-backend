@@ -268,12 +268,13 @@ public class FilePackagerService {
 
             // Update the archive in database
             packageReferenceRepository.updatePackageChecksum(packageId, checksum);
-        } finally {
+        } catch (Exception e) {
             try {
                 Files.deleteIfExists(archivePath);
-            } catch (IOException e) {
-                throw new ModuleException("Error while deleting the archive", e);
+            } catch (IOException io) {
+                LOGGER.error("Error while deleting the archive", io);
             }
+            throw e;
         }
     }
 
@@ -542,6 +543,7 @@ public class FilePackagerService {
 
     private record StorageAndPath(String storage,
                                   String path) {
+        // NOSONAR
 
     }
 }

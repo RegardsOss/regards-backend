@@ -44,6 +44,8 @@ import java.util.Objects;
 @Table(name = "t_package_reference")
 public class PackageReference {
 
+    private static final int MAX_ERROR_CAUSE_LENGTH = 32768;
+
     @Id
     @SequenceGenerator(name = "packageReferenceSequence", initialValue = 1, sequenceName = "seq_package_reference")
     @GeneratedValue(generator = "packageReferenceSequence", strategy = GenerationType.SEQUENCE)
@@ -64,7 +66,7 @@ public class PackageReference {
     @Nullable
     private String checksum;
 
-    @Column(name = "error_cause")
+    @Column(name = "error_cause", length = MAX_ERROR_CAUSE_LENGTH)
     @Nullable
     private String errorCause;
 
@@ -99,7 +101,11 @@ public class PackageReference {
     }
 
     public void setErrorCause(String errorCause) {
-        this.errorCause = errorCause;
+        if (errorCause != null && errorCause.length() > MAX_ERROR_CAUSE_LENGTH) {
+            this.errorCause = errorCause.substring(0, MAX_ERROR_CAUSE_LENGTH);
+        } else {
+            this.errorCause = errorCause;
+        }
     }
 
     public Long getId() {

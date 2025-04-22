@@ -510,12 +510,12 @@ public class RequestService {
         }).toList());
 
         // Retrieve content types with no associated workflow
-        List<String> workerContentTypes = contentTypes.stream()
-                                                      .filter(contentType -> workflowService.findWorkflowByType(
-                                                          contentType).isEmpty())
-                                                      .toList();
+        Set<String> workerContentTypes = contentTypes.stream()
+                                                     .filter(contentType -> workflowService.findWorkflowByType(
+                                                         contentType).isEmpty())
+                                                     .collect(Collectors.toUnmodifiableSet());
         // Add worker content type with keep error parameter set to false
-        result.addAll(workerConfigService.search(workerContentTypes)
+        result.addAll(workerConfigService.searchByInputContentType(workerContentTypes)
                                          .stream()
                                          .filter(workerConfig -> !workerConfig.isKeepErrors())
                                          .map(WorkerConfig::getContentTypeInputs)

@@ -530,7 +530,7 @@ public class PluginService implements IPluginService, InitializingBean {
     }
 
     @Override
-    @MultitenantTransactional(noRollbackFor = { ModuleException.class })
+    @MultitenantTransactional(noRollbackFor = { ModuleException.class, EntityNotFoundException.class })
     public <T> PluginAndPluginId<T> getPluginAndId(String businessId, IPluginParam... dynamicParameters)
         throws ModuleException {
         PluginConfiguration plgConf = getConfiguration(businessId);

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
@@ -103,6 +104,13 @@ public class UIPluginConfigurationManager extends AbstractModuleManager<Void> {
     @Override
     public ModuleReadinessReport<Void> isReady() {
         return new ModuleReadinessReport<>(true);
+    }
+
+    @Override
+    public Set<String> resetConfiguration() {
+        Set<String> errors = Sets.newHashSet();
+        errors.add("[Warning] resetBeforeImport parameter is not implemented yet.");
+        return errors;
     }
 
 }

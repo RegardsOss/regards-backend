@@ -43,6 +43,8 @@ import java.util.Objects;
                                                columnNames = { "storage", "checksum" }) })
 public class FileInBuildingPackage {
 
+    private static final int MAX_ERROR_CAUSE_LENGTH = 32768;
+
     @Id
     @SequenceGenerator(name = "fileInBuildingPackageSequence",
                        initialValue = 1,
@@ -95,7 +97,7 @@ public class FileInBuildingPackage {
     @Column(nullable = false)
     private Long fileSize;
 
-    @Column(name = "error_cause")
+    @Column(name = "error_cause", length = MAX_ERROR_CAUSE_LENGTH)
     @Nullable
     private String errorCause;
 
@@ -197,7 +199,11 @@ public class FileInBuildingPackage {
     }
 
     public void setErrorCause(@Nullable String errorCause) {
-        this.errorCause = errorCause;
+        if (errorCause != null && errorCause.length() > MAX_ERROR_CAUSE_LENGTH) {
+            this.errorCause = errorCause.substring(0, MAX_ERROR_CAUSE_LENGTH);
+        } else {
+            this.errorCause = errorCause;
+        }
     }
 
     public void updateStatus(FileInBuildingPackageStatus status, @Nullable String errorCause) {

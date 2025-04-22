@@ -417,7 +417,9 @@ public class IngestRequestService implements IIngestRequestService {
                     request.setState(InternalRequestState.ERROR);
                     request.setErrorType(IngestErrorType.GENERATION);
                     // Keep track of the error
-                    saveAndPublishErrorRequest(request, "Remote file storage request denied");
+                    saveAndPublishErrorRequest(request,
+                                               String.format("Remote file storage request denied. Cause : " + "%s",
+                                                             ri.getMessage()));
                 } else {
                     // Keep track of the error
                     saveAndPublishErrorRequest(request, String.format(UNEXPECTED_STEP_S_TEMPLATE, step));

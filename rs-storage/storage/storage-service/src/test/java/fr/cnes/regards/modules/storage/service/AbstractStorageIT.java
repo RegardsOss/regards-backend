@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
@@ -329,7 +330,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
 
     protected FileReference generateRandomStoredOnlineFileReference(String fileName, Optional<String> subDir)
         throws InterruptedException, ExecutionException {
-        return this.generateStoredFileReference(UUID.randomUUID().toString(),
+        return this.generateStoredFileReference(RandomChecksumUtils.generateRandomChecksum(),
                                                 "someone",
                                                 fileName,
                                                 ONLINE_CONF_LABEL,
@@ -358,7 +359,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                                       Optional<String> subDir,
                                                                       boolean externalCache)
         throws InterruptedException, ExecutionException {
-        return generateStoredFileReference(UUID.randomUUID().toString(),
+        return generateStoredFileReference(RandomChecksumUtils.generateRandomChecksum(),
                                            "someone",
                                            fileName,
                                            externalCache ? NEARLINE_EXT_CACHE_CONF_LABEL : NEARLINE_CONF_LABEL,
@@ -477,7 +478,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                           String sessionOwner,
                                                           String session,
                                                           boolean pendingRemainingAction) {
-        return this.referenceFile(UUID.randomUUID().toString(),
+        return this.referenceFile(RandomChecksumUtils.generateRandomChecksum(),
                                   owner,
                                   type,
                                   fileName,
@@ -511,7 +512,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                                    String storageDestination,
                                                                    String sessionOwner,
                                                                    String session) {
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(),
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(RandomChecksumUtils.generateRandomChecksum(),
                                                                        "MD5",
                                                                        "error.file.test",
                                                                        132L,

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.fileaccess.dto.request;
 
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
 import fr.cnes.regards.modules.fileaccess.dto.validation.ValidFileStorageRequestChecksum;
+import fr.cnes.regards.modules.fileaccess.dto.validation.ValidFileStorageRequestUrl;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -41,6 +42,8 @@ import java.util.Optional;
  *
  * @author Sébastien Binda
  */
+@ValidFileStorageRequestUrl(message = "The file storage request url is not valid. URL can not contains # or ? "
+                                      + "character")
 @ValidFileStorageRequestChecksum(message = "The file storage request checksum is not valid for this algorithm")
 public class FileStorageRequestDto {
 
@@ -132,37 +135,26 @@ public class FileStorageRequestDto {
                                               String storage,
                                               Optional<String> subDirectory) {
 
-        Assert.notNull(fileName, "File name is mandatory.");
-        Assert.notNull(checksum, "Checksum is mandatory.");
-        Assert.notNull(algorithm, "Algorithm is mandatory.");
-        Assert.notNull(mimeType, "MimeType is mandatory.");
-        Assert.notNull(owner, "Owner is mandatory.");
-        Assert.notNull(originUrl, "Origin url is mandatory.");
-        Assert.notNull(storage, "Destination storage location is mandatory");
+        FileReferenceMetaInfoDto metaInfo = new FileReferenceMetaInfoDto(checksum,
+                                                                         algorithm,
+                                                                         fileName,
+                                                                         null,
+                                                                         null,
+                                                                         null,
+                                                                         mimeType,
+                                                                         null);
 
-        FileStorageRequestDto request = new FileStorageRequestDto();
-        request.fileName = fileName;
-        request.checksum = checksum;
-        request.algorithm = algorithm;
-        request.mimeType = mimeType;
-        request.owner = owner;
-        request.originUrl = originUrl;
-        request.storage = storage;
-        request.metaInfo = new FileReferenceMetaInfoDto(checksum,
-                                                        algorithm,
-                                                        fileName,
-                                                        null,
-                                                        null,
-                                                        null,
-                                                        mimeType,
-                                                        null);
-        request.session = session;
-        request.sessionOwner = sessionOwner;
-        if (subDirectory != null) {
-            request.subDirectory = subDirectory.orElse(null);
-        }
-        request.reference = false;
-        return request;
+        return build(fileName,
+                     checksum,
+                     algorithm,
+                     mimeType,
+                     owner,
+                     sessionOwner,
+                     session,
+                     originUrl,
+                     storage,
+                     metaInfo,
+                     subDirectory);
     }
 
     /**

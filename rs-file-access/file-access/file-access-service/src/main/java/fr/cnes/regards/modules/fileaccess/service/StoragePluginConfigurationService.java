@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.fileaccess.service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.PluginAndPluginId;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
@@ -82,6 +83,8 @@ public class StoragePluginConfigurationService {
             return Optional.of(new StoragePluginConfigurationDtoAndPluginId(pluginAndId.plugin()
                                                                                        .createWorkerStoreConfiguration(),
                                                                             pluginAndId.pluginId()));
+        } catch (EntityNotFoundException e) {
+            LOGGER.error("Error while attempting to retrieve plugin, plugin not found{}", storageName, e);
         } catch (ModuleException e) {
             LOGGER.error("Error while attempting to retrieve plugin {}", storageName, e);
         } catch (NotSupportedException e) {

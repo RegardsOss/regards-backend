@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -68,7 +69,7 @@ public class FileReferenceControllerIT extends AbstractFileReferenceControllerIT
     public void getLocationsWithUnknownChecksums() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk().expectIsEmpty("$");
         Set<String> checksums = new HashSet<>();
-        checksums.add(UUID.randomUUID().toString());
+        checksums.add(RandomChecksumUtils.generateRandomChecksum());
         performDefaultPost(FileReferenceController.FILE_PATH + FileReferenceController.LOCATIONS_PATH,
                            checksums,
                            requestBuilderCustomizer,
@@ -82,7 +83,7 @@ public class FileReferenceControllerIT extends AbstractFileReferenceControllerIT
         performDefaultGet(FileDownloadController.DOWNLOAD_RESOURCE_PATH + FileDownloadController.DOWNLOAD_PATH,
                           requestBuilderCustomizer,
                           "File download response status should be NOT_FOUND.",
-                          UUID.randomUUID().toString());
+                          RandomChecksumUtils.generateRandomChecksum());
     }
 
     @Test

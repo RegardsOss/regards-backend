@@ -39,6 +39,8 @@ import java.util.Set;
                    @Index(name = "idx_group_file_ref_id", columnList = "result_file_ref_id") })
 public class RequestResultInfo {
 
+    private static final int MAX_ERROR_CAUSE_LENGTH = 32768;
+
     @Id
     @SequenceGenerator(name = "groupRequestsInfoSequence", initialValue = 1, sequenceName = "seq_groups_requests_info")
     @GeneratedValue(generator = "groupRequestsInfoSequence", strategy = GenerationType.SEQUENCE)
@@ -80,7 +82,7 @@ public class RequestResultInfo {
     @Column
     private boolean error;
 
-    @Column(name = "error_cause", length = 512)
+    @Column(name = "error_cause", length = MAX_ERROR_CAUSE_LENGTH)
     private String errorCause;
 
     public RequestResultInfo() {
@@ -147,8 +149,8 @@ public class RequestResultInfo {
     }
 
     public void setErrorCause(String errorCause) {
-        if (errorCause != null && errorCause.length() > 512) {
-            this.errorCause = errorCause.substring(0, 511);
+        if (errorCause != null && errorCause.length() > MAX_ERROR_CAUSE_LENGTH) {
+            this.errorCause = errorCause.substring(0, MAX_ERROR_CAUSE_LENGTH);
         } else {
             this.errorCause = errorCause;
         }

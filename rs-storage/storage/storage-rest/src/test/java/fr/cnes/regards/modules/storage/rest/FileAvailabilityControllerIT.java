@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.rest;
 
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FilesAvailabilityRequestDto;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -43,14 +43,16 @@ public class FileAvailabilityControllerIT extends AbstractRegardsIT {
     @Test
     public void test_availability_endpoint() {
         Set<String> checksums = IntStream.range(0, 95)
-                                         .mapToObj(i -> UUID.randomUUID().toString())
+                                         .mapToObj(i -> RandomChecksumUtils.generateRandomChecksum())
                                          .collect(Collectors.toSet());
         FilesAvailabilityRequestDto filesAvailabilityRequestDto = new FilesAvailabilityRequestDto(checksums);
         performDefaultPost(AVAILABILITY_ENDPOINT,
                            filesAvailabilityRequestDto,
                            customizer().expectStatus(HttpStatus.OK),
                            "Endpoint should return OK status");
-        checksums = IntStream.range(0, 105).mapToObj(i -> UUID.randomUUID().toString()).collect(Collectors.toSet());
+        checksums = IntStream.range(0, 105)
+                             .mapToObj(i -> RandomChecksumUtils.generateRandomChecksum())
+                             .collect(Collectors.toSet());
         filesAvailabilityRequestDto = new FilesAvailabilityRequestDto(checksums);
         performDefaultPost(AVAILABILITY_ENDPOINT,
                            filesAvailabilityRequestDto,

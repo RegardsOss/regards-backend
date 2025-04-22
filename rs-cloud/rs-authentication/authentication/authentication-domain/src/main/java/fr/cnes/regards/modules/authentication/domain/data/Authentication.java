@@ -26,8 +26,8 @@ import java.util.Objects;
 
 /**
  * Mimic Spring Authentication object
- *
- * NOTE : Both SerializedName & JsonProperty annotations are mandatory her for both Jackson and gson
+ * <p>
+ * NOTE : Both SerializedName & JsonProperty annotations are mandatory her for both Jackson and Gson
  * serialization/deserialization.
  * Gson is used by regards microservices.
  * Jackson is used in rs-gateway by the ExternalAuthenticationVerifier coded with reactive WebFlux.
@@ -38,7 +38,7 @@ public class Authentication {
      * It's a constant but the aim is to be serialized in json => final with a getter
      */
     @SerializedName("token_type")
-    private final String tokenType = "bearer";
+    private final String tokenType = "bearer"; // NOSONAR : @SerializedName(pour Gson) impossible with static
 
     /**
      * project, tenant and scope is same thing
@@ -137,7 +137,8 @@ public class Authentication {
         Authentication that = (Authentication) o;
         return Objects.equals(project, that.project)
                && Objects.equals(scope, that.scope)
-               && Objects.equals(role, that.role)
+               && Objects.equals(role,
+                                 that.role)
                && Objects.equals(sub, that.sub)
                && Objects.equals(serviceProviderName, that.serviceProviderName)
                && Objects.equals(accessToken, that.accessToken)

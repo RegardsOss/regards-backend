@@ -94,8 +94,7 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
                 FileStorageRequestAggregation request = storageReqService.createNewFileStorageRequest(Sets.newHashSet(
                                                                                                           "someone"),
                                                                                                       new FileReferenceMetaInfo(
-                                                                                                          UUID.randomUUID()
-                                                                                                              .toString(),
+                                                                                                          RandomChecksumUtils.generateRandomChecksum(),
                                                                                                           "MD5",
                                                                                                           "plop",
                                                                                                           10L,
@@ -112,8 +111,7 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
             FileStorageRequestAggregation request = storageReqService.createNewFileStorageRequest(Sets.newHashSet(
                                                                                                       "someone"),
                                                                                                   new FileReferenceMetaInfo(
-                                                                                                      UUID.randomUUID()
-                                                                                                          .toString(),
+                                                                                                      RandomChecksumUtils.generateRandomChecksum(),
                                                                                                       "MD5",
                                                                                                       "plop",
                                                                                                       10L,
@@ -133,28 +131,28 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
 
             reqGrpService.requestSuccess(groupId,
                                          FileRequestType.STORAGE,
-                                         UUID.randomUUID().toString(),
+                                         RandomChecksumUtils.generateRandomChecksum(),
                                          ONLINE_CONF_LABEL,
                                          null,
                                          Sets.newHashSet("someone"),
                                          null);
             reqGrpService.requestSuccess(groupId,
                                          FileRequestType.STORAGE,
-                                         UUID.randomUUID().toString(),
+                                         RandomChecksumUtils.generateRandomChecksum(),
                                          ONLINE_CONF_LABEL,
                                          null,
                                          Sets.newHashSet("someone"),
                                          null);
             reqGrpService.requestSuccess(groupId,
                                          FileRequestType.STORAGE,
-                                         UUID.randomUUID().toString(),
+                                         RandomChecksumUtils.generateRandomChecksum(),
                                          ONLINE_CONF_LABEL,
                                          null,
                                          Sets.newHashSet("someone"),
                                          null);
             reqGrpService.requestSuccess(groupId,
                                          FileRequestType.STORAGE,
-                                         UUID.randomUUID().toString(),
+                                         RandomChecksumUtils.generateRandomChecksum(),
                                          ONLINE_CONF_LABEL,
                                          null,
                                          Sets.newHashSet("someone"),
@@ -162,7 +160,7 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
             if (i >= 10) {
                 reqGrpService.requestSuccess(groupId,
                                              FileRequestType.STORAGE,
-                                             UUID.randomUUID().toString(),
+                                             RandomChecksumUtils.generateRandomChecksum(),
                                              ONLINE_CONF_LABEL,
                                              null,
                                              Sets.newHashSet("someone"),
@@ -183,7 +181,7 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
             // Simulate a request ends success
             reqGrpService.requestSuccess(groupId,
                                          type,
-                                         UUID.randomUUID().toString(),
+                                         RandomChecksumUtils.generateRandomChecksum(),
                                          ONLINE_CONF_LABEL,
                                          null,
                                          Sets.newHashSet("someone"),
@@ -191,7 +189,7 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
             // Simulate a requests ends error
             reqGrpService.requestError(groupId,
                                        type,
-                                       UUID.randomUUID().toString(),
+                                       RandomChecksumUtils.generateRandomChecksum(),
                                        ONLINE_CONF_LABEL,
                                        null,
                                        Sets.newHashSet("someone"),

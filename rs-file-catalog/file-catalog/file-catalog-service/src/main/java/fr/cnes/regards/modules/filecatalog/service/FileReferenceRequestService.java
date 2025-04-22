@@ -357,10 +357,10 @@ public class FileReferenceRequestService {
      * @return {@link FileReferenceResult} file reference and update status. Update is false if file reference has not been updated.
      * @throws ModuleException If file reference can not be created
      */
-    private FileReferenceResult handleAlreadyExists(FileReference fileReference,
-                                                    Optional<FileDeletionRequest> deletionRequest,
-                                                    FileReferenceRequestDto request,
-                                                    Collection<String> groupIds) throws ModuleException {
+    public FileReferenceResult handleAlreadyExists(FileReference fileReference,
+                                                   Optional<FileDeletionRequest> deletionRequest,
+                                                   FileReferenceRequestDto request,
+                                                   Collection<String> groupIds) throws ModuleException {
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // A deletion is pending on the existing file reference but the new reference request does not indicates the new file location
             String message = String.format("File %s is being deleted. Please try later.", request.getChecksum());

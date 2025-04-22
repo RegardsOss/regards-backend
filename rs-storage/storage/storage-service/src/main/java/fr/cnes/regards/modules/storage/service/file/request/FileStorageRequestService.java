@@ -41,7 +41,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
-import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestResultDto;
@@ -70,8 +69,8 @@ import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.service.template.StorageTemplatesConf;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.Counter;
 import jakarta.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -219,7 +218,7 @@ public class FileStorageRequestService {
         Set<FileDeletionRequest> existingDeletionRequests = fileDelReqService.searchByChecksums(checksums);
         for (FilesStorageRequestEvent item : list) {
 
-            Errors errors = new MapBindingResult(new HashMap<>(), FileReferenceRequestDto.class.getName());
+            Errors errors = new MapBindingResult(new HashMap<>(), FilesStorageRequestEvent.class.getName());
             validator.validate(item, errors);
             if (errors.hasErrors()) {
                 reqGroupService.denied(item.getGroupId(),
@@ -926,7 +925,7 @@ public class FileStorageRequestService {
     }
 
     public void handleSuccess(Collection<FileStorageRequestResultDto> results) {
-        Set<String> files = new HashSet<>();
+        Set<String> filesWithActionRemaining = new HashSet<>();
         for (FileStorageRequestResultDto result : results) {
             boolean isHandleSuccess = true;
             // As the request is rebuilt from the dto, the status information is not available and the request need
@@ -992,7 +991,7 @@ public class FileStorageRequestService {
             this.sessionNotifier.incrementStoredFiles(sessionOwner, session, nbFilesStored);
 
             if (result.isNotifyActionRemainingToAdmin()) {
-                files.add(result.getStoredUrl());
+                filesWithActionRemaining.add(result.getStoredUrl());
             }
 
             // Delete the FileRefRequest as it has been handled
@@ -1002,10 +1001,10 @@ public class FileStorageRequestService {
             }
         }
 
-        if (!files.isEmpty()) {
-            notificationClient.notifyRoles(createStorageActionPendingNotification(files),
+        if (!filesWithActionRemaining.isEmpty()) {
+            notificationClient.notifyRoles(createStorageActionPendingNotification(filesWithActionRemaining),
                                            "Storage not completed",
-                                           NotificationLevel.ERROR,
+                                           NotificationLevel.INFO,
                                            MimeTypeUtils.TEXT_HTML,
                                            Sets.newHashSet(DefaultRole.PROJECT_ADMIN.toString()));
         }

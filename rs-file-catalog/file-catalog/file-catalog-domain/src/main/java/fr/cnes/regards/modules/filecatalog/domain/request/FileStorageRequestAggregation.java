@@ -45,6 +45,8 @@ import java.util.Set;
                    @Index(name = "idx_file_storage_request_storage", columnList = "storage") })
 public class FileStorageRequestAggregation {
 
+    private static final int MAX_ERROR_CAUSE_LENGTH = 32768;
+
     public static final String FILE_STORAGE_REQUEST_NEED_A_OWNER = "File storage request need a owner !";
 
     /**
@@ -90,7 +92,7 @@ public class FileStorageRequestAggregation {
     @Enumerated(EnumType.STRING)
     private StorageRequestStatus statusString = StorageRequestStatus.TO_HANDLE;
 
-    @Column(name = "error_cause", length = 512)
+    @Column(name = "error_cause", length = MAX_ERROR_CAUSE_LENGTH)
     private String errorCause;
 
     @Column(name = "creation_date")
@@ -213,8 +215,8 @@ public class FileStorageRequestAggregation {
     }
 
     public void setErrorCause(String errorCause) {
-        if (errorCause != null && errorCause.length() > 512) {
-            this.errorCause = errorCause.substring(0, 511);
+        if (errorCause != null && errorCause.length() > MAX_ERROR_CAUSE_LENGTH) {
+            this.errorCause = errorCause.substring(0, MAX_ERROR_CAUSE_LENGTH);
         } else {
             this.errorCause = errorCause;
         }

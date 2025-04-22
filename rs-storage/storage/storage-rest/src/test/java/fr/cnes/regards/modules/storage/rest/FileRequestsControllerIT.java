@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.rest;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
@@ -66,7 +67,7 @@ public class FileRequestsControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void search() {
         String storage = "somewhere";
-        FileReferenceMetaInfo meta = new FileReferenceMetaInfo(UUID.randomUUID().toString(),
+        FileReferenceMetaInfo meta = new FileReferenceMetaInfo(RandomChecksumUtils.generateRandomChecksum(),
                                                                "MD5",
                                                                "file.txt",
                                                                10L,
