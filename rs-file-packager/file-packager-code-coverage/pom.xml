@@ -53,4 +53,35 @@
         <version>${revision}</version>
         <relativePath>../../rs-bom/regards-code-coverage-aggregator-parent</relativePath>
     </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.filepackager</groupId>
+            <artifactId>file-packager-amqp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.filepackager</groupId>
+            <artifactId>file-packager-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.filepackager</groupId>
+            <artifactId>file-packager-dao</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.filepackager</groupId>
+            <artifactId>file-packager-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.filepackager</groupId>
+            <artifactId>file-packager-dto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.filepackager</groupId>
+            <artifactId>file-packager-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.filepackager</groupId>
+            <artifactId>file-packager-service</artifactId>
+        </dependency>
+    </dependencies>
 </project>
