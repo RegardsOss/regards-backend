@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileDeletionDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
@@ -33,7 +34,6 @@ import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.client.RequestInfo;
-import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -415,9 +415,14 @@ public class FeatureFilesService {
                                                                                       newFileSize,
                                                                                       newAlgorithm,
                                                                                       checksum);
+                Object additionalFields = null;
+                if (info.getResultFile() != null) {
+                    additionalFields = info.getResultFile().getAdditionalFields();
+                }
                 originalFeature.getFeature()
                                .getFiles()
                                .add(FeatureFile.build(newFileAttributes,
+                                                      additionalFields,
                                                       FeatureFileLocation.build(newUrl, newStorage)));
                 FeatureLogger.updateNewLocation(originalFeature.getFeature().getId(),
                                                 originalFeature.getFeature().getUrn(),

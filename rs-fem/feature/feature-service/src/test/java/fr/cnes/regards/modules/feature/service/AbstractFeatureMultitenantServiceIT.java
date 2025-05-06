@@ -611,6 +611,7 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
                                                                  1024L,
                                                                  "MD5",
                                                                  RandomChecksumUtils.generateRandomChecksum()),
+                                     null,
                                      FeatureFileLocation.build("http://www.google.com", "GPFS"));
 
             featureToAdd = Feature.build("id" + i,

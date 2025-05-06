@@ -158,8 +158,8 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
                                                                         "MD5",
                                                                         SAME_CHECKSUM);
         FeatureFileLocation location2 = FeatureFileLocation.build("file:///dir/file.txt", "somewhere");
-        feature.setFiles(Lists.newArrayList(FeatureFile.build(attributes, location),
-                                            FeatureFile.build(attributes2, location2)));
+        feature.setFiles(Lists.newArrayList(FeatureFile.build(attributes, null, location),
+                                            FeatureFile.build(attributes2, null, location2)));
         errors = validationService.validate(feature, ValidationMode.PATCH);
 
         if (errors.hasErrors()) {

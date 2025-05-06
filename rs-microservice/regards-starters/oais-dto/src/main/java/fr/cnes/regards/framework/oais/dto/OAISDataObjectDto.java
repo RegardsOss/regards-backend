@@ -29,6 +29,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -67,7 +68,7 @@ public class OAISDataObjectDto {
      * The checksum algorithm (<b>required</b> if data object is not a reference)
      */
     @HandledMessageDigestAlgorithm
-    @Schema(description = "File checksum algorithm.", example = "MD5", allowableValues = {"MD5"})
+    @Schema(description = "File checksum algorithm.", example = "MD5", allowableValues = { "MD5" })
     private String algorithm;
 
     /**
@@ -82,6 +83,9 @@ public class OAISDataObjectDto {
      */
     @Schema(description = "File size bytes.", example = "120568")
     private Long fileSize;
+
+    @Schema(type = "object", description = "Additional fields in JSON format", hidden = true)
+    private Object additionalFields;
 
     /**
      * @return the file name
@@ -165,47 +169,36 @@ public class OAISDataObjectDto {
         this.fileSize = fileSize;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result) + (algorithm == null ? 0 : algorithm.hashCode());
-        result = (prime * result) + (checksum == null ? 0 : checksum.hashCode());
-        result = (prime * result) + (fileSize == null ? 0 : fileSize.hashCode());
-        result = (prime * result) + (filename == null ? 0 : filename.hashCode());
-        result = (prime * result) + (regardsDataType == null ? 0 : regardsDataType.hashCode());
-        return result;
+    public Object getAdditionalFields() {
+        return additionalFields;
+    }
+
+    public void setAdditionalFields(Object additionalFields) {
+        this.additionalFields = additionalFields;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (obj == null) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        OAISDataObjectDto other = (OAISDataObjectDto) obj;
-        if (algorithm == null) {
-            if (other.algorithm != null) {
-                return false;
-            }
-        } else if (!algorithm.equals(other.algorithm)) {
-            return false;
-        }
-        if (checksum == null) {
-            if (other.checksum != null) {
-                return false;
-            }
-        } else if (!checksum.equals(other.checksum)) {
-            return false;
-        }
-        if (regardsDataType != other.regardsDataType) {
-            return false;
-        }
-        return true;
+        OAISDataObjectDto that = (OAISDataObjectDto) o;
+        return regardsDataType == that.regardsDataType
+               && Objects.equals(locations, that.locations)
+               && Objects.equals(filename,
+                                 that.filename)
+               && Objects.equals(algorithm, that.algorithm)
+               && Objects.equals(checksum, that.checksum)
+               && Objects.equals(fileSize, that.fileSize)
+               && Objects.equals(additionalFields, that.additionalFields);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(regardsDataType, locations, filename, algorithm, checksum, fileSize, additionalFields);
+    }
+
 }

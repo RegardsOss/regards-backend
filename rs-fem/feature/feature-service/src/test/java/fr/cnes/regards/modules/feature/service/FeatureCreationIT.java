@@ -185,7 +185,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                                        "MD5",
                                                                        RandomChecksumUtils.generateRandomChecksum());
         FeatureFileLocation location = FeatureFileLocation.build("file:///test/file.txt", "somewhere");
-        events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes, location));
+        events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes, null, location));
 
         // Add one file with a store file (only url is provided in location)
         FeatureFileAttributes attributes2 = FeatureFileAttributes.build(DataType.RAWDATA,
@@ -195,7 +195,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                                         "MD5",
                                                                         RandomChecksumUtils.generateRandomChecksum());
         FeatureFileLocation location2 = FeatureFileLocation.build("file:///dir/file.txt");
-        events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes2, location2));
+        events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes2, null, location2));
         events.get(0).getMetadata().setStorages(Lists.newArrayList(StorageMetadata.build("elsewhere")));
 
         RequestInfo<String> info = this.featureCreationService.registerRequests(events);
@@ -220,7 +220,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                                        "MD5",
                                                                        RandomChecksumUtils.generateRandomChecksum());
         FeatureFileLocation location = FeatureFileLocation.build("file://dir/file.txt");
-        events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes, location));
+        events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes, null, location));
 
         // Submit request
         RequestInfo<String> info = this.featureCreationService.registerRequests(events);

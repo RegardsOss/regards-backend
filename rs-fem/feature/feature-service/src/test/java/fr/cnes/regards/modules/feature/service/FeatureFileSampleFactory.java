@@ -70,7 +70,7 @@ public class FeatureFileSampleFactory {
                                                                        checksum);
 
         FeatureFileLocation location = FeatureFileLocation.build(url, storage);
-        return FeatureFile.build(attributes, location);
+        return FeatureFile.build(attributes, null, location);
     }
 
     public FeatureFile buildFeatureFile() {

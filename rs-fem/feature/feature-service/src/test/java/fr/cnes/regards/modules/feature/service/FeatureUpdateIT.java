@@ -779,7 +779,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                                                                            10L,
                                                                            "MD5",
                                                                            RandomChecksumUtils.generateRandomChecksum());
-            updates.forEach(u -> u.getFeature().getFiles().add(FeatureFile.build(attributes, newLocations)));
+            updates.forEach(u -> u.getFeature().getFiles().add(FeatureFile.build(attributes, null, newLocations)));
         } else {
 
             updates.forEach(u -> u.getFeature().getFiles().forEach(l -> l.getLocations().add(newLocations)));

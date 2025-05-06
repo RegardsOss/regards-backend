@@ -521,5 +521,4 @@ public class PluginConfiguration implements IIdentifiable<Long> {
                                        dto.getParameters(),
                                        dto.getMetaData());
     }
-
 }

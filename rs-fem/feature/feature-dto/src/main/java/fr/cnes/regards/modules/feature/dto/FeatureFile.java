@@ -19,11 +19,13 @@
 package fr.cnes.regards.modules.feature.dto;
 
 import com.google.common.collect.Sets;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -47,11 +49,24 @@ public class FeatureFile {
     @NotNull(message = "File attributes is requred")
     private FeatureFileAttributes attributes;
 
-    public static FeatureFile build(FeatureFileAttributes attributes, FeatureFileLocation... locations) {
+    /**
+     * Additional fields in JSON format
+     */
+    @Schema(hidden = true, description = "Additional fields in JSON format")
+    private Object additionalFields;
+
+    public static FeatureFile build(FeatureFileAttributes attributes,
+                                    Object additionalFields,
+                                    FeatureFileLocation... locations) {
         FeatureFile file = new FeatureFile();
         file.setAttributes(attributes);
         file.setLocations(Sets.newHashSet(locations));
+        file.setAdditionalFields(additionalFields);
         return file;
+    }
+
+    private void setAdditionalFields(Object additionalFields) {
+        this.additionalFields = additionalFields;
     }
 
     public Set<FeatureFileLocation> getLocations() {
@@ -70,41 +85,27 @@ public class FeatureFile {
         this.attributes = attributes;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (attributes == null ? 0 : attributes.hashCode());
-        result = prime * result + (locations == null ? 0 : locations.hashCode());
-        return result;
+    public Object getAdditionalFields() {
+        return additionalFields;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (obj == null) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        FeatureFile other = (FeatureFile) obj;
-        if (attributes == null) {
-            if (other.attributes != null) {
-                return false;
-            }
-        } else if (!attributes.equals(other.attributes)) {
-            return false;
-        }
-        if (locations == null) {
-            if (other.locations != null) {
-                return false;
-            }
-        } else if (!locations.equals(other.locations)) {
-            return false;
-        }
-        return true;
+        FeatureFile that = (FeatureFile) o;
+        return Objects.equals(locations, that.locations)
+               && Objects.equals(attributes, that.attributes)
+               && Objects.equals(additionalFields, that.additionalFields);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(locations, attributes, additionalFields);
+    }
+
 }

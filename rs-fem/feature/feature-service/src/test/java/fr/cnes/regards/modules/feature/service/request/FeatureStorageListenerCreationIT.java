@@ -325,6 +325,7 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
                                                                  1024l,
                                                                  "MD5",
                                                                  checksum),
+                                     null,
                                      FeatureFileLocation.build("www.google.com", "GPFS"),
                                      FeatureFileLocation.build("www.perdu.com", "GPFS")));
         feature.getFeature().setFiles(filles);

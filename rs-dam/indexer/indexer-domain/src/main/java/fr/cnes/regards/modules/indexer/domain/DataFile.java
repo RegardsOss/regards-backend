@@ -110,6 +110,11 @@ public class DataFile {
     private String crc32;
 
     /**
+     * Optional additional fields in JSON format.
+     */
+    private Object additionalFields;
+
+    /**
      * Base builder with required properties.<br/>
      * For image, size is required, use {@link #setImageWidth(Double)} and {@link #setImageHeight(Double)}.<br/>
      * Additional file properties can be supplied using :
@@ -338,5 +343,13 @@ public class DataFile {
         } else {
             return uri.equals(other.uri);
         }
+    }
+
+    public Object getAdditionalFields() {
+        return additionalFields;
+    }
+
+    public void setAdditionalFields(Object additionalFields) {
+        this.additionalFields = additionalFields;
     }
 }

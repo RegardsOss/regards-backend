@@ -54,6 +54,8 @@ public class FileReferenceDto {
      */
     private FileReferenceMetaInfoDto metaInfo;
 
+    private Object additionalFields;
+
     /**
      * Business request identifier associated to the FileReference. Those identifiers are the identifier of file request.
      * See FilesStorageRequestEvent, FilesDeletionEvent and FilesReferenceEvent for more information about
@@ -157,5 +159,13 @@ public class FileReferenceDto {
 
     public boolean isNearlineConfirmed() {
         return nearlineConfirmed;
+    }
+
+    public Object getAdditionalFields() {
+        return additionalFields;
+    }
+
+    public void setAdditionalFields(Object additionalFields) {
+        this.additionalFields = additionalFields;
     }
 }
