@@ -18,15 +18,12 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.autoconfigure.SecureRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
@@ -52,10 +49,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.time.LocalDateTime;
-import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This class test that the system can invalidate an account.
@@ -133,7 +129,7 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
     private Account account;
 
     @Before
-    public void init() throws IOException, ModuleException, URISyntaxException {
+    public void init() {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         initDb();
     }
@@ -146,20 +142,14 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
         accountRepository.save(account);
     }
 
+    /**
+     * Check that the system deactivates an account on the basis of its account validity duration.
+     */
     @Test
     @Requirement("REGARDS_DSL_SYS_SEC_410")
     @Requirement("REGARDS_DSL_SYS_SEC_310")
-    @Purpose(
-        "Check that the system can invalidate an account on the basis of its account validity duration or password validity duration")
-    public void testCheckAccountValidity() {
-
-        Account accountValid = new Account("valid@c-s.fr", "Antoine", "Griezmann", PASSWORD);
-        accountValid.setInvalidityDate(LocalDateTime.now().plusDays(1));
-        accountValid.setPasswordUpdateDate(LocalDateTime.now().plusDays(1));
-        accountValid.setStatus(AccountStatus.ACTIVE);
-        accountValid.setOrigin(Account.REGARDS_ORIGIN);
-        accountRepository.save(accountValid);
-
+    public void testExpiredAccountBecomesInactive() {
+        // GIVEN
         Account accountInvalid = new Account("invalid@c-s.fr", "John", "Doe", PASSWORD);
         accountInvalid.setInvalidityDate(LocalDateTime.now().minusDays(1));
         accountInvalid.setPasswordUpdateDate(LocalDateTime.now().plusDays(1));
@@ -167,36 +157,86 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
         accountInvalid.setOrigin(Account.REGARDS_ORIGIN);
         accountRepository.save(accountInvalid);
 
-        Account accountPasswordInvalid = new Account("passwordInvalid@c-s.fr", "Kylian", "Mbappé", "passWord");
-        accountPasswordInvalid.setInvalidityDate(LocalDateTime.now().plusDays(5));
-        accountPasswordInvalid.setPasswordUpdateDate(LocalDateTime.now()
-                                                                  .minusDays(accountPasswordValidityDuration)
-                                                                  .minusDays(1L));
-        accountPasswordInvalid.setStatus(AccountStatus.ACTIVE);
-        accountPasswordInvalid.setOrigin(Account.REGARDS_ORIGIN);
-        accountRepository.save(accountPasswordInvalid);
-
-        // lets test now that everything is in place
+        // WHEN
         accountService.checkAccountValidity();
 
-        accountValid = accountRepository.findById(accountValid.getId()).get();
+        // THEN
         accountInvalid = accountRepository.findById(accountInvalid.getId()).get();
-        accountPasswordInvalid = accountRepository.findById(accountPasswordInvalid.getId()).get();
+        assertThat(accountInvalid.getStatus()).isEqualTo(AccountStatus.INACTIVE);
+    }
 
-        logAccountInfo("account :                <{}> - {} - {}", account);
-        logAccountInfo("accountValid :           <{}> - {} - {}", accountValid);
-        logAccountInfo("accountInvalid :         <{}> - {} - {}", accountInvalid);
-        logAccountInfo("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid);
+    /**
+     * Check that the system password-deactivates an account on the basis of the password validity duration.
+     */
+    @Test
+    @Requirement("REGARDS_DSL_SYS_SEC_410")
+    @Requirement("REGARDS_DSL_SYS_SEC_310")
+    public void testActiveAccountWithExpiredPasswordBecomesInactivePassword() {
+        // GIVEN
+        Account accountInvalid = new Account("invalid@c-s.fr", "John", "Doe", PASSWORD);
+        accountInvalid.setInvalidityDate(LocalDateTime.now().plusDays(1));
+        accountInvalid.setPasswordUpdateDate(LocalDateTime.now()
+                                                          .minusDays(accountPasswordValidityDuration)
+                                                          .minusDays(1L));
+        accountInvalid.setStatus(AccountStatus.ACTIVE);
+        accountInvalid.setOrigin(Account.REGARDS_ORIGIN);
+        accountRepository.save(accountInvalid);
 
-        final Set<Account> toCheck = Sets.newHashSet(accountValid, accountInvalid, accountPasswordInvalid);
-        Assert.assertEquals(1, toCheck.stream().filter(a -> a.getStatus().equals(AccountStatus.ACTIVE)).count());
-        Assert.assertEquals(1, toCheck.stream().filter(a -> a.getStatus().equals(AccountStatus.INACTIVE)).count());
-        Assert.assertEquals(1,
-                            toCheck.stream()
-                                   .filter(a -> a.getStatus().equals(AccountStatus.INACTIVE_PASSWORD))
-                                   .count());
-        Assert.assertEquals(AccountStatus.INACTIVE, accountInvalid.getStatus());
-        Assert.assertEquals(AccountStatus.INACTIVE_PASSWORD, accountPasswordInvalid.getStatus());
+        // WHEN
+        accountService.checkAccountValidity();
+
+        // THEN
+        accountInvalid = accountRepository.findById(accountInvalid.getId()).get();
+        assertThat(accountInvalid.getStatus()).isEqualTo(AccountStatus.INACTIVE_PASSWORD);
+    }
+
+    /**
+     * Check that the system deactivates an account on the basis of its account validity duration even if the
+     * account password is also expired.
+     */
+    @Test
+    @Requirement("REGARDS_DSL_SYS_SEC_410")
+    @Requirement("REGARDS_DSL_SYS_SEC_310")
+    public void testExpiredAccountWithExpiredPasswordBecomesInactive() {
+        // GIVEN
+        Account accountInvalid = new Account("invalid@c-s.fr", "John", "Doe", PASSWORD);
+        accountInvalid.setInvalidityDate(LocalDateTime.now().minusDays(1));
+        accountInvalid.setPasswordUpdateDate(LocalDateTime.now()
+                                                          .minusDays(accountPasswordValidityDuration)
+                                                          .minusDays(1L));
+        accountInvalid.setStatus(AccountStatus.ACTIVE);
+        accountInvalid.setOrigin(Account.REGARDS_ORIGIN);
+        accountRepository.save(accountInvalid);
+
+        // WHEN
+        accountService.checkAccountValidity();
+
+        // THEN
+        accountInvalid = accountRepository.findById(accountInvalid.getId()).get();
+        assertThat(accountInvalid.getStatus()).isEqualTo(AccountStatus.INACTIVE);
+    }
+
+    /**
+     * Check that the system leaves an account active when nothing has expired.
+     */
+    @Test
+    @Requirement("REGARDS_DSL_SYS_SEC_410")
+    @Requirement("REGARDS_DSL_SYS_SEC_310")
+    public void testAccountWithoutIssuesRemainsActive() {
+        // GIVEN
+        Account accountValid = new Account("valid@c-s.fr", "Antoine", "Griezmann", PASSWORD);
+        accountValid.setInvalidityDate(LocalDateTime.now().plusDays(1));
+        accountValid.setPasswordUpdateDate(LocalDateTime.now().plusDays(1));
+        accountValid.setStatus(AccountStatus.ACTIVE);
+        accountValid.setOrigin(Account.REGARDS_ORIGIN);
+        accountRepository.save(accountValid);
+
+        // WHEN
+        accountService.checkAccountValidity();
+
+        // THEN
+        accountValid = accountRepository.findById(accountValid.getId()).get();
+        assertThat(accountValid.getStatus()).isEqualTo(AccountStatus.ACTIVE);
     }
 
     @Test

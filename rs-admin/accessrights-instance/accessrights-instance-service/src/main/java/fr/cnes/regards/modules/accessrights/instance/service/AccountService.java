@@ -419,17 +419,6 @@ public class AccountService implements IAccountService, InitializingBean {
                                                 .filter(account -> !rootAdminUserLogin.equals(account.getEmail()))
                                                 .collect(Collectors.toSet());
 
-        // check issues with the invalidity date
-        if ((accountValidityDuration != null) && !accountValidityDuration.equals(0L)) {
-            LocalDateTime now = LocalDateTime.now();
-            toCheck.stream().filter(account -> account.getInvalidityDate().isBefore(now)).forEach(account -> {
-                account.setStatus(AccountStatus.INACTIVE);
-                LOG.info("Account {} set to {} because of its account validity date",
-                         account.getEmail(),
-                         AccountStatus.INACTIVE);
-            });
-        }
-
         // check issues with the password
         if ((accountPasswordValidityDuration != null) && !accountPasswordValidityDuration.equals(0L)) {
             LocalDateTime minValidityDate = LocalDateTime.now().minusDays(accountPasswordValidityDuration);
@@ -445,6 +434,19 @@ public class AccountService implements IAccountService, InitializingBean {
                                 AccountStatus.INACTIVE_PASSWORD);
                    });
         }
+
+        // check issues with the invalidity date (account invalidity has higher priority than password invalidity so
+        // this check must be done last)
+        if ((accountValidityDuration != null) && !accountValidityDuration.equals(0L)) {
+            LocalDateTime now = LocalDateTime.now();
+            toCheck.stream().filter(account -> account.getInvalidityDate().isBefore(now)).forEach(account -> {
+                account.setStatus(AccountStatus.INACTIVE);
+                LOG.info("Account {} set to {} because of its account validity date",
+                         account.getEmail(),
+                         AccountStatus.INACTIVE);
+            });
+        }
+
         accountRepository.saveAll(toCheck);
     }
 
