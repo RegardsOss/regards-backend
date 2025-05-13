@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.file.ZipUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -37,6 +38,7 @@ import fr.cnes.regards.modules.order.test.StorageClientMock;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import org.awaitility.Awaitility;
+import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -49,7 +51,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -158,6 +165,20 @@ public abstract class AbstractOrderServiceIT extends AbstractMultitenantServiceI
                .thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
         simulateApplicationReadyEvent();
         simulateApplicationStartedEvent();
+        ZipUtils.unzip(Path.of("src/test/resources/files.zip"), Path.of("src/test/resources/"));
+    }
+
+    @After
+    public void cleanSources() throws IOException {
+        try (Stream<Path> paths = Files.walk(Path.of("src/test/resources/files"))) {
+            paths.sorted(Comparator.reverseOrder()).forEach(path -> {
+                try {
+                    Files.delete(path);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
     }
 
     protected void waitForStatus(Long orderId, OrderStatus status) {

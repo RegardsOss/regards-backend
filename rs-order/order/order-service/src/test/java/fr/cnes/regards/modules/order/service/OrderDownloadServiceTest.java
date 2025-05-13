@@ -21,10 +21,12 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.file.ZipUtils;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.processing.IProcessingEventSender;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,10 +35,13 @@ import org.springframework.util.MimeTypeUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 import java.util.zip.ZipFile;
 
 /**
@@ -67,6 +72,20 @@ public class OrderDownloadServiceTest {
                                            processingEventSender,
                                            null);
         service.afterPropertiesSet();
+        ZipUtils.unzip(Path.of("src/test/resources/files.zip"), Path.of("src/test/resources/"));
+    }
+
+    @After
+    public void clean() throws IOException {
+        try (Stream<Path> paths = Files.walk(Path.of("src/test/resources/files"))) {
+            paths.sorted(Comparator.reverseOrder()).forEach(path -> {
+                try {
+                    Files.delete(path);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
     }
 
     @Test
@@ -140,5 +159,4 @@ public class OrderDownloadServiceTest {
                                  UniformResourceName.build(id, EntityType.DATA, "toto", UUID.randomUUID(), 1),
                                  1L);
     }
-
 }

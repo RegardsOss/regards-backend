@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.file.ZipUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -43,10 +44,7 @@ import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import org.awaitility.Awaitility;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
@@ -64,9 +62,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 /**
  * @author oroussel
@@ -142,6 +145,20 @@ public class OrderServiceUnavailableFilesIT {
         projectUser.setRole(role);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString()))
                .thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
+        ZipUtils.unzip(Path.of("src/test/resources/files.zip"), Path.of("src/test/resources/"));
+    }
+
+    @After
+    public void cleanSources() throws IOException {
+        try (Stream<Path> paths = Files.walk(Path.of("src/test/resources/files"))) {
+            paths.sorted(Comparator.reverseOrder()).forEach(path -> {
+                try {
+                    Files.delete(path);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
     }
 
     public void clean() {

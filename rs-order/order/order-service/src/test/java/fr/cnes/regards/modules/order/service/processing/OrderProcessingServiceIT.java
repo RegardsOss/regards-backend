@@ -22,13 +22,14 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.utils.file.ZipUtils;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.order.amqp.output.OrderResponseDtoEvent;
 import fr.cnes.regards.modules.order.configuration.OrderAutoConfiguration;
 import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
+import fr.cnes.regards.modules.order.dto.dto.OrderStatus;
 import fr.cnes.regards.modules.order.dto.output.OrderRequestStatus;
 import fr.cnes.regards.modules.order.service.OrderCreationService;
 import fr.cnes.regards.modules.order.service.OrderServiceTestIT;
@@ -38,6 +39,8 @@ import fr.cnes.regards.modules.processing.forecast.MultiplierResultSizeForecast;
 import fr.cnes.regards.modules.processing.order.*;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -51,7 +54,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -77,6 +82,14 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
         projectUser.setRole(role);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString()))
                .thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
+        ZipUtils.unzip(Path.of("src/test/resources/files.zip"), Path.of("src/test/resources/"));
+        ZipUtils.unzip(Path.of("src/test/resources/processing/files.zip"), Path.of("src/test/resources/processing"));
+    }
+
+    @After
+    public void cleanSources() throws IOException {
+        FileUtils.deleteDirectory(new File("src/test/resources/files"));
+        FileUtils.deleteDirectory(new File("src/test/resources/processing/files"));
     }
 
     @Test

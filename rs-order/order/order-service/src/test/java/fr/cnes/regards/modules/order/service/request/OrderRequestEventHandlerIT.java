@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.file.ZipUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -52,6 +53,7 @@ import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,10 +71,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Stream;
 
 import static fr.cnes.regards.modules.order.service.request.OrderRequestTestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -148,7 +155,20 @@ public class OrderRequestEventHandlerIT extends AbstractMultitenantServiceWithJo
         mockServices();
         cleanRepositories();
         simulateStartEvents();
+        ZipUtils.unzip(Path.of("src/test/resources/files.zip"), Path.of("src/test/resources/"));
+    }
 
+    @After
+    public void cleanSources() throws IOException {
+        try (Stream<Path> paths = Files.walk(Path.of("src/test/resources/files"))) {
+            paths.sorted(Comparator.reverseOrder()).forEach(path -> {
+                try {
+                    Files.delete(path);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
     }
 
     @Test
