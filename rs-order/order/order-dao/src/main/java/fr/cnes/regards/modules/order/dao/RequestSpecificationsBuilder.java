@@ -28,12 +28,10 @@ import fr.cnes.regards.modules.order.domain.SearchRequestParameters;
 public class RequestSpecificationsBuilder extends AbstractSpecificationsBuilder<Order, SearchRequestParameters> {
 
     @Override
-    protected void addSpecificationsFromParameters() {
-        if (parameters != null) {
-            specifications.add(like("owner", parameters.getOwner()));
-            specifications.add(useDatesRestriction("creationDate", parameters.getCreationDate()));
-            specifications.add(useValuesRestriction("status", parameters.getStatuses()));
-            specifications.add(equals("waitingForUser", parameters.getWaitingForUser()));
-        }
+    protected void addSpecificationsFromParameters(SearchRequestParameters parameters) {
+        add(like("owner", parameters.getOwner()));
+        add(useDatesRestriction("creationDate", parameters.getCreationDate()));
+        add(useValuesRestriction("status", parameters.getStatuses()));
+        add(equals("waitingForUser", parameters.getWaitingForUser()));
     }
 }

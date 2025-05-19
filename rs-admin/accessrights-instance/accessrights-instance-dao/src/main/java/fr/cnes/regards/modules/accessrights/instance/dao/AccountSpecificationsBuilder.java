@@ -28,15 +28,13 @@ import org.springframework.util.StringUtils;
 public class AccountSpecificationsBuilder extends AbstractSpecificationsBuilder<Account, AccountSearchParameters> {
 
     @Override
-    protected void addSpecificationsFromParameters() {
-        if (parameters != null) {
-            specifications.add(like("email", parameters.getEmail()));
-            specifications.add(like("lastName", parameters.getLastName()));
-            specifications.add(like("firstName", parameters.getFirstName()));
-            specifications.add(hasStatus(parameters.getStatus()));
-            specifications.add(equals("origin", parameters.getOrigin()));
-            specifications.add(joinedEquals("projects", "name", parameters.getProject()));
-        }
+    protected void addSpecificationsFromParameters(AccountSearchParameters parameters) {
+        add(like("email", parameters.getEmail()));
+        add(like("lastName", parameters.getLastName()));
+        add(like("firstName", parameters.getFirstName()));
+        add(hasStatus(parameters.getStatus()));
+        add(equals("origin", parameters.getOrigin()));
+        add(joinedEquals("projects", "name", parameters.getProject()));
     }
 
     private Specification<Account> hasStatus(String status) {

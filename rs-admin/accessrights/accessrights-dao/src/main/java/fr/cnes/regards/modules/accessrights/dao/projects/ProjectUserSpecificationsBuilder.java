@@ -33,30 +33,28 @@ public class ProjectUserSpecificationsBuilder
     extends AbstractSpecificationsBuilder<ProjectUser, SearchProjectUserParameters> {
 
     @Override
-    protected void addSpecificationsFromParameters() {
-        if (parameters != null) {
-            specifications.add(likeIgnoreCase("email", parameters.getEmail()));
+    protected void addSpecificationsFromParameters(SearchProjectUserParameters parameters) {
+        add(likeIgnoreCase("email", parameters.getEmail()));
 
-            specifications.add(likeIgnoreCase("lastName", parameters.getLastName()));
+        add(likeIgnoreCase("lastName", parameters.getLastName()));
 
-            specifications.add(likeIgnoreCase("firstName", parameters.getFirstName()));
+        add(likeIgnoreCase("firstName", parameters.getFirstName()));
 
-            specifications.add(useValuesRestriction("status", parameters.getStatus()));
+        add(useValuesRestriction("status", parameters.getStatus()));
 
-            specifications.add(useValuesRestriction("origin", parameters.getOrigins()));
+        add(useValuesRestriction("origin", parameters.getOrigins()));
 
-            specifications.add(useValuesRestrictionJoined("role", "name", parameters.getRoles()));
+        add(useValuesRestrictionJoined("role", "name", parameters.getRoles()));
 
-            specifications.add(before("created", parameters.getCreationDate().getBefore()));
-            specifications.add(after("created", parameters.getCreationDate().getAfter()));
+        add(before("created", parameters.getCreationDate().getBefore()));
+        add(after("created", parameters.getCreationDate().getAfter()));
 
-            specifications.add(before("lastConnection", parameters.getLastConnection().getBefore()));
-            specifications.add(after("lastConnection", parameters.getLastConnection().getAfter()));
+        add(before("lastConnection", parameters.getLastConnection().getBefore()));
+        add(after("lastConnection", parameters.getLastConnection().getAfter()));
 
-            specifications.add(useValuesRestrictionJoinSet("accessGroups", parameters.getAccessGroups()));
+        add(useValuesRestrictionJoinSet("accessGroups", parameters.getAccessGroups()));
 
-            specifications.add(hasRemainingQuotaBelow(parameters.getQuotaWarningCount()));
-        }
+        add(hasRemainingQuotaBelow(parameters.getQuotaWarningCount()));
     }
 
     private Specification<ProjectUser> hasRemainingQuotaBelow(Long value) {

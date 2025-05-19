@@ -28,14 +28,12 @@ public class NotificationSpecificationBuilder
     extends AbstractSpecificationsBuilder<NotificationLight, SearchNotificationParameters> {
 
     @Override
-    protected void addSpecificationsFromParameters() {
-        if (parameters != null) {
-            specifications.add(useValuesRestriction("level", parameters.getLevels()));
-            specifications.add(useValuesRestriction("sender", parameters.getSenders()));
-            specifications.add(useValuesRestriction("status", parameters.getStatus()));
-            specifications.add(before("date", parameters.getDates().getBefore()));
-            specifications.add(after("date", parameters.getDates().getAfter()));
-            specifications.add(useValuesRestriction("id", parameters.getIds()));
-        }
+    protected void addSpecificationsFromParameters(SearchNotificationParameters parameters) {
+        add(useValuesRestriction("level", parameters.getLevels()));
+        add(useValuesRestriction("sender", parameters.getSenders()));
+        add(useValuesRestriction("status", parameters.getStatus()));
+        add(before("date", parameters.getDates().getBefore()));
+        add(after("date", parameters.getDates().getAfter()));
+        add(useValuesRestriction("id", parameters.getIds()));
     }
 }

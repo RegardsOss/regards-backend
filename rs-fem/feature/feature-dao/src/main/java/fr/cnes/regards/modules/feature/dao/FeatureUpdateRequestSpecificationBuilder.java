@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.dao;
 
 import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
 
 /**
  * @author Stephane Cortine
@@ -27,9 +28,9 @@ public class FeatureUpdateRequestSpecificationBuilder
     extends AbstractFeatureRequestSpecificationsBuilder<FeatureUpdateRequest> {
 
     @Override
-    protected void addSpecificationsFromParameters() {
-        specifications.add(useValuesRestriction("providerId", parameters.getProviderIds()));
-        super.addSpecificationsFromParameters();
+    protected void addSpecificationsFromParameters(SearchFeatureRequestParameters parameters) {
+        add(useValuesRestriction("providerId", parameters.getProviderIds()));
+        super.addSpecificationsFromParameters(parameters);
     }
 }
 

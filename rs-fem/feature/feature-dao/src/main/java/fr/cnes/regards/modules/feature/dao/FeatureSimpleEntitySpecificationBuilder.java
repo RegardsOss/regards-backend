@@ -31,29 +31,29 @@ public class FeatureSimpleEntitySpecificationBuilder
     private static final String DISSEMINATION_PENDING_FILED = "disseminationPending";
 
     @Override
-    protected void addSpecificationsFromParameters() {
+    protected void addSpecificationsFromParameters(SearchFeatureSimpleEntityParameters parameters) {
         if (parameters != null) {
-            specifications.add(useValuesRestriction("id", parameters.getFeatureIds()));
-            specifications.add(useValuesRestriction("providerId", parameters.getProviderIds()));
+            add(useValuesRestriction("id", parameters.getFeatureIds()));
+            add(useValuesRestriction("providerId", parameters.getProviderIds()));
 
-            specifications.add(equals("model", parameters.getModel()));
+            add(equals("model", parameters.getModel()));
 
-            specifications.add(equals("sessionOwner", parameters.getSource()));
-            specifications.add(equals("session", parameters.getSession()));
+            add(equals("sessionOwner", parameters.getSource()));
+            add(equals("session", parameters.getSession()));
 
-            specifications.add(after("lastUpdate", parameters.getLastUpdate().getAfter()));
-            specifications.add(before("lastUpdate", parameters.getLastUpdate().getBefore()));
+            add(after("lastUpdate", parameters.getLastUpdate().getAfter()));
+            add(before("lastUpdate", parameters.getLastUpdate().getBefore()));
 
             if (parameters.getDisseminationStatus() != null) {
                 switch (parameters.getDisseminationStatus()) {
                     case NONE -> {
-                        specifications.add(isNull(DISSEMINATION_PENDING_FILED));
+                        add(isNull(DISSEMINATION_PENDING_FILED));
                     }
                     case PENDING -> {
-                        specifications.add(equals(DISSEMINATION_PENDING_FILED, true));
+                        add(equals(DISSEMINATION_PENDING_FILED, true));
                     }
                     case DONE -> {
-                        specifications.add(equals(DISSEMINATION_PENDING_FILED, false));
+                        add(equals(DISSEMINATION_PENDING_FILED, false));
                     }
                     default -> {
                         // nothing to do

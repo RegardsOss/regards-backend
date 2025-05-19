@@ -29,16 +29,14 @@ public class SubmissionRequestSpecificationBuilder
     extends AbstractSpecificationsBuilder<SubmissionRequest, SearchSubmissionRequestParameters> {
 
     @Override
-    protected void addSpecificationsFromParameters() {
-        if (parameters != null) {
-            specifications.add(equals("owner", parameters.getOwner()));
-            specifications.add(equals("session", parameters.getSession()));
-            specifications.add(useValuesRestriction("id", parameters.getIdsRestriction()));
-            specifications.add(equals("submittedProduct.datatype", parameters.getDatatype()));
-            specifications.add(useDatesRestriction("submissionStatus.creationDate", parameters.getCreationDate()));
-            specifications.add(useDatesRestriction("submissionStatus.statusDate", parameters.getStatusDate()));
-            specifications.add(useValuesRestriction("submissionStatus.status", parameters.getStatusesRestriction()));
-        }
+    protected void addSpecificationsFromParameters(SearchSubmissionRequestParameters parameters) {
+        add(equals("owner", parameters.getOwner()));
+        add(equals("session", parameters.getSession()));
+        add(useValuesRestriction("id", parameters.getIdsRestriction()));
+        add(equals("submittedProduct.datatype", parameters.getDatatype()));
+        add(useDatesRestriction("submissionStatus.creationDate", parameters.getCreationDate()));
+        add(useDatesRestriction("submissionStatus.statusDate", parameters.getStatusDate()));
+        add(useValuesRestriction("submissionStatus.status", parameters.getStatusesRestriction()));
     }
 
 }

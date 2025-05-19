@@ -30,38 +30,35 @@ public abstract class AbstractAIPSpecificationBuilder<T>
     extends AbstractSpecificationsBuilder<T, SearchAIPsParameters> {
 
     @Override
-    protected void addSpecificationsFromParameters() {
-        if (parameters != null) {
+    protected void addSpecificationsFromParameters(SearchAIPsParameters parameters) {
+        add(useValuesRestriction("state", parameters.getAipStates()));
 
-            specifications.add(useValuesRestriction("state", parameters.getAipStates()));
+        add(useValuesRestriction("ipType", parameters.getAipIpTypes()));
 
-            specifications.add(useValuesRestriction("ipType", parameters.getAipIpTypes()));
+        add(after("lastUpdate", parameters.getLastUpdate().getAfter()));
+        add(before("lastUpdate", parameters.getLastUpdate().getBefore()));
 
-            specifications.add(after("lastUpdate", parameters.getLastUpdate().getAfter()));
-            specifications.add(before("lastUpdate", parameters.getLastUpdate().getBefore()));
+        add(useValuesRestriction("providerId", parameters.getProviderIds()));
 
-            specifications.add(useValuesRestriction("providerId", parameters.getProviderIds()));
+        add(equals("sessionOwner", parameters.getSessionOwner()));
+        add(equals("session", parameters.getSession()));
 
-            specifications.add(like("sessionOwner", parameters.getSessionOwner()));
-            specifications.add(like("session", parameters.getSession()));
+        add(isJsonbArrayContainingOneOfElement("storages", parameters.getStorages()));//jsonb
 
-            specifications.add(isJsonbArrayContainingOneOfElement("storages", parameters.getStorages()));//jsonb
+        add(isJsonbArrayContainingOneOfElement("categories", parameters.getCategories()));//jsonb
 
-            specifications.add(isJsonbArrayContainingOneOfElement("categories", parameters.getCategories()));//jsonb
+        add(isJsonbArrayContainingOneOfElement("tags", parameters.getTags()));//jsonb
 
-            specifications.add(isJsonbArrayContainingOneOfElement("tags", parameters.getTags()));//jsonb
+        add(equals("last", parameters.getLast()));
 
-            specifications.add(equals("last", parameters.getLast()));
+        add(useValuesRestriction("aipId", parameters.getAipIds()));
 
-            specifications.add(useValuesRestriction("aipId", parameters.getAipIds()));
+        add(equals("originUrn", parameters.getOriginUrn()));
 
-            specifications.add(equals("originUrn", parameters.getOriginUrn()));
+        add(useValuesRestriction("disseminationStatus", parameters.getDisseminationStatus()));
 
-            specifications.add(useValuesRestriction("disseminationStatus", parameters.getDisseminationStatus()));
-
-            specifications.add(after("creationDate", parameters.getCreationDate().getAfter()));
-            specifications.add(before("creationDate", parameters.getCreationDate().getBefore()));
-        }
+        add(after("creationDate", parameters.getCreationDate().getAfter()));
+        add(before("creationDate", parameters.getCreationDate().getBefore()));
     }
 
 }

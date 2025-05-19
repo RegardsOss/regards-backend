@@ -23,12 +23,12 @@ import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.SearchFeatureRequestParameters;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.Assert;
 
-import jakarta.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 
@@ -43,17 +43,17 @@ public abstract class AbstractFeatureRequestSpecificationsBuilder<T>
     protected boolean searchInFeatureEntity = true;
 
     @Override
-    protected void addSpecificationsFromParameters() {
-        specifications.add(useValuesRestriction("state", parameters.getStates()));
-        specifications.add(after("registrationDate", parameters.getLastUpdate().getAfter()));
-        specifications.add(before("registrationDate", parameters.getLastUpdate().getBefore()));
-        specifications.add(useValuesRestriction("step", parameters.getSteps()));
-        specifications.add(useValuesRestriction("id", parameters.getRequestIds()));
+    protected void addSpecificationsFromParameters(SearchFeatureRequestParameters parameters) {
+        add(useValuesRestriction("state", parameters.getStates()));
+        add(after("registrationDate", parameters.getLastUpdate().getAfter()));
+        add(before("registrationDate", parameters.getLastUpdate().getBefore()));
+        add(useValuesRestriction("step", parameters.getSteps()));
+        add(useValuesRestriction("id", parameters.getRequestIds()));
 
         if (this.searchInFeatureEntity) {
-            specifications.add(equalsWithFeatureEntity("sessionOwner", parameters.getSource()));
-            specifications.add(equalsWithFeatureEntity("session", parameters.getSession()));
-            specifications.add(useValuesRestrictionLikeWithFeatureEntity("providerId", parameters.getProviderIds()));
+            add(equalsWithFeatureEntity("sessionOwner", parameters.getSource()));
+            add(equalsWithFeatureEntity("session", parameters.getSession()));
+            add(useValuesRestrictionLikeWithFeatureEntity("providerId", parameters.getProviderIds()));
         }
     }
 

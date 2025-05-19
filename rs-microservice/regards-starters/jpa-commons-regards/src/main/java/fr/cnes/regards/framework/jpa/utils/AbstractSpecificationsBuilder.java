@@ -24,13 +24,13 @@ import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMatchMode;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 import fr.cnes.regards.framework.jpa.utils.function.NewStringArraySQLFunction;
 import fr.cnes.regards.framework.jpa.utils.function.contributor.CustomFunctionsContributor;
+import jakarta.annotation.Nullable;
+import jakarta.persistence.criteria.*;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import jakarta.annotation.Nullable;
-import jakarta.persistence.criteria.*;
-import jakarta.validation.constraints.NotNull;
 import java.security.InvalidParameterException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -43,11 +43,26 @@ import java.util.List;
  */
 public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchParameters> {
 
-    protected List<Specification<T>> specifications = new ArrayList<>();
+    private final List<Specification<T>> specifications = new ArrayList<>();
 
-    protected R parameters;
+    private R parameters;
 
-    protected abstract void addSpecificationsFromParameters();
+    /**
+     * If parameters have been set with {@link #withParameters(AbstractSearchParameters)}, add specifications
+     * from these parameters.
+     *
+     * @param parameters Non-null parameters
+     */
+    protected abstract void addSpecificationsFromParameters(R parameters);
+
+    /**
+     * Adds a specification if it is not null.
+     */
+    protected final void add(@Nullable Specification<T> specification) {
+        if (specification != null) {
+            specifications.add(specification);
+        }
+    }
 
     public AbstractSpecificationsBuilder<T, R> withParameters(R parameters) {
         this.parameters = parameters;
@@ -55,11 +70,13 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     }
 
     public Specification<T> build() {
-        addSpecificationsFromParameters();
+        if (parameters != null) {
+            addSpecificationsFromParameters(parameters);
+        }
         return this.toSpecification();
     }
 
-    protected Specification<T> equals(String pathToField, @Nullable Long value) {
+    protected @Nullable Specification<T> equals(String pathToField, @Nullable Long value) {
         if (value == null) {
             return null;
         } else {
@@ -67,7 +84,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    protected Specification<T> equals(String pathToField, @Nullable String value) {
+    protected @Nullable Specification<T> equals(String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {
             return null;
         } else {
@@ -76,18 +93,17 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected Specification<T> equalsIgnoreCase(String pathToField, @Nullable String value) {
+    protected @Nullable Specification<T> equalsIgnoreCase(String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(criteriaBuilder.upper((Expression<String>) getPath(
-                root,
-                pathToField)), value.toUpperCase());
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(criteriaBuilder.upper(getPath(root,
+                                                                                                         pathToField)),
+                                                                           value.toUpperCase());
         }
     }
 
-    protected Specification<T> equals(String pathToField, @Nullable Enum<?> value) {
+    protected @Nullable Specification<T> equals(String pathToField, @Nullable Enum<?> value) {
         if (value == null) {
             return null;
         } else {
@@ -95,7 +111,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    protected Specification<T> equals(String pathToField, @Nullable Boolean value) {
+    protected @Nullable Specification<T> equals(String pathToField, @Nullable Boolean value) {
         if (value == null) {
             return null;
         } else {
@@ -103,7 +119,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    protected Specification<T> notEquals(String pathToField, @Nullable Enum<?> value) {
+    protected @Nullable Specification<T> notEquals(String pathToField, @Nullable Enum<?> value) {
         if (value == null) {
             return null;
         } else {
@@ -119,13 +135,11 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         return (root, query, criteriaBuilder) -> criteriaBuilder.isNotNull(getPath(root, pathToField));
     }
 
-    @SuppressWarnings("unchecked")
-    protected Specification<T> like(String pathToField, @Nullable String value) {
+    protected @Nullable Specification<T> like(String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.like((Expression<String>) getPath(root,
-                                                                                                       pathToField),
+            return (root, query, criteriaBuilder) -> criteriaBuilder.like(getPath(root, pathToField),
                                                                           "%"
                                                                           + replacePostgresSpecialCharacters(value,
                                                                                                              '\\')
@@ -134,20 +148,22 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected Specification<T> likeIgnoreCase(String pathToField, @Nullable String value) {
+    protected @Nullable Specification<T> likeIgnoreCase(String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.upper((Expression<String>) getPath(
-                root,
-                pathToField)), ("%" + replacePostgresSpecialCharacters(value, '\\') + "%").toUpperCase(), '\\');
+            return (root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.upper(getPath(root,
+                                                                                                        pathToField)),
+                                                                          ("%"
+                                                                           + replacePostgresSpecialCharacters(value,
+                                                                                                              '\\')
+                                                                           + "%").toUpperCase(),
+                                                                          '\\');
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected Specification<T> useDatesRestriction(String pathToField,
-                                                   @Nullable DatesRangeRestriction datesRangeRestriction) {
+    protected @Nullable Specification<T> useDatesRestriction(String pathToField,
+                                                             @Nullable DatesRangeRestriction datesRangeRestriction) {
         if (datesRangeRestriction == null) {
             return null;
         }
@@ -162,35 +178,30 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         if (dateBefore == null) {
             return after(pathToField, dateAfter);
         }
-        return ((root, query, criteriaBuilder) -> criteriaBuilder.between((Expression<OffsetDateTime>) getPath(root,
-                                                                                                               pathToField),
+        return ((root, query, criteriaBuilder) -> criteriaBuilder.between(getPath(root, pathToField),
                                                                           dateAfter,
                                                                           dateBefore));
     }
 
-    @SuppressWarnings("unchecked")
-    protected Specification<T> before(String pathToField, @Nullable OffsetDateTime date) {
+    protected @Nullable Specification<T> before(String pathToField, @Nullable OffsetDateTime date) {
         if (date == null) {
             return null;
         } else {
-            return ((root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo((Expression<OffsetDateTime>) getPath(
-                root,
-                pathToField), date));
+            return ((root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(getPath(root, pathToField),
+                                                                                        date));
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected Specification<T> after(String pathToField, @Nullable OffsetDateTime date) {
+    protected @Nullable Specification<T> after(String pathToField, @Nullable OffsetDateTime date) {
         if (date == null) {
             return null;
         } else {
-            return ((root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo((Expression<OffsetDateTime>) getPath(
-                root,
-                pathToField), date));
+            return ((root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(getPath(root, pathToField),
+                                                                                           date));
         }
     }
 
-    protected Specification<T> joinedEquals(String join, String pathToField, @Nullable String value) {
+    protected @Nullable Specification<T> joinedEquals(String join, String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {
             return null;
         } else {
@@ -198,19 +209,15 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected Specification<T> isMember(String pathToField, @Nullable String value) {
+    protected @Nullable Specification<T> isMember(String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.isMember(value,
-                                                                              (Expression<Collection<Object>>) getPath(
-                                                                                  root,
-                                                                                  pathToField));
+            return (root, query, criteriaBuilder) -> criteriaBuilder.isMember(value, getPath(root, pathToField));
         }
     }
 
-    protected Specification<T> isMember(String pathToField, @Nullable Collection<String> values) {
+    protected @Nullable Specification<T> isMember(String pathToField, @Nullable Collection<String> values) {
         if (values == null) {
             return null;
         } else {
@@ -219,8 +226,8 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    protected Specification<T> useValuesRestriction(String pathToField,
-                                                    @Nullable ValuesRestriction<?> valuesRestriction) {
+    protected @Nullable Specification<T> useValuesRestriction(String pathToField,
+                                                              @Nullable ValuesRestriction<?> valuesRestriction) {
         if (valuesRestriction == null) {
             return null;
         }
@@ -237,9 +244,9 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     /**
      * Create specification by mapping {@link ValuesRestriction} values enum type with enum::name String values.
      */
-    protected Specification<T> useValuesRestrictionEnumAsString(String pathToField,
-                                                                @Nullable
-                                                                ValuesRestriction<? extends Enum> valuesRestriction) {
+    protected @Nullable Specification<T> useValuesRestrictionEnumAsString(String pathToField,
+                                                                          @Nullable
+                                                                          ValuesRestriction<? extends Enum> valuesRestriction) {
         if (valuesRestriction == null) {
             return null;
         }
@@ -355,9 +362,9 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    protected Specification<T> useValuesRestrictionJoined(String join,
-                                                          String pathToField,
-                                                          @Nullable ValuesRestriction<?> valuesRestriction) {
+    protected @Nullable Specification<T> useValuesRestrictionJoined(String join,
+                                                                    String pathToField,
+                                                                    @Nullable ValuesRestriction<?> valuesRestriction) {
         if (valuesRestriction == null) {
             return null;
         }
@@ -381,8 +388,8 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         return (root, query, criteriaBuilder) -> root.join(join).get(pathToField).in(values).not();
     }
 
-    protected Specification<T> useValuesRestrictionJoinSet(String pathToField,
-                                                           @Nullable ValuesRestriction<?> valuesRestriction) {
+    protected @Nullable Specification<T> useValuesRestrictionJoinSet(String pathToField,
+                                                                     @Nullable ValuesRestriction<?> valuesRestriction) {
         if (valuesRestriction == null) {
             return null;
         }
@@ -406,8 +413,8 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         return (root, query, criteriaBuilder) -> root.joinSet(pathToField).in(values).not();
     }
 
-    protected Specification<T> isJsonbArrayContainingOneOfElement(String path,
-                                                                  ValuesRestriction<String> valuesRestriction) {
+    protected @Nullable Specification<T> isJsonbArrayContainingOneOfElement(String path,
+                                                                            ValuesRestriction<String> valuesRestriction) {
         if (valuesRestriction == null) {
             return null;
         }
@@ -432,23 +439,22 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         };
     }
 
-    private Path<?> getPath(Root<?> root, String attributeName) {
+    @SuppressWarnings("unchecked")
+    private <Q> Path<Q> getPath(Root<?> root, String attributeName) {
         Path<?> path = root;
         for (String part : attributeName.split("\\.")) {
             path = path.get(part);
         }
-        return path;
+        return (Path<Q>) path;
     }
 
-    protected Specification<T> toSpecification() {
+    protected @Nullable Specification<T> toSpecification() {
         Specification<T> result = null;
         for (Specification<T> specification : specifications) {
-            if (specification != null) {
-                if (result == null) {
-                    result = Specification.where(specification);
-                } else {
-                    result = result.and(specification);
-                }
+            if (result == null) {
+                result = Specification.where(specification);
+            } else {
+                result = result.and(specification);
             }
         }
         return result;

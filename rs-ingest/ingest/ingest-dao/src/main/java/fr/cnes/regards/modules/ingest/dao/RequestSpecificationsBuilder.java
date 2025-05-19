@@ -35,25 +35,22 @@ public class RequestSpecificationsBuilder
     extends AbstractSpecificationsBuilder<AbstractRequest, SearchRequestParameters> {
 
     @Override
-    protected void addSpecificationsFromParameters() {
-        if (parameters != null) {
-            specifications.add(after("creationDate", parameters.getCreationDate().getAfter()));
-            specifications.add(before("creationDate", parameters.getCreationDate().getBefore()));
+    protected void addSpecificationsFromParameters(SearchRequestParameters parameters) {
+        add(after("creationDate", parameters.getCreationDate().getAfter()));
+        add(before("creationDate", parameters.getCreationDate().getBefore()));
 
-            specifications.add(equals("sessionOwner", parameters.getSessionOwner()));
+        add(equals("sessionOwner", parameters.getSessionOwner()));
+        add(equals("session", parameters.getSession()));
 
-            specifications.add(equals("session", parameters.getSession()));
+        add(useValuesRestriction("id", parameters.getRequestIds()));
 
-            specifications.add(useValuesRestriction("id", parameters.getRequestIds()));
+        add(useValuesRestriction("providerId", parameters.getProviderIds()));
 
-            specifications.add(useValuesRestriction("providerId", parameters.getProviderIds()));
+        add(useValuesRestrictionEnumAsString(DISCRIMINANT_ATTRIBUTE, parameters.getRequestTypes()));
 
-            specifications.add(useValuesRestrictionEnumAsString(DISCRIMINANT_ATTRIBUTE, parameters.getRequestTypes()));
+        add(useValuesRestriction(STATE_ATTRIBUTE, parameters.getRequestStates()));
 
-            specifications.add(useValuesRestriction(STATE_ATTRIBUTE, parameters.getRequestStates()));
-
-            specifications.add(useValuesRestriction("errorType", parameters.getErrorTypes()));
-        }
+        add(useValuesRestriction("errorType", parameters.getErrorTypes()));
     }
 
 }
