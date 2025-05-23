@@ -251,6 +251,7 @@
         <easy-random-vavr-extension.version>1.0.0</easy-random-vavr-extension.version>
         <xerces.version>2.9.1</xerces.version>
         <org.jdom.version>1.1.3</org.jdom.version>
+        <json-junit-assertj.version>4.1.1</json-junit-assertj.version>
         <sonar.coverage.exclusions>**/.*tests.*/**/*.*, **/.*test.*/**/*.*</sonar.coverage.exclusions>
     </properties>
 
@@ -2516,6 +2517,13 @@
                 <groupId>org.mockftpserver</groupId>
                 <artifactId>MockFtpServer</artifactId>
                 <version>${MockFtpServer.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- JSON-Junit extension for AssertJ (for tests) -->
+            <dependency>
+                <groupId>net.javacrumbs.json-unit</groupId>
+                <artifactId>json-unit-assertj</artifactId>
+                <version>${json-junit-assertj.version}</version>
                 <scope>test</scope>
             </dependency>
             <!-- Services -->
