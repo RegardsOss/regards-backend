@@ -16,14 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.accessrights.domain.emailverification;
+package fr.cnes.regards.modules.accessrights.instance.domain.emailverification;
+
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 
 /**
  * Verification token for verifying the user's email process.
@@ -31,10 +32,11 @@ import jakarta.validation.constraints.NotBlank;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
+@InstanceEntity
 @Entity
 @Table(name = "t_email_verification_token",
-       uniqueConstraints = @UniqueConstraint(name = "uk_email_verification_token_project_user_id",
-                                             columnNames = { "project_user_id" }))
+       uniqueConstraints = @UniqueConstraint(name = "uk_email_verification_token_account_id",
+                                             columnNames = { "account_id" }))
 public class EmailVerificationToken {
 
     /**
@@ -59,13 +61,11 @@ public class EmailVerificationToken {
     private String token;
 
     /**
-     * The link back to the {@link ProjectUser}
+     * The link back to the {@link Account}
      */
     @OneToOne(optional = false)
-    @JoinColumn(updatable = false,
-                name = "project_user_id",
-                foreignKey = @ForeignKey(name = "fk_email_verification_token"))
-    private ProjectUser projectUser;
+    @JoinColumn(updatable = false, name = "account_id", foreignKey = @ForeignKey(name = "fk_email_verification_token"))
+    private Account account;
 
     /**
      * The origin url
@@ -88,12 +88,6 @@ public class EmailVerificationToken {
     private LocalDateTime expiryDate;
 
     /**
-     * Verified?
-     */
-    @Column(name = "verified")
-    private boolean verified;
-
-    /**
      * Default constructor
      */
     public EmailVerificationToken() {
@@ -101,18 +95,17 @@ public class EmailVerificationToken {
     }
 
     /**
-     * @param pProjectUser The link back to the {@link ProjectUser}
-     * @param pOriginUrl   The origin url
-     * @param pRequestLink The request link
+     * @param account     The link back to the {@link Account}
+     * @param originUrl   The origin url
+     * @param requestLink The request link
      */
-    public EmailVerificationToken(final ProjectUser pProjectUser, final String pOriginUrl, final String pRequestLink) {
+    public EmailVerificationToken(final Account account, final String originUrl, final String requestLink) {
         super();
         this.renew();
-        expiryDate = LocalDateTime.now().plusDays(EXPIRATION);
-        projectUser = pProjectUser;
-        originUrl = pOriginUrl;
-        requestLink = pRequestLink;
-        verified = false;
+        this.expiryDate = LocalDateTime.now().plusDays(EXPIRATION);
+        this.account = account;
+        this.originUrl = originUrl;
+        this.requestLink = requestLink;
     }
 
     /**
@@ -131,10 +124,10 @@ public class EmailVerificationToken {
     }
 
     /**
-     * @param pId the id to set
+     * @param id the id to set
      */
-    public void setId(final Long pId) {
-        id = pId;
+    public void setId(final Long id) {
+        this.id = id;
     }
 
     /**
@@ -145,10 +138,10 @@ public class EmailVerificationToken {
     }
 
     /**
-     * @param pToken the token to set
+     * @param token the token to set
      */
-    public void setToken(final String pToken) {
-        token = pToken;
+    public void setToken(final String token) {
+        this.token = token;
     }
 
     /**
@@ -159,24 +152,10 @@ public class EmailVerificationToken {
     }
 
     /**
-     * @param pExpiryDate the expiryDate to set
+     * @param expiryDate the expiryDate to set
      */
-    public void setExpiryDate(final LocalDateTime pExpiryDate) {
-        expiryDate = pExpiryDate;
-    }
-
-    /**
-     * @return the verified
-     */
-    public boolean isVerified() {
-        return verified;
-    }
-
-    /**
-     * @param pVerified the verified to set
-     */
-    public void setVerified(final boolean pVerified) {
-        verified = pVerified;
+    public void setExpiryDate(final LocalDateTime expiryDate) {
+        this.expiryDate = expiryDate;
     }
 
     /**
@@ -187,24 +166,24 @@ public class EmailVerificationToken {
     }
 
     /**
-     * @param pOriginUrl the originUrl to set
+     * @param originUrl the originUrl to set
      */
-    public void setOriginUrl(final String pOriginUrl) {
-        originUrl = pOriginUrl;
+    public void setOriginUrl(final String originUrl) {
+        this.originUrl = originUrl;
     }
 
     /**
      * @return the projectUser
      */
-    public ProjectUser getProjectUser() {
-        return projectUser;
+    public Account getAccount() {
+        return account;
     }
 
     /**
-     * @param pProjectUser the projectUser to set
+     * @param account the account to set
      */
-    public void setProjectUser(ProjectUser pProjectUser) {
-        projectUser = pProjectUser;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     /**
@@ -215,9 +194,9 @@ public class EmailVerificationToken {
     }
 
     /**
-     * @param pRequestLink the requestLink to set
+     * @param requestLink the requestLink to set
      */
-    public void setRequestLink(final String pRequestLink) {
-        requestLink = pRequestLink;
+    public void setRequestLink(final String requestLink) {
+        this.requestLink = requestLink;
     }
 }

@@ -29,10 +29,13 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountSearchParamet
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.PerformUnlockAccountDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.RequestAccountUnlockDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.emailverification.EmailVerificationToken;
+import fr.cnes.regards.modules.accessrights.instance.domain.emailverification.EmailVerificationTokenDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformChangePasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.RequestResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
+import fr.cnes.regards.modules.accessrights.instance.service.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.OnPasswordResetEvent;
@@ -88,6 +91,12 @@ public class AccountsController implements IResourceController<Account> {
      */
     public static final String ACCOUNT_PATH = "/account" + EMAIL;
 
+    public static final String RESEND_EMAIL_CONFIRMATION_PATH = EMAIL + "/verification/resend";
+
+    public static final String RESET_EMAIL_CONFIRMATION_PATH = EMAIL + "/verification/reset";
+
+    public static final String VERIFY_EMAIL_PATH = "/verifyEmail/{token}";
+
     public static final String PASSWORD_RULES_PATH = "/password"; // NOSONAR: not a password
 
     public static final String RESET_PASSWORD_PATH = EMAIL + "/resetPassword"; // NOSONAR: not a password
@@ -125,17 +134,21 @@ public class AccountsController implements IResourceController<Account> {
 
     private final IPasswordResetService passwordResetService;
 
+    private final IEmailVerificationTokenService emailVerificationTokenService;
+
     private final ApplicationEventPublisher eventPublisher;
 
     public AccountsController(IAccountService accountService,
                               IResourceService resourceService,
                               IAccountTransitions accountWorkflowManager,
                               IPasswordResetService passwordResetService,
+                              IEmailVerificationTokenService emailVerificationTokenService,
                               ApplicationEventPublisher eventPublisher) {
         this.accountService = accountService;
         this.resourceService = resourceService;
         this.accountWorkflowManager = accountWorkflowManager;
         this.passwordResetService = passwordResetService;
+        this.emailVerificationTokenService = emailVerificationTokenService;
         this.eventPublisher = eventPublisher;
     }
 
@@ -157,7 +170,7 @@ public class AccountsController implements IResourceController<Account> {
     }
 
     /**
-     * Create a new {@link Account} in state PENDING from the passed values
+     * Create a new {@link Account} from the passed values
      *
      * @param accountNPassword The data transfer object containing values to create the account from
      * @return the {@link Account} created
@@ -170,7 +183,9 @@ public class AccountsController implements IResourceController<Account> {
         account.setPassword(accountNPassword.getPassword());
         return ResponseEntity.status(HttpStatus.CREATED)
                              .body(EntityModel.of(accountService.createAccount(account,
-                                                                               accountNPassword.getProject())));
+                                                                               accountNPassword.getProject(),
+                                                                               accountNPassword.getOriginUrl(),
+                                                                               accountNPassword.getRequestLink())));
     }
 
     /**
@@ -235,6 +250,64 @@ public class AccountsController implements IResourceController<Account> {
     }
 
     /**
+     * Resets the account in EMAIL_VERIFICATION state, with the provided token details.
+     * This endpoint is meant for migration purpose only.
+     *
+     * @throws EntityNotFoundException when no account with passed email could be found
+     */
+    @PostMapping(RESET_EMAIL_CONFIRMATION_PATH)
+    @ResourceAccess(description = "Endpoint to reset the account to EMAIL_VERIFICATION state, with the provided reset "
+                                  + "tokens details. This endpoint is for migration purpose only.",
+                    role = DefaultRole.INSTANCE_ADMIN)
+    public void resetEmailVerificationStatus(@PathVariable("account_email") String accountEmail,
+                                             @Valid @RequestBody EmailVerificationTokenDto token)
+        throws EntityException {
+        Account account = accountService.retrieveAccountByEmail(accountEmail);
+        if (AccountStatus.EMAIL_VERIFICATION.equals(account.getStatus())) {
+            throw new EntityAlreadyExistsException("The account with email "
+                                                   + accountEmail
+                                                   + " is already in "
+                                                   + "EMAIL_VERIFICATION state");
+        }
+        emailVerificationTokenService.importToken(account, token);
+        account.setStatus(AccountStatus.EMAIL_VERIFICATION);
+        accountService.updateAccount(account.getId(), account);
+    }
+
+    /**
+     * Send a new verification email for an account. Such an email is automatically sent upon account
+     * creation, but an administrator may resend it if the validation token has expired.
+     *
+     * @throws EntityNotFoundException           when no account with passed email could be found
+     * @throws EntityOperationForbiddenException when the account email has already been confirmed by the user
+     */
+    @GetMapping(RESEND_EMAIL_CONFIRMATION_PATH)
+    @ResourceAccess(description = "Send a new verification email for an account creation",
+                    role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> resendVerificationEmail(@PathVariable("account_email") String email)
+        throws EntityNotFoundException, EntityOperationForbiddenException {
+        Account account = accountService.retrieveAccountByEmail(email);
+        accountService.resendVerificationEmail(account);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Confirm an account email using the specified email verification token.
+     *
+     * @param token the email verification token
+     * @return void
+     * @throws EntityNotFoundException           when no verification token could be found
+     * @throws EntityOperationForbiddenException when the token has expired
+     */
+    @GetMapping(VERIFY_EMAIL_PATH)
+    @ResourceAccess(description = "Confirm an account email using a verification token", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> verifyEmail(@PathVariable("token") String token) throws EntityException {
+        EmailVerificationToken emailVerificationToken = emailVerificationTokenService.findByToken(token);
+        accountWorkflowManager.verifyEmail(emailVerificationToken);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
      * Send to the user an email containing a link with limited validity to unlock its account.
      *
      * @param accountEmail The {@link Account}'s <code>email</code>
@@ -247,7 +320,8 @@ public class AccountsController implements IResourceController<Account> {
      *                         {@link EntityOperationForbiddenException} when the account is not in status LOCKED<br>
      */
     @PostMapping(UNLOCK_ACCOUNT_PATH)
-    @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "send to the user an email containing a link with limited validity to unlock their "
+                                  + "account", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> requestUnlockAccount(@PathVariable("account_email") String accountEmail,
                                                      @Valid @RequestBody RequestAccountUnlockDto dto)
         throws EntityException {
@@ -288,7 +362,8 @@ public class AccountsController implements IResourceController<Account> {
      * @return void
      */
     @PostMapping(RESET_PASSWORD_PATH)
-    @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "send to the user an email containing a link with limited validity to reset their "
+                                  + "password", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") String accountEmail,
                                                      @Valid @RequestBody RequestResetPasswordDto dto)
         throws EntityNotFoundException {
@@ -301,14 +376,14 @@ public class AccountsController implements IResourceController<Account> {
      * Change the password of an {@link Account}.
      *
      * @param accountEmail      The {@link Account}'s <code>email</code>
-     * @param changePasswordDto The DTO containing : 1) the token 2) the new password
+     * @param changePasswordDto The DTO containing : 1) the old password 2) the new password
      * @return void
      * @throws EntityException <br>
      *                         {@link EntityOperationForbiddenException} when the token is invalid<br>
      *                         {@link EntityNotFoundException} when no account could be found<br>
      */
     @PutMapping(CHANGE_PASSWORD_PATH)
-    @ResourceAccess(description = "Change the passsword of account account_email", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Change the password of account account_email", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> performChangePassword(@PathVariable("account_email") String accountEmail,
                                                       @Valid @RequestBody PerformChangePasswordDto changePasswordDto)
         throws EntityException {
@@ -336,7 +411,7 @@ public class AccountsController implements IResourceController<Account> {
      *                         {@link EntityNotFoundException} when no account could be found<br>
      */
     @PutMapping(RESET_PASSWORD_PATH)
-    @ResourceAccess(description = "Change the passsword of account account_email if provided token is valid",
+    @ResourceAccess(description = "Change the password of account account_email if provided token is valid",
                     role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> performResetPassword(@PathVariable("account_email") String accountEmail,
                                                      @Valid @RequestBody final PerformResetPasswordDto pDto)

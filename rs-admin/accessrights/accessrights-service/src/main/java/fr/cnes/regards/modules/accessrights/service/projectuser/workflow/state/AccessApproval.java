@@ -32,8 +32,7 @@ import java.util.Optional;
 
 /**
  * Action to approve the user access to the current project.
- * The user is currently denied or waiting for access
- * The user is now waiting for an email verification.
+ * The user is currently denied or waiting for access.
  *
  * @author Thomas Fache
  **/
@@ -57,7 +56,7 @@ public class AccessApproval extends AbstractUserAccessUpdate {
 
     @Override
     protected UserStatus newAccess() {
-        return UserStatus.WAITING_EMAIL_VERIFICATION;
+        return UserStatus.ACCESS_GRANTED;
     }
 
     @Override

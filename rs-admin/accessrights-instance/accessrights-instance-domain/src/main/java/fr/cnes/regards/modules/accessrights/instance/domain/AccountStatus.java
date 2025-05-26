@@ -26,24 +26,38 @@ package fr.cnes.regards.modules.accessrights.instance.domain;
  */
 public enum AccountStatus {
     /**
-     * Account is inactive
+     * Account is inactive because it is past the invalidity date.
+     * Next status: {@link #ACTIVE} (when reactivated by the administrator)
      */
     INACTIVE,
     /**
-     * Account is inactive, the password is out of date
+     * Account is inactive because the password is out of date.
+     * Next status: {@link #ACTIVE} (when the user changes their password)
      */
     INACTIVE_PASSWORD,
     /**
-     * Account is active
+     * Account is active.
+     * Next status: {@link #LOCKED} (when the user makes too many unsuccessful login attempts)
+     * Next status: {@link #INACTIVE} (when the cron task determines the account is past the invalidity date)
+     * Next status: {@link #INACTIVE_PASSWORD} (when the cron task determines the password is too old)
      */
     ACTIVE,
     /**
-     * Account is locked
+     * Account is locked because of too many unsuccessful password attempts.
+     * Next status: {@link #ACTIVE} (when the user unlocks their account through an unlock email)
      */
     LOCKED,
     /**
-     * Account request is pending
+     * Account request is pending approval of the instance administrator.
+     * The status is skipped in auto-approve mode.
+     * Previous status: {@link #EMAIL_VERIFICATION}
+     * Next status: {@link #ACTIVE} (when accepted by the instance administrator)
      */
-    PENDING
-
+    PENDING,
+    /**
+     * Email verification is pending.
+     * This is the initial status.
+     * Next status: {@link #PENDING} (when user has confirmed their email)
+     */
+    EMAIL_VERIFICATION
 }

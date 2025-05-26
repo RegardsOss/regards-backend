@@ -67,9 +67,4 @@ public class UserBuilder {
         return this;
     }
 
-    public UserBuilder waitingMailVerification() {
-        user.setStatus(UserStatus.WAITING_EMAIL_VERIFICATION);
-        return this;
-    }
-
 }

@@ -185,6 +185,8 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
                            new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
         AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
+        accountNPassword.setOriginUrl(ORIGIN_URL);
+        accountNPassword.setRequestLink(REQUEST_LINK);
         Mockito.when(accountsClient.createAccount(accountNPassword))
                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.CREATED));
 

@@ -27,10 +27,37 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  */
 public enum UserStatus {
 
-    WAITING_ACCESS, ACCESS_DENIED, ACCESS_GRANTED, ACCESS_INACTIVE, WAITING_ACCOUNT_ACTIVE, WAITING_EMAIL_VERIFICATION;
-
-    @Override
-    public String toString() {
-        return this.name();
-    }
+    /**
+     * The associated account is active, waiting for the project administrator to approve.
+     * This status is skipped in auto-approve mode.
+     * Previous status: {@link #WAITING_ACCOUNT_ACTIVE}.
+     * Next status: {@link #ACCESS_GRANTED} (when approved by the project administrator)
+     * Next status: {@link #ACCESS_DENIED} (when refused by the project administrator)
+     */
+    WAITING_ACCESS,
+    /**
+     * The user has requested access to the project, but it was denied by the project
+     * administrator.
+     * Previous status: {@link #WAITING_ACCESS}
+     * Next status: {@link #ACCESS_GRANTED} (if the project administrator changes their mind and approves the user)
+     */
+    ACCESS_DENIED,
+    /**
+     * The user was approved by the project administrator and can access the project.
+     * Previous status: {@link #WAITING_ACCESS} or {@link #ACCESS_DENIED}
+     */
+    ACCESS_GRANTED,
+    /**
+     * The user access has be disabled by the project administrator.
+     * Previous status: {@link #ACCESS_GRANTED}
+     * Next status: {@link #ACCESS_GRANTED} (when the project administrator reactivates the account)
+     */
+    ACCESS_INACTIVE,
+    /**
+     * The associated account is not active yet (waiting for super administrator approval
+     * or email verification).
+     * This is the initial state.
+     * Next status: {@link #WAITING_ACCESS} (when the account activation is received from admin-instance)
+     */
+    WAITING_ACCOUNT_ACTIVE;
 }

@@ -25,7 +25,6 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners.WaitForQualificationListener;
 import fr.cnes.regards.modules.accessrights.service.utils.AccountUtilsService;
 import org.slf4j.Logger;
@@ -46,18 +45,14 @@ public class RegistrationService implements IRegistrationService {
 
     private final IProjectUserService projectUserService;
 
-    private final IEmailVerificationTokenService tokenService;
-
     private final WaitForQualificationListener listener;
 
     private final AccountUtilsService accountUtilsService;
 
     public RegistrationService(IProjectUserService projectUserService,
-                               IEmailVerificationTokenService tokenService,
                                WaitForQualificationListener listener,
                                AccountUtilsService accountUtilsService) {
         this.projectUserService = projectUserService;
-        this.tokenService = tokenService;
         this.listener = listener;
         this.accountUtilsService = accountUtilsService;
     }
@@ -70,16 +65,12 @@ public class RegistrationService implements IRegistrationService {
         ProjectUser projectUser = projectUserService.create(accessRequestDto, isExternalAccess, null, null);
         Account account = accountUtilsService.retrieveAccount(email);
 
-        if (!isExternalAccess) {
-            // Init the email verification token
-            tokenService.create(projectUser, accessRequestDto.getOriginUrl(), accessRequestDto.getRequestLink());
+        if (!isExternalAccess && AccountStatus.ACTIVE.equals(account.getStatus())) {
             // Sending proper event if account is active
-            if (AccountStatus.ACTIVE.equals(account.getStatus())) {
-                LOG.info(
-                    "Account is already active for new user {}. Sending AccountAcceptedEvent to handle ProjectUser status.",
-                    email);
-                listener.onAccountActivation(email);
-            }
+            LOG.info(
+                "Account is already active for new user {}. Sending AccountAcceptedEvent to handle ProjectUser status.",
+                email);
+            listener.onAccountActivation(email);
         }
 
         return projectUser;

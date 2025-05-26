@@ -105,12 +105,11 @@ public class Account implements IIdentifiable<Long> {
      */
     @SuppressWarnings("unused")
     private Account() {
-        super();
-        status = AccountStatus.PENDING;
+        status = AccountStatus.EMAIL_VERIFICATION;
     }
 
     public Account(final String email, final String firstName, final String lastName, final String password) {
-        status = AccountStatus.PENDING;
+        this();
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;

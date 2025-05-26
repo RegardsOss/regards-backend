@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.emailverification.EmailVerificationToken;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +36,6 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Primary
-@InstanceTransactional
 public class AccountWorkflowManager implements IAccountTransitions {
 
     /**
@@ -54,6 +54,12 @@ public class AccountWorkflowManager implements IAccountTransitions {
         accountStateProvider = pAccountStateProvider;
     }
 
+    @InstanceTransactional
+    @Override
+    public void verifyEmail(EmailVerificationToken token) throws EntityException {
+        accountStateProvider.getState(token.getAccount()).verifyEmail(token);
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -61,6 +67,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#acceptAccount(fr.cnes.regards.modules.
      * accessrights.domain.instance.Account)
      */
+    @InstanceTransactional
     @Override
     public void acceptAccount(final Account pAccount) throws EntityException {
         accountStateProvider.getState(pAccount).acceptAccount(pAccount);
@@ -69,6 +76,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
     /* (non-Javadoc)
      * @see fr.cnes.regards.modules.accessrights.service.account.workflow.state.IAccountTransitions#refuseAccount(fr.cnes.regards.modules.accessrights.domain.instance.Account)
      */
+    @InstanceTransactional
     @Override
     public void refuseAccount(Account pAccount) throws EntityException {
         accountStateProvider.getState(pAccount).refuseAccount(pAccount);
@@ -81,6 +89,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions#lockAccount(fr.cnes.regards.modules.
      * accessrights.domain.instance.Account)
      */
+    @InstanceTransactional
     @Override
     public void lockAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         accountStateProvider.getState(pAccount).lockAccount(pAccount);
@@ -93,6 +102,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#requestUnlockAccount(fr.cnes.regards.
      * modules.accessrights.accountunlock.OnAccountUnlockEvent)
      */
+    @InstanceTransactional
     @Override
     public void requestUnlockAccount(final Account pAccount, final String pOriginUrl, final String pRequestLink)
         throws EntityOperationForbiddenException {
@@ -106,6 +116,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#performUnlockAccount(fr.cnes.regards.
      * modules.accessrights.domain.instance.Account, java.lang.String)
      */
+    @InstanceTransactional
     @Override
     public void performUnlockAccount(final Account pAccount, final String pToken) throws EntityException {
         accountStateProvider.getState(pAccount).performUnlockAccount(pAccount, pToken);
@@ -118,6 +129,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions#inactiveAccount(fr.cnes.regards.modules.
      * accessrights.domain.instance.Account)
      */
+    @InstanceTransactional
     @Override
     public void inactiveAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         accountStateProvider.getState(pAccount).inactiveAccount(pAccount);
@@ -130,6 +142,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions#activeAccount(fr.cnes.regards.modules.
      * accessrights.domain.instance.Account)
      */
+    @InstanceTransactional
     @Override
     public void activeAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         accountStateProvider.getState(pAccount).activeAccount(pAccount);
@@ -141,6 +154,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      * @see fr.cnes.regards.modules.accessrights.service.account.IAccountTransitions#delete(fr.cnes.regards.modules.
      * accessrights. domain.instance.Account)
      */
+    @InstanceTransactional
     @Override
     public void deleteAccount(final Account account) throws EntityOperationForbiddenException {
         accountStateProvider.getState(account).deleteAccount(account);

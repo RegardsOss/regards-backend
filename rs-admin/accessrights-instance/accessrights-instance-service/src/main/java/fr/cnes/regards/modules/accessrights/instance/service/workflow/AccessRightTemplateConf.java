@@ -13,6 +13,8 @@ import java.io.IOException;
 @Configuration
 public class AccessRightTemplateConf {
 
+    public static final String ACCOUNT_CONFIRMATION_TEMPLATE_NAME = "ACCOUNT_CONFIRMATION_TEMPLATE";
+
     public static final String ACCOUNT_REFUSED_TEMPLATE_NAME = "ACCOUNT_REFUSED_TEMPLATE";
 
     public static final String ACCOUNT_UNLOCK_TEMPLATE_NAME = "ACCOUNT_UNLOCK_TEMPLATE";
@@ -20,6 +22,12 @@ public class AccessRightTemplateConf {
     public static final String PASSWORD_RESET_TEMPLATE_NAME = "PASSWORD_RESET_TEMPLATE";
 
     public static final String PASSWORD_CHANGED_TEMPLATE_NAME = "PASSWORD_CHANGED_TEMPLATE";
+
+    @Bean
+    public Template accountConfirmationTemplate() throws IOException {
+        return TemplateConfigUtil.readTemplate(ACCOUNT_CONFIRMATION_TEMPLATE_NAME,
+                                               "template/account-confirmation-template.html");
+    }
 
     @Bean
     public Template accountRefusedTemplate() throws IOException {

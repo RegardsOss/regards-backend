@@ -59,6 +59,8 @@ public class RegistrationContractIT extends AbstractRegardsTransactionalIT {
                            new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
 
         AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
+        accountNPassword.setOriginUrl("foo");
+        accountNPassword.setRequestLink("bar");
 
         Mockito.when(accountsClient.createAccount(accountNPassword))
                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.CREATED));

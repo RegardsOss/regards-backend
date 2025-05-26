@@ -26,7 +26,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserAction;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.ProjectUserEvent;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 
 /**
  * Action to remove a user from the current project.
@@ -38,8 +37,6 @@ public class AccessRemoval implements UserAccessUpdate {
 
     private final IProjectUserRepository userRepository;
 
-    private final IEmailVerificationTokenService emailVerificationTokenService;
-
     private final IPublisher publisher;
 
     private final IAccountsClient accountsClient;
@@ -49,13 +46,11 @@ public class AccessRemoval implements UserAccessUpdate {
     private final ProjectUser user;
 
     public AccessRemoval(IProjectUserRepository projectUserRepository,
-                         IEmailVerificationTokenService emailVerificationTokenService,
                          IPublisher publisher,
                          IAccountsClient accountsClient,
                          IRuntimeTenantResolver runtimeTenantResolver,
                          ProjectUser forUser) {
         userRepository = projectUserRepository;
-        this.emailVerificationTokenService = emailVerificationTokenService;
         this.publisher = publisher;
         this.accountsClient = accountsClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -70,7 +65,6 @@ public class AccessRemoval implements UserAccessUpdate {
         } finally {
             FeignSecurityManager.reset();
         }
-        emailVerificationTokenService.deleteTokenForProjectUser(user);
         userRepository.deleteById(user.getId());
         publisher.publish(new ProjectUserEvent(user.getEmail(), ProjectUserAction.DELETE));
     }

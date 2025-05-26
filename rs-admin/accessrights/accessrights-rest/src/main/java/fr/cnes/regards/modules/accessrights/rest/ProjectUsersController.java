@@ -91,8 +91,6 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     public static final String EMAIL_ORIGIN = EMAIL + "/origin/{origin}";
 
-    public static final String EMAIL_VERIFICATION_SEND = EMAIL + "/verification/resend";
-
     public static final String EXPORT = "/export";
 
     public static final String COUNT_BY_ACCESS_GROUP = "/count";
@@ -373,14 +371,6 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(EMAIL_VERIFICATION_SEND)
-    @ResourceAccess(description = "Send a new verification email for a user creation", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> sendVerificationEmail(@PathVariable("email") String email)
-        throws EntityNotFoundException {
-        projectUserService.sendVerificationEmail(email);
-        return ResponseEntity.ok().build();
-    }
-
     @PostMapping(value = EXPORT, produces = "text/csv")
     @ResourceAccess(description = "Generate a CSV file with all project users", role = DefaultRole.EXPLOIT)
     public void exportAsCSV(@Valid @RequestBody SearchProjectUserParameters filters, HttpServletResponse response)
@@ -456,13 +446,6 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                         "activeAccess",
                                         LinkRelation.of("active"),
                                         idParam);
-            }
-            if (UserStatus.WAITING_EMAIL_VERIFICATION.equals(element.getStatus())) {
-                resourceService.addLink(resource,
-                                        clazz,
-                                        "sendVerificationEmail",
-                                        LinkRelation.of("sendVerificationEmail"),
-                                        MethodParamFactory.build(String.class));
             }
         }
         return resource;

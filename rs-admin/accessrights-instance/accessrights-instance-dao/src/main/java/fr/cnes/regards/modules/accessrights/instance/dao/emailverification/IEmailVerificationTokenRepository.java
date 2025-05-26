@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.accessrights.dao.registration;
+package fr.cnes.regards.modules.accessrights.instance.dao.emailverification;
 
-import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.emailverification.EmailVerificationToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -30,21 +30,21 @@ import java.util.Optional;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
-public interface IVerificationTokenRepository extends JpaRepository<EmailVerificationToken, Long> {
+public interface IEmailVerificationTokenRepository extends JpaRepository<EmailVerificationToken, Long> {
 
     /**
      * Find token with given string
      *
-     * @param pToken the string
+     * @param token the string
      * @return the optional token
      */
-    Optional<EmailVerificationToken> findByToken(String pToken);
+    Optional<EmailVerificationToken> findByToken(String token);
 
     /**
-     * Find token with given ProjectUser
+     * Find token with given Account
      *
-     * @param pProjectUser the project user
-     * @return the option token
+     * @param account the account
+     * @return the optional token
      */
-    Optional<EmailVerificationToken> findByProjectUser(ProjectUser pProjectUser);
+    Optional<EmailVerificationToken> findByAccount(Account account);
 }

@@ -5,15 +5,11 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.accessrights.instance.domain.AccountSearchParameters;
 import org.flywaydb.core.api.FlywayException;
-import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -21,15 +17,12 @@ import java.sql.*;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 @Component
 @Profile("!test")
-public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
+public class V1_7_0__ProjectUserMigration extends AbstractAdminInstanceDependentMigration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V1_7_0__ProjectUserMigration.class);
-
-    private static final int RETRY_DELAY = 30;
 
     private static final Instant NOW = Instant.now();
 
@@ -53,12 +46,10 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
                                                + EMAIL_COLUMN
                                                + "=?";
 
-    private final IAccountsClient accountsClient;
-
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     public V1_7_0__ProjectUserMigration(IAccountsClient accountsClient, IRuntimeTenantResolver runtimeTenantResolver) {
-        this.accountsClient = accountsClient;
+        super(accountsClient);
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
@@ -78,41 +69,6 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
         users.forEach(email -> updateUser(email, connection));
 
         LOGGER.info("Completed Java migration {}", this.getClass().getSimpleName());
-    }
-
-    private void checkAdminInstanceServiceCanBeAccessed() throws InterruptedException {
-
-        int maxAttempts = 3;
-        int attempt = 0;
-
-        while (attempt++ < maxAttempts) {
-
-            try {
-                FeignSecurityManager.asSystem();
-                ResponseEntity<PagedModel<EntityModel<Account>>> response = accountsClient.retrieveAccountList(new AccountSearchParameters(),
-                                                                                                               0,
-                                                                                                               1);
-                if (response != null && response.getStatusCode().is2xxSuccessful()) {
-                    PagedModel<EntityModel<Account>> body = response.getBody();
-                    if (body != null) {
-                        LOGGER.info("Successfully contacted rs-admin-instance");
-                    }
-                    break;
-                }
-            } catch (Exception e) {
-                String error = "Unable to contact rs-admin-instance";
-                LOGGER.error(error, e);
-                if (attempt >= maxAttempts) {
-                    throw new FlywayException(error);
-                }
-            } finally {
-                FeignSecurityManager.reset();
-            }
-
-            if (attempt < maxAttempts) {
-                TimeUnit.SECONDS.sleep(RETRY_DELAY);
-            }
-        }
     }
 
     private Set<String> getUsers(Connection connection) {
@@ -173,4 +129,8 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
         }
     }
 
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
 }

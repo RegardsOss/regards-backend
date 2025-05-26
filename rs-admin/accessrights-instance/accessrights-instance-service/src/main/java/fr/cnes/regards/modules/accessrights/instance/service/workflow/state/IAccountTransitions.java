@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.emailverification.EmailVerificationToken;
 
 /**
  * State pattern implementation for defining the actions managing the state of an account.<br>
@@ -33,6 +34,26 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
  * @since 1.1-SNAPSHOT
  */
 public interface IAccountTransitions {
+
+    /**
+     * Moves the account from status {@link fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus#EMAIL_VERIFICATION}
+     * to {@link fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus#PENDING}.
+     *
+     * @param token The token to verify
+     * @throws EntityException <br>
+     *                         {@link EntityTransitionForbiddenException} Thrown when the account is not in status
+     *                         EMAIL_VERIFICATION<br>
+     *                         {@link EntityOperationForbiddenException} Thrown when the verification token has
+     *                         expired<br>
+     *                         {@link EntityNotFoundException} Thrown when the email validation template could not be found
+     */
+    default void verifyEmail(final EmailVerificationToken token) throws EntityException {
+        Account account = token.getAccount();
+        throw new EntityTransitionForbiddenException(account.getId().toString(),
+                                                     Account.class,
+                                                     account.getStatus().toString(),
+                                                     Thread.currentThread().getStackTrace()[1].getMethodName());
+    }
 
     /**
      * Passes the account from status PENDING to ACTIVE.

@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.Accoun
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PasswordResetToken;
 import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
+import fr.cnes.regards.modules.accessrights.instance.service.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
@@ -83,13 +84,15 @@ public class LockedState extends AbstractDeletableState {
                        IAccountUnlockTokenService accountUnlockTokenService,
                        IAccountService accountService,
                        ITemplateService templateService,
-                       IEmailClient emailClient) {
+                       IEmailClient emailClient,
+                       IEmailVerificationTokenService emailVerificationTokenService) {
         super(projectUsersClient,
               accountRepository,
               tenantService,
               runtimeTenantResolver,
               passwordResetService,
-              accountUnlockTokenService);
+              accountUnlockTokenService,
+              emailVerificationTokenService);
         this.accountService = accountService;
         this.templateService = templateService;
         this.emailClient = emailClient;

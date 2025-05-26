@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Random;
-import java.util.UUID;
 
 import static fr.cnes.regards.modules.access.services.rest.user.mock.ProjectUsersClientMock.*;
 import static fr.cnes.regards.modules.access.services.rest.user.mock.RegistrationClientMock.ACCESS_REQUEST_STUB;
@@ -20,8 +19,6 @@ import static fr.cnes.regards.modules.access.services.rest.user.mock.Registratio
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" },
                     locations = { "classpath:application-test.properties" })
 public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
-
-    private static final String TOKEN_STUB = UUID.randomUUID().toString();
 
     private static final Long ACCESS_ID_STUB = (long) new Random().nextInt(10_000);
 
@@ -48,15 +45,6 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
                            ACCESS_REQUEST_STUB,
                            customizer,
                            "Failed to request external access");
-    }
-
-    @Test
-    public void verifyEmail() {
-        String api = RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.VERIFY_EMAIL_RELATIVE_PATH;
-
-        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-
-        performDefaultGet(api, customizer, "Failed to verify email", TOKEN_STUB);
     }
 
     @Test

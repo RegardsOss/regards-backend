@@ -31,6 +31,8 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountAcceptedEvent;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSearchParameters;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.instance.domain.emailverification.EmailVerificationToken;
+import fr.cnes.regards.modules.accessrights.instance.service.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.instance.service.setting.AccountSettingsService;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
@@ -42,6 +44,7 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -141,6 +144,8 @@ public class AccountService implements IAccountService, InitializingBean {
 
     private final IProjectService projectService;
 
+    private final IEmailVerificationTokenService emailVerificationTokenService;
+
     @Autowired
     private MeterRegistry registry;
 
@@ -155,7 +160,8 @@ public class AccountService implements IAccountService, InitializingBean {
                           IInstancePublisher instancePublisher,
                           AccountSettingsService accountSettingsService,
                           IExternalAuthenticationClient externalAuthenticationClient,
-                          IProjectService projectService) {
+                          IProjectService projectService,
+                          IEmailVerificationTokenService emailVerificationTokenService) {
         this.accountRepository = accountRepository;
         this.tenantResolver = tenantResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -165,6 +171,7 @@ public class AccountService implements IAccountService, InitializingBean {
         this.accountSettingsService = accountSettingsService;
         this.externalAuthenticationClient = externalAuthenticationClient;
         this.projectService = projectService;
+        this.emailVerificationTokenService = emailVerificationTokenService;
     }
 
     @Override
@@ -177,7 +184,7 @@ public class AccountService implements IAccountService, InitializingBean {
                                           rootAdminUserPassword);
             account.setStatus(AccountStatus.ACTIVE);
             account.setAuthenticationFailedCounter(0L);
-            createAccount(account, null);
+            createAccount(account, null, null, null);
         }
         this.createdAccountCounter = registry.counter("regards.created.account");
     }
@@ -194,7 +201,10 @@ public class AccountService implements IAccountService, InitializingBean {
     }
 
     @Override
-    public Account createAccount(Account account, String project) throws EntityInvalidException {
+    public Account createAccount(Account account,
+                                 @Nullable String project,
+                                 @Nullable String originUrl,
+                                 @Nullable String requestLink) throws EntityInvalidException {
         account.setId(null);
         if (account.getPassword() != null) {
             checkPassword(account);
@@ -204,17 +214,92 @@ public class AccountService implements IAccountService, InitializingBean {
         if (AccountStatus.PENDING.equals(account.getStatus()) && accountSettingsService.isAutoAccept()) {
             activate(account);
         }
-        if (!StringUtils.isEmpty(project)) {
+        if (StringUtils.hasText(project)) {
             try {
                 account.setProjects(new HashSet<>(Collections.singletonList(projectService.retrieveProject(project))));
             } catch (ModuleException e) {
                 throw new EntityInvalidException("Invalid project name : " + project); // NOSONAR Duplicated strings
             }
         }
-        if (StringUtils.isEmpty(account.getOrigin())) {
+        if (!StringUtils.hasText(account.getOrigin())) {
             account.setOrigin(Account.REGARDS_ORIGIN);
         }
-        return accountRepository.save(account);
+        account = accountRepository.save(account);
+        // Send email only once account is saved (the token that will be created has a reference to the account)
+        if (AccountStatus.EMAIL_VERIFICATION.equals(account.getStatus())) {
+            sendVerificationEmail(account, originUrl, requestLink);
+        }
+        return account;
+    }
+
+    /**
+     * Sends an email to the account address with a link to confirm it. This
+     * method creates the validation token. For resending an email (when the validation
+     * token already exists but may have expired), use {@link #resendVerificationEmail(Account)}.
+     */
+    private void sendVerificationEmail(Account account, @Nullable String originUrl, @Nullable String requestLink)
+        throws EntityInvalidException {
+        if (!StringUtils.hasText(originUrl)) {
+            throw new EntityInvalidException("Missing originUrl");
+        }
+        if (!StringUtils.hasText(requestLink)) {
+            throw new EntityInvalidException("Missing requestLink");
+        }
+        EmailVerificationToken token = emailVerificationTokenService.create(account, originUrl, requestLink);
+        doSendVerificationEmail(token);
+    }
+
+    @Override
+    public void resendVerificationEmail(Account account) throws EntityOperationForbiddenException {
+        EmailVerificationToken token = null;
+        try {
+            token = emailVerificationTokenService.findByAccount(account);
+        } catch (EntityNotFoundException e) {
+            throw new EntityOperationForbiddenException("User has already confirmed their email address.");
+        }
+        token.renew();
+        doSendVerificationEmail(token);
+    }
+
+    /**
+     * Sends a verification email using an existing verification token.
+     * This is the common part to the initial email and subsequent email resends.
+     */
+    private void doSendVerificationEmail(EmailVerificationToken token) {
+        Account account = token.getAccount();
+        // Create a hash map in order to store the data to inject in the mail
+        final Map<String, String> data = new HashMap<>();
+        data.put("name", account.getFirstName());
+        data.put("requestLink", token.getRequestLink());
+        data.put("originUrl", token.getOriginUrl());
+        data.put("token", token.getToken());
+        data.put("accountEmail", account.getEmail());
+
+        String message;
+        try {
+            message = templateService.render(AccessRightTemplateConf.ACCOUNT_CONFIRMATION_TEMPLATE_NAME, data);
+        } catch (final TemplateException e) {
+            LOG.warn("Template could not be found, defaulting on simpler message", e);
+            String linkUrlTemplate;
+            if (token.getRequestLink().contains("?")) {
+                linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";
+            } else {
+                linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
+            }
+            message = "Please click on the following link to validate your account: " + String.format(linkUrlTemplate,
+                                                                                                      token.getRequestLink(),
+                                                                                                      token.getOriginUrl(),
+                                                                                                      token,
+                                                                                                      account.getEmail());
+        }
+
+        // Send it
+        try {
+            FeignSecurityManager.asInstance();
+            emailClient.sendEmail(message, "[REGARDS] Email Confirmation", null, account.getEmail());
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
     @Override

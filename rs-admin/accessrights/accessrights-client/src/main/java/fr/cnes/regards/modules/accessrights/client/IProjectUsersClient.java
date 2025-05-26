@@ -193,9 +193,4 @@ public interface IProjectUsersClient {
                 consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> updateOrigin(@PathVariable("email") String email, @PathVariable("origin") String origin);
 
-    @GetMapping(value = ROOT_PATH + "/email/{email}/verification/resend",
-                produces = MediaType.APPLICATION_JSON_VALUE,
-                consumes = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Void> sendVerificationEmail(@PathVariable("email") String email);
-
 }

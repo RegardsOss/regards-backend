@@ -1,5 +1,6 @@
 /*
- * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+
+ * Copyright 2017-2025 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -14,9 +15,20 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
+package fr.cnes.regards.modules.accessrights.instance.domain.emailverification;
+
+import java.time.LocalDateTime;
+
 /**
+ * Email verification token DTO used by the REST API /accounts/{email}/verification/reset.
  *
+ * @author Julien Canches
  */
-package fr.cnes.regards.modules.accessrights.dao.registration;
+public record EmailVerificationTokenDto(LocalDateTime expiryDate,
+                                        String originUrl,
+                                        String requestLink,
+                                        String token) {
+
+}

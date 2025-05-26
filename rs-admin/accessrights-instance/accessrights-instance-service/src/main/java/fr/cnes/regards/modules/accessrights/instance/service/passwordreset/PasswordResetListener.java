@@ -102,7 +102,7 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
         try {
             message = templateService.render(AccessRightTemplateConf.PASSWORD_RESET_TEMPLATE_NAME, data);
         } catch (final TemplateException e) {
-            LOGGER.debug("Template sould not be found, defaulting on simpler message", e);
+            LOGGER.warn("Template could not be found, defaulting on simpler message", e);
             String linkUrlTemplate;
             if (event.getRequestLink() != null && event.getRequestLink().contains("?")) {
                 linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";

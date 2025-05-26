@@ -20,28 +20,33 @@ package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.instance.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.instance.service.setting.AccountSettingsService;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.events.OnRefuseAccountEvent;
 import fr.cnes.regards.modules.project.service.ITenantService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 /**
- * State class of the State Pattern implementing the available actions on a {@link Account} in status PENDING.
+ * State class of the State Pattern implementing the available actions on a {@link Account} in status
+ * EMAIL_VERIFICATION.
  *
- * @author Xavier-Alexandre Brochard
- * @since 1.1-SNAPSHOT
+ * @author Julien Canches
  */
 @Component
-@InstanceTransactional
-public class PendingState extends AbstractDeletableState {
+public class EmailVerificationState extends AbstractDeletableState {
 
     /**
      * Use this to publish Spring application events
@@ -50,18 +55,18 @@ public class PendingState extends AbstractDeletableState {
 
     private final IAccountService accountService;
 
-    /**
-     *
-     */
-    public PendingState(IProjectUsersClient projectUsersClient,
-                        IAccountRepository accountRepository,
-                        ITenantService tenantService,
-                        IRuntimeTenantResolver runtimeTenantResolver,
-                        IPasswordResetService passwordResetService,
-                        IAccountUnlockTokenService accountUnlockTokenService,
-                        ApplicationEventPublisher eventPublisher,
-                        IAccountService accountService,
-                        IEmailVerificationTokenService emailVerificationTokenService) {
+    private final AccountSettingsService accountSettingsService;
+
+    public EmailVerificationState(IProjectUsersClient projectUsersClient,
+                                  IAccountRepository accountRepository,
+                                  ITenantService tenantService,
+                                  IRuntimeTenantResolver runtimeTenantResolver,
+                                  IPasswordResetService passwordResetService,
+                                  IAccountUnlockTokenService accountUnlockTokenService,
+                                  IEmailVerificationTokenService emailVerificationTokenService,
+                                  ApplicationEventPublisher eventPublisher,
+                                  IAccountService accountService,
+                                  AccountSettingsService accountSettingsService) {
         super(projectUsersClient,
               accountRepository,
               tenantService,
@@ -71,32 +76,31 @@ public class PendingState extends AbstractDeletableState {
               emailVerificationTokenService);
         this.eventPublisher = eventPublisher;
         this.accountService = accountService;
+        this.accountSettingsService = accountSettingsService;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#acceptAccount(fr.cnes.regards.modules.
-     * accessrights.domain.instance.Account)
-     */
     @Override
-    public void acceptAccount(final Account pAccount) {
-        accountService.activate(pAccount);
+    @InstanceTransactional
+    public void verifyEmail(EmailVerificationToken token) throws EntityException {
+        Account account = token.getAccount();
+        if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new EntityOperationForbiddenException(account.getEmail(),
+                                                        Account.class,
+                                                        "Verification token has expired");
+        }
+        emailVerificationTokenService.deleteTokenForAccount(account);
+        if (accountSettingsService.isAutoAccept()) {
+            accountService.activate(account);
+        } else {
+            account.setStatus(AccountStatus.PENDING);
+            accountRepository.save(account);
+        }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.workflow.account.IAccountTransitions#acceptAccount(fr.cnes.regards.modules.
-     * accessrights.domain.instance.Account)
-     */
     @Override
-    public void refuseAccount(final Account pAccount) throws EntityException {
-        deleteLinkedProjectUsers(pAccount);
-        deleteAccount(pAccount);
-        eventPublisher.publishEvent(new OnRefuseAccountEvent(pAccount));
+    public void refuseAccount(final Account account) throws EntityException {
+        deleteLinkedProjectUsers(account);
+        deleteAccount(account);
+        eventPublisher.publishEvent(new OnRefuseAccountEvent(account));
     }
-
 }

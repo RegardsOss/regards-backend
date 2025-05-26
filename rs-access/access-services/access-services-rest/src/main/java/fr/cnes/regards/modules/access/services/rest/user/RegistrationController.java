@@ -51,8 +51,6 @@ public class RegistrationController {
 
     public static final String DENY_ACCESS_RELATIVE_PATH = "/{access_id}/deny";
 
-    protected static final String VERIFY_EMAIL_RELATIVE_PATH = "/verifyEmail/{token}";
-
     public static final String ACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/active";
 
     public static final String INACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/inactive";
@@ -72,9 +70,12 @@ public class RegistrationController {
     @PostMapping
     @ResourceAccess(description = "Endpoint to request the creation of a new project user (Public feature).",
                     role = DefaultRole.PUBLIC)
-    @Operation(summary = "Request a new access", description = "Request a new access, i.e. the creation of a new project user")
+    @Operation(summary = "Request a new access",
+               description = "Request a new access, i.e. the creation of a new project user")
     @ApiResponses(value = { @ApiResponse(responseCode = "201", description = "Returns the status") })
     public ResponseEntity<Void> requestAccess(@Valid @RequestBody AccessRequestDto accessRequestDto) {
+        // TODO This endpoint is not used by the frontend. The frontend directly calls POST /rs-admin-public/accesses,
+        //  so this method (and maybe the entire class) is candidate for removal.
         // FIXME use a different dto. We use a new dto here to remove the role parameter.
         // Users should not be able to specify the role of the new user to create. The role of user is managed by project administrators.
         AccessRequestDto mangledDto = new AccessRequestDto(accessRequestDto.getEmail(),
@@ -114,20 +115,6 @@ public class RegistrationController {
             HttpStatus.CREATED :
             HttpStatus.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(status).build();
-    }
-
-    /**
-     * Confirm the registration by email.
-     *
-     * @param token the token
-     * @return void
-     */
-    @GetMapping(VERIFY_EMAIL_RELATIVE_PATH)
-    @ResourceAccess(description = "Endpoint to confirm the registration by email", role = DefaultRole.PUBLIC)
-    @Operation(summary = "Confirm the registration",
-               description = "Confirm the registration by email with the given token")
-    public ResponseEntity<Void> verifyEmail(@PathVariable("token") String token) {
-        return registrationClient.verifyEmail(token);
     }
 
     /**
@@ -180,8 +167,7 @@ public class RegistrationController {
      */
     @PutMapping(INACTIVE_ACCESS_RELATIVE_PATH)
     @ResourceAccess(description = "Endpoint to deactivate an active user", role = DefaultRole.EXPLOIT)
-    @Operation(summary = "Deactivate an active user",
-               description = "Deactivate access for the given project user")
+    @Operation(summary = "Deactivate an active user", description = "Deactivate access for the given project user")
     public ResponseEntity<Void> inactiveAccess(@PathVariable("access_id") Long accessId) {
         return registrationClient.inactiveAccess(accessId);
     }

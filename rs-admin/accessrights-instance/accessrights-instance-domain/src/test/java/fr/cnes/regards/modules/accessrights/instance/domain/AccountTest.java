@@ -57,14 +57,8 @@ public class AccountTest {
      */
     private Account accountTest;
 
-    /**
-     * Test status
-     */
-    private AccountStatus status;
-
     @Before
     public void setUp() {
-        status = AccountStatus.PENDING;
         accountTest = new Account(email, firstName, lastName, password);
     }
 
@@ -88,7 +82,7 @@ public class AccountTest {
         Assert.assertEquals(firstName, account.getFirstName());
         Assert.assertEquals(lastName, account.getLastName());
         Assert.assertEquals(password, account.getPassword());
-        Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
+        Assert.assertEquals(AccountStatus.EMAIL_VERIFICATION, account.getStatus());
     }
 
     /**
@@ -171,7 +165,7 @@ public class AccountTest {
      */
     @Test
     public void testGetStatus() {
-        Assert.assertEquals(status, accountTest.getStatus());
+        Assert.assertEquals(AccountStatus.EMAIL_VERIFICATION, accountTest.getStatus());
     }
 
     /**

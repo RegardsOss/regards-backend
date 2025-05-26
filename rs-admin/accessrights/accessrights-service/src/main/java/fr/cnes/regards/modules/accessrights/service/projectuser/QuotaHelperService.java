@@ -19,12 +19,17 @@
 package fr.cnes.regards.modules.accessrights.service.projectuser;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
+import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.storage.client.StorageDownloaderClient;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 @Component
 public class QuotaHelperService {
@@ -33,10 +38,16 @@ public class QuotaHelperService {
 
     private static final Long MAX_QUOTA_DEFAULT_VALUE = -1L;
 
-    @Autowired
-    StorageDownloaderClient storageDownloaderClient;
+    private final StorageDownloaderClient storageDownloaderClient;
 
-    public Long getDefaultQuota() {
+    public QuotaHelperService(StorageDownloaderClient storageDownloaderClient) {
+        this.storageDownloaderClient = storageDownloaderClient;
+    }
+
+    /**
+     * Returns the default quota, or null if it can not be determined (an error is logged in this case).
+     */
+    public @Nullable Long getDefaultQuota() {
 
         Long defaultQuota = MAX_QUOTA_DEFAULT_VALUE;
 
@@ -54,6 +65,29 @@ public class QuotaHelperService {
         }
 
         return defaultQuota;
+    }
+
+    /**
+     * Returns the downloads quota for the specified user. Returns null if a problem prevents
+     * from determining this quota (an error is logged in this case).
+     */
+    public @Nullable DownloadQuotaLimitsDto getQuota(String userEmail) {
+        try {
+            FeignSecurityManager.asSystem();
+            ResponseEntity<DownloadQuotaLimitsDto> storageResponse = storageDownloaderClient.getQuotaLimits(userEmail);
+            if (storageResponse.getStatusCode().is2xxSuccessful()) {
+                return ResponseEntityUtils.extractBodyOrThrow(storageResponse,
+                                                              "Cannot get quota limit of " + userEmail);
+            } else {
+                LOG.warn("Unable to retrieve quota value for user {} from storage service", userEmail);
+                return null;
+            }
+        } catch (HttpServerErrorException | HttpClientErrorException | ModuleException e) {
+            LOG.warn("Unable to retrieve quota value for user {} from storage service", userEmail, e);
+            return null;
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
 }

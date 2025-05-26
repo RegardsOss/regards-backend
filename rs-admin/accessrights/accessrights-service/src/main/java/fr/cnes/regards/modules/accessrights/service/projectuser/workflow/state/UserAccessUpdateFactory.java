@@ -23,11 +23,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
 
 /**
  * Factory that create user access update action for a given user.
@@ -43,8 +40,6 @@ public class UserAccessUpdateFactory {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    private final IEmailVerificationTokenService emailVerificationTokenService;
-
     private final IPublisher publisher;
 
     private final IAccountsClient accountsClient;
@@ -53,13 +48,11 @@ public class UserAccessUpdateFactory {
 
     public UserAccessUpdateFactory(IProjectUserRepository projectUserRepository,
                                    ApplicationEventPublisher eventPublisher,
-                                   IEmailVerificationTokenService emailVerificationTokenService,
                                    IPublisher publisher,
                                    IAccountsClient accountsClient,
                                    IRuntimeTenantResolver runtimeTenantResolver) {
         userRepository = projectUserRepository;
         this.eventPublisher = eventPublisher;
-        this.emailVerificationTokenService = emailVerificationTokenService;
         this.publisher = publisher;
         this.accountsClient = accountsClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -67,14 +60,6 @@ public class UserAccessUpdateFactory {
 
     public AccessWaitingForQualification accessQualification(ProjectUser forUser) {
         return new AccessWaitingForQualification(userRepository, eventPublisher, forUser);
-    }
-
-    public MailVerification mailVerification(ProjectUser forUser, LocalDateTime withExpirationDate) {
-        return new MailVerification(userRepository,
-                                    eventPublisher,
-                                    emailVerificationTokenService,
-                                    forUser,
-                                    withExpirationDate);
     }
 
     public AccessDeactivation accessDeactivation(ProjectUser forUser) {
@@ -94,11 +79,6 @@ public class UserAccessUpdateFactory {
     }
 
     public AccessRemoval removeAccess(ProjectUser forUser) {
-        return new AccessRemoval(userRepository,
-                                 emailVerificationTokenService,
-                                 publisher,
-                                 accountsClient,
-                                 runtimeTenantResolver,
-                                 forUser);
+        return new AccessRemoval(userRepository, publisher, accountsClient, runtimeTenantResolver, forUser);
     }
 }

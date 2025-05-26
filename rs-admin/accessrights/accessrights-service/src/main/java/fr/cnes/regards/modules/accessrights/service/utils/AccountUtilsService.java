@@ -106,6 +106,8 @@ public class AccountUtilsService {
 
             // Add password to account creation payload
             AccountNPassword accountNPassword = new AccountNPassword(account, password);
+            accountNPassword.setOriginUrl(accessRequestDto.getOriginUrl());
+            accountNPassword.setRequestLink(accessRequestDto.getRequestLink());
 
             EntityModel<Account> body = accountsClient.createAccount(accountNPassword).getBody();
             if (body != null) {

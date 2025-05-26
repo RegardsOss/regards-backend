@@ -23,8 +23,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnInactiveEvent;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -43,8 +41,6 @@ public class UserAccessUpdateTest {
 
     protected final IPublisher eventPublisher;
 
-    protected final IEmailVerificationTokenService mailVerifier;
-
     protected final ApplicationEventPublisher platformPublisher;
 
     private final UserAccessUpdateFactory accessUpdateActionFactory;
@@ -53,14 +49,12 @@ public class UserAccessUpdateTest {
 
     public UserAccessUpdateTest() {
         userAccessor = mockUserAccessor();
-        mailVerifier = mockMailVerifier();
         eventPublisher = mockEventPublisher();
         accountAccessor = mockAccountAccessor();
         currentTenantAccessor = mockTenant();
         platformPublisher = mockPlatformPublisher();
         accessUpdateActionFactory = new UserAccessUpdateFactory(userAccessor,
                                                                 platformPublisher,
-                                                                mailVerifier,
                                                                 eventPublisher,
                                                                 accountAccessor,
                                                                 currentTenantAccessor);
@@ -69,10 +63,6 @@ public class UserAccessUpdateTest {
 
     private IProjectUserRepository mockUserAccessor() {
         return mock(IProjectUserRepository.class);
-    }
-
-    private IEmailVerificationTokenService mockMailVerifier() {
-        return mock(IEmailVerificationTokenService.class);
     }
 
     private IPublisher mockEventPublisher() {

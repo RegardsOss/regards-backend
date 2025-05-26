@@ -40,7 +40,7 @@ public class AccessApprovalTest extends UserAccessUpdateTest {
     public void update_user_access_to_waiting_mail_verification() throws Exception {
         ProjectUser givenUser = UserBuilder.aUser().waitingAccess().build();
         userWorkflowManager.grantAccess(givenUser);
-        assertThat(updatedUser().getStatus()).isEqualTo(UserStatus.WAITING_EMAIL_VERIFICATION);
+        assertThat(updatedUser().getStatus()).isEqualTo(UserStatus.ACCESS_GRANTED);
     }
 
     @Test

@@ -18,21 +18,26 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.rest;
 
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
+import fr.cnes.regards.modules.accessrights.instance.dao.IPasswordResetTokenRepository;
+import fr.cnes.regards.modules.accessrights.instance.dao.accountunlock.IAccountUnlockTokenRepository;
+import fr.cnes.regards.modules.accessrights.instance.dao.emailverification.IEmailVerificationTokenRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
-import fr.cnes.regards.modules.accessrights.instance.domain.CodeType;
+import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.PerformUnlockAccountDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.RequestAccountUnlockDto;
 import fr.cnes.regards.modules.authentication.client.IExternalAuthenticationClient;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,10 +49,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
-import java.util.Optional;
-
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
-public class AccountFeignClientIT extends AbstractRegardsWebIT {
+class AccountFeignClientIT extends AbstractRegardsWebIT {
 
     /**
      * Class logger
@@ -60,7 +63,16 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     private String serverAddress;
 
     @Autowired
-    private IAccountRepository accountRepo;
+    private IAccountRepository accountRepository;
+
+    @Autowired
+    private IEmailVerificationTokenRepository emailVerificationTokenRepository;
+
+    @Autowired
+    private IPasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Autowired
+    private IAccountUnlockTokenRepository accountUnlockTokenRepository;
 
     @MockBean
     private IExternalAuthenticationClient externalAuthenticationClient;
@@ -73,158 +85,117 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     @Autowired
     private FeignSecurityManager feignSecurityManager;
 
-    @Before
-    public void init() {
+    @Autowired
+    private Gson gson;
+
+    @BeforeEach
+    void init() {
         accountsClient = FeignClientBuilder.build(new TokenClientProvider<>(IAccountsClient.class,
                                                                             "http://" + serverAddress + ":" + getPort(),
-                                                                            feignSecurityManager));
+                                                                            feignSecurityManager), gson);
         FeignSecurityManager.asSystem();
 
-        final Optional<Account> account = accountRepo.findOneByEmailIgnoreCase(MAIL_TEST);
-        account.ifPresent(accountRepo::delete);
+        emailVerificationTokenRepository.deleteAll();
+        passwordResetTokenRepository.deleteAll();
+        accountUnlockTokenRepository.deleteAll();
+        accountRepository.deleteAll();
     }
 
     /**
      * Check that the accounts Feign Client can retrieve all accounts.
      */
-    @Ignore
     @Test
-    public void retrieveAccountListFromFeignClient() {
-        try {
-            final ResponseEntity<PagedModel<EntityModel<Account>>> accounts = accountsClient.retrieveAccountList(null,
-                                                                                                                 0,
-                                                                                                                 10);
-            Assert.assertEquals(accounts.getStatusCode(), HttpStatus.OK);
-        } catch (final Exception e) {
-            LOG.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
-        }
+    void retrieveAccountListFromFeignClient() {
+        final ResponseEntity<PagedModel<EntityModel<Account>>> accounts = accountsClient.retrieveAccountList(null,
+                                                                                                             0,
+                                                                                                             10);
+        Assert.assertEquals(HttpStatus.OK, accounts.getStatusCode());
     }
 
     /**
      * Check that the accounts Feign Client can create an account.
      */
-    @Ignore
     @Test
-    public void createAccountFromFeignClient() {
-        try {
-            final Account account = new Account(MAIL_TEST, "feign", "feign", "password");
-            AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
-            final ResponseEntity<EntityModel<Account>> response = accountsClient.createAccount(accountNPassword);
-            Assert.assertEquals(response.getStatusCode(), HttpStatus.CREATED);
-        } catch (final Exception e) {
-            LOG.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
-        }
+    void createAccountFromFeignClient() {
+        final Account account = new Account(MAIL_TEST, "feign", "feign", "password");
+        AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
+        accountNPassword.setOriginUrl("originUrl");
+        accountNPassword.setRequestLink("requestLink");
+        final ResponseEntity<EntityModel<Account>> response = accountsClient.createAccount(accountNPassword);
+        Assert.assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
     /**
      * Check that the accounts Feign Client can update an account.
      */
     @Test
-    @Ignore
-    public void updateAccountFromFeignClient() {
-        try {
-            final Account account = new Account("feign@user.com", "feign", "feign", "password");
-            account.setId(150L);
-            final ResponseEntity<EntityModel<Account>> response = accountsClient.updateAccount(150L, account);
-            Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
-        } catch (final Exception e) {
-            LOG.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
-        }
+    void updateAccountFromFeignClient() {
+        final Account account = new Account("feign@user.com", "feign", "feign", "password");
+        account.setId(150L);
+        final ResponseEntity<EntityModel<Account>> response = accountsClient.updateAccount(150L, account);
+        Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     /**
      * Check that the accounts Feign Client can update an account.
      */
     @Test
-    @Ignore
-    public void removeAccountFromFeignClient() {
-        try {
-            final ResponseEntity<Void> response = accountsClient.removeAccount(150L);
-            Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
-        } catch (final Exception e) {
-            LOG.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
-        }
+    void removeAccountFromFeignClient() {
+        final ResponseEntity<Void> response = accountsClient.removeAccount(150L);
+        Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     /**
      * Check that the accounts Feign Client can retrieve an account.
      */
     @Test
-    @Ignore
-    public void retrieveAccountFromFeignClient() {
-        try {
-            final ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccount(150L);
-            Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
-        } catch (final Exception e) {
-            LOG.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
-        }
+    void retrieveAccountFromFeignClient() {
+        final ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccount(150L);
+        Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     /**
      * Check that the accounts Feign Client can retrieve an account.
      */
     @Test
-    @Ignore
-    public void retrieveAccountByEmailFromFeignClient() {
-        try {
-            final ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccountByEmail(
-                "email@unkown.fr");
-            Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
-        } catch (final Exception e) {
-            LOG.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
-        }
+    void retrieveAccountByEmailFromFeignClient() {
+        final ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccountByEmail("email@unkown.fr");
+        Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    /**
+     * Check that the accounts Feign Client can request unlocking an account.
+     */
+    @Test
+    void requestUnlockAccountFromFeignClient() {
+        final ResponseEntity<Void> response = accountsClient.requestUnlockAccount("email@unkown.fr",
+                                                                                  new RequestAccountUnlockDto(
+                                                                                      "originUrl",
+                                                                                      "requestLink"));
+        Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    /**
+     * Check that the accounts Feign Client can unlock an account.
+     */
+    @Test
+    void performAccountUnlockFromFeignClient() throws JwtException {
+        jwtService.injectToken(getDefaultTenant(), DefaultRole.REGISTERED_USER.toString(), "", "");
+        PerformUnlockAccountDto unlock = new PerformUnlockAccountDto();
+        unlock.setToken("token");
+        final ResponseEntity<Void> response = accountsClient.performUnlockAccount("email@unkown.fr", unlock);
+        Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     /**
      * Check that the accounts Feign Client can retrieve an account.
      */
     @Test
-    @Ignore
-    public void unlockAccountFromFeignClient() {
-        try {
-            final ResponseEntity<Void> response = accountsClient.unlockAccount(150L, "unlock_code");
-            Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
-        } catch (final Exception e) {
-            LOG.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
-        }
-    }
-
-    /**
-     * Check that the accounts Feign Client can retrieve an account.
-     */
-    @Test
-    @Ignore
-    public void sendAccountCodeFromFeignClient() {
-        try {
-            jwtService.injectToken(getDefaultTenant(), DefaultRole.REGISTERED_USER.toString(), "", "");
-            final ResponseEntity<Void> response = accountsClient.sendAccountCode("email@unkown.fr", CodeType.UNLOCK);
-            Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
-        } catch (final Exception e) {
-            LOG.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
-        }
-    }
-
-    /**
-     * Check that the accounts Feign Client can retrieve an account.
-     */
-    @Test
-    public void validatePasswordFromFeignClient() {
-        try {
-            final ResponseEntity<Boolean> response = accountsClient.validatePassword("email@unkown.fr", "password");
-            Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
-            Assert.assertFalse(response.getBody());
-        } catch (final Exception e) {
-            LOG.error(e.getMessage(), e);
-            Assert.fail(e.getMessage());
-        }
+    void validatePasswordFromFeignClient() {
+        final ResponseEntity<Boolean> response = accountsClient.validatePassword("email@unkown.fr", "password");
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertNotNull(response.getBody());
+        Assert.assertFalse(response.getBody());
     }
 
     @Override

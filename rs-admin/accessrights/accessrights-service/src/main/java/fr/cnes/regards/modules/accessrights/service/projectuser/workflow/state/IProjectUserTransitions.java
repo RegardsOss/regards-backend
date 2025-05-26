@@ -19,10 +19,8 @@
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
@@ -42,15 +40,6 @@ public interface IProjectUserTransitions {
      * @throws EntityTransitionForbiddenException if the project user is not in status WAITING_ACCOUNT_ACTIVE<br>
      */
     void makeWaitForQualification(final ProjectUser projectUser) throws EntityOperationForbiddenException;
-
-    /**
-     * After the user has clicked on the link in the email he received, pass his project user from status WAITING_EMAIL_VERIFICATION to ACCESS_GRANTED.
-     *
-     * @throws EntityException <br>
-     *                         {@link EntityTransitionForbiddenException} when the project user is not in status WAITING_EMAIL_VERIFICATION<br>
-     *                         {@link EntityNotFoundException} Thrown when no access settings could be found<br>
-     */
-    void verifyEmail(final EmailVerificationToken emailVerificationToken) throws EntityException;
 
     /**
      * Passes an ACCESS_GRANTED project user to the status ACCESS_INACTIVE.

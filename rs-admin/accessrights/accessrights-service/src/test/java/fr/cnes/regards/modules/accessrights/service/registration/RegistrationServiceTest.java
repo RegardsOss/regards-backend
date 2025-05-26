@@ -31,7 +31,6 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners.WaitForQualificationListener;
 import fr.cnes.regards.modules.accessrights.service.utils.AccountUtilsService;
 import org.junit.Before;
@@ -80,9 +79,6 @@ public class RegistrationServiceTest {
 
     @Mock
     private IProjectUserService projectUserService;
-
-    @Mock
-    private IEmailVerificationTokenService tokenService;
 
     @Mock
     private WaitForQualificationListener listener;
@@ -154,7 +150,6 @@ public class RegistrationServiceTest {
         assertThat(createdProjectUser).usingRecursiveComparison()
                                       .ignoringFields("id", "lastConnection", "lastUpdate")
                                       .isEqualTo(expectedProjectUser);
-        verify(tokenService).create(createdProjectUser, ORIGIN_URL, REQUEST_LINK);
         verify(listener).onAccountActivation(EMAIL);
     }
 

@@ -19,10 +19,14 @@
 package fr.cnes.regards.modules.accessrights.instance.client;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSearchParameters;
-import fr.cnes.regards.modules.accessrights.instance.domain.CodeType;
+import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.PerformUnlockAccountDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.RequestAccountUnlockDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.emailverification.EmailVerificationTokenDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.RequestResetPasswordDto;
 import jakarta.validation.Valid;
@@ -117,17 +121,33 @@ public interface IAccountsClient {
     ResponseEntity<Void> removeAccount(@PathVariable("account_id") Long id);
 
     /**
-     * Do not respect REST architecture because the request comes from a mail client, ideally should be a PUT
+     * Send to the user an email containing a link with limited validity to unlock its account.
      *
-     * @param id         The account id
-     * @param unlockCode the unlock code
-     * @return void
+     * @param accountEmail The {@link Account}'s <code>email</code>
+     * @param dto          The DTO containing<br>
+     *                     - The url of the app from where was issued the query<br>
+     *                     - The url to redirect the user to the password reset interface
+     * @return a no content HTTP response
      */
-    @GetMapping(value = ROOT_PATH + "/{account_id}/unlock/{unlock_code}",
+    @PostMapping(value = ROOT_PATH + "/{account_email}/unlockAccount",
+                 consumes = MediaType.APPLICATION_JSON_VALUE,
+                 produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Void> requestUnlockAccount(@PathVariable("account_email") String accountEmail,
+                                              @Valid @RequestBody RequestAccountUnlockDto dto);
+
+    /**
+     * Unlock an {@link Account}.
+     *
+     * @param accountEmail The {@link Account}'s <code>email</code>
+     * @param tokenDto     The token
+     * @return a no content HTTP response
+     */
+    @PutMapping(value = ROOT_PATH + "/{account_email}/unlockAccount",
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Void> unlockAccount(@PathVariable("account_id") Long id,
-                                       @PathVariable("unlock_code") String unlockCode);
+    @ResourceAccess(description = "unlock the account of provided email", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> performUnlockAccount(@PathVariable("account_email") String accountEmail,
+                                                     @Valid @RequestBody PerformUnlockAccountDto tokenDto);
 
     /**
      * Send to the user an email containing a link with limited validity to reset its password.
@@ -156,19 +176,6 @@ public interface IAccountsClient {
                 produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> performResetPassword(@PathVariable("account_email") String email,
                                               @Valid @RequestBody PerformResetPasswordDto dto);
-
-    /**
-     * Send to the user an email containing a code:<br>
-     * - to reset password<br>
-     * - to unlock the account
-     *
-     * @param email The {@link Account}'s <code>email</code>
-     * @param type  The type of code
-     */
-    @GetMapping(value = ROOT_PATH + "/code",
-                consumes = MediaType.APPLICATION_JSON_VALUE,
-                produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Void> sendAccountCode(@RequestParam("email") String email, @RequestParam("type") CodeType type);
 
     /**
      * Return <code>true</code> if the passed <code>password</code> is equal to the one set on the {@link Account} of
@@ -233,5 +240,37 @@ public interface IAccountsClient {
                 produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> updateOrigin(@PathVariable("account_email") String accountEmail,
                                       @PathVariable("origin") String origin);
+
+    /**
+     * Request a new verification email for an account identified by email.
+     *
+     * @param email The account email.
+     */
+    @GetMapping(value = ROOT_PATH + "/{account_email}/verification/resend",
+                produces = MediaType.APPLICATION_JSON_VALUE,
+                consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Void> resendVerificationEmail(@PathVariable("account_email") String email);
+
+    /**
+     * Resets the account in EMAIL_VERIFICATION state, with the provided token details.
+     * This endpoint is meant for migration purpose only.
+     *
+     * @param accountEmail The account email.
+     * @param token        The token details.
+     */
+    @PostMapping(value = ROOT_PATH + "/{account_email}/verification/reset", consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Void> resetEmailVerificationStatus(@PathVariable("account_email") String accountEmail,
+                                                      @Valid @RequestBody EmailVerificationTokenDto token);
+
+    /**
+     * Confirm that the email associated to an account is valid, using a verification token
+     * that was previously sent to this email address.
+     *
+     * @param token An email verification token
+     */
+    @GetMapping(value = ROOT_PATH + "/verifyEmail/{token}",
+                consumes = MediaType.APPLICATION_JSON_VALUE,
+                produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<Void> verifyEmail(@PathVariable("token") final String token);
 
 }

@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -33,28 +32,41 @@ import org.springframework.stereotype.Component;
 public class AccountStateProvider {
 
     /**
+     * Email verification state
+     */
+    private final EmailVerificationState emailVerificationState;
+
+    /**
      * Pending state
      */
-    @Autowired
-    private PendingState pendingState;
+    private final PendingState pendingState;
 
     /**
      * Active state
      */
-    @Autowired
-    private ActiveState activeState;
+    private final ActiveState activeState;
 
     /**
      * Inactive state
      */
-    @Autowired
-    private InactiveState inactiveState;
+    private final InactiveState inactiveState;
 
     /**
      * Locked state
      */
-    @Autowired
-    private LockedState lockedState;
+    private final LockedState lockedState;
+
+    public AccountStateProvider(EmailVerificationState emailVerificationState,
+                                PendingState pendingState,
+                                ActiveState activeState,
+                                InactiveState inactiveState,
+                                LockedState lockedState) {
+        this.emailVerificationState = emailVerificationState;
+        this.pendingState = pendingState;
+        this.activeState = activeState;
+        this.inactiveState = inactiveState;
+        this.lockedState = lockedState;
+    }
 
     /**
      * Get the right account state based on the passed status
@@ -62,24 +74,14 @@ public class AccountStateProvider {
      * @param pStatus The account status
      * @return the account state object
      */
-    public IAccountTransitions getState(final AccountStatus pStatus) {
-        final IAccountTransitions state;
-        switch (pStatus) {
-            case ACTIVE:
-                state = activeState;
-                break;
-            case INACTIVE:
-                state = inactiveState;
-                break;
-            case LOCKED:
-                state = lockedState;
-                break;
-            case PENDING:
-            default:
-                state = pendingState;
-                break;
-        }
-        return state;
+    private IAccountTransitions getState(final AccountStatus status) {
+        return switch (status) {
+            case INACTIVE -> inactiveState;
+            case LOCKED -> lockedState;
+            case PENDING, INACTIVE_PASSWORD -> pendingState;
+            case ACTIVE -> activeState;
+            case EMAIL_VERIFICATION -> emailVerificationState;
+        };
     }
 
     /**

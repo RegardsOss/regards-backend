@@ -23,6 +23,10 @@ public class AccountNPassword {
     @Length(max = 128)
     private String project;
 
+    private String originUrl;
+
+    private String requestLink;
+
     public AccountNPassword() {
     }
 
@@ -64,6 +68,22 @@ public class AccountNPassword {
         return this;
     }
 
+    public String getOriginUrl() {
+        return originUrl;
+    }
+
+    public void setOriginUrl(String originUrl) {
+        this.originUrl = originUrl;
+    }
+
+    public String getRequestLink() {
+        return requestLink;
+    }
+
+    public void setRequestLink(String requestLink) {
+        this.requestLink = requestLink;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -78,7 +98,13 @@ public class AccountNPassword {
         if (!Objects.equals(account, that.account)) {
             return false;
         }
-        return Objects.equals(password, that.password);
+        if (!Objects.equals(password, that.password)) {
+            return false;
+        }
+        if (!Objects.equals(originUrl, that.originUrl)) {
+            return false;
+        }
+        return Objects.equals(requestLink, that.requestLink);
     }
 
     @Override
@@ -87,4 +113,5 @@ public class AccountNPassword {
         result = (31 * result) + (password != null ? password.hashCode() : 0);
         return result;
     }
+    
 }

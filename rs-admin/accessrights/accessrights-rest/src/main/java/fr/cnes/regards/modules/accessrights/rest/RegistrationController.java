@@ -23,11 +23,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
-import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.registration.IRegistrationService;
 import jakarta.validation.Valid;
@@ -53,8 +51,6 @@ public class RegistrationController {
 
     public static final String DENY_ACCESS_RELATIVE_PATH = "/{access_id}/deny";
 
-    private static final String VERIFY_EMAIL_RELATIVE_PATH = "/verifyEmail/{token}";
-
     public static final String ACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/active";
 
     public static final String INACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/inactive";
@@ -65,16 +61,12 @@ public class RegistrationController {
 
     private final IRegistrationService registrationService;
 
-    private final IEmailVerificationTokenService emailVerificationTokenService;
-
     public RegistrationController(IProjectUserService projectUserService,
                                   ProjectUserWorkflowManager projectUserWorkflowManager,
-                                  IRegistrationService registrationService,
-                                  IEmailVerificationTokenService emailVerificationTokenService) {
+                                  IRegistrationService registrationService) {
         this.projectUserService = projectUserService;
         this.projectUserWorkflowManager = projectUserWorkflowManager;
         this.registrationService = registrationService;
-        this.emailVerificationTokenService = emailVerificationTokenService;
     }
 
     /**
@@ -118,21 +110,6 @@ public class RegistrationController {
         throws EntityException {
         registrationService.requestAccess(accessRequestDto, true);
         return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
-    /**
-     * Confirm the registration by email.
-     *
-     * @param token the token
-     * @return void
-     * @throws EntityException when no verification token associated to this account could be found
-     */
-    @GetMapping(VERIFY_EMAIL_RELATIVE_PATH)
-    @ResourceAccess(description = "Confirm the registration by email", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> verifyEmail(@PathVariable("token") String token) throws EntityException {
-        EmailVerificationToken emailVerificationToken = emailVerificationTokenService.findByToken(token);
-        projectUserWorkflowManager.verifyEmail(emailVerificationToken);
-        return ResponseEntity.ok().build();
     }
 
     /**

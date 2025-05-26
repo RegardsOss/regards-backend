@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
+import fr.cnes.regards.modules.accessrights.instance.service.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.project.service.ITenantService;
 import org.slf4j.Logger;
@@ -56,18 +57,22 @@ abstract class AbstractDeletableState implements IAccountTransitions {
 
     protected final IAccountUnlockTokenService accountUnlockTokenService;
 
+    protected final IEmailVerificationTokenService emailVerificationTokenService;
+
     protected AbstractDeletableState(IProjectUsersClient projectUsersClient,
                                      IAccountRepository accountRepository,
                                      ITenantService tenantService,
                                      IRuntimeTenantResolver runtimeTenantResolver,
                                      IPasswordResetService passwordResetTokenService,
-                                     IAccountUnlockTokenService accountUnlockTokenService) {
+                                     IAccountUnlockTokenService accountUnlockTokenService,
+                                     IEmailVerificationTokenService emailVerificationTokenService) {
         this.projectUsersClient = projectUsersClient;
         this.accountRepository = accountRepository;
         this.tenantService = tenantService;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.passwordResetTokenService = passwordResetTokenService;
         this.accountUnlockTokenService = accountUnlockTokenService;
+        this.emailVerificationTokenService = emailVerificationTokenService;
     }
 
     /*
@@ -80,6 +85,9 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     public void deleteAccount(final Account account) throws EntityOperationForbiddenException {
         checkDeleteAccountPossible(account);
 
+        LOGGER.info("Deleting password email verification tokens associated to account {} from instance.",
+                    account.getEmail());
+        emailVerificationTokenService.deleteTokenForAccount(account);
         LOGGER.info("Deleting password reset tokens associated to account {} from instance.", account.getEmail());
         passwordResetTokenService.deletePasswordResetTokenForAccount(account);
         LOGGER.info("Deleting unlock tokens associated to account {} from instance.", account.getEmail());

@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -48,12 +47,6 @@ public class ProjectUserWorkflowManager implements IProjectUserTransitions {
     @Override
     public void makeWaitForQualification(ProjectUser projectUser) throws EntityOperationForbiddenException {
         accessUpdateFactory.accessQualification(projectUser).updateState();
-    }
-
-    @Override
-    public void verifyEmail(EmailVerificationToken emailVerificationToken) throws EntityException {
-        accessUpdateFactory.mailVerification(emailVerificationToken.getProjectUser(),
-                                             emailVerificationToken.getExpiryDate()).updateState();
     }
 
     @Override

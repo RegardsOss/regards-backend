@@ -453,14 +453,6 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
         }, pageable, assembler);
     }
 
-    @GetMapping(value = "/email/{email}/verification/resend")
-    @ResourceAccess(description = "Send a new verification email for a user creation", role = DefaultRole.EXPLOIT)
-    @Operation(summary = "Valid a user creation", description = "Send a new verification email for a user creation")
-    public ResponseEntity<Void> sendVerificationEmail(@PathVariable("email") String email) {
-        projectUsersClient.sendVerificationEmail(email);
-        return ResponseEntity.ok().build();
-    }
-
     private ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> completeUserPagedResponseWithQuotas(Supplier<ResponseEntity<PagedModel<EntityModel<ProjectUser>>>> usersRequest,
                                                                                                             Pageable pageable,
                                                                                                             PagedResourcesAssembler<ProjectUserReadDto> pagedResourcesAssembler)
@@ -677,13 +669,6 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                                     "activeAccess",
                                     LinkRelation.of("active"),
                                     idParam);
-        }
-        if (UserStatus.WAITING_EMAIL_VERIFICATION.equals(userResourceDto.getStatus())) {
-            resourceService.addLink(resource,
-                                    clazz,
-                                    "sendVerificationEmail",
-                                    LinkRelation.of("sendVerificationEmail"),
-                                    MethodParamFactory.build(String.class, userResourceDto.getEmail()));
         }
     }
 

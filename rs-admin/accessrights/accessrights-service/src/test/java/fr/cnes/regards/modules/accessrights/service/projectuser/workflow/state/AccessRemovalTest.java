@@ -50,7 +50,7 @@ public class AccessRemovalTest extends UserAccessUpdateTest {
     public void remove_pending_mail_verification() throws Exception {
         ProjectUser givenUser = UserBuilder.aUser().authorized().build();
         userWorkflowManager.removeAccess(givenUser);
-        verify(mailVerifier).deleteTokenForProjectUser(givenUser);
+        verify(userAccessor).deleteById(givenUser.getId());
     }
 
     @Test

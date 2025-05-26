@@ -20,12 +20,11 @@ package fr.cnes.regards.modules.accessrights.client;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 
 import static fr.cnes.regards.modules.accessrights.client.IRegistrationClient.TARGET_NAME;
 
@@ -61,19 +60,8 @@ public interface IRegistrationClient {
     @PostMapping(value = ROOT_PATH + "/external",
                  consumes = MediaType.APPLICATION_JSON_VALUE,
                  produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<EntityModel<AccessRequestDto>> requestExternalAccess(@Valid @RequestBody
-                                                                        AccessRequestDto pAccessRequest);
-
-    /**
-     * Confirm the registration by email.
-     *
-     * @param token the token
-     * @return void
-     */
-    @GetMapping(value = ROOT_PATH + "/verifyEmail/{token}",
-                consumes = MediaType.APPLICATION_JSON_VALUE,
-                produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<Void> verifyEmail(@PathVariable("token") final String token);
+    ResponseEntity<EntityModel<AccessRequestDto>> requestExternalAccess(
+        @Valid @RequestBody AccessRequestDto pAccessRequest);
 
     /**
      * Grants access to the project user

@@ -19,20 +19,23 @@
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import fr.cnes.regards.modules.accessrights.instance.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
+import fr.cnes.regards.modules.accessrights.instance.service.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.ITenantService;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,6 +78,16 @@ public class AccountWorkflowManagerTest {
      * Dummy password
      */
     private static final String PASSWORD = "password";
+
+    /**
+     * Dummy origin URL
+     */
+    private static final String ORIGIN_URL = "originUrl";
+
+    /**
+     * Dummy request link
+     */
+    private static final String REQUEST_LINK = "requestLink";
 
     /**
      * Dummy tenants
@@ -121,6 +134,11 @@ public class AccountWorkflowManagerTest {
     private IProjectUsersClient projectUsersClient;
 
     /**
+     * Mocked service
+     */
+    private IEmailVerificationTokenService emailVerificationTokenService;
+
+    /**
      * Do some setup before each test
      */
     @Before
@@ -134,6 +152,7 @@ public class AccountWorkflowManagerTest {
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
         passwordResetService = Mockito.mock(IPasswordResetService.class);
         accountUnlockTokenService = Mockito.mock(IAccountUnlockTokenService.class);
+        emailVerificationTokenService = Mockito.mock(IEmailVerificationTokenService.class);
 
         // Mock authentication
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
@@ -150,7 +169,6 @@ public class AccountWorkflowManagerTest {
      * @throws ModuleException Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
      */
     @Test(expected = EntityOperationForbiddenException.class)
-    @Purpose("Check that the system prevents from deleting an account if it is still linked to project users.")
     public void removeAccountNotDeletable() throws ModuleException {
         // Prepare the case
         account.setId(ID);
@@ -168,7 +186,8 @@ public class AccountWorkflowManagerTest {
                                            tenantService,
                                            runtimeTenantResolver,
                                            passwordResetService,
-                                           accountUnlockTokenService));
+                                           accountUnlockTokenService,
+                                           emailVerificationTokenService));
 
         // Trigger the exception
         accountWorkflowManager.deleteAccount(account);
@@ -180,7 +199,6 @@ public class AccountWorkflowManagerTest {
      * @throws ModuleException Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
      */
     @Test
-    @Purpose("Check that the system allows to delete an account.")
     public void removeAccount() throws ModuleException {
         // Prepare the case
         account.setId(ID);
@@ -197,7 +215,8 @@ public class AccountWorkflowManagerTest {
                                            tenantService,
                                            runtimeTenantResolver,
                                            passwordResetService,
-                                           accountUnlockTokenService));
+                                           accountUnlockTokenService,
+                                           emailVerificationTokenService));
 
         // Call the method
         accountWorkflowManager.deleteAccount(account);
@@ -209,10 +228,9 @@ public class AccountWorkflowManagerTest {
     }
 
     /**
-     * Check that the system does not delete an account linked to project users
+     * Check that the system does not delete an account in right status linked to project users.
      */
     @Test
-    @Purpose("Check that the system does not delete an account in right status linked to project users.")
     public void canDelete_shouldReturnFalse() {
         // Prepare the case
         account.setId(ID);
@@ -230,7 +248,8 @@ public class AccountWorkflowManagerTest {
                                            tenantService,
                                            runtimeTenantResolver,
                                            passwordResetService,
-                                           accountUnlockTokenService));
+                                           accountUnlockTokenService,
+                                           emailVerificationTokenService));
 
         // Call the method
         final boolean result = accountWorkflowManager.canDelete(account);
@@ -243,7 +262,6 @@ public class AccountWorkflowManagerTest {
      * Check that the system allows to delete an account in right status if not linked to project users.
      */
     @Test
-    @Purpose("Check that the system allows to delete an account in right status if not linked to project users.")
     public void canDelete_shouldReturnTrue() {
         // Prepare the case
         account.setId(ID);
@@ -261,13 +279,35 @@ public class AccountWorkflowManagerTest {
                                            tenantService,
                                            runtimeTenantResolver,
                                            passwordResetService,
-                                           accountUnlockTokenService));
+                                           accountUnlockTokenService,
+                                           emailVerificationTokenService));
 
         // Call the method
         final boolean result = accountWorkflowManager.canDelete(account);
 
         // Verify the repository was correctly called
         Assert.assertTrue(result);
+    }
+
+    /**
+     * Check that the system does not allow to confirm an email verification token if the user
+     * has the ACTIVE status.
+     */
+    @Test
+    public void fail_if_user_is_not_waiting_mail_verification() {
+        account.setId(ID);
+        Mockito.when(accountStateProvider.getState(account))
+               .thenReturn(new ActiveState(projectUsersClient,
+                                           accountRepository,
+                                           tenantService,
+                                           runtimeTenantResolver,
+                                           passwordResetService,
+                                           accountUnlockTokenService,
+                                           emailVerificationTokenService));
+        EmailVerificationToken emailToken = new EmailVerificationToken(account, ORIGIN_URL, REQUEST_LINK);
+
+        Assertions.assertThatExceptionOfType(EntityTransitionForbiddenException.class)
+                  .isThrownBy(() -> accountWorkflowManager.verifyEmail(emailToken));
     }
 
 }

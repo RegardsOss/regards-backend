@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
+import fr.cnes.regards.modules.accessrights.instance.service.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.project.service.ITenantService;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,13 +56,15 @@ public class InactiveState extends AbstractDeletableState {
                          IRuntimeTenantResolver runtimeTenantResolver,
                          IPasswordResetService passwordResetService,
                          IAccountUnlockTokenService accountUnlockTokenService,
+                         IEmailVerificationTokenService emailVerificationTokenService,
                          @Value("${regards.accounts.validity.duration}") Long accountValidityDuration) {
         super(projectUsersClient,
               accountRepository,
               tenantService,
               runtimeTenantResolver,
               passwordResetService,
-              accountUnlockTokenService);
+              accountUnlockTokenService,
+              emailVerificationTokenService);
         this.accountValidityDuration = accountValidityDuration;
     }
 

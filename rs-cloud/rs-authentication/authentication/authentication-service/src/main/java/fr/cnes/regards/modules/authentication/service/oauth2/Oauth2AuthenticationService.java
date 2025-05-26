@@ -304,6 +304,7 @@ public class Oauth2AuthenticationService {
                         case INACTIVE_PASSWORD -> AuthenticationStatus.ACCOUNT_INACTIVE_PASSWORD;
                         case LOCKED -> AuthenticationStatus.ACCOUNT_LOCKED;
                         case PENDING -> AuthenticationStatus.ACCOUNT_PENDING;
+                        case EMAIL_VERIFICATION -> AuthenticationStatus.USER_WAITING_EMAIL_VERIFICATION;
                     };
                 }
             } catch (HttpServerErrorException | HttpClientErrorException e) {
@@ -332,7 +333,6 @@ public class Oauth2AuthenticationService {
                                                                                             CHECK_USER_INFO_ERROR_MSG);
                         status = switch (projectUser.getStatus()) {
                             case WAITING_ACCESS -> AuthenticationStatus.USER_WAITING_ACCESS;
-                            case WAITING_EMAIL_VERIFICATION -> AuthenticationStatus.USER_WAITING_EMAIL_VERIFICATION;
                             case ACCESS_DENIED -> AuthenticationStatus.USER_ACCESS_DENIED;
                             case ACCESS_GRANTED -> AuthenticationStatus.ACCESS_GRANTED;
                             case ACCESS_INACTIVE -> AuthenticationStatus.USER_ACCESS_INACTIVE;

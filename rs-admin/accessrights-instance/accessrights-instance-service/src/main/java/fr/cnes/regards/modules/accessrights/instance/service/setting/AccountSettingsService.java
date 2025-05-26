@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.accessrights.instance.service.setting;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -36,6 +37,13 @@ public class AccountSettingsService extends AbstractSettingService {
     public boolean isAutoAccept() {
         return AccountSettings.ValidationMode.AUTO_ACCEPT.equals(AccountSettings.ValidationMode.fromName(getValue(
             AccountSettings.VALIDATION)));
+    }
+
+    public void setAutoAccept(boolean auto) throws EntityException {
+        AccountSettings.ValidationMode mode = auto ?
+            AccountSettings.ValidationMode.AUTO_ACCEPT :
+            AccountSettings.ValidationMode.MANUAL;
+        dynamicTenantSettingService.update(AccountSettings.VALIDATION, mode.getName());
     }
 
 }

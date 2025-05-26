@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbidden
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -34,6 +33,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.AccountUnlockToken;
 import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
+import fr.cnes.regards.modules.accessrights.instance.service.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.service.ITenantService;
@@ -133,6 +133,11 @@ public class LockedStateTest {
     /**
      * Mocked service
      */
+    private IEmailVerificationTokenService emailVerificationTokenService;
+
+    /**
+     * Mocked service
+     */
     private IPasswordResetService passwordResetService;
 
     /**
@@ -154,6 +159,7 @@ public class LockedStateTest {
         accountUnlockTokenService = Mockito.mock(IAccountUnlockTokenService.class);
         templateService = Mockito.mock(ITemplateService.class);
         emailClient = Mockito.mock(IEmailClient.class);
+        emailVerificationTokenService = Mockito.mock(IEmailVerificationTokenService.class);
         passwordResetService = Mockito.mock(IPasswordResetService.class);
 
         // Mock authentication
@@ -170,7 +176,6 @@ public class LockedStateTest {
      */
     @Test(expected = EntityTransitionForbiddenException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_450")
-    @Purpose("Check that the system does unlock not locked accounts and feedbacks the caller.")
     public void performUnlockAccountNotLocked() throws EntityException {
         // Prepare the error case
         account.setStatus(AccountStatus.ACTIVE);
@@ -184,7 +189,8 @@ public class LockedStateTest {
                                            tenantService,
                                            runtimeTenantResolver,
                                            passwordResetService,
-                                           accountUnlockTokenService));
+                                           accountUnlockTokenService,
+                                           emailVerificationTokenService));
         Mockito.when(accountUnlockTokenService.findByToken(TOKEN)).thenReturn(accountUnlockToken);
 
         // Trigger exception
@@ -196,7 +202,6 @@ public class LockedStateTest {
      */
     @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_450")
-    @Purpose("Check that the system does not unlock a locked account if the wrong code is passed.")
     public void performUnlockAccountWrongCode() throws EntityException {
         // Prepare the case
         account.setStatus(AccountStatus.LOCKED);
@@ -214,7 +219,8 @@ public class LockedStateTest {
                                            accountUnlockTokenService,
                                            accountService,
                                            templateService,
-                                           emailClient));
+                                           emailClient,
+                                           emailVerificationTokenService));
         Mockito.when(accountUnlockTokenService.findByToken(wrongToken))
                .thenThrow(new EntityNotFoundException(ID, AccountUnlockToken.class));
 
@@ -227,7 +233,6 @@ public class LockedStateTest {
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_450")
-    @Purpose("Check that the system allows a user to unlock its account with a code.")
     public void performUnlockAccount() throws EntityException {
         // Mock
         Mockito.when(accountRepository.existsById(ID)).thenReturn(true);
@@ -241,7 +246,8 @@ public class LockedStateTest {
                                            accountUnlockTokenService,
                                            accountService,
                                            templateService,
-                                           emailClient));
+                                           emailClient,
+                                           emailVerificationTokenService));
         Mockito.when(accountUnlockTokenService.findByToken(TOKEN)).thenReturn(accountUnlockToken);
 
         // Prepare the case

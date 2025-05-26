@@ -38,7 +38,6 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.service.RegardsStreamUtils;
 import fr.cnes.regards.modules.accessrights.service.config.AccessRightsTemplateConfiguration;
-import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailService;
 import fr.cnes.regards.modules.accessrights.service.utils.AccessRightsEmailWrapper;
@@ -49,7 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -90,8 +88,6 @@ public class ProjectUserService implements IProjectUserService {
 
     private final IAuthenticationResolver authenticationResolver;
 
-    private final ApplicationEventPublisher eventPublisher;
-
     private final AccessSettingsService accessSettingsService;
 
     private final AccountUtilsService accountUtilsService;
@@ -116,7 +112,6 @@ public class ProjectUserService implements IProjectUserService {
     public ProjectUserService(IAuthenticationResolver authenticationResolver,
                               IProjectUserRepository projectUserRepository,
                               IRoleService roleService,
-                              ApplicationEventPublisher eventPublisher,
                               AccessSettingsService accessSettingsService,
                               AccountUtilsService accountUtilsService,
                               AccessRightsEmailService accessRightsEmailService,
@@ -126,7 +121,6 @@ public class ProjectUserService implements IProjectUserService {
         this.authenticationResolver = authenticationResolver;
         this.projectUserRepository = projectUserRepository;
         this.roleService = roleService;
-        this.eventPublisher = eventPublisher;
         this.accessSettingsService = accessSettingsService;
         this.accountUtilsService = accountUtilsService;
         this.accessRightsEmailService = accessRightsEmailService;
@@ -455,14 +449,6 @@ public class ProjectUserService implements IProjectUserService {
             LOG.warn("Invalid project user : {}", projectUser.getEmail(), e);
         }
         return canDelete;
-    }
-
-    @Override
-    public void sendVerificationEmail(String email) throws EntityNotFoundException {
-        ProjectUser projectUser = retrieveOneByEmail(email);
-        if (UserStatus.WAITING_EMAIL_VERIFICATION.equals(projectUser.getStatus())) {
-            eventPublisher.publishEvent(new OnGrantAccessEvent(projectUser));
-        }
     }
 
     @Override

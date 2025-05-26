@@ -18,14 +18,12 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountAcceptedEvent;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSearchParameters;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import jakarta.annotation.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -41,10 +39,30 @@ public interface IAccountService {
     /**
      * Create an account.
      *
-     * @param Account The {@link Account}
+     * @param account     The {@link Account}
+     * @param project     An optional project name that the account should be linked to
+     * @param originUrl   The origin URL (used to redirect the user once they have confirmed their email). This
+     *                    parameter is required only when the account status is left null or is set to
+     *                    {@link AccountStatus#EMAIL_VERIFICATION}.
+     * @param requestLink The request link (also used to redirect the user once they have confirmed their email).
+     *                    This parameter is required only when the account status is left null or is set to
+     *                    {@link AccountStatus#EMAIL_VERIFICATION}.
      * @return The account
      */
-    Account createAccount(Account Account, String project) throws EntityInvalidException;
+    Account createAccount(Account account,
+                          @Nullable String project,
+                          @Nullable String originUrl,
+                          @Nullable String requestLink) throws EntityInvalidException;
+
+    /**
+     * Sends a new validation email for the specified account.
+     * The initial email is automatically sent upon account creation, but a new email
+     * can be sent if the validation token has expired or if the user has lost or not received
+     * previous emails.
+     *
+     * @throws EntityOperationForbiddenException when the account email has already been confirmed by the user
+     */
+    void resendVerificationEmail(Account account) throws EntityOperationForbiddenException;
 
     /**
      * Set Account status to {@link AccountStatus#ACTIVE}

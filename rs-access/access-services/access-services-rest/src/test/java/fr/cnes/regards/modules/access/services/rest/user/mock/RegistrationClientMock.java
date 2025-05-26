@@ -62,11 +62,6 @@ public class RegistrationClientMock implements IRegistrationClient {
     }
 
     @Override
-    public ResponseEntity<Void> verifyEmail(String token) {
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @Override
     public ResponseEntity<Void> acceptAccessRequest(Long pAccessId) {
         return new ResponseEntity<>(HttpStatus.OK);
     }
