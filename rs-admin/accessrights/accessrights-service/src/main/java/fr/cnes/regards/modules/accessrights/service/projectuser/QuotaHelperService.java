@@ -47,6 +47,7 @@ public class QuotaHelperService {
     /**
      * Returns the default quota, or null if it can not be determined (an error is logged in this case).
      */
+    @SuppressWarnings("java:S2221") // Difficult to predict all possible exceptions thrown by the feign client
     public @Nullable Long getDefaultQuota() {
 
         Long defaultQuota = MAX_QUOTA_DEFAULT_VALUE;

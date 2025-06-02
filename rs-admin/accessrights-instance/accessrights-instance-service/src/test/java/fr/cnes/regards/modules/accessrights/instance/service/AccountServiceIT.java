@@ -59,7 +59,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Christophe Mertz
  */
 @ContextConfiguration(classes = { AccountServiceIT.Config.class })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=accountservice",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=admin_instance_service",
                                    "regards.microservice.type=instance" })
 public class AccountServiceIT extends AbstractRegardsServiceIT {
 

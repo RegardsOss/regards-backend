@@ -44,7 +44,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @author Sébastien Binda
  */
 @MultitenantTransactional
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=admin_rest" })
 public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     /**

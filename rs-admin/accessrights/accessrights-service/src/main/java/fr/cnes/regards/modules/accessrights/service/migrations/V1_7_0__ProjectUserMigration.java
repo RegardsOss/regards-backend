@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import org.flywaydb.core.api.FlywayException;
+import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,7 @@ import java.util.Set;
 
 @Component
 @Profile("!test")
-public class V1_7_0__ProjectUserMigration extends AbstractAdminInstanceDependentMigration {
+public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V1_7_0__ProjectUserMigration.class);
 
@@ -46,25 +47,30 @@ public class V1_7_0__ProjectUserMigration extends AbstractAdminInstanceDependent
                                                + EMAIL_COLUMN
                                                + "=?";
 
+    private final IAccountsClient accountsClient;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     public V1_7_0__ProjectUserMigration(IAccountsClient accountsClient, IRuntimeTenantResolver runtimeTenantResolver) {
-        super(accountsClient);
+        this.accountsClient = accountsClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
-    public void migrate(Context context) throws InterruptedException {
+    public void migrate(Context context) {
 
         LOGGER.info("Starting Java migration {}", this.getClass().getSimpleName());
 
         Connection connection = context.getConnection();
 
-        checkAdminInstanceServiceCanBeAccessed();
-
         Set<String> users = getUsers(connection);
 
         LOGGER.info("Found {} users to update", users.size());
+
+        // The following call involves calling rs-admin-instance.
+        // Because rs-admin bootstrap has an explicit wait for rs-admin-instance
+        // (runner.microservices.to.wait=rs-admin-instance), we are guaranteed at this point that rs-admin-instance is
+        // ready.
 
         users.forEach(email -> updateUser(email, connection));
 
@@ -127,10 +133,5 @@ public class V1_7_0__ProjectUserMigration extends AbstractAdminInstanceDependent
             e.printStackTrace();
             throw new FlywayException(e);
         }
-    }
-
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
     }
 }

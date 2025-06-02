@@ -153,7 +153,8 @@ public class Account implements IIdentifiable<Long> {
         return password;
     }
 
-    public final void setPassword(final String password) {
+    // Sonar suggests to make this method final but making it final is a problem to hibernate
+    public void setPassword(final String password) {
         if (password != null) {
             passwordUpdateDate = LocalDateTime.now();
             this.password = password;

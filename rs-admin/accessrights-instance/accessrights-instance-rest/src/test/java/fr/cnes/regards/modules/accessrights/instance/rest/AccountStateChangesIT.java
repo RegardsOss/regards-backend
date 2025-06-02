@@ -73,7 +73,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Xavier-Alexandre Brochard
  * @author Julien Canches
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=admin_instance_rest" })
 class AccountStateChangesIT extends AbstractRegardsIT {
 
     /**

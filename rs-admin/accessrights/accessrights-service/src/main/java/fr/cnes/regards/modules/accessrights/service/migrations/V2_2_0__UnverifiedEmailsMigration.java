@@ -23,10 +23,13 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.emailverification.EmailVerificationTokenDto;
 import org.flywaydb.core.api.FlywayException;
+import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +37,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -48,23 +53,44 @@ import java.util.Set;
  */
 @Component
 @Profile("!test")
-public class V2_2_0__UnverifiedEmailsMigration extends AbstractAdminInstanceDependentMigration {
+public class V2_2_0__UnverifiedEmailsMigration extends BaseJavaMigration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V2_2_0__UnverifiedEmailsMigration.class);
 
     private static final String EMAIL_COLUMN = "email";
 
+    /**
+     * Main update query. Update the project users whose status is WAITING_EMAIL_VERIFICATION and that have
+     * a corresponding token in table t_email_verification_token. Users status is updated to WAITING_ACCOUNT_ACTIVE
+     * and all details, including the existing token, are returned.
+     */
     private static final String UPDATE = "UPDATE t_project_user u SET status = 'WAITING_ACCOUNT_ACTIVE' "
                                          + "FROM t_email_verification_token t "
                                          + "WHERE t.project_user_id = u.id "
                                          + "AND u.status = 'WAITING_EMAIL_VERIFICATION' "
                                          + "RETURNING u.email, t.expiry_date, t.origin_url, t.request_link, t.token";
 
+    /**
+     * "Fixup" update query that update users whose status is WAITING_EMAIL_VERIFICATION but that have no corresponding
+     * token in table t_email_verification_token. This is not a normal case since a user with this status should have
+     * a verification token. However, in order not break the microservice, we must ensure that the status is always
+     * updated even in this abnormal case.
+     */
+    private static final String FIXUP_UPDATE = "UPDATE t_project_user SET status = 'WAITING_ACCOUNT_ACTIVE' "
+                                               + "WHERE status = 'WAITING_EMAIL_VERIFICATION' "
+                                               + "RETURNING email";
+
+    private static final String DROP_TOKENS_TABLE = "DROP TABLE IF EXISTS t_email_verification_token;";
+
+    private static final String DROP_TOKENS_SEQUENCE = "DROP SEQUENCE IF EXISTS seq_email_verification_token;";
+
+    private final IAccountsClient accountsClient;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     public V2_2_0__UnverifiedEmailsMigration(IAccountsClient accountsClient,
                                              IRuntimeTenantResolver runtimeTenantResolver) {
-        super(accountsClient);
+        this.accountsClient = accountsClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
@@ -77,38 +103,83 @@ public class V2_2_0__UnverifiedEmailsMigration extends AbstractAdminInstanceDepe
     }
 
     @Override
-    public void migrate(Context context) throws InterruptedException {
+    public void migrate(Context context) {
+        // There's one migration per tenant, so we must include the tenant name in all messages/exceptions.
         String tenant = runtimeTenantResolver.getTenant();
         LOGGER.info("Starting Java migration {} for project {}", this.getClass().getSimpleName(), tenant);
         Connection connection = context.getConnection();
-        checkAdminInstanceServiceCanBeAccessed();
-        Set<UserAndToken> users = updateAndGetUnverifiedUsers(connection);
+        // Update all users status from WAITING_EMAIL_VERIFICATION to WAITING_ACCOUNT_ACTIVE and get their token
+        Set<UserAndToken> users = updateAndGetUnverifiedUsers(connection, tenant);
         LOGGER.info("Found {} unverified users to update in project {}", users.size(), tenant);
+        // If some users are in WAITING_EMAIL_VERIFICATION but don't have a token, move their status anyway and warn
+        // that it is a problem
+        updateBrokenUnverifiedUsersAndWarn(connection, tenant);
+        // For each user that we could get the token of, reset their account to EMAIL_VERIFICATION state. This involves
+        // calling rs-admin-instance. Because rs-admin bootstrap has an explicit wait for rs-admin-instance
+        // (runner.microservices.to.wait=rs-admin-instance), we are guaranteed at this point that rs-admin-instance is
+        // ready.
         users.forEach(this::resetAccount);
+        // Last, drop the no longer used table t_email_verification_token
+        deleteEmailVerificationTokenTable(connection, tenant);
         LOGGER.info("Completed Java migration {} for project {}", this.getClass().getSimpleName(), tenant);
     }
 
-    private Set<UserAndToken> updateAndGetUnverifiedUsers(Connection connection) {
+    private Set<UserAndToken> updateAndGetUnverifiedUsers(Connection connection, String tenant) {
         Set<UserAndToken> users = new HashSet<>();
         try (Statement statement = connection.createStatement(); ResultSet resultSet = statement.executeQuery(UPDATE)) {
             while (resultSet.next()) {
                 users.add(translateRow(resultSet));
             }
         } catch (SQLException e) {
-            throw new FlywayException("Unable to get unverified users list", e);
+            throw new FlywayException(String.format("Unable to get unverified users list for project %s", tenant), e);
         }
         return users;
+    }
+
+    private void updateBrokenUnverifiedUsersAndWarn(Connection connection, String tenant) {
+        try (Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(FIXUP_UPDATE)) {
+            List<String> emails = new ArrayList<>();
+            while (resultSet.next()) {
+                emails.add(resultSet.getString(EMAIL_COLUMN));
+            }
+            if (!emails.isEmpty() && LOGGER.isWarnEnabled()) {
+                LOGGER.warn("The following users are in WAITING_EMAIL_VERIFICATION state but no verification token "
+                            + "exists for them: {}. They have been moved to WAITING_ACCOUNT_ACTIVE state, and need to "
+                            + "contact an instance administrator to get a new verification email.",
+                            String.join(", ", emails));
+            }
+        } catch (SQLException e) {
+            throw new FlywayException(String.format("Unable to get unverified users list with no verification token "
+                                                    + "for project %s", tenant), e);
+        }
+    }
+
+    private void deleteEmailVerificationTokenTable(Connection connection, String tenant) {
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate(DROP_TOKENS_TABLE);
+            statement.executeUpdate(DROP_TOKENS_SEQUENCE);
+        } catch (SQLException e) {
+            throw new FlywayException(String.format("Unable to delete table t_email_verification_token for project "
+                                                    + "%s", tenant), e);
+        }
     }
 
     private void resetAccount(UserAndToken user) {
         LOGGER.info("Resetting account {} to EMAIL_VERIFICATION", user.email());
         String error = "Unable to update status on account " + user.email();
-
         try {
             FeignSecurityManager.asSystem();
             ResponseEntity<Void> linkResponse = accountsClient.resetEmailVerificationStatus(user.email(), user.token());
-            if (linkResponse == null || !linkResponse.getStatusCode().is2xxSuccessful()) {
-                throw new FlywayException(error + ": " + linkResponse);
+            if (linkResponse == null) {
+                throw new FlywayException("No response from resetEmailVerificationStatus endPoint");
+            }
+            HttpStatusCode statusCode = linkResponse.getStatusCode();
+            if (!statusCode.is2xxSuccessful() && !statusCode.isSameCodeAs(HttpStatus.CONFLICT)) {
+                // Conflict (409) is OK. It just means that at least two projects have the same user in
+                // WAITING_EMAIL_VERIFICATION state. This has to be translated to the corresponding account only once.
+                throw new FlywayException(String.format("Unexpected response %s from resetEmailVerificationStatus "
+                                                        + "endPoint", statusCode));
             }
         } catch (Exception e) {
             throw new FlywayException(error, e);
@@ -117,11 +188,7 @@ public class V2_2_0__UnverifiedEmailsMigration extends AbstractAdminInstanceDepe
         }
     }
 
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
-    }
-
+    @SuppressWarnings("java:S1186") // Basic record with no additional methods
     private record UserAndToken(String email,
                                 EmailVerificationTokenDto token) {
 

@@ -44,7 +44,7 @@ import java.util.List;
  * @author Marc Sordi
  */
 @MultitenantTransactional
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=admin_rest" })
 public class MicroserviceResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     /**

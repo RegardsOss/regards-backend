@@ -62,7 +62,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Xavier-Alexandre Brochard
  */
 @MultitenantTransactional
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=admin_rest" })
 public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
     /**

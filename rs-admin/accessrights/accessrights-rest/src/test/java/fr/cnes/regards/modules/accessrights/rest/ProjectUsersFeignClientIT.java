@@ -54,7 +54,7 @@ import org.springframework.test.context.TestPropertySource;
  *
  * @author Marc Sordi
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=admin_rest" })
 public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
 
     /**

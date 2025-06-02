@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.accessrights.domain.projects.listeners;
 
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 
@@ -34,8 +33,8 @@ import java.time.OffsetDateTime;
 public class ProjectUserListener {
 
     @PreUpdate
-    public void setLastUpdate(ProjectUser ProjectUser) {
-        ProjectUser.setLastUpdate(OffsetDateTime.now());
+    public void setLastUpdate(ProjectUser projectUser) {
+        projectUser.setLastUpdate(OffsetDateTime.now());
     }
 
     @PrePersist

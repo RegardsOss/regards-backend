@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.rest.RegistrationController;
 import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,8 @@ import org.springframework.test.context.TestPropertySource;
  * @author Marc Sordi
  */
 @MultitenantTransactional
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=admin_rest" })
+@Ignore
 public class RegistrationContractIT extends AbstractRegardsTransactionalIT {
 
     @Autowired

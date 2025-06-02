@@ -7,9 +7,6 @@ import java.util.List;
 
 public final class AccountSettings {
 
-    private AccountSettings() {
-    }
-
     public static final String VALIDATION = "account_validation_mode";
 
     public static final ValidationMode DEFAULT_VALIDATION_MODE = ValidationMode.AUTO_ACCEPT;
@@ -19,6 +16,9 @@ public final class AccountSettings {
                                                                                            DEFAULT_VALIDATION_MODE.getName());
 
     public static final List<DynamicTenantSetting> SETTING_LIST = Collections.singletonList(VALIDATION_SETTING);
+
+    private AccountSettings() {
+    }
 
     public enum ValidationMode {
 

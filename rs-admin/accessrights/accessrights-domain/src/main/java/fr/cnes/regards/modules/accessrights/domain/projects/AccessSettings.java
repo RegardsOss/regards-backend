@@ -28,9 +28,6 @@ import java.util.List;
 
 public final class AccessSettings {
 
-    private AccessSettings() {
-    }
-
     public static final String MODE = "acceptance_mode";
 
     public static final String DEFAULT_ROLE = "default_role";
@@ -62,6 +59,9 @@ public final class AccessSettings {
                                                                                 DEFAULT_ROLE_SETTING,
                                                                                 DEFAULT_GROUPS_SETTING,
                                                                                 USER_CREATION_MAIL_RECIPIENTS_SETTING);
+
+    private AccessSettings() {
+    }
 
     public enum AcceptanceMode {
 

@@ -44,7 +44,7 @@ import java.util.HashSet;
  * @author Marc Sordi
  */
 @MultitenantTransactional
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=admin_rest" })
 public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired

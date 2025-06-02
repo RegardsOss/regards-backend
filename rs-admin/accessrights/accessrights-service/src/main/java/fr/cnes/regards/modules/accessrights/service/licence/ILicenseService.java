@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.licence;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 

@@ -201,6 +201,7 @@ public class AccountService implements IAccountService, InitializingBean {
     }
 
     @Override
+    @SuppressWarnings("java:S1166") // We translate an internal exception to a more explicit exception
     public Account createAccount(Account account,
                                  @Nullable String project,
                                  @Nullable String originUrl,
@@ -250,6 +251,7 @@ public class AccountService implements IAccountService, InitializingBean {
     }
 
     @Override
+    @SuppressWarnings("java:S1166") // We translate the database-specific exception to a more explicit exception
     public void resendVerificationEmail(Account account) throws EntityOperationForbiddenException {
         EmailVerificationToken token = null;
         try {
@@ -413,6 +415,7 @@ public class AccountService implements IAccountService, InitializingBean {
             message = templateService.render(AccessRightTemplateConf.PASSWORD_CHANGED_TEMPLATE_NAME, data);
         } catch (TemplateException e) {
             message = "Password successfully changed";
+            LOG.error("Failed to use email template for password change. The email was sent with a basic message.", e);
         }
         try {
             FeignSecurityManager.asInstance();
@@ -456,6 +459,7 @@ public class AccountService implements IAccountService, InitializingBean {
     }
 
     @Override
+    @SuppressWarnings("java:S1166") // We translate an internal exception to a more explicit exception
     public void link(String email, String project) throws EntityException {
         Account account = retrieveAccountByEmail(email);
         try {
@@ -467,6 +471,7 @@ public class AccountService implements IAccountService, InitializingBean {
     }
 
     @Override
+    @SuppressWarnings("java:S1166") // We translate an internal exception to a more explicit exception
     public void unlink(String email, String project) throws EntityException {
         Account account = retrieveAccountByEmail(email);
         try {
