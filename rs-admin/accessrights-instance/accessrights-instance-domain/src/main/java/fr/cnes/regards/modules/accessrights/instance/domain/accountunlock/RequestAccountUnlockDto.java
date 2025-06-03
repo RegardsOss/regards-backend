@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain.accountunlock;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
 /**
@@ -27,23 +28,15 @@ import jakarta.validation.constraints.NotBlank;
  */
 public class RequestAccountUnlockDto {
 
-    /**
-     * The origin url
-     */
+    @Schema(description = "The URL of the app from where the request was issued.")
     @NotBlank
     private String originUrl;
 
-    /**
-     * The request link
-     */
+    @Schema(description = "The URL to redirect the user to the unlock account interface.")
     @NotBlank
     private String requestLink;
 
-    /**
-     *
-     */
     public RequestAccountUnlockDto(final String pOriginUrl, final String pRequestLink) {
-        super();
         originUrl = pOriginUrl;
         requestLink = pRequestLink;
     }

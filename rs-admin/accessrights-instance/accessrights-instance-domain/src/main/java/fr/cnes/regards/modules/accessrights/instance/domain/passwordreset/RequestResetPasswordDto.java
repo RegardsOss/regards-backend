@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain.passwordreset;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Dto class
  *
@@ -25,14 +27,10 @@ package fr.cnes.regards.modules.accessrights.instance.domain.passwordreset;
  */
 public class RequestResetPasswordDto {
 
-    /**
-     * The token
-     */
+    @Schema(description = "The URL of the app from where the request was issued.")
     private String originUrl;
 
-    /**
-     * The new password
-     */
+    @Schema(description = "The URL to redirect the user to the reset password interface.")
     private String requestLink;
 
     public RequestResetPasswordDto(final String pOriginUrl, final String pRequestLink) {

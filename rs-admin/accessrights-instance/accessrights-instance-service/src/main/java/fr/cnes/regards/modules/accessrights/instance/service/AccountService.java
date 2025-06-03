@@ -42,13 +42,10 @@ import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.service.IProjectService;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -146,12 +143,6 @@ public class AccountService implements IAccountService, InitializingBean {
 
     private final IEmailVerificationTokenService emailVerificationTokenService;
 
-    @Autowired
-    private MeterRegistry registry;
-
-    @SuppressWarnings("unused")
-    private Counter createdAccountCounter;
-
     public AccountService(IAccountRepository accountRepository,
                           ITenantResolver tenantResolver,
                           IRuntimeTenantResolver runtimeTenantResolver,
@@ -186,7 +177,6 @@ public class AccountService implements IAccountService, InitializingBean {
             account.setAuthenticationFailedCounter(0L);
             createAccount(account, null, null, null);
         }
-        this.createdAccountCounter = registry.counter("regards.created.account");
     }
 
     @Override
@@ -326,7 +316,7 @@ public class AccountService implements IAccountService, InitializingBean {
     @Override
     public Account updateAccount(Long pAccountId, Account pUpdatedAccount) throws EntityException {
         Optional<Account> accountOpt = accountRepository.findById(pAccountId);
-        if (!accountOpt.isPresent()) {
+        if (accountOpt.isEmpty()) {
             throw new EntityNotFoundException(pAccountId.toString(), Account.class);
         }
         if (!pUpdatedAccount.getId().equals(pAccountId)) {
@@ -344,8 +334,7 @@ public class AccountService implements IAccountService, InitializingBean {
         throws EntityNotFoundException {
 
         Optional<Account> toValidate = accountRepository.findOneByEmailIgnoreCase(email);
-
-        if (!toValidate.isPresent()) {
+        if (toValidate.isEmpty()) {
             return false;
         }
 
@@ -448,7 +437,7 @@ public class AccountService implements IAccountService, InitializingBean {
                     origins.addAll(HateoasUtils.unwrapCollection(requestBody.getContent())
                                                .stream()
                                                .map(ServiceProviderDto::getName)
-                                               .collect(Collectors.toList()));
+                                               .toList());
                 }
             } finally {
                 FeignSecurityManager.reset();
@@ -484,7 +473,7 @@ public class AccountService implements IAccountService, InitializingBean {
     @Override
     public void updateOrigin(String email, String origin) throws EntityException {
         Account account = retrieveAccountByEmail(email);
-        if (!StringUtils.isEmpty(origin)) {
+        if (StringUtils.hasText(origin)) {
             account.setOrigin(origin);
         }
     }

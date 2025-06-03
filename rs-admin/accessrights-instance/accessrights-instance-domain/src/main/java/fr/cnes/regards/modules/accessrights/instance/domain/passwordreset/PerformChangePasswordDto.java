@@ -18,13 +18,17 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain.passwordreset;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * @author Sébastien Binda
  */
 public class PerformChangePasswordDto {
 
+    @Schema(description = "The current password of the user.")
     private String oldPassword;
 
+    @Schema(description = "The new password of the user.")
     private String newPassword;
 
     public PerformChangePasswordDto() {
@@ -32,7 +36,6 @@ public class PerformChangePasswordDto {
     }
 
     public PerformChangePasswordDto(String oldPassword, String newPassword) {
-        super();
         this.oldPassword = oldPassword;
         this.newPassword = newPassword;
     }

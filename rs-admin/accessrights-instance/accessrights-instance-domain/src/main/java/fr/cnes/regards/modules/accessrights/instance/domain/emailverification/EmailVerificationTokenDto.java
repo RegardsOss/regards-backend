@@ -19,6 +19,8 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain.emailverification;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.time.LocalDateTime;
 
 /**
@@ -26,9 +28,11 @@ import java.time.LocalDateTime;
  *
  * @author Julien Canches
  */
-public record EmailVerificationTokenDto(LocalDateTime expiryDate,
-                                        String originUrl,
-                                        String requestLink,
-                                        String token) {
+public record EmailVerificationTokenDto(@Schema(description = "The token expiration date.",
+                                                example = "2027-12-03T10:15:30") LocalDateTime expiryDate,
+                                        @Schema(description = "The URL of the app from where the request was issued.") String originUrl,
+                                        @Schema(description = "The URL to redirect the user to the account created "
+                                                              + "interface.") String requestLink,
+                                        @Schema(description = "The token value.") String token) {
 
 }

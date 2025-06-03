@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.accessrights.instance.domain;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import org.hibernate.validator.constraints.Length;
 
@@ -15,16 +16,22 @@ public class AccountNPassword {
     @Valid
     private Account account;
 
+    @Schema(description = "The initial password of the account.")
     @Valid
     @Length(max = 255)
     private String password;
 
+    @Schema(description = "An optional project to associate the account to.")
     @Valid
     @Length(max = 128)
     private String project;
 
+    @Schema(description = "The URL of the app from where the account creation request was issued. This field is "
+                          + "mandatory only if the account status is left unspecified, or set to `EMAIL_VERIFICATION`.")
     private String originUrl;
 
+    @Schema(description = "The URL to redirect the user to the password verification interface. This field is "
+                          + "mandatory only if the account status is left unspecified, or set to `EMAIL_VERIFICATION`.")
     private String requestLink;
 
     public AccountNPassword() {
@@ -113,5 +120,5 @@ public class AccountNPassword {
         result = (31 * result) + (password != null ? password.hashCode() : 0);
         return result;
     }
-    
+
 }

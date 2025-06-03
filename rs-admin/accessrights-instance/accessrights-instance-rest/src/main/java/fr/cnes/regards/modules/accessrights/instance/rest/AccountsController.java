@@ -40,10 +40,14 @@ import fr.cnes.regards.modules.accessrights.instance.service.encryption.Encrypti
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.OnPasswordResetEvent;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.state.IAccountTransitions;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
@@ -161,23 +165,30 @@ public class AccountsController implements IResourceController<Account> {
      * @return The accounts list
      */
     @GetMapping
-    @ResourceAccess(description = "retrieve the list of account in the instance", role = DefaultRole.INSTANCE_ADMIN)
+    @Operation(summary = "Get Accounts", description = "Retrieve the list of accounts on the instance")
+    @ApiResponse(responseCode = "200", description = "The list of accounts.")
+    @ApiResponse(responseCode = "403", description = "The caller is not an instance administrator.")
+    @ResourceAccess(description = "Endpoint to retrieve the list of accounts on the instance",
+                    role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<Account>>> retrieveAccountList(
-        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        @ParameterObject @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<Account> assembler,
-        AccountSearchParameters parameters) {
+        @ParameterObject AccountSearchParameters parameters) {
         return ResponseEntity.ok(toPagedResources(accountService.retrieveAccountList(parameters, pageable), assembler));
     }
 
-    /**
-     * Create a new {@link Account} from the passed values
-     *
-     * @param accountNPassword The data transfer object containing values to create the account from
-     * @return the {@link Account} created
-     */
     @PostMapping
-    @ResourceAccess(description = "create an new account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<EntityModel<Account>> createAccount(@Valid @RequestBody AccountNPassword accountNPassword)
+    @Operation(summary = "Create Account", description = "Create a new account.")
+    @ApiResponse(responseCode = "201", description = "The account was created.")
+    @ApiResponse(responseCode = "400",
+                 description = "Some parameters are invalid. If the account status is "
+                               + "unspecified or set to `EMAIL_CONFIRMATION`, the body fields "
+                               + "`originUrl` and `requestLink` are mandatory. If the field `project` is specified, "
+                               + "it must be the name of an existing project.")
+    @ApiResponse(responseCode = "403", description = "The caller is not an instance administrator.")
+    @ResourceAccess(description = "Endpoint to create an new account", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<EntityModel<Account>> createAccount(
+        @Parameter(description = "The account details") @Valid @RequestBody AccountNPassword accountNPassword)
         throws EntityException {
         Account account = accountNPassword.getAccount();
         account.setPassword(accountNPassword.getPassword());
@@ -188,45 +199,42 @@ public class AccountsController implements IResourceController<Account> {
                                                                                accountNPassword.getRequestLink())));
     }
 
-    /**
-     * Retrieve the {@link Account} of passed <code>id</code>.
-     *
-     * @param accountId The {@link Account}'s <code>id</code>
-     * @return The {@link Account}
-     */
     @GetMapping(ACCOUNT_ID_PATH)
-    @ResourceAccess(description = "retrieve the account account_id", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<EntityModel<Account>> retrieveAccount(@PathVariable("account_id") Long accountId)
+    @Operation(summary = "Get Account By ID", description = "Retrieve details of the account with the specified ID.")
+    @ApiResponse(responseCode = "200", description = "Account details")
+    @ApiResponse(responseCode = "403", description = "The caller is not an instance administrator.")
+    @ApiResponse(responseCode = "404", description = "No account exists with the specified ID.")
+    @ResourceAccess(description = "Endpoint to retrieve an account by ID", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<EntityModel<Account>> retrieveAccount(
+        @Parameter(description = "ID of the account") @PathVariable("account_id") Long accountId)
         throws EntityNotFoundException {
         return ResponseEntity.ok(toResource(accountService.retrieveAccount(accountId)));
     }
 
-    /**
-     * Retrieve an account by his unique email
-     *
-     * @param accountEmail email of the account to retrieve
-     * @return Account
-     */
     @GetMapping(ACCOUNT_PATH)
-    @ResourceAccess(description = "retrieve the account with his unique email", role = DefaultRole.INSTANCE_ADMIN)
+    @Operation(summary = "Get Account By Email",
+               description = "Retrieve details of the account with the specified " + "email.")
+    @ApiResponse(responseCode = "200", description = "Account details")
+    @ApiResponse(responseCode = "403", description = "The caller is not an instance administrator.")
+    @ApiResponse(responseCode = "404", description = "No account exists with the specified email.")
+    @ResourceAccess(description = "Endpoint to retrieve an account by email", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<EntityModel<Account>> retrieveAccounByEmail(
-        @PathVariable("account_email") String accountEmail) throws EntityNotFoundException {
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail)
+        throws EntityNotFoundException {
         return ResponseEntity.ok(toResource(accountService.retrieveAccountByEmail(accountEmail)));
 
     }
 
-    /**
-     * Update an {@link Account} with passed values.
-     *
-     * @param accountId      The <code>id</code> of the {@link Account} to update
-     * @param updatedAccount The new values to set
-     * @return the {@link Account} updated
-     */
     @PutMapping(ACCOUNT_ID_PATH)
-    @ResourceAccess(description = "update the account account_id according to the body specified",
+    @Operation(summary = "Update Account", description = "Update details for the account with the specified ID.")
+    @ApiResponse(responseCode = "200", description = "The account was successfully updated.")
+    @ApiResponse(responseCode = "403", description = "The caller is not an instance administrator.")
+    @ApiResponse(responseCode = "404", description = "No account exists with the specified ID.")
+    @ResourceAccess(description = "Endpoint to update the account account_id according to the body specified",
                     role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<EntityModel<Account>> updateAccount(@PathVariable("account_id") Long accountId,
-                                                              @Valid @RequestBody Account updatedAccount)
+    public ResponseEntity<EntityModel<Account>> updateAccount(
+        @Parameter(description = "ID of the account") @PathVariable("account_id") Long accountId,
+        @Parameter(description = "Account details to update") @Valid @RequestBody Account updatedAccount)
         throws EntityException {
         if (updatedAccount.getPassword() != null) {
             accountService.checkPassword(updatedAccount);
@@ -234,34 +242,40 @@ public class AccountsController implements IResourceController<Account> {
         return ResponseEntity.ok(toResource(accountService.updateAccount(accountId, updatedAccount)));
     }
 
-    /**
-     * Remove on {@link Account} from db.<br>
-     * Only remove if no project user for any tenant.
-     *
-     * @param accountId The account <code>id</code>
-     * @return void
-     */
     @DeleteMapping(ACCOUNT_ID_PATH)
-    @ResourceAccess(description = "remove the account account_id", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> removeAccount(@PathVariable("account_id") Long accountId) throws ModuleException {
+    @Operation(summary = "Delete Account",
+               description = "Delete the account with the specified ID.  \n*Note*: It is not possible to delete "
+                             + "an account that is referenced at least one project.")
+    @ApiResponse(responseCode = "204", description = "The account was successfully deleted.")
+    @ApiResponse(responseCode = "403",
+                 description = "The caller is not an instance administrator, or the account is "
+                               + "referenced by at least one project.")
+    @ApiResponse(responseCode = "404", description = "No account exists with the specified ID.")
+    @ResourceAccess(description = "Endpoint to remove the account account_id", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> removeAccount(
+        @Parameter(description = "ID of the account") @PathVariable("account_id") Long accountId)
+        throws ModuleException {
         Account account = accountService.retrieveAccount(accountId);
         accountWorkflowManager.deleteAccount(account);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Resets the account in EMAIL_VERIFICATION state, with the provided token details.
-     * This endpoint is meant for migration purpose only.
-     *
-     * @throws EntityNotFoundException when no account with passed email could be found
-     */
     @PostMapping(RESET_EMAIL_CONFIRMATION_PATH)
+    @Operation(summary = "Reverify Email",
+               description = "Resets the account with the specified email "
+                             + "to the `EMAIL_VERIFICATION` state, with "
+                             + "the provided token details.  \n"
+                             + "This endpoint is meant for migration purpose only.")
+    @ApiResponse(responseCode = "204", description = "The account state was successfully reset.")
+    @ApiResponse(responseCode = "403", description = "The caller is not an instance administrator.")
+    @ApiResponse(responseCode = "404", description = "No account exists with the specified email.")
+    @ApiResponse(responseCode = "409", description = "The account is already in `EMAIL_VERIFICATION` state.")
     @ResourceAccess(description = "Endpoint to reset the account to EMAIL_VERIFICATION state, with the provided reset "
                                   + "tokens details. This endpoint is for migration purpose only.",
                     role = DefaultRole.INSTANCE_ADMIN)
-    public void resetEmailVerificationStatus(@PathVariable("account_email") String accountEmail,
-                                             @Valid @RequestBody EmailVerificationTokenDto token)
-        throws EntityException {
+    public void resetEmailVerificationStatus(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail,
+        @Valid @RequestBody EmailVerificationTokenDto token) throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         if (AccountStatus.EMAIL_VERIFICATION.equals(account.getStatus())) {
             throw new EntityAlreadyExistsException("The account with email "
@@ -274,15 +288,16 @@ public class AccountsController implements IResourceController<Account> {
         accountService.updateAccount(account.getId(), account);
     }
 
-    /**
-     * Send a new verification email for an account. Such an email is automatically sent upon account
-     * creation, but an administrator may resend it if the validation token has expired.
-     *
-     * @throws EntityNotFoundException           when no account with passed email could be found
-     * @throws EntityOperationForbiddenException when the account email has already been confirmed by the user
-     */
     @GetMapping(RESEND_EMAIL_CONFIRMATION_PATH)
-    @ResourceAccess(description = "Send a new verification email for an account creation",
+    @Operation(summary = "Send Verification Email.",
+               description = "Send a new verification email for an account. Such an email is automatically sent upon "
+                             + "account creation, but an administrator may resend it if the validation token has expired.")
+    @ApiResponse(responseCode = "204", description = "The email was successfully sent.")
+    @ApiResponse(responseCode = "403",
+                 description = "The caller is not an instance administrator, or the user has "
+                               + "already confirmed their email.")
+    @ApiResponse(responseCode = "404", description = "No user with the specified email exists.")
+    @ResourceAccess(description = "Endpoint to resend a new verification email for an account waiting to be confirmed",
                     role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> resendVerificationEmail(@PathVariable("account_email") String email)
         throws EntityNotFoundException, EntityOperationForbiddenException {
@@ -291,102 +306,85 @@ public class AccountsController implements IResourceController<Account> {
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * Confirm an account email using the specified email verification token.
-     *
-     * @param token the email verification token
-     * @return void
-     * @throws EntityNotFoundException           when no verification token could be found
-     * @throws EntityOperationForbiddenException when the token has expired
-     */
     @GetMapping(VERIFY_EMAIL_PATH)
-    @ResourceAccess(description = "Confirm an account email using a verification token", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> verifyEmail(@PathVariable("token") String token) throws EntityException {
+    @Operation(summary = "Verify Email",
+               description = "Confirm an account email using the specified email " + "verification token.")
+    @ApiResponse(responseCode = "204", description = "The email was successfully confirmed.")
+    @ApiResponse(responseCode = "403", description = "The token has expired.")
+    @ApiResponse(responseCode = "404",
+                 description = "The token is unknown (this may happen when the user has "
+                               + "already confirmed their email with this token)")
+    @ResourceAccess(description = "Endpoint to confirm an account email using a verification token",
+                    role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> verifyEmail(
+        @Parameter(description = "The verification token that was generated for the verification email")
+        @PathVariable("token") String token) throws EntityException {
         EmailVerificationToken emailVerificationToken = emailVerificationTokenService.findByToken(token);
         accountWorkflowManager.verifyEmail(emailVerificationToken);
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * Send to the user an email containing a link with limited validity to unlock its account.
-     *
-     * @param accountEmail The {@link Account}'s <code>email</code>
-     * @param dto          The DTO containing<br>
-     *                     - The url of the app from where was issued the query<br>
-     *                     - The url to redirect the user to the password reset interface
-     * @return void
-     * @throws EntityException <br>
-     *                         {@link EntityNotFoundException} when no account with passed email could be found<br>
-     *                         {@link EntityOperationForbiddenException} when the account is not in status LOCKED<br>
-     */
     @PostMapping(UNLOCK_ACCOUNT_PATH)
-    @ResourceAccess(description = "send to the user an email containing a link with limited validity to unlock their "
-                                  + "account", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> requestUnlockAccount(@PathVariable("account_email") String accountEmail,
-                                                     @Valid @RequestBody RequestAccountUnlockDto dto)
-        throws EntityException {
+    @Operation(summary = "Send Unlock Account Email",
+               description = "Send to the user an email containing a link with limited validity to unlock their account.")
+    @ApiResponse(responseCode = "204", description = "The request was successfully taken into account.")
+    @ApiResponse(responseCode = "403", description = "The account is not locked.")
+    @ApiResponse(responseCode = "404", description = "No user with the specified email exists.")
+    @ResourceAccess(description = "Endpoint to send to the user an email containing a link with limited validity to "
+                                  + "unlock their account", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> requestUnlockAccount(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail,
+        @Parameter(description = "Description of the unlock account request") @Valid @RequestBody
+        RequestAccountUnlockDto dto) throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         accountWorkflowManager.requestUnlockAccount(account, dto.getOriginUrl(), dto.getRequestLink());
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Unlock an {@link Account}.
-     *
-     * @param accountEmail The {@link Account}'s <code>email</code>
-     * @param tokenDto     The token
-     * @return a no content HTTP response
-     * @throws EntityException <br>
-     *                         {@link EntityNotFoundException} when no account with passed email could be found or the token could
-     *                         not be found<br>
-     *                         {@link EntityOperationForbiddenException} when the account is not in status LOCKED or the token is
-     *                         invalid<br>
-     */
     @PutMapping(UNLOCK_ACCOUNT_PATH)
-    @ResourceAccess(description = "unlock the account of provided email", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> performUnlockAccount(@PathVariable("account_email") String accountEmail,
-                                                     @Valid @RequestBody PerformUnlockAccountDto tokenDto)
-        throws EntityException {
+    @Operation(summary = "Unlock Account",
+               description = "Unlock a locked account using an unlock token that was received by email.")
+    @ApiResponse(responseCode = "204", description = "The account was successfully unlocked.")
+    @ApiResponse(responseCode = "403", description = "The account is not locked, or the token has expired.")
+    @ApiResponse(responseCode = "404",
+                 description = "No user with the specified email exists, or the token is invalid.")
+    @ResourceAccess(description = "Endpoint to unlock the account with provided email", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> performUnlockAccount(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail,
+        @Parameter(description = "An object containing the unlock token") @Valid @RequestBody
+        PerformUnlockAccountDto tokenDto) throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         accountWorkflowManager.performUnlockAccount(account, tokenDto.getToken());
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Send to the user an email containing a link with limited validity to reset its password.
-     *
-     * @param accountEmail The {@link Account}'s <code>email</code>
-     * @param dto          The DTO containing<br>
-     *                     - The url of the app from where was issued the query<br>
-     *                     - The url to redirect the user to the password reset interface
-     * @return void
-     */
     @PostMapping(RESET_PASSWORD_PATH)
-    @ResourceAccess(description = "send to the user an email containing a link with limited validity to reset their "
-                                  + "password", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") String accountEmail,
-                                                     @Valid @RequestBody RequestResetPasswordDto dto)
-        throws EntityNotFoundException {
+    @Operation(summary = "Send Password Reset Email",
+               description = "Send to the user an email containing a link with limited validity to reset its password.")
+    @ApiResponse(responseCode = "204", description = "The request was successfully taken into account.")
+    @ApiResponse(responseCode = "404", description = "No user with the specified email exists.")
+    @ResourceAccess(description = "Endpoint to send to the user an email containing a link with limited validity to "
+                                  + "reset their password", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> requestResetPassword(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail,
+        @Parameter(description = "Description of the email reset request") @Valid @RequestBody
+        RequestResetPasswordDto dto) throws EntityNotFoundException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         eventPublisher.publishEvent(new OnPasswordResetEvent(account, dto.getOriginUrl(), dto.getRequestLink()));
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Change the password of an {@link Account}.
-     *
-     * @param accountEmail      The {@link Account}'s <code>email</code>
-     * @param changePasswordDto The DTO containing : 1) the old password 2) the new password
-     * @return void
-     * @throws EntityException <br>
-     *                         {@link EntityOperationForbiddenException} when the token is invalid<br>
-     *                         {@link EntityNotFoundException} when no account could be found<br>
-     */
     @PutMapping(CHANGE_PASSWORD_PATH)
-    @ResourceAccess(description = "Change the password of account account_email", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> performChangePassword(@PathVariable("account_email") String accountEmail,
-                                                      @Valid @RequestBody PerformChangePasswordDto changePasswordDto)
-        throws EntityException {
+    @Operation(summary = "Change Password", description = "Changes the user password, given their current password.")
+    @ApiResponse(responseCode = "204", description = "The password was successfully changed.")
+    @ApiResponse(responseCode = "400", description = "The new password does not meet the password requirements.")
+    @ApiResponse(responseCode = "404",
+                 description = "No user with the specified email exists, or the current password is invalid.")
+    @ResourceAccess(description = "Endpoint to change the password of account", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> performChangePassword(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail,
+        @Parameter(description = "The old and the new passwords") @Valid @RequestBody
+        PerformChangePasswordDto changePasswordDto) throws EntityException {
         Account toReset = accountService.retrieveAccountByEmail(accountEmail);
         if (!accountService.validatePassword(accountEmail, changePasswordDto.getOldPassword(), false)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -400,22 +398,19 @@ public class AccountsController implements IResourceController<Account> {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Change the password of an {@link Account}.
-     *
-     * @param accountEmail The {@link Account}'s <code>email</code>
-     * @param pDto         The DTO containing : 1) the token 2) the new password
-     * @return void
-     * @throws EntityException <br>
-     *                         {@link EntityOperationForbiddenException} when the token is invalid<br>
-     *                         {@link EntityNotFoundException} when no account could be found<br>
-     */
     @PutMapping(RESET_PASSWORD_PATH)
-    @ResourceAccess(description = "Change the password of account account_email if provided token is valid",
-                    role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> performResetPassword(@PathVariable("account_email") String accountEmail,
-                                                     @Valid @RequestBody final PerformResetPasswordDto pDto)
-        throws EntityException {
+    @Operation(summary = "Reset Password",
+               description = "Change an account password using a reset token that was received by email.")
+    @ApiResponse(responseCode = "204", description = "The password was successfully changed.")
+    @ApiResponse(responseCode = "403", description = "The token does not match the account, or the token has expired.")
+    @ApiResponse(responseCode = "404",
+                 description = "No user with the specified email exists, or the token is invalid.")
+    @ResourceAccess(description = "Endpoint to change the password of account account_email if provided token is "
+                                  + "valid", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> performResetPassword(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail,
+        @Parameter(description = "The token and the new password") @Valid @RequestBody
+        final PerformResetPasswordDto pDto) throws EntityException {
         Account toReset = accountService.retrieveAccountByEmail(accountEmail);
         toReset.setPassword(pDto.getNewPassword());
         accountService.checkPassword(toReset);
@@ -423,107 +418,99 @@ public class AccountsController implements IResourceController<Account> {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Return <code>true</code> if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of
-     * passed <code>email</code>
-     *
-     * @param email    The {@link Account}'s <code>email</code>
-     * @param password The password to check
-     * @return <code>true</code> if the password is valid, else <code>false</code>
-     */
     @GetMapping(VALIDATE_PATH)
-    @ResourceAccess(description = "Validate the account password", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Boolean> validatePassword(@PathVariable("account_email") String email,
-                                                    @RequestParam String password) throws EntityException {
+    @Operation(summary = "Verify Password",
+               description = "Verify that the provided password is valid for the account"
+                             + " with the specified email.")
+    @ApiResponse(responseCode = "200", description = "Whether the provided password matches the account password.")
+    @ApiResponse(responseCode = "403", description = "The caller is not an instance administrator.")
+    @ApiResponse(responseCode = "404", description = "No account exists for the provided email.")
+    @ResourceAccess(description = "Endpoint to validate the account password", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Boolean> validatePassword(
+        @Parameter(description = "The account email") @PathVariable("account_email") String email,
+        @Parameter(description = "The candidate password") @RequestParam String password) throws EntityException {
         boolean validPassword = accountService.validatePassword(email, password, true);
         return new ResponseEntity<>(validPassword, HttpStatus.OK);
     }
 
-    /**
-     * Endpoint allowing to provide a password and know if it is valid or not.
-     *
-     * @param password password to check
-     * @return the password validity
-     */
     @PostMapping(PASSWORD_RULES_PATH)
-    @ResourceAccess(description = "Validate a password", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Validity> checkPassword(@RequestBody Password password) {
+    @Operation(summary = "Check Password Validity",
+               description = "Verify that the specified password meets the password requirements.")
+    @ApiResponse(responseCode = "200", description = "Whether the provided password meets the requirements")
+    @ResourceAccess(description = "Endpoint to validate a password", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Validity> checkPassword(
+        @Parameter(description = "An object containing the password") @RequestBody Password password) {
         return new ResponseEntity<>(new Validity(accountService.validPassword(password.getPassword())), HttpStatus.OK);
     }
 
-    /**
-     * Endpoint providing the rules a password has to respect in natural language
-     */
     @GetMapping(PASSWORD_RULES_PATH)
-    @ResourceAccess(description = "Get validation rules of password", role = DefaultRole.PUBLIC)
+    @Operation(summary = "Get Password Rules",
+               description = "Retrieve the list of password rules applicable to all new passwords set by users.")
+    @ApiResponse(responseCode = "200", description = "The list of password rules in user-displayable form")
+    @ResourceAccess(description = "Endpoint to get password validation rules", role = DefaultRole.PUBLIC)
     public ResponseEntity<PasswordRules> getPasswordRules() {
         return new ResponseEntity<>(new PasswordRules(accountService.getPasswordRules()), HttpStatus.OK);
     }
 
-    /**
-     * Deactivates an {@link Account} in status ACTIVE.
-     *
-     * @param accountEmail the account email
-     * @return <code>void</code> wrapped in a {@link ResponseEntity}
-     * @throws EntityException <br>
-     *                         {@link EntityNotFoundException} if no account with given email could be found<br>
-     *                         {@link EntityTransitionForbiddenException} if account is not in ACTIVE status<br>
-     */
     @PutMapping(INACTIVE_ACCOUNT_PATH)
-    @ResourceAccess(description = "Deactivates an active account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> inactiveAccount(@PathVariable("account_email") String accountEmail)
+    @Operation(summary = "Deactivate Account", description = "Deactivate an account in status ACTIVE.")
+    @ApiResponse(responseCode = "200", description = "The account was successfully deactivated.")
+    @ApiResponse(responseCode = "403",
+                 description = "The caller is not an instance administrator, or the account is "
+                               + "not currently active.")
+    @ApiResponse(responseCode = "404", description = "No account exists for the provided email.")
+    @ResourceAccess(description = "Endpoint to deactivate an active account", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> inactiveAccount(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail)
         throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         accountWorkflowManager.inactiveAccount(account);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    /**
-     * Activates an {@link Account} in status INACTIVE.
-     *
-     * @param accountEmail the account email
-     * @return <code>void</code> wrapped in a {@link ResponseEntity}
-     * @throws EntityException <br>
-     *                         {@link EntityNotFoundException} if no account with given email could be found<br>
-     *                         {@link EntityTransitionForbiddenException} if account is not in INACTIVE status<br>
-     */
     @PutMapping(ACTIVE_ACCOUNT_PATH)
-    @ResourceAccess(description = "Activates an account which has been previously deactivated",
+    @Operation(summary = "Activate Account", description = "Activate an account in status INACTIVE.")
+    @ApiResponse(responseCode = "200", description = "The account was successfully activated.")
+    @ApiResponse(responseCode = "403",
+                 description = "The caller is not an instance administrator, or the account is "
+                               + "not currently inactive.")
+    @ApiResponse(responseCode = "404", description = "No account exists for the provided email.")
+    @ResourceAccess(description = "Endpoint to activate an account which has been previously deactivated",
                     role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> activeAccount(@PathVariable("account_email") String accountEmail)
+    public ResponseEntity<Void> activeAccount(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail)
         throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         accountWorkflowManager.activeAccount(account);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    /**
-     * Grants access to the project user
-     *
-     * @param accountEmail account email
-     * @return <code>void</code> wrapped in a {@link ResponseEntity}
-     * @throws EntityException <br>
-     *                         {@link EntityTransitionForbiddenException} if no project user could be found<br>
-     *                         {@link EntityNotFoundException} if project user is in illegal status for denial<br>
-     */
     @PutMapping(ACCEPT_ACCOUNT_PATH)
-    @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> acceptAccount(@PathVariable("account_email") String accountEmail)
+    @Operation(summary = "Accept Account", description = "Accept an access request for an account in PENDING status.")
+    @ApiResponse(responseCode = "200", description = "The account was successfully accepted.")
+    @ApiResponse(responseCode = "403",
+                 description = "The caller is not an instance administrator, or the account is "
+                               + "not currently in PENDING status.")
+    @ApiResponse(responseCode = "404", description = "No account exists for the provided email.")
+    @ResourceAccess(description = "Endpoint to accept an access request", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> acceptAccount(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail)
         throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         accountWorkflowManager.acceptAccount(account);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    /**
-     * Refuse the account request
-     *
-     * @param accountEmail account email
-     * @return <code>void</code> wrapped in a {@link ResponseEntity}
-     */
     @PutMapping(REFUSE_ACCOUNT_PATH)
-    @ResourceAccess(description = "Refuses the access request", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> refuseAccount(@PathVariable("account_email") String accountEmail)
+    @Operation(summary = "Refuse Account", description = "Refuse an access request for an account in PENDING status.")
+    @ApiResponse(responseCode = "200", description = "The account was successfully refused.")
+    @ApiResponse(responseCode = "403",
+                 description = "The caller is not an instance administrator, or the account is "
+                               + "not currently in PENDING status.")
+    @ApiResponse(responseCode = "404", description = "No account exists for the provided email.")
+    @ResourceAccess(description = "Endpoint to refuse an access request", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> refuseAccount(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail)
         throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         accountWorkflowManager.refuseAccount(account);
@@ -531,32 +518,54 @@ public class AccountsController implements IResourceController<Account> {
     }
 
     @GetMapping(ORIGINS_PATH)
-    @ResourceAccess(description = "List all possible origins for an account", role = DefaultRole.INSTANCE_ADMIN)
+    @Operation(summary = "List Origins", description = "Return all possible origins for an account")
+    @ApiResponse(responseCode = "200", description = "The list of all possible origins.")
+    @ApiResponse(responseCode = "403", description = "The caller is not an instance administrator.")
+    @ResourceAccess(description = "Endpoint to list all possible origins for an account",
+                    role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<List<String>> getOrigins() {
         return ResponseEntity.ok(accountService.getOrigins());
     }
 
     @PutMapping(LINK_ACCOUNT_PATH)
-    @ResourceAccess(description = "Link a project to an account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> link(@PathVariable("account_email") String accountEmail,
-                                     @PathVariable("project") String project) throws EntityException {
+    @Operation(summary = "Link to Project", description = "Link an account to a project.")
+    @ApiResponse(responseCode = "200", description = "The account was successfully linked to the project.")
+    @ApiResponse(responseCode = "400", description = "No project exists with the provided name.")
+    @ApiResponse(responseCode = "403", description = "The caller is not an instance administrator.")
+    @ApiResponse(responseCode = "404", description = "No account exists for the provided email.")
+    @ResourceAccess(description = "Endpoint to link a project to an account", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> link(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail,
+        @Parameter(description = "The project name") @PathVariable("project") String project) throws EntityException {
         accountService.link(accountEmail, project);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping(UNLINK_ACCOUNT_PATH)
-    @ResourceAccess(description = "Link a project to an account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> unlink(@PathVariable("account_email") String accountEmail,
-                                       @PathVariable("project") String project) throws EntityException {
+    @Operation(summary = "Unlink from Project", description = "Unlink an account from a project.")
+    @ApiResponse(responseCode = "200", description = "The account was successfully linked to the project.")
+    @ApiResponse(responseCode = "400", description = "No project exists with the provided name.")
+    @ApiResponse(responseCode = "403", description = "The caller is not an instance administrator.")
+    @ApiResponse(responseCode = "404", description = "No account exists for the provided email.")
+    @ResourceAccess(description = "Endpoint to unlink an account from a project", role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> unlink(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail,
+        @Parameter(description = "The project name") @PathVariable("project") String project) throws EntityException {
         accountService.unlink(accountEmail, project);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping(UPDATE_ORIGIN_PATH)
+    @Operation(summary = "Update Origin", description = "Updates the origin of an account.")
+    @ApiResponse(responseCode = "200", description = "The account origin was successfully updated.")
+    @ApiResponse(responseCode = "403", description = "The caller is not an instance administrator.")
+    @ApiResponse(responseCode = "404", description = "No account exists for the provided email.")
     @ResourceAccess(description = "Update the origin of an account identified by email",
                     role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> updateOrigin(@PathVariable("account_email") String accountEmail,
-                                             @PathVariable("origin") String origin) throws EntityException {
+    public ResponseEntity<Void> updateOrigin(
+        @Parameter(description = "The account email") @PathVariable("account_email") String accountEmail,
+        @Parameter(description = "The new origin. If this string is empty, the origin is not updated.")
+        @PathVariable("origin") String origin) throws EntityException {
         accountService.updateOrigin(accountEmail, origin);
         return ResponseEntity.ok().build();
     }
@@ -615,8 +624,9 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * DTO to wrap password
      */
-    static class Password {
+    public static class Password {
 
+        @Schema(description = "The password")
         private String password; //NOSONAR
 
         /**
@@ -650,7 +660,7 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * DTO to wrap password rules into an object
      */
-    private static class PasswordRules {
+    public static class PasswordRules {
 
         /**
          * The rules

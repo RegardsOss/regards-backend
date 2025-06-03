@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain.accountunlock;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Class PerformUnlockAccountDto
  * <p>
@@ -27,9 +29,8 @@ package fr.cnes.regards.modules.accessrights.instance.domain.accountunlock;
  */
 public class PerformUnlockAccountDto {
 
-    /**
-     * Token to unlock account
-     */
+    @Schema(description = "The unlock token that was provided in the email received by the user to unlock their "
+                          + "account.")
     private String token = "";
 
     public String getToken() {

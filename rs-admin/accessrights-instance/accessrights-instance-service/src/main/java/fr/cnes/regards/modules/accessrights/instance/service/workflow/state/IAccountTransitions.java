@@ -136,7 +136,7 @@ public interface IAccountTransitions {
      * Passes an ACTIVE account to the status INACTIVE.
      *
      * @param pAccount The {@link Account}
-     * @throws EntityTransitionForbiddenException Thrown when the account is not in status INACTIVE
+     * @throws EntityTransitionForbiddenException Thrown when the account is not in status ACTIVE
      */
     default void inactiveAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(),
@@ -149,7 +149,7 @@ public interface IAccountTransitions {
      * Passes an INACTIVE account to the status ACTIVE.
      *
      * @param pAccount The {@link Account}
-     * @throws EntityTransitionForbiddenException Thrown when the account is not in status ACTIVE
+     * @throws EntityTransitionForbiddenException Thrown when the account is not in status INACTIVE
      */
     default void activeAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         throw new EntityTransitionForbiddenException(pAccount.getId().toString(),

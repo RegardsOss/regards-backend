@@ -113,7 +113,7 @@ public class Account implements IIdentifiable<Long> {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
-        setPassword(password);
+        doSetPassword(password);
     }
 
     @Override
@@ -153,8 +153,14 @@ public class Account implements IIdentifiable<Long> {
         return password;
     }
 
-    // Sonar suggests to make this method final but making it final is a problem to hibernate
     public void setPassword(final String password) {
+        doSetPassword(password);
+    }
+
+    // We need to call setPassword() from the constructor, so sonar wants it to be final. But hibernate does not
+    // want it to be final. So the tradeoff is to have this private method called from both the constructor and from
+    // setPassword().
+    private void doSetPassword(String password) {
         if (password != null) {
             passwordUpdateDate = LocalDateTime.now();
             this.password = password;

@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain.passwordreset;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Dto class
  *
@@ -25,21 +27,13 @@ package fr.cnes.regards.modules.accessrights.instance.domain.passwordreset;
  */
 public class PerformResetPasswordDto {
 
-    /**
-     * The token
-     */
+    @Schema(description = "The reset token that was provided in the email received by the user.")
     private String token;
 
-    /**
-     * The new password
-     */
+    @Schema(description = "The new password of the user.")
     private String newPassword;
 
-    /**
-     *
-     */
     public PerformResetPasswordDto(final String pToken, final String pNewPassword) {
-        super();
         token = pToken;
         newPassword = pNewPassword;
     }
