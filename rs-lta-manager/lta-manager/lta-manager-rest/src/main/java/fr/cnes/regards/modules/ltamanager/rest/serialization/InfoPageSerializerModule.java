@@ -29,10 +29,11 @@ import org.springframework.hateoas.PagedModel;
 
 /**
  * Custom Jackson Module to serialize {@link SessionInfoPageDto} which is a subclass of {@link PagedModel}.
- * This module must be specified in META-INF/services/com.fasterxml.jackson.databind.Module to be actualy used by
- * jackson
+ * This module must be specified in META-INF/services/com.fasterxml.jackson.databind.Module to be actually used by
+ * jackson.
  *
  * @author Thibaud Michaudel
+ * @see fr.cnes.regards.framework.geojson.CustomJacksonAutoconfiguration
  */
 public class InfoPageSerializerModule extends SimpleModule {
 

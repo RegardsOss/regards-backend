@@ -20,10 +20,7 @@ package fr.cnes.regards.framework.geojson;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import fr.cnes.regards.framework.geojson.modules.EntityModelSerializerModule;
-import fr.cnes.regards.framework.geojson.modules.GeometrySerializerModule;
-import fr.cnes.regards.framework.geojson.modules.MimeTypeSerializerModule;
-import fr.cnes.regards.framework.geojson.modules.PageModelSerializerModule;
+import fr.cnes.regards.framework.geojson.modules.*;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -32,7 +29,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 /**
  * Configuration bean to register modules in the default jackson ObjectMapper which is constructed when calling new ObjectMapper()
  * To add a custom module (to permits serialization of a non-generic class), create in your maven
- * module the file /META-INF/services/com.fasterxml.jackson.databind.Module containing the qualifier of your mobule so
+ * module the file /META-INF/services/com.fasterxml.jackson.databind.Module containing the qualifier of your module so
  * it's actually used by jackson for serialization and deserialization.
  *
  * @author Thomas GUILLOU
@@ -54,11 +51,12 @@ public class CustomJacksonAutoconfiguration {
         return new Jackson2ObjectMapperBuilder().modulesToInstall(new MimeTypeSerializerModule(),
                                                                   new GeometrySerializerModule(),
                                                                   new PageModelSerializerModule(),
-                                                                  new EntityModelSerializerModule())
+                                                                  new EntityModelSerializerModule(),
+                                                                  new DateTimeSerializerModule())
                                                 .serializationInclusion(JsonInclude.Include.NON_ABSENT)
+                                                .findModulesViaServiceLoader(true) // find modules in META-INF/services
                                                 .failOnUnknownProperties(false)
                                                 // Spring Cloud default config has disable WRITE_DATES_AS_TIMESTAMPS
                                                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
-
 }

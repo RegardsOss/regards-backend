@@ -11,7 +11,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 
-import static fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter.ISO_DATE_TIME_UTC;
+import static fr.cnes.regards.framework.gson.adapters.LocalDateTimeAdapter.ISO_DATE_TIME_UTC;
 import static fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping.RangeAliasStrategy.GTELTE;
 import static org.assertj.core.api.Assertions.assertThat;
 

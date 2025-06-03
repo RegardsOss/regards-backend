@@ -366,6 +366,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.utils</groupId>
+                <artifactId>json-utils</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.utils</groupId>
                 <artifactId>response-entity-utils</artifactId>
                 <version>${revision}</version>
             </dependency>

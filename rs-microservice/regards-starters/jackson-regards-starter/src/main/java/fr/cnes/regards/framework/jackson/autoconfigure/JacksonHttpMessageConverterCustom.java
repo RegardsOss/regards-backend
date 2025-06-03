@@ -1,13 +1,10 @@
 package fr.cnes.regards.framework.jackson.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.HttpInputMessage;
-import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 
 /**
  * Converter to deserialize/serialize http requests/responses in JSON with Jackson
@@ -22,22 +19,20 @@ public class JacksonHttpMessageConverterCustom extends AbstractJackson2HttpMessa
     }
 
     @Override
-    protected boolean canRead(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON.includes(mediaType);
+    protected boolean supports(Class<?> clazz) {
+        // Do not support byte[], because byte[] serialization does a base64 encoding with jackson,
+        // and we want to keep the default behavior of the Spring framework (see ByteArrayHttpMessageConverter).
+        // This means that all types except byte[] are serialized by jackson.
+        return byte[].class != clazz;
     }
 
     @Override
-    protected boolean canWrite(MediaType mediaType) {
-        return MediaType.APPLICATION_JSON.includes(mediaType);
+    public boolean canRead(Class<?> clazz, @Nullable MediaType mediaType) {
+        return supports(clazz) && MediaType.APPLICATION_JSON.includes(mediaType);
     }
 
     @Override
-    protected Object readInternal(Class<?> clazz, HttpInputMessage inputMessage) throws IOException {
-        return super.readInternal(clazz, inputMessage);
-    }
-
-    @Override
-    protected void writeInternal(Object object, HttpOutputMessage outputMessage) throws IOException {
-        super.writeInternal(object, outputMessage);
+    public boolean canWrite(Class<?> clazz, @Nullable MediaType mediaType) {
+        return supports(clazz) && MediaType.APPLICATION_JSON.includes(mediaType);
     }
 }

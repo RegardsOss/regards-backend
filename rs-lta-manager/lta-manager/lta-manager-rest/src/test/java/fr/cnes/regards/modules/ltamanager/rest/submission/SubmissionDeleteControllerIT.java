@@ -101,8 +101,8 @@ public class SubmissionDeleteControllerIT extends AbstractRegardsIT {
         this.performDefaultDelete(AbstractSubmissionController.ROOT_PATH,
                                   searchParameters,
                                   customizer().expectStatusBadRequest()
-                                              .expect(MockMvcResultMatchers.content()
-                                                                           .string(
+                                              .expect(MockMvcResultMatchers.jsonPath("$")
+                                                                           .value(
                                                                                "Only final status (GENERATION_ERROR, DONE, INGESTION_ERROR) are allowed in status search criterion.")),
                                   "Error while creating deletion request");
 
@@ -111,8 +111,8 @@ public class SubmissionDeleteControllerIT extends AbstractRegardsIT {
         this.performDefaultDelete(AbstractSubmissionController.ROOT_PATH,
                                   searchParameters,
                                   customizer().expectStatusBadRequest()
-                                              .expect(MockMvcResultMatchers.content()
-                                                                           .string(
+                                              .expect(MockMvcResultMatchers.jsonPath("$")
+                                                                           .value(
                                                                                "Only include mode is allowed in status search criterion.")),
                                   "Error while creating deletion request");
 

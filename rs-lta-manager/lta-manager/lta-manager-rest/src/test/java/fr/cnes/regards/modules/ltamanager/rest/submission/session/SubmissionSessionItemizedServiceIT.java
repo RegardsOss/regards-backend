@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ltamanager.rest.submission.session;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
@@ -36,6 +37,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.stream.IntStream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -72,6 +74,16 @@ public class SubmissionSessionItemizedServiceIT extends AbstractRegardsIT {
         requestRepository.deleteAll();
         defaultEmail = getDefaultUserEmail();
         exploitToken = jwtService.generateToken(getDefaultTenant(), defaultEmail, DefaultRole.EXPLOIT.toString());
+    }
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    public void test_custom_module_registration() {
+        // Make sure the custom module is registered for tests
+        assertThat(objectMapper.getRegisteredModuleIds()).contains(
+            "fr.cnes.regards.modules.ltamanager.rest.serialization.InfoPageSerializerModule");
     }
 
     @Test

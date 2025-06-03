@@ -22,17 +22,13 @@ import com.google.gson.JsonIOException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import fr.cnes.regards.framework.utils.json.JsonSerializationUtils;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAccessor;
 
 /**
  * ISO 8601 date adapter
@@ -46,23 +42,12 @@ import java.time.temporal.TemporalAccessor;
 public class OffsetDateTimeAdapter extends TypeAdapter<OffsetDateTime> {
 
     /**
-     * ISO date time official support (UTC)
-     * When parsing, either no offset, Z or +HH:mm offset.
-     * When formatting, Z as offset if UTC or +HH:mm
-     */
-    public static final DateTimeFormatter ISO_DATE_TIME_UTC = new DateTimeFormatterBuilder().parseCaseInsensitive()
-                                                                                            .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-                                                                                            .optionalStart()
-                                                                                            .appendOffset("+HH:MM", "Z")
-                                                                                            .toFormatter();
-
-    /**
      * Writing date with UTC ISO 8601 format
      */
     @Override
     public void write(JsonWriter out, OffsetDateTime date) throws IOException {
         // truncate to a resolution of 1 microsecond
-        out.value(date.atZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS).format(ISO_DATE_TIME_UTC));
+        out.value(JsonSerializationUtils.format(date.atZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS)));
     }
 
     @Override
@@ -72,26 +57,14 @@ public class OffsetDateTimeAdapter extends TypeAdapter<OffsetDateTime> {
 
     public static OffsetDateTime parse(String date) {
         try {
-            TemporalAccessor temporalAccessor = ISO_DATE_TIME_UTC.parse(date);
-            // Zoned date
-            if (temporalAccessor.isSupported(ChronoField.OFFSET_SECONDS)) {
-                return OffsetDateTime.from(temporalAccessor);
-            } else { // No zone specified => UTC date time
-                return OffsetDateTime.of(LocalDateTime.from(temporalAccessor), ZoneOffset.UTC);
-            }
+            return JsonSerializationUtils.parse(date);
         } catch (DateTimeParseException e) {
             throw new JsonIOException("Date could not be parsed", e);
         }
     }
 
     public static String format(OffsetDateTime date) {
-        String formattedDate = null;
-        if (date != null) {
-            // truncate to a resolution of 1 microsecond
-            formattedDate = ISO_DATE_TIME_UTC.format(date.withOffsetSameInstant(ZoneOffset.UTC)
-                                                         .truncatedTo(ChronoUnit.MICROS));
-        }
-        return formattedDate;
+        return JsonSerializationUtils.format(date);
     }
 
 }

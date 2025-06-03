@@ -58,6 +58,7 @@
         <module>attribute-factory</module>
         <module>plugin-utils</module>
         <module>file-utils</module>
+        <module>json-utils</module>
         <module>exception-utils</module>
         <module>encryption-standalone</module>
         <module>eureka-utils</module>
