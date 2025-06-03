@@ -699,17 +699,11 @@ public class RoleService implements IRoleService, InitializingBean {
      */
     @Override
     public void removeResourcesAccesses(String roleName, ResourcesAccess... resourcesAccesses) throws EntityException {
-
-        Optional<Role> roleOpt = roleRepository.findByName(roleName);
-
-        if (!roleOpt.isPresent()) {
-            throw new EntityNotFoundException(roleName, Role.class);
-        }
-
+        Role role = roleRepository.findOneByName(roleName).orElseThrow(() -> new EntityNotFoundException(roleName,
+                                                                                                     Role.class));
         // Check if current user can remove resources to specified role
-        canManageRole(roleOpt.get());
-
-        removeResourcesAccesses(roleOpt.get(), resourcesAccesses);
+        canManageRole(role);
+        removeResourcesAccesses(role, resourcesAccesses);
     }
 
     private void removeResourcesAccesses(Role role, ResourcesAccess[] resourcesAccesses)
