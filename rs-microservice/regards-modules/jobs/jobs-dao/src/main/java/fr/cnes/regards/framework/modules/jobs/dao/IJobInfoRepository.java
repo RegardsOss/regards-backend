@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.modules.jobs.dao;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import jakarta.persistence.LockModeType;
@@ -101,51 +100,50 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
 
     Long countByStatusStatusIn(JobStatus... statuses);
 
-    @MultitenantTransactional
     default void deleteExpiredJobs() {
         deleteExpiredJobs(OffsetDateTime.now(),
-                          List.of(JobStatus.QUEUED.name(), JobStatus.TO_BE_RUN.name(), JobStatus.RUNNING.name()));
+                          new String[] { JobStatus.QUEUED.name(),
+                                         JobStatus.TO_BE_RUN.name(),
+                                         JobStatus.RUNNING.name() });
     }
 
     /**
      * Delete all succeeded jobs finished since a given number of days ago.
      */
-    @MultitenantTransactional
     default void deleteSucceededJobsSince(int days) {
         deleteFinishedJobsByStatusAndStopDateLessThan(OffsetDateTime.now().minusDays(days),
-                                                      List.of(JobStatus.SUCCEEDED.name()));
+                                                      new String[] { JobStatus.SUCCEEDED.name() });
     }
 
     /**
      * Delete all failed or aborted jobs finished since a given number of days ago.
      */
-    @MultitenantTransactional
     default void deleteFailedAndAbortJobsSince(int days) {
         deleteFinishedJobsByStatusAndStopDateLessThan(OffsetDateTime.now().minusDays(days),
-                                                      List.of(JobStatus.FAILED.name(), JobStatus.ABORTED.name()));
+                                                      new String[] { JobStatus.FAILED.name(),
+                                                                     JobStatus.ABORTED.name() });
     }
 
     /**
      * Delete all jobs by given statuses and stop date
      */
+    // Use a PL/pgSQL procedure (deleteFinishedJobs): if the deleting occurs a problem of foreign_key_violation then
+    // nothing is done, the deletion is ignored.
     @Modifying
-    @Query(value = "DELETE FROM {h-schema}t_job_info WHERE locked = false AND stop_date <= :stopDate AND "
-                   + "status "
-                   + "IN (:statuses) ", nativeQuery = true)
-    @MultitenantTransactional
+    @Query(value = "CALL {h-schema}deleteFinishedJobs(:stopDate, CAST(:statuses AS text[]))", nativeQuery = true)
     void deleteFinishedJobsByStatusAndStopDateLessThan(@Param("stopDate") OffsetDateTime stopDate,
-                                                       @Param("statuses") List<String> statuses);
+                                                       @Param("statuses") String[] statuses);
 
     /**
      * Delete all expired jobs with given statuses
      */
+    // Use a PL/pgSQL procedure (deleteExpiredJobs): if the deleting occurs a problem of foreign_key_violation then
+    // nothing is done, the deletion is ignored.
     @Modifying
-    @Query(value = "DELETE FROM {h-schema}t_job_info WHERE locked = false AND expire_date <= :expirationDate AND "
-                   + "status IN "
-                   + "(:statuses)", nativeQuery = true)
-    @MultitenantTransactional
+    @Query(value = "CALL {h-schema}deleteExpiredJobs(CAST(:expirationDate AS TIMESTAMP), CAST(:statuses AS text[]))",
+           nativeQuery = true)
     void deleteExpiredJobs(@Param("expirationDate") OffsetDateTime expirationDate,
-                           @Param("statuses") List<String> statuses);
+                           @Param("statuses") String[] statuses);
 
     /**
      * Search jobs with given status at given date (only unlocked)

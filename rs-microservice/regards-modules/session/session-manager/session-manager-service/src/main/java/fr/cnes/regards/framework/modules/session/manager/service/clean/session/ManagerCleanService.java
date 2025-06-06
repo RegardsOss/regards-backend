@@ -105,17 +105,18 @@ public class ManagerCleanService {
         do {
             nbSessionsProcessed = self.processOnePage(startClean, page);
             nbSessions += nbSessionsProcessed;
+            interrupted = Thread.currentThread().isInterrupted();
         } while (!interrupted && nbSessionsProcessed != 0);
-
-        // delete source not associated to any sessions
-        this.sourceStepAggregationRepo.deleteByEmptySources();
-        this.sourceRepo.deleteByEmptySources();
-        // delete expired session steps
-        this.sessionStepRepo.deleteByLastUpdateDateBefore(startClean);
 
         // log if thread was interrupted
         if (interrupted) {
             LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
+        } else {
+            // delete source not associated to any sessions
+            this.sourceStepAggregationRepo.deleteByEmptySources();
+            this.sourceRepo.deleteByEmptySources();
+            // delete expired session steps
+            this.sessionStepRepo.deleteByLastUpdateDateBefore(startClean);
         }
         return nbSessions;
     }
