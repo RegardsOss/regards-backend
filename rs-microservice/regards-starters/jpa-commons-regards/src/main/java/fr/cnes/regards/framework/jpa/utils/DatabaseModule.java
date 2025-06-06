@@ -18,35 +18,50 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
- * This class represents a database module
+ * A set of flyway scripts (sql and java) that pertain to a module. For a single module,
+ * flyway scripts should be applied ordered by their version. A module can "depend" on other modules,
+ * meaning that "depended on" modules should be upgraded before the "depending" module.
+ * <p>
+ * A module can have .sql scripts and java migrations (classes that implement {@link RegardsJavaMigration}).
  *
  * @author Marc Sordi
  */
-public class DatabaseModule {
+/*package*/ final class DatabaseModule {
 
     /**
      * Module name
      */
-    private String name;
+    private final String name;
 
     /**
-     * Dependent module names
+     * Whether the module has .sql scripts (if not, it should have at least one item in {@link #javaMigrations}).
      */
-    private Set<DatabaseModule> dependencies;
+    private boolean hasSqlScripts;
 
     /**
-     * This field allows to sort modules for migration launching
+     * The java migrations of the module. The method {@link RegardsJavaMigration#getModuleName()} does return the same
+     * value as {@link #getName() this.getName()}.
+     */
+    private final List<RegardsJavaMigration> javaMigrations = new ArrayList<>(0);
+
+    /**
+     * The modules that this module depends upon.
+     */
+    private final Set<DatabaseModule> dependencies = new HashSet<>();
+
+    /**
+     * This field allows to sort modules for migration launching. It must set using {@link #computeWeight()}.
      */
     private int weight = 0;
 
-    public DatabaseModule(String name, DatabaseModule... dependencies) {
+    public DatabaseModule(String name) {
         this.name = name;
-        this.dependencies = new HashSet<>(Arrays.asList(dependencies));
     }
 
     /**
@@ -62,9 +77,8 @@ public class DatabaseModule {
      * @return max depth
      */
     public int getMaxDepth() {
-
         // if no dependency, return 0
-        if ((dependencies == null) || dependencies.isEmpty()) {
+        if (dependencies.isEmpty()) {
             return 0;
         }
 
@@ -80,32 +94,44 @@ public class DatabaseModule {
         return name;
     }
 
-    public void setName(String pName) {
-        name = pName;
+    public void setHasSqlScripts(boolean hasSqlScripts) {
+        this.hasSqlScripts = hasSqlScripts;
     }
 
+    public boolean hasSqlScripts() {
+        return hasSqlScripts;
+    }
+
+    public List<RegardsJavaMigration> getJavaMigrations() {
+        return javaMigrations;
+    }
+
+    /**
+     * Add a java migration to this module. The method {@link RegardsJavaMigration#getModuleName()} must return the same
+     * value as {@link #getName() this.getName()}.
+     */
+    public void addJavaMigration(RegardsJavaMigration migration) {
+        javaMigrations.add(migration);
+    }
+
+    /**
+     * Returns the modules that this module depends upon. The migration of these modules must occur before the
+     * migration of this module.
+     */
     public Set<DatabaseModule> getDependencies() {
         return dependencies;
     }
 
-    public void setDependencies(Set<DatabaseModule> pDependencies) {
-        dependencies = pDependencies;
-    }
-
+    /**
+     * Adds a module as dependent. Migration of dependency must occur before the receiver's.
+     */
     public void addDependency(DatabaseModule dependency) {
-        if (dependencies == null) {
-            dependencies = new HashSet<>();
-        }
         dependencies.add(dependency);
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result) + ((dependencies == null) ? 0 : dependencies.hashCode());
-        result = (prime * result) + ((name == null) ? 0 : name.hashCode());
-        return result;
+        return name.hashCode();
     }
 
     @Override
@@ -116,29 +142,14 @@ public class DatabaseModule {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
+        if (obj instanceof DatabaseModule other) {
+            return this.name.equals(other.name);
         }
-        DatabaseModule other = (DatabaseModule) obj;
-        if (dependencies == null) {
-            if (other.dependencies != null) {
-                return false;
-            }
-        } else if (!dependencies.equals(other.dependencies)) {
-            return false;
-        }
-        if (name == null) {
-            return other.name == null;
-        } else {
-            return name.equals(other.name);
-        }
+        return false;
     }
 
     public int getWeight() {
         return weight;
     }
 
-    public void setWeight(int pWeight) {
-        weight = pWeight;
-    }
 }

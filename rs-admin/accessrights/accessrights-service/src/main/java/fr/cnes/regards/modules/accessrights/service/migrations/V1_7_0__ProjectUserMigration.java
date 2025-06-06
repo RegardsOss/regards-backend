@@ -21,6 +21,7 @@ import java.util.Set;
 
 @Component
 @Profile("!test")
+@SuppressWarnings("java:S101") // Naming using underscores is required by flyway
 public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V1_7_0__ProjectUserMigration.class);

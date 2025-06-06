@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.accessrights.service.migrations;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.jpa.utils.RegardsJavaMigration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.emailverification.EmailVerificationTokenDto;
@@ -53,7 +54,8 @@ import java.util.Set;
  */
 @Component
 @Profile("!test")
-public class V2_2_0__UnverifiedEmailsMigration extends BaseJavaMigration {
+@SuppressWarnings("java:S101") // Naming using underscores is required by flyway
+public class V2_2_0__UnverifiedEmailsMigration extends BaseJavaMigration implements RegardsJavaMigration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(V2_2_0__UnverifiedEmailsMigration.class);
 
@@ -92,6 +94,11 @@ public class V2_2_0__UnverifiedEmailsMigration extends BaseJavaMigration {
                                              IRuntimeTenantResolver runtimeTenantResolver) {
         this.accountsClient = accountsClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
+    }
+
+    @Override
+    public String getModuleName() {
+        return "accessrights"; // same string as in the scripts.accessrights folder that contain SQL migration files
     }
 
     private static UserAndToken translateRow(ResultSet rs) throws SQLException {
@@ -165,6 +172,7 @@ public class V2_2_0__UnverifiedEmailsMigration extends BaseJavaMigration {
         }
     }
 
+    @SuppressWarnings("java:S2221") // Difficult to catch a specific exception when calling feign
     private void resetAccount(UserAndToken user) {
         LOGGER.info("Resetting account {} to EMAIL_VERIFICATION", user.email());
         String error = "Unable to update status on account " + user.email();

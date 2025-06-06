@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import jakarta.annotation.Nullable;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.Location;
+import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationVersion;
 import org.flywaydb.core.api.configuration.Configuration;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
@@ -50,13 +53,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
+ * Runs the flyway migration scripts (.sql and java) per tenant.
+ *
  * @author Marc Sordi
  */
 public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FlywayDatasourceSchemaHelper.class);
-
-    private final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
     /**
      * Default script suffix (default value)
@@ -74,7 +77,14 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
 
     private static final String MIGRATION_TABLE_NAME = "migration";
 
+    private final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
     private final ApplicationContext applicationContext;
+
+    /**
+     * Only for testing. Should remain null in production. Enabled using {@link #enableMigrationLogging()}.
+     */
+    private @Nullable List<MigrationInfo> migrationInfos;
 
     public FlywayDatasourceSchemaHelper(Map<String, Object> hibernateProperties,
                                         ApplicationContext applicationContext) {
@@ -100,6 +110,24 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
     }
 
     /**
+     * Enable logging of applied migrations. Should be only used for testing.
+     */
+    @VisibleForTesting
+    /*package*/ void enableMigrationLogging() {
+        if (migrationInfos == null) {
+            migrationInfos = new ArrayList<>();
+        }
+    }
+
+    /**
+     * Returns the migrations that were performed so far.
+     */
+    @VisibleForTesting
+    /*package*/ List<MigrationInfo> getMigrationInfos() {
+        return migrationInfos;
+    }
+
+    /**
      * Migrate datasource schema to new version looping on each detected module
      *
      * @param dataSource the datasource to migrate
@@ -112,6 +140,33 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
 
         LOGGER.info("Migrating datasource {} with schema {}", dataSource, schema);
 
+        Map<String, DatabaseModule> moduleMap = new HashMap<>();
+        List<JavaMigration> legacyMigrations = new ArrayList<>();
+        scanSqlModules(moduleMap);
+        scanJavaModules(moduleMap, legacyMigrations);
+
+        // Apply dependency check
+        List<DatabaseModule> depModules = buildDatabaseModules(moduleMap);
+
+        // Apply module migration on sorted modules
+        depModules.forEach(module -> migrateModule(dataSource, schema, module));
+
+        // Run legacy JavaMigrations. These ones are run last, and that's why they are legacy. The
+        // new ones are run altogether with .sql scripts.
+        performLegacyMigrations(dataSource, schema, legacyMigrations);
+    }
+
+    /**
+     * Use flyway to scan all SQL migration scripts in the classpath. Scripts are expected to be
+     * arranged in scripts.{moduleName}/*.sql. scripts.{moduleName} is a folder with one or more .sql
+     * files that should be processed by flyway altogether. This folder may also contain a file named
+     * dbModules.properties that contain additional metadata for this module (currently, it can contain
+     * only a property named module.dependencies that describes the list of modules that should be processed
+     * before this module).
+     *
+     * @param moduleMap The map of modules to be filled by this method.
+     */
+    private void scanSqlModules(Map<String, DatabaseModule> moduleMap) {
         // Use flyway scanner initialized with script dir (ie resources/scripts)
         Configuration config = new FluentConfiguration().locations(new Location(SCRIPT_LOCATION_PATH))
                                                         .encoding(Charset.defaultCharset())
@@ -134,7 +189,7 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
                                                 + ".*\\"
                                                 + SQL_MIGRATION_SUFFIX
                                                 + "$");
-        // Retrieve all modules (scripts are into <module> dir)
+        // Retrieve all modules (scripts are into <module> dir).
         Set<String> modules = new HashSet<>();
         for (Resource script : sqlScripts) {
             // Match script from relative path
@@ -147,14 +202,27 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
                             scriptPattern);
             }
         }
-        // Apply dependency check
-        List<DatabaseModule> depModules = buildDatabaseModules(modules);
+        for (String module : modules) {
+            moduleMap.computeIfAbsent(module, DatabaseModule::new).setHasSqlScripts(true);
+        }
+    }
 
-        // Apply module migration on sorted modules
-        depModules.forEach(module -> migrateModule(dataSource, schema, module.getName()));
-
-        // Run Spring aware JavaMigrations
-        performMigrations(dataSource, schema);
+    /**
+     * Collects all flyway java migration beans. There are two kind of java migrations beans: the module-aware ones,
+     * implementing RegardsJavaMigration, and the legacy ones, implementing JavaMigration but not RegardsJavaMigration.
+     *
+     * @param moduleMap        The map to be filled with beans implementing RegardsJavaMigration.
+     * @param legacyMigrations The list to be filled with beans implementing JavaMigration but not RegardsJavaMigration.
+     */
+    private void scanJavaModules(Map<String, DatabaseModule> moduleMap, List<JavaMigration> legacyMigrations) {
+        Collection<JavaMigration> migrations = applicationContext.getBeansOfType(JavaMigration.class).values();
+        for (JavaMigration m : migrations) {
+            if (m instanceof RegardsJavaMigration rjm) {
+                moduleMap.computeIfAbsent(rjm.getModuleName(), DatabaseModule::new).addJavaMigration(rjm);
+            } else {
+                legacyMigrations.add(m);
+            }
+        }
     }
 
     /**
@@ -162,24 +230,33 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
      *
      * @param dataSource the datasource to migrate
      * @param schema     the target schema
-     * @param moduleName the module
+     * @param module     the module
      */
-    private void migrateModule(DataSource dataSource, String schema, String moduleName) {
-
-        Preconditions.checkNotNull(dataSource);
-        Preconditions.checkNotNull(schema);
-        Preconditions.checkNotNull(moduleName);
+    @VisibleForTesting
+    /*package*/ void migrateModule(DataSource dataSource, String schema, DatabaseModule module) {
+        Objects.requireNonNull(dataSource);
+        Objects.requireNonNull(schema);
+        String moduleName = Objects.requireNonNull(module).getName();
 
         LOGGER.info("Migrating datasource with schema {} for module {}", schema, moduleName);
         Flyway flywayAutoConf = applicationContext.getBean(Flyway.class);
 
-        Flyway flyway = getFlywayConfiguration(flywayAutoConf, dataSource, schema)
-            // Set module location
-            .locations(SCRIPT_LOCATION_PATH + File.separator + moduleName)
+        FluentConfiguration conf = getFlywayConfiguration(flywayAutoConf, dataSource, schema)
             // Create one migration table by module
-            .table(moduleName + TABLE_SUFFIX).load();
+            .table(moduleName + TABLE_SUFFIX);
+        if (module.hasSqlScripts()) {
+            // Set module location
+            conf.locations(SCRIPT_LOCATION_PATH + File.separator + moduleName);
+        }
+        if (!module.getJavaMigrations().isEmpty()) {
+            conf.javaMigrations(module.getJavaMigrations().toArray(new JavaMigration[0]));
+        }
+        Flyway flyway = conf.load();
         try {
             flyway.migrate();
+            if (migrationInfos != null) {
+                migrationInfos.addAll(List.of(flyway.info().applied()));
+            }
         } catch (FlywayValidateException e) {
             try {
                 LOGGER.error("Error while migrating table {} of schema {} with script location '{}' in database {}",
@@ -188,7 +265,7 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
                              SCRIPT_LOCATION_PATH + File.separator + moduleName,
                              dataSource.getConnection().getCatalog());
             } catch (SQLException sqlException) {
-                LOGGER.error(sqlException.getMessage());
+                LOGGER.error(sqlException.getMessage(), sqlException);
             }
             throw e;
         }
@@ -197,16 +274,10 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
     /**
      * Build database module tree and sort all modules by priority
      *
-     * @param modules list of modules to consider
+     * @param moduleMap A map of modules to consider
      * @return a list of modules ordered according to its dependencies
      */
-    private List<DatabaseModule> buildDatabaseModules(Set<String> modules) {
-
-        Map<String, DatabaseModule> moduleMap = new HashMap<>();
-
-        // Init each database module
-        modules.forEach(module -> moduleMap.put(module, new DatabaseModule(module)));
-
+    private List<DatabaseModule> buildDatabaseModules(Map<String, DatabaseModule> moduleMap) {
         // Init dependencies
         initModuleDependencies(moduleMap);
 
@@ -215,22 +286,19 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
 
         // Compute sorted result list
         List<DatabaseModule> dbModules = new ArrayList<>(moduleMap.values());
-        dbModules.sort(new DatabaseModuleComparator());
+        // The greater weight, the greater dependency depth, so sort modules by ascending weight:
+        dbModules.sort(Comparator.comparingInt(DatabaseModule::getWeight));
 
         return dbModules;
     }
 
     private void initModuleDependencies(Map<String, DatabaseModule> moduleMap) {
-
         for (DatabaseModule dbModule : moduleMap.values()) {
-
-            Properties moduleProperties = getModuleProperties(dbModule.getName());
-            String dependencyProperty = moduleProperties.getProperty("module.dependencies");
-
-            if (StringUtils.hasText(dependencyProperty)) {
-
-                for (String depModule : dependencyProperty.split(",")) {
-
+            Set<String> dependencies = getModuleDependencies(dbModule);
+            if (dependencies.isEmpty()) {
+                LOGGER.debug("No dependency found for module \"{}\"", dbModule.getName());
+            } else {
+                for (String depModule : dependencies) {
                     DatabaseModule depDbModule = moduleMap.get(depModule);
                     if (depDbModule == null) {
                         LOGGER.warn("Dependent module \"{}\" of module \"{}\" not found in classpath",
@@ -242,13 +310,25 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
                                      depDbModule.getName());
                         moduleMap.get(dbModule.getName()).addDependency(depDbModule);
                     }
-
                 }
-
-            } else {
-                LOGGER.debug("No dependency found for module \"{}\"", dbModule.getName());
             }
         }
+    }
+
+    /**
+     * Returns all dependencies of a given module, considering both the module.dependencies file
+     * that may be present in the module folder, and the list of dependencies declared by java migrations.
+     */
+    private Set<String> getModuleDependencies(DatabaseModule module) {
+        Set<String> ret = new HashSet<>();
+        Properties moduleProperties = getModuleProperties(module.getName());
+        String dependencyProperty = moduleProperties.getProperty("module.dependencies");
+
+        if (StringUtils.hasText(dependencyProperty)) {
+            ret.addAll(List.of(dependencyProperty.split(",")));
+        }
+        ret.addAll(module.getJavaMigrations().stream().flatMap(jm -> jm.getDependencies().stream()).toList());
+        return ret;
     }
 
     /**
@@ -279,19 +359,20 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
     }
 
     /**
-     * Run all Spring managed JavaMigration beans.
+     * Run all the specified JavaMigration objects.
      *
      * @param dataSource dataSource to migrate
      * @param schema     target schema
+     * @param migrations list of Java migration beans. Beans instance of RegardsJavaMigrations should
+     *                   not be included in this list.
      */
-    private void performMigrations(DataSource dataSource, String schema) {
+    private void performLegacyMigrations(DataSource dataSource, String schema, List<JavaMigration> migrations) {
 
         Preconditions.checkNotNull(dataSource);
         Preconditions.checkNotNull(schema);
 
-        LOGGER.info("Running Java migrations for datasource {} with schema {}", dataSource, schema);
+        LOGGER.info("Running legacy Java migrations for datasource {} with schema {}", dataSource, schema);
 
-        Collection<JavaMigration> migrations = applicationContext.getBeansOfType(JavaMigration.class).values();
         Flyway flywayAutoConf = applicationContext.getBean(Flyway.class);
         Flyway flyway = getFlywayConfiguration(flywayAutoConf, dataSource, schema)
             // Create one migration table by module
@@ -305,6 +386,9 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
                               .collect(Collectors.toList()));
 
         flyway.migrate();
+        if (migrationInfos != null) {
+            migrationInfos.addAll(List.of(flyway.info().applied()));
+        }
     }
 
     private static FluentConfiguration getFlywayConfiguration(Flyway flywayAutoConf,
