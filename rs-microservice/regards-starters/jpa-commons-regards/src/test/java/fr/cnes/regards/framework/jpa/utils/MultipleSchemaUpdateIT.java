@@ -163,11 +163,11 @@ public class MultipleSchemaUpdateIT {
         migrationHelper.migrateSchema(dataSource, "scan");
         assertThat(migrationHelper.getMigrationInfos()
                                   .stream()
-                                  .filter(i -> i.getType() != CoreMigrationType.SCHEMA
-                                               && !i.getType().isBaseline()
-                                               && !("jsonb alias").equals(i.getDescription()))
+                                  .filter(i -> i.getType() != CoreMigrationType.SCHEMA && !i.getType().isBaseline())
                                   .map(MigrationInfo::getDescription)
-                                  .toList()).containsExactly(
+                                  // "containsSubSequence": contains the given subsequence in the correct order (possibly with other values between them)
+                                  // (we use this because there may be other scripts coming from the production code)
+                                  .toList()).containsSubsequence(
             // module1
             /*1.0.0*/"changeB", /*1.0.1*/"changeC",
             // module3
