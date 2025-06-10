@@ -72,9 +72,14 @@ public class FeatureDeletionRequestEventHandler extends AbstractFeatureRequestEv
 
     @Override
     public void handleBatch(List<FeatureDeletionRequestEvent> messages) {
+        LOGGER.info("[FEATURE DELETION REQUEST EVENT HANDLER] Bulk saving {} feature deletion request events",
+                    messages.size());
         long start = System.currentTimeMillis();
+
         RequestInfo<FeatureUniformResourceName> requestInfo = featureService.registerRequests(messages);
-        LOGGER.info("{} granted request(s) and {} denied request(s) registered in {} ms",
+
+        LOGGER.info("[FEATURE DELETION REQUEST EVENT HANDLER] {} granted request(s) and {} denied request(s) "
+                    + "registered in {} ms",
                     requestInfo.getGranted().size(),
                     requestInfo.getDenied().keySet().size(),
                     System.currentTimeMillis() - start);

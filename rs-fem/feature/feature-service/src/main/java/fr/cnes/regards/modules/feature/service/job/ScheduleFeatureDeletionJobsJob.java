@@ -18,28 +18,34 @@
  */
 package fr.cnes.regards.modules.feature.service.job;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.modules.feature.dao.FeatureSimpleEntitySpecificationBuilder;
+import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeatureIdUrnDto;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
- * Job to schedule one {@link PublishFeatureDeletionEventsJob} job for each page of {@link FeatureEntityDto} matching search parameters
+ * Job to schedule one {@link PublishFeatureDeletionEventsJob} job for each page of {@link FeatureIdUrnDto} matching search parameters
  *
  * @author Sébastien Binda
  */
@@ -71,44 +77,71 @@ public class ScheduleFeatureDeletionJobsJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        Pageable page = PageRequest.of(0, pageSize);
-        Page<FeatureEntityDto> results = null;
-        long totalElementCheck = 0;
+        Page<FeatureIdUrnDto> results = null;
+        long remainingFeaturesToDelete = 0;
         boolean firstPass = true;
+
+        // Mandatory sort by id, useful for algorithm in order to load all features to delete
+        Pageable page = PageRequest.of(0, pageSize, Sort.by(Sort.Direction.ASC, "id"));
+
+        AtomicReference<Long> lastProcessedId = new AtomicReference<>(null);
+
+        Specification<FeatureSimpleEntity> spec = new FeatureSimpleEntitySpecificationBuilder().withParameters(selection)
+                                                                                               .build();
         do {
-            // Search features to delete
-            results = featureService.findAll(selection, page);
+            // Hack in order to avoid lost or to forget data during the pagination because some feature can delete in
+            // parallel, so add identifier in request in order to load pageSize elements always > last
+            // processed identifier
+            Specification<FeatureSimpleEntity> paginatedSpec = (root, query, cb) -> {
+                Predicate predicate = spec != null ? spec.toPredicate(root, query, cb) : cb.conjunction();
+                if (lastProcessedId.get() != null) {
+                    Predicate idPredicate = cb.greaterThan(root.get("id"), lastProcessedId.get());
+                    predicate = cb.and(predicate, idPredicate);
+                }
+                return predicate;
+            };
+
+            // Prepare URNs of feature to delete
+            results = featureService.findAll(paginatedSpec, page);
             if (!results.isEmpty()) {
                 if (firstPass) {
-                    totalElementCheck = results.getTotalElements();
-                    logger.info("Starting scheduling {} feature deletion requests.", totalElementCheck);
+                    remainingFeaturesToDelete = results.getTotalElements();
+                    logger.info("Starting scheduling job for {} feature deletion requests.", remainingFeaturesToDelete);
                     firstPass = false;
                 }
-                // Prepare urns
-                Set<String> ids = new HashSet<>();
-                for (FeatureEntityDto feature : results.getContent()) {
-                    ids.add(feature.getFeature().getUrn().toString());
-                    totalElementCheck--;
-                }
-                // Scheduling page deletion job
-                schedulePageDeletion(ids);
+
+                // Create URNs of feature
+                Set<String> urns = results.getContent()
+                                          .stream()
+                                          .map(feature -> feature.urn().toString())
+                                          .collect(Collectors.toSet());
+                remainingFeaturesToDelete -= urns.size();
+
+                // Set the last processed id for next iteration
+                lastProcessedId.set(results.getContent().get(results.getContent().size() - 1).id());
+
+                // Scheduling page of urns for each deletion job
+                schedulePageDeletion(urns);
+
                 logger.info("Scheduling job for {} feature deletion requests (remaining {}).",
-                            ids.size(),
-                            totalElementCheck);
-                page = page.next();
+                            urns.size(),
+                            remainingFeaturesToDelete);
             }
-        } while ((results != null) && results.hasNext());
+        } while (results.hasNext());
     }
 
     /**
-     * Schedule {@link PublishFeatureDeletionEventsJob} with the given request ids as parameter
+     * Schedule {@link PublishFeatureDeletionEventsJob} with the given urns of feature
      */
-    private JobInfo schedulePageDeletion(Set<String> ids) {
-        Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(PublishFeatureDeletionEventsJob.URNS_PARAMETER, ids));
+    private void schedulePageDeletion(Set<String> urns) {
+        Set<JobParameter> jobParameters = new HashSet<>();
+        jobParameters.add(new JobParameter(PublishFeatureDeletionEventsJob.URNS_PARAMETER, urns));
         jobParameters.add(new JobParameter(PublishFeatureDeletionEventsJob.OWNER_PARAMETER, owner));
-        JobInfo jobInfo = new JobInfo(false, 0, jobParameters, owner, PublishFeatureDeletionEventsJob.class.getName());
-        return jobInfoService.createAsQueued(jobInfo);
-    }
 
+        jobInfoService.createAsQueued(new JobInfo(false,
+                                                  0,
+                                                  jobParameters,
+                                                  owner,
+                                                  PublishFeatureDeletionEventsJob.class.getName()));
+    }
 }

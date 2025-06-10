@@ -45,9 +45,12 @@ public abstract class AbstractFeatureRequestSpecificationsBuilder<T>
     @Override
     protected void addSpecificationsFromParameters(SearchFeatureRequestParameters parameters) {
         add(useValuesRestriction("state", parameters.getStates()));
+
         add(after("registrationDate", parameters.getLastUpdate().getAfter()));
         add(before("registrationDate", parameters.getLastUpdate().getBefore()));
+
         add(useValuesRestriction("step", parameters.getSteps()));
+        
         add(useValuesRestriction("id", parameters.getRequestIds()));
 
         if (this.searchInFeatureEntity) {
@@ -57,6 +60,9 @@ public abstract class AbstractFeatureRequestSpecificationsBuilder<T>
         }
     }
 
+    /**
+     * Add restriction from the given value to a joined {@link FeatureEntity} elements by urn
+     */
     protected Specification<T> equalsWithFeatureEntity(String pathToField, @Nullable String value) {
         return (root, query, criteriaBuilder) -> {
             if (value == null) {

@@ -31,13 +31,11 @@ import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
 import org.assertj.core.util.Lists;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -68,11 +66,8 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceIT {
 
     private static final Integer NB_FEATURES = 10_000;
 
-    @Autowired
-    private INotifierRequestListener notifierRequestListener;
-
     @Test
-    public void createAndUpdateTest() throws InterruptedException {
+    public void test_createUpdate_features() throws InterruptedException {
 
         String format = "F%05d";
 
@@ -147,11 +142,10 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceIT {
     }
 
     private FeatureUniformResourceName getURN(String id) {
-        UUID uuid = UUID.nameUUIDFromBytes(id.getBytes());
         return FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
                                                 EntityType.DATA,
                                                 getDefaultTenant(),
-                                                uuid,
+                                                UUID.nameUUIDFromBytes(id.getBytes()),
                                                 1);
     }
 }
