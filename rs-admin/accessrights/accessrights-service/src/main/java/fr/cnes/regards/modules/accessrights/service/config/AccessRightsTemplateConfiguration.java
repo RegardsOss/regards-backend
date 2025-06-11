@@ -21,7 +21,7 @@ public class AccessRightsTemplateConfiguration {
 
     public static final String USER_CREATED_TEMPLATE_NAME = "USER_CREATED_TEMPLATE";
 
-    public static final String EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME = "EMAIL_ACCOUNT_VALIDATION_TEMPLATE";
+    public static final String USER_GRANTED_TEMPLATE = "USER_GRANTED_TEMPLATE";
 
     @Bean
     public Template userDeniedTemplate() throws IOException {
@@ -44,9 +44,8 @@ public class AccessRightsTemplateConfiguration {
     }
 
     @Bean
-    public Template emailAccountValidationTemplate() throws IOException {
-        return TemplateConfigUtil.readTemplate(EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME,
-                                               "template/email-account-validation-template.html");
+    public Template userGrantedTemplate() throws IOException {
+        return TemplateConfigUtil.readTemplate(USER_GRANTED_TEMPLATE, "template/user-granted-template.html");
     }
 
 }

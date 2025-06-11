@@ -87,7 +87,7 @@ public class SendProjectUserGrantedEmailListener implements ApplicationListener<
                                                                          .setSubject("[REGARDS] Project Registration")
                                                                          .setFrom(noreply)
                                                                          .setTo(Collections.singleton(userEmail))
-                                                                         .setTemplate(AccessRightsTemplateConfiguration.EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME)
+                                                                         .setTemplate(AccessRightsTemplateConfiguration.USER_GRANTED_TEMPLATE)
                                                                          .setData(data)
                                                                          .setDefaultMessage(
                                                                              "Your project registration is confirmed.");
