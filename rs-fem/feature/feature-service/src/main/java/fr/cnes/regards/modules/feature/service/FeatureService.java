@@ -133,7 +133,7 @@ public class FeatureService implements IFeatureService {
         long start = System.currentTimeMillis();
 
         // With Spring Boot 3.5, the following code should work and just load the fields required by the projection
-        // (in Spring Boot 3.3, it works but does the project on the java side)
+        // (in Spring Boot 3.3, it works but it does the projection on the java side)
         //        Page<FeatureIdUrnDto> featureIdUrnDto = featureSimpleEntityRepository.findBy(filters,
         //                                                                                           q -> q.as(FeatureIdUrnDto.class)
         //                                                                                                 .page(pageable));
