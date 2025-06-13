@@ -27,6 +27,9 @@ import org.springframework.data.jpa.domain.Specification;
 
 /**
  * Repository in order to load {@link  FeatureIdUrnDto} projection from {@link FeatureSimpleEntity} entities.
+ * <p>
+ * Note: in Spring Boot 3.5, this repository is no longer necessary. See comments in FeatureService.findAll
+ * (Specification<FeatureSimpleEntity>, Pageable).
  *
  * @author Stephane Cortine
  **/

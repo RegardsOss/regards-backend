@@ -24,13 +24,11 @@ import fr.cnes.regards.modules.feature.dto.FeatureIdUrnDto;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
@@ -65,6 +63,12 @@ public class FeatureSimpleEntityCustomRepository implements IFeatureSimpleEntity
             }
         }
 
+        // Apply sort
+        for (Sort.Order o : pageable.getSort()) {
+            Path<Object> expr = root.get(o.getProperty());
+            query.orderBy(o.isAscending() ? cb.asc(expr) : cb.desc(expr));
+        }
+
         // Run main query with pagination
         TypedQuery<FeatureIdUrnDto> typedQuery = entityManager.createQuery(query);
         typedQuery.setFirstResult((int) pageable.getOffset());
@@ -85,4 +89,5 @@ public class FeatureSimpleEntityCustomRepository implements IFeatureSimpleEntity
 
         return new PageImpl<>(content, pageable, total);
     }
+
 }

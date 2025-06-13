@@ -132,6 +132,12 @@ public class FeatureService implements IFeatureService {
         LOGGER.debug("Filters feature deletion: {}", filters);
         long start = System.currentTimeMillis();
 
+        // With Spring Boot 3.5, the following code should work and just load the fields required by the projection
+        // (in Spring Boot 3.3, it works but does the project on the java side)
+        //        Page<FeatureIdUrnDto> featureIdUrnDto = featureSimpleEntityRepository.findBy(filters,
+        //                                                                                           q -> q.as(FeatureIdUrnDto.class)
+        //                                                                                                 .page(pageable));
+        // So in spring boot 3.3, use a custom repository with a specialized DTO:
         Page<FeatureIdUrnDto> featureIdUrnDto = featureSimpleEntityCustomRepository.findAll(filters, pageable);
 
         LOGGER.debug("Filters feature deletion registered in {} ms", System.currentTimeMillis() - start);
