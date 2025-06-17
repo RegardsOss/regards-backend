@@ -18,17 +18,20 @@
  */
 package fr.cnes.regards.microservices.authentication;
 
+import fr.cnes.regards.framwork.logger.LogConstants;
+import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 
 /**
  * Spring boot application : scans all core and contrib modules
  *
  * @author msordi
  */
-// CHECKSTYLE:OFF
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
 public class Application { // NOSONAR
 
@@ -42,5 +45,14 @@ public class Application { // NOSONAR
             System.exit(1);
         }
     }
+
+    @EventListener
+    public void onStartup(ApplicationReadyEvent event) {
+        LOGGER.info(LogConstants.SECURITY_MARKER, "Starting microservice: rs-access-instance.");
+    }
+
+    @PreDestroy
+    public void destroy() {
+        LOGGER.info(LogConstants.SECURITY_MARKER, "Stopping microservice: rs-access-instance.");
+    }
 }
-// CHECKSTYLE:ON

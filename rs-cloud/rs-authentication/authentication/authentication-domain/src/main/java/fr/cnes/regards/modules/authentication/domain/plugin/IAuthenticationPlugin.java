@@ -32,13 +32,13 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 public interface IAuthenticationPlugin {
 
     /**
-     * Check if the couple pName/pPassowrd is valid for the given project pScope
+     * Check if the given couple name/password is valid for the given project scope
      *
-     * @param pName     user login
-     * @param pPassword user password
-     * @param pScope    user project
+     * @param name     user login
+     * @param password user password
+     * @param scope    user project
      * @return Authentication status UserStatus
      */
-    AuthenticationPluginResponse authenticate(String pName, String pPassword, String pScope);
+    AuthenticationPluginResponse authenticate(String name, String password, String scope);
 
 }

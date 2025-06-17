@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.security.event.ResourceAccessEvent;
 import fr.cnes.regards.framework.security.event.RoleEvent;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framwork.logbackappender.LogConstants;
+import fr.cnes.regards.framwork.logger.LogConstants;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.*;
@@ -70,11 +70,10 @@ public class RoleService implements IRoleService, InitializingBean {
      */
     private static final String NATIVE_ROLE_NOT_REMOVABLE = "Modifications on native roles are forbidden";
 
-    public static final String ROLE_GAINED_ACCESS = LogConstants.SECURITY_MARKER
-                                                    + "Role {} has been granted access to these resources: {}";
+    public static final String ROLE_GRANTED_ACCESS_TEMPLATE = "Role {} has been granted access to these resources: {}";
 
-    public static final String ROLE_LOST_ACCESS = LogConstants.SECURITY_MARKER
-                                                  + "Role {} does not have access to the these resources anymore: {}";
+    public static final String ROLE_LOST_ACCESS_TEMPLATE = "Role {} does not have access to the these resources "
+                                                           + "anymore: {}";
 
     /**
      * CRUD repository managing {@link Role}s. Autowired by Spring.
@@ -173,6 +172,7 @@ public class RoleService implements IRoleService, InitializingBean {
             return role.get();
         }
         defaultRole.setParentRole(parentRole);
+
         return roleRepository.save(defaultRole);
     }
 
@@ -212,17 +212,14 @@ public class RoleService implements IRoleService, InitializingBean {
             throw new EntityAlreadyExistsException(role.getName());
         }
 
-        if ((role.getParentRole() == null) || (role.getParentRole().getName() == null)) {
+        String parentName = role.getParentRole() == null ? null : role.getParentRole().getName();
+        if (parentName == null) {
             throw new EntityException("A parent role is required to create a new role.");
         }
 
         // If parent role is a native role. Copy resources from the parent role.
-        Optional<Role> roleOpt = roleRepository.findOneByName(role.getParentRole().getName());
-        if (!roleOpt.isPresent()) {
-            throw new EntityNotFoundException(role.getParentRole().getName(), Role.class);
-        }
-
-        Role parentRole = roleOpt.get();
+        Role parentRole = roleRepository.findOneByName(parentName)
+                                        .orElseThrow(() -> new EntityNotFoundException(parentName, Role.class));
         Role newCreatedRole;
         if (parentRole.isNative()) {
             newCreatedRole = roleRepository.save(role);
@@ -256,11 +253,7 @@ public class RoleService implements IRoleService, InitializingBean {
      */
     @Override
     public Role retrieveRole(Long roleId) throws EntityNotFoundException {
-        Optional<Role> roleOpt = roleRepository.findById(roleId);
-        if (!roleOpt.isPresent()) {
-            throw new EntityNotFoundException(roleId, Role.class);
-        }
-        return roleOpt.get();
+        return roleRepository.findById(roleId).orElseThrow(() -> new EntityNotFoundException(roleId, Role.class));
     }
 
     @Override
@@ -278,7 +271,7 @@ public class RoleService implements IRoleService, InitializingBean {
         }
         Role updated = updatedRole;
         if (!beforeUpdate.isNative() && !beforeUpdate.getParentRole().equals(updatedRole.getParentRole())) {
-            // if this is a custom role and and the parent has changed: we set the resources of the custom role to the
+            // if this is a custom role and the parent has changed: we set the resources of the custom role to the
             // one of its new parent
             // so lets get its parent with its permissions
             Role newParent = roleRepository.findOneById(updatedRole.getParentRole().getId());
@@ -289,27 +282,23 @@ public class RoleService implements IRoleService, InitializingBean {
 
     @Override
     public void removeRole(Long roleId) throws EntityException {
-        Optional<Role> previousOpt = roleRepository.findById(roleId);
-        if ((previousOpt.isPresent()) && previousOpt.get().isNative()) {
-            throw new EntityOperationForbiddenException(roleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
-        } else if (!previousOpt.isPresent()) {
-            throw new EntityNotFoundException(roleId, Role.class);
-        } else {
-            deleteAndPublish(previousOpt.get());
-        }
+        Role role = roleRepository.findById(roleId).orElseThrow(() -> new EntityNotFoundException(roleId, Role.class));
+        removeRole(role, roleId.toString());
     }
 
     @Override
     public void removeRole(String roleName) throws EntityException {
-        Optional<Role> role = roleRepository.findOneByName(roleName);
-        if (!role.isPresent()) {
-            throw new EntityNotFoundException(roleName, Role.class);
-        } else if (role.get().isNative()) {
-            throw new EntityOperationForbiddenException(roleName, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
-        } else {
-            deleteAndPublish(role.get());
-        }
+        Role role = roleRepository.findOneByName(roleName)
+                                  .orElseThrow(() -> new EntityNotFoundException(roleName, Role.class));
+        removeRole(role, roleName);
+    }
 
+    private void removeRole(Role role, String key) throws EntityException {
+        if (role.isNative()) {
+            throw new EntityOperationForbiddenException(key, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
+        } else {
+            deleteAndPublish(role);
+        }
     }
 
     /**
@@ -329,11 +318,8 @@ public class RoleService implements IRoleService, InitializingBean {
 
     @Override
     public Role updateRoleResourcesAccess(Long roleId, Set<ResourcesAccess> resourcesAccesses) throws EntityException {
-        Optional<Role> roleOpt = roleRepository.findById(roleId);
-        if (!roleOpt.isPresent()) {
-            throw new EntityNotFoundException(roleId.toString(), Role.class);
-        }
-        Role role = roleOpt.get();
+        Role role = roleRepository.findById(roleId)
+                                  .orElseThrow(() -> new EntityNotFoundException(roleId.toString(), Role.class));
         Set<ResourcesAccess> permissions = role.getPermissions();
 
         // extract which one are to be removed
@@ -485,7 +471,8 @@ public class RoleService implements IRoleService, InitializingBean {
         if (changed) {
             StringJoiner sj = new StringJoiner(", ");
             Arrays.stream(resourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
-            LOGGER.info(ROLE_GAINED_ACCESS, role.getName(), sj.toString());
+            LOGGER.info(LogConstants.SECURITY_MARKER, ROLE_GRANTED_ACCESS_TEMPLATE, role.getName(), sj.toString());
+
             publishResourceAccessEvent(role.getName(), resourcesAccesses);
         }
         // Retrieve its descendants
@@ -510,7 +497,8 @@ public class RoleService implements IRoleService, InitializingBean {
         if (changed) {
             StringJoiner sj = new StringJoiner(", ");
             Arrays.stream(resourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
-            LOGGER.info(ROLE_GAINED_ACCESS, role.getName(), sj.toString());
+            LOGGER.info(LogConstants.SECURITY_MARKER, ROLE_GRANTED_ACCESS_TEMPLATE, role.getName(), sj.toString());
+
             publishResourceAccessEvent(role.getName(), resourcesAccesses);
         }
         // Change parent if required
@@ -538,38 +526,36 @@ public class RoleService implements IRoleService, InitializingBean {
 
     @Override
     public void clearRoleResourcesAccess(Long roleId) throws EntityNotFoundException {
-        Optional<Role> roleOpt = roleRepository.findById(roleId);
-        if (!roleOpt.isPresent()) {
+        Optional<Role> role = roleRepository.findById(roleId);
+        if (role.isEmpty()) {
             throw new EntityNotFoundException(roleId.toString(), Role.class);
         }
-        roleOpt.get().getPermissions().clear();
-        roleRepository.save(roleOpt.get());
+        role.get().getPermissions().clear();
+
+        roleRepository.save(role.get());
     }
 
     @Override
     public Page<ProjectUser> retrieveRoleProjectUserList(Long roleId, Pageable pageable)
         throws EntityNotFoundException {
-        Optional<Role> roleOpt = roleRepository.findById(roleId);
-        if (!roleOpt.isPresent()) {
-            throw new EntityNotFoundException(roleId.toString(), Role.class);
-        }
-
-        Set<Role> roles = retrieveInheritedRoles(roleOpt.get());
-        roles.add(roleOpt.get());
-        Set<String> roleNames = roles.stream().map(Role::getName).collect(Collectors.toSet());
-        return projectUserRepository.findByRoleNameIn(roleNames, pageable);
+        Role role = roleRepository.findById(roleId)
+                                  .orElseThrow(() -> new EntityNotFoundException(roleId.toString(), Role.class));
+        return retrieveRoleProjectUserList(role, pageable);
     }
 
     @Override
     public Page<ProjectUser> retrieveRoleProjectUserList(String roleName, Pageable pageable)
         throws EntityNotFoundException {
-        Optional<Role> role = roleRepository.findOneByName(roleName);
-        if (!role.isPresent()) {
-            throw new EntityNotFoundException(roleName, Role.class);
-        }
-        Set<Role> roles = retrieveInheritedRoles(role.get());
-        roles.add(role.get());
+        Role role = roleRepository.findOneByName(roleName)
+                                  .orElseThrow(() -> new EntityNotFoundException(roleName, Role.class));
+        return retrieveRoleProjectUserList(role, pageable);
+    }
+
+    private Page<ProjectUser> retrieveRoleProjectUserList(Role role, Pageable pageable) throws EntityNotFoundException {
+        Set<Role> roles = retrieveInheritedRoles(role);
+        roles.add(role);
         Set<String> roleNames = roles.stream().map(Role::getName).collect(Collectors.toSet());
+
         return projectUserRepository.findByRoleNameIn(roleNames, pageable);
     }
 
@@ -699,8 +685,8 @@ public class RoleService implements IRoleService, InitializingBean {
      */
     @Override
     public void removeResourcesAccesses(String roleName, ResourcesAccess... resourcesAccesses) throws EntityException {
-        Role role = roleRepository.findOneByName(roleName).orElseThrow(() -> new EntityNotFoundException(roleName,
-                                                                                                     Role.class));
+        Role role = roleRepository.findOneByName(roleName)
+                                  .orElseThrow(() -> new EntityNotFoundException(roleName, Role.class));
         // Check if current user can remove resources to specified role
         canManageRole(role);
         removeResourcesAccesses(role, resourcesAccesses);
@@ -746,7 +732,8 @@ public class RoleService implements IRoleService, InitializingBean {
             if (changed) {
                 StringJoiner sj = new StringJoiner(", ");
                 Arrays.stream(resourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
-                LOGGER.info(ROLE_LOST_ACCESS, role.getName(), sj.toString());
+                LOGGER.info(LogConstants.SECURITY_MARKER, ROLE_LOST_ACCESS_TEMPLATE, role.getName(), sj.toString());
+
                 publishResourceAccessEvent(role.getName(), resourcesAccesses);
             }
             // Propagate
@@ -784,7 +771,8 @@ public class RoleService implements IRoleService, InitializingBean {
         if (changed) {
             StringJoiner sj = new StringJoiner(", ");
             Arrays.stream(resourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
-            LOGGER.info(ROLE_LOST_ACCESS, role.getName(), sj.toString());
+            LOGGER.info(LogConstants.SECURITY_MARKER, ROLE_LOST_ACCESS_TEMPLATE, role.getName(), sj.toString());
+
             publishResourceAccessEvent(role.getName(), resourcesAccesses);
         }
         // Change parent if required
@@ -938,6 +926,7 @@ public class RoleService implements IRoleService, InitializingBean {
     private void publishRoleEvent(Role role) {
         RoleEvent roleEvent = new RoleEvent();
         roleEvent.setRole(role.getName());
+
         publisher.publish(roleEvent);
     }
 

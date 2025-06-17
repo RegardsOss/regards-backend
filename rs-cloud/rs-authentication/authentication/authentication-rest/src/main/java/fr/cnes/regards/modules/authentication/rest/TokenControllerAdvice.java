@@ -18,11 +18,15 @@
  */
 package fr.cnes.regards.modules.authentication.rest;
 
+import fr.cnes.regards.framwork.logger.LogConstants;
 import fr.cnes.regards.modules.authentication.domain.exception.oauth2.AuthenticationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -36,8 +40,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Order(Ordered.LOWEST_PRECEDENCE - 200)
 public class TokenControllerAdvice {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TokenControllerAdvice.class);
+
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<AuthenticationException> authenticationException(final AuthenticationException exception) {
+        LOGGER.warn(LogConstants.SECURITY_MARKER, exception.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exception);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<BadCredentialsException> badCredentialsException(final BadCredentialsException exception) {
+        LOGGER.error(exception.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception);
     }
 }

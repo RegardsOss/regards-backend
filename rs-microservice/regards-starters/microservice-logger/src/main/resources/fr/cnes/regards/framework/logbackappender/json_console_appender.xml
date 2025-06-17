@@ -19,11 +19,14 @@
 -->
 
 <included>
+
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+
+    <appender name="JSON"
+              class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
-                <mdc/>
+
                 <pattern>
                     <omitEmptyFields>true</omitEmptyFields>
                     <pattern>
@@ -39,10 +42,12 @@
                         "xForwardedFor": "%mdc{req.xForwardedFor}",
                         "username": "%mdc{username}",
                         "correlationId": "%mdc{correlationId}",
-                        "message": "%message"
+                        "message": "%message",
+                        "type": "%marker"
                         }
                     </pattern>
                 </pattern>
+
                 <stackTrace>
                     <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
                         <maxDepthPerThrowable>50</maxDepthPerThrowable>
@@ -54,7 +59,9 @@
                         <inlineHash>true</inlineHash>
                     </throwableConverter>
                 </stackTrace>
+
             </providers>
         </encoder>
     </appender>
+
 </included>

@@ -19,7 +19,6 @@
 package fr.cnes.regards.cloud.gateway.filters;
 
 import ch.qos.logback.classic.ClassicConstants;
-import fr.cnes.regards.framwork.logbackappender.LogConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,11 +110,7 @@ public class InputOutputPreparationFilter implements GlobalFilter {
         URI requestURI = request.getURI();
         String requestMethod = Objects.requireNonNull(request.getMethod()).toString();
 
-        LOGGER.info(LogConstants.SECURITY_MARKER + LOG_PREFIX + "{}@{} from {}",
-                    correlationId,
-                    requestURI,
-                    requestMethod,
-                    remoteAddress);
+        LOGGER.info(LOG_PREFIX + "{}@{} from {}", correlationId, requestURI, requestMethod, remoteAddress);
 
         String url = null;
         try {
@@ -157,7 +152,7 @@ public class InputOutputPreparationFilter implements GlobalFilter {
         ServerHttpRequest request = exchange.getRequest();
         ServerHttpResponse response = exchange.getResponse();
 
-        LOGGER.info(LogConstants.SECURITY_MARKER + "Response ({}) for tracked request {} : {}@{} from {}",
+        LOGGER.info("Response ({}) for tracked request {} : {}@{} from {}",
                     response.getStatusCode(),
                     response.getHeaders().getFirst(CORRELATION_ID),
                     request.getURI(),

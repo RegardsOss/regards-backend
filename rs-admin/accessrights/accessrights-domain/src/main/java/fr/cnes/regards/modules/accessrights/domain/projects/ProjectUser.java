@@ -24,15 +24,14 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.listeners.ProjectUserListener;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
-import org.hibernate.validator.constraints.Length;
-
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+import org.hibernate.validator.constraints.Length;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -323,19 +322,67 @@ public class ProjectUser implements IIdentifiable<Long> {
 
     @Override
     public String toString() {
-        return "ProjectUser [id="
+        return "ProjectUser ["
+               + "id="
                + id
-               + ", email="
+               + ", email='"
                + email
+               + ", firstName='"
+               + firstName
+               + ", lastName='"
+               + lastName
                + ", lastConnection="
                + lastConnection
                + ", lastUpdate="
                + lastUpdate
+               + ", created="
+               + created
+               + ", origin='"
+               + origin
+               + ", maxQuota="
+               + maxQuota
+               + ", currentQuota="
+               + currentQuota
                + ", status="
                + status
                + ", licenseAccepted="
                + licenseAccepted
-               + "]";
+               + ']';
+    }
+
+    public String toString(Set<String> accessGroups, Role role, Set<MetaData> metadata) {
+        return "ProjectUser ["
+               + "id="
+               + this.id
+               + ", email='"
+               + this.email
+               + ", firstName='"
+               + this.firstName
+               + ", lastName='"
+               + this.lastName
+               + ", lastConnection="
+               + this.lastConnection
+               + ", lastUpdate="
+               + this.lastUpdate
+               + ", created="
+               + this.created
+               + ", origin='"
+               + this.origin
+               + ", accessGroups="
+               + accessGroups
+               + ", maxQuota="
+               + this.maxQuota
+               + ", currentQuota="
+               + this.currentQuota
+               + ", status="
+               + this.status
+               + ", metadata="
+               + metadata
+               + ", role="
+               + role
+               + ", licenseAccepted="
+               + licenseAccepted
+               + ']';
     }
 
 }

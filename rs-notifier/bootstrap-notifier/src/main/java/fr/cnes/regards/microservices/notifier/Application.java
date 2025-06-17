@@ -28,7 +28,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  * @author msordi
  */
-// CHECKSTYLE:OFF
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
 public class Application { // NOSONAR
 
@@ -43,4 +42,3 @@ public class Application { // NOSONAR
         }
     }
 }
-// CHECKSTYLE:ON

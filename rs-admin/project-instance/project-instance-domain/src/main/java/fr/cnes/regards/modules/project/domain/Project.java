@@ -303,4 +303,41 @@ public class Project implements IIdentifiable<Long> {
     public void setAccessible(Boolean accessible) {
         isAccessible = accessible;
     }
+
+    @Override
+    public String toString() {
+        return "Project{"
+               + "id="
+               + id
+               + ", name='"
+               + name
+               + '\''
+               + ", label='"
+               + label
+               + '\''
+               + ", description='"
+               + description
+               + '\''
+               + ", icon='"
+               + icon
+               + '\''
+               + ", isPublic="
+               + isPublic
+               + ", isAccessible="
+               + isAccessible
+               + ", isDeleted="
+               + isDeleted
+               + ", licenceLink='"
+               + licenceLink
+               + '\''
+               + ", host='"
+               + host
+               + '\''
+               + ", crs='"
+               + crs
+               + '\''
+               + ", isPoleToBeManaged="
+               + isPoleToBeManaged
+               + '}';
+    }
 }

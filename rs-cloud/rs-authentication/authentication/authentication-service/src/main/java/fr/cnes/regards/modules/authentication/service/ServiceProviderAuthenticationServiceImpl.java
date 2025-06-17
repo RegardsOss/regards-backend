@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framwork.logger.LogConstants;
 import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.exception.serviceprovider.ServiceProviderPluginIllegalParameterException;
@@ -21,6 +22,8 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 @MultitenantTransactional
 public class ServiceProviderAuthenticationServiceImpl implements IServiceProviderAuthenticationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceProviderAuthenticationServiceImpl.class);
 
     private final IServiceProviderRepository repository;
 
@@ -96,18 +101,16 @@ public class ServiceProviderAuthenticationServiceImpl implements IServiceProvide
     }
 
     private Try<Authentication> regardsAuthentication(String serviceProviderName,
-                                                      ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfo.AuthenticationInfo> pAuthInfo) {
-        return userAccountManager.createUserWithAccountAndGroups(pAuthInfo.getUserInfo(), serviceProviderName)
-                                 .map(role -> Tuple.of(pAuthInfo.getUserInfo(),
-                                                       role,
-                                                       pAuthInfo.getAuthenticationInfo()))
+                                                      ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfo.AuthenticationInfo> authInfo) {
+        return userAccountManager.createUserWithAccountAndGroups(authInfo.getUserInfo(), serviceProviderName)
+                                 .map(role -> Tuple.of(authInfo.getUserInfo(), role, authInfo.getAuthenticationInfo()))
                                  .map(t -> {
                                      ServiceProviderAuthenticationInfo.UserInfo userInfo = t._1;
                                      String roleName = t._2;
-                                     Map<String, String> authInfo = t._3;
-                                     Map<String, String> additionalClaims = userInfo.getMetadata().merge(authInfo);
+                                     Map<String, String> additionalClaims = userInfo.getMetadata().merge(t._3);
                                      String tenant = runtimeTenantResolver.getTenant();
                                      String email = userInfo.getEmail();
+
                                      OffsetDateTime expirationDate = jwtService.getExpirationDate(OffsetDateTime.now());
                                      String token = jwtService.generateToken(tenant,
                                                                              email,
@@ -115,6 +118,10 @@ public class ServiceProviderAuthenticationServiceImpl implements IServiceProvide
                                                                              roleName,
                                                                              expirationDate,
                                                                              new java.util.HashMap<>(additionalClaims.toJavaMap()));
+                                     LOGGER.info(LogConstants.SECURITY_MARKER,
+                                                 "The user <{}> is authenticated for the project {}",
+                                                 email,
+                                                 tenant);
                                      return new Authentication(tenant,
                                                                email,
                                                                roleName,

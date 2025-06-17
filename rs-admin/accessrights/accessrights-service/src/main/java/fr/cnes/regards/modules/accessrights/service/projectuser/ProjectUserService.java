@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framwork.logger.LogConstants;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilder;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
@@ -243,7 +244,17 @@ public class ProjectUserService implements IProjectUserService {
         }
 
         publisher.publish(new ProjectUserEvent(updatedProjectUser.getEmail(), ProjectUserAction.UPDATE));
-        return save(projectUser);
+
+        // Update the project user in DB
+        ProjectUser newProjectUser = save(projectUser);
+        LOG.info(LogConstants.SECURITY_MARKER,
+                 "Update project user : {}",
+                 newProjectUser.toString(newProjectUser.getAccessGroups(),
+                                         newProjectUser.getRole(),
+                                         newProjectUser.getMetadata() != null ?
+                                             newProjectUser.getMetadata() :
+                                             new HashSet<>()));
+        return newProjectUser;
     }
 
     @Override
@@ -393,7 +404,13 @@ public class ProjectUserService implements IProjectUserService {
             projectUser.setStatus(userStatus);
         }
 
+        // Create the project user in db
         projectUser = save(projectUser);
+        LOG.info(LogConstants.SECURITY_MARKER,
+                 "Create a project user : {}",
+                 projectUser.toString(projectUser.getAccessGroups(),
+                                      projectUser.getRole(),
+                                      projectUser.getMetadata() != null ? projectUser.getMetadata() : new HashSet<>()));
 
         // Once project user is properly created, link project to account
         accountUtilsService.addProject(email);

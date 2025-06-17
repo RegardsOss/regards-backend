@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.swagger.autoconfigure.PageableQueryParam;
+import fr.cnes.regards.framwork.logger.LogConstants;
 import fr.cnes.regards.modules.authentication.domain.data.Authentication;
 import fr.cnes.regards.modules.authentication.domain.data.ServiceProvider;
 import fr.cnes.regards.modules.authentication.domain.dto.ServiceProviderDto;
@@ -63,6 +64,9 @@ import static com.google.common.base.Predicates.instanceOf;
 import static io.vavr.API.$;
 import static io.vavr.API.Case;
 
+/**
+ * Rest controller for the authentification service provider.
+ */
 @RestController
 public class ServiceProviderController implements IResourceController<ServiceProviderDto> {
 
@@ -194,8 +198,9 @@ public class ServiceProviderController implements IResourceController<ServicePro
                                          description = "The endpoint is not accessible for the user.",
                                          useReturnTypeSchema = true,
                                          content = { @Content(mediaType = "application/html") }) })
-    @PostMapping(value = PATH_AUTHENTICATE)
-    @ResourceAccess(description = "Authenticate with the given service provider.", role = DefaultRole.PUBLIC)
+    @PostMapping(value = PATH_AUTHENTICATE, produces = "application/json")
+    @ResourceAccess(description = "EndPoint to authenticate with the given service provider.",
+                    role = DefaultRole.PUBLIC)
     public ResponseEntity<Authentication> authenticate(@PathVariable("name") String name,
                                                        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication credentials.",
                                                                                                              content = @Content(
@@ -205,10 +210,12 @@ public class ServiceProviderController implements IResourceController<ServicePro
         throws ModuleException {
         return serviceProviderAuthentication.authenticate(name, params)
                                             .map(ResponseEntity::ok)
-                                            .recover(ServiceProviderPluginIllegalParameterException.class,
-                                                     ex -> ResponseEntity.badRequest().build())
-                                            .recover(AuthenticationException.class, ex -> {
+                                            .recover(ServiceProviderPluginIllegalParameterException.class, ex -> {
                                                 LOGGER.error(ex.getMessage(), ex);
+                                                return ResponseEntity.badRequest().build();
+                                            })
+                                            .recover(AuthenticationException.class, ex -> {
+                                                LOGGER.error(LogConstants.SECURITY_MARKER, ex.getMessage(), ex);
                                                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
                                             })
                                             .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
