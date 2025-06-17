@@ -72,6 +72,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.nio.entity.NStringEntity;
 import org.apache.logging.log4j.util.Strings;
+import org.apache.lucene.search.TotalHits;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
@@ -137,7 +138,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.data.util.Pair;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -848,66 +851,7 @@ public class EsRepository implements IEsRepository {
             for (BulkItemResponse itemResponse : response.getItems()) {
                 T document = map.get(itemResponse.getId());
                 if (itemResponse.isFailed()) {
-                    // Add item it and its associated exception
-                    if (document instanceof DataObject) {
-                        DataObjectFeature docFeature = (((DataObject) document).getFeature());
-                        result.addInErrorDoc(itemResponse.getId(),
-                                             itemResponse.getFailure().getCause(),
-                                             Optional.ofNullable(docFeature.getSession()),
-                                             Optional.ofNullable(docFeature.getSessionOwner()));
-                        if (itemResponse.getFailure().getMessage().contains(IMapping.GEO_SHAPE_ATTRIBUTE)) {
-                            // Save the failling geometry in the log
-                            IGeometry wgs84 = ((DataObject) document).getWgs84();
-                            if (wgs84 instanceof Polygon) {
-                                Polygon polygonWGS84 = (Polygon) wgs84;
-                                if (errorBuffer.length() > 0) {
-                                    errorBuffer.append('\n').append('\n');
-                                }
-                                String msg =
-                                    "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
-                                    + "\"properties\":{},\"geometry\": {\"type\": \"Polygon\",\"coordinates\": [["
-                                    + polygonWGS84.getCoordinates().getExteriorRing().toString()
-                                    + "]]}}]}";
-                                errorBuffer.append(msg);
-                            } else if (wgs84 instanceof MultiPolygon) {
-                                MultiPolygon multiPolygonWGS84 = (MultiPolygon) wgs84;
-                                if (errorBuffer.length() > 0) {
-                                    errorBuffer.append('\n').append('\n');
-                                }
-                                String msg =
-                                    "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
-                                    + "\"properties\":{},\"geometry\": {\"type\": \"MultiPolygon\",\"coordinates\": [["
-                                    + multiPolygonWGS84.getCoordinates()
-                                                       .stream()
-                                                       .map(p -> p.getExteriorRing().toString())
-                                                       .collect(Collectors.joining("], [", "[", "]"))
-                                    + "]]}}]}";
-                                errorBuffer.append(msg);
-                            }
-                        }
-                    } else {
-                        result.addInErrorDoc(itemResponse.getId(),
-                                             itemResponse.getFailure().getCause(),
-                                             Optional.empty(),
-                                             Optional.empty());
-                    }
-                    String msg = String.format("Document of type %s and id %s with label %s cannot be saved",
-                                               documents[0].getClass(),
-                                               itemResponse.getId(),
-                                               map.get(itemResponse.getId()));
-
-                    // Log error
-                    LOGGER.warn(msg, itemResponse.getFailure().getCause());
-                    // Add error msg to buffer
-                    if (errorBuffer != null) {
-                        if (errorBuffer.length() > 0) {
-                            errorBuffer.append('\n');
-                        }
-                        errorBuffer.append(msg).append('\n').append("Cause: ");
-                        // ElasticSearch creates Exception on exception (root one is more appropriate)
-                        Throwable exception = Throwables.getRootCause(itemResponse.getFailure().getCause());
-                        errorBuffer.append(exception.getMessage());
-                    }
+                    manageFailedResponse(errorBuffer, documents, itemResponse, document, result, map);
                 } else {
                     if (document instanceof DataObject) {
                         DataObjectFeature docFeature = (((DataObject) document).getFeature());
@@ -929,6 +873,74 @@ public class EsRepository implements IEsRepository {
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             throw new RsRuntimeException(e);
+        }
+    }
+
+    private static <T extends IIndexable> void manageFailedResponse(StringBuilder errorBuffer,
+                                                                    T[] documents,
+                                                                    BulkItemResponse itemResponse,
+                                                                    T document,
+                                                                    BulkSaveResult result,
+                                                                    Map<String, T> map) {
+        // Add item it and its associated exception
+        if (document instanceof DataObject) {
+            DataObjectFeature docFeature = (((DataObject) document).getFeature());
+            result.addInErrorDoc(itemResponse.getId(),
+                                 itemResponse.getFailure().getCause(),
+                                 Optional.ofNullable(docFeature.getSession()),
+                                 Optional.ofNullable(docFeature.getSessionOwner()));
+            if (itemResponse.getFailure().getMessage().contains(IMapping.GEO_SHAPE_ATTRIBUTE)) {
+                if (errorBuffer != null) {
+                    // Save the failling geometry in the log
+                    IGeometry wgs84 = ((DataObject) document).getWgs84();
+                    if (wgs84 instanceof Polygon polygonWGS84) {
+                        if (!errorBuffer.isEmpty()) {
+                            errorBuffer.append('\n').append('\n');
+                        }
+                        String msg =
+                            "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
+                            + "\"properties\":{},\"geometry\": {\"type\": \"Polygon\",\"coordinates\": [["
+                            + polygonWGS84.getCoordinates().getExteriorRing().toString()
+                            + "]]}}]}";
+                        errorBuffer.append(msg);
+                    } else if (wgs84 instanceof MultiPolygon multiPolygonWGS84) {
+                        if (!errorBuffer.isEmpty()) {
+                            errorBuffer.append('\n').append('\n');
+                        }
+                        String msg =
+                            "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
+                            + "\"properties\":{},\"geometry\": {\"type\": \"MultiPolygon\",\"coordinates\": [["
+                            + multiPolygonWGS84.getCoordinates()
+                                               .stream()
+                                               .map(p -> p.getExteriorRing().toString())
+                                               .collect(Collectors.joining("], [", "[", "]"))
+                            + "]]}}]}";
+                        errorBuffer.append(msg);
+                    }
+                }
+            }
+        } else {
+            result.addInErrorDoc(itemResponse.getId(),
+                                 itemResponse.getFailure().getCause(),
+                                 Optional.empty(),
+                                 Optional.empty());
+        }
+        String msg = String.format("Document of type %s and id %s with label %s cannot be saved",
+                                   documents[0].getClass(),
+                                   itemResponse.getId(),
+                                   map.get(itemResponse.getId()));
+
+        // Log error
+        LOGGER.warn(msg, itemResponse.getFailure().getCause());
+        // Add error msg to buffer
+        if (errorBuffer != null) {
+            if (!errorBuffer.isEmpty()) {
+                errorBuffer.append('\n');
+            }
+            errorBuffer.append(msg).append('\n').append("Cause: ");
+            // ElasticSearch creates Exception on exception (root one is more appropriate)
+            Throwable exception = Throwables.getRootCause(itemResponse.getFailure().getCause());
+            errorBuffer.append(exception.getMessage());
         }
     }
 
@@ -967,7 +979,7 @@ public class EsRepository implements IEsRepository {
                 }
             } while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while
             // Delete scroll context to avoid too many scroll context stored in Elasticsearch (limit 500)
-            if (clearRequest.getScrollIds() != null && clearRequest.getScrollIds().size() > 0) {
+            if (!CollectionUtils.isEmpty(clearRequest.getScrollIds())) {
                 client.clearScrollAsync(clearRequest, RequestOptions.DEFAULT, scrollClearListener);
             }
             // loop.
@@ -986,7 +998,7 @@ public class EsRepository implements IEsRepository {
                 throw new ESIndexNotFoundRuntimeException();
             }
             Optional<String> queryShardCause = Arrays.stream(ee.getSuppressed())
-                                                     .map(t -> t.getMessage())
+                                                     .map(Throwable::getMessage)
                                                      .filter(m -> m.contains(QUERY_SHARD_EXCEPTION))
                                                      .findFirst();
             if (queryShardCause.isPresent()) {
@@ -1171,8 +1183,6 @@ public class EsRepository implements IEsRepository {
         ICriterion finalCriterion = criterion.accept(new VersioningSearchVisitor(this));
         String index = searchKey.getSearchIndex();
         try {
-            final List<T> results = new ArrayList<>();
-
             Sort sort = pageRequest.getSort();
 
             // Always define at least a default sorting parameter to assure uniqueness and potential deep search
@@ -1208,7 +1218,7 @@ public class EsRepository implements IEsRepository {
                     if (finalLastSearchAfterSortValues != null) {
                         builder.searchAfter(finalLastSearchAfterSortValues).from(0);
                         manageSortRequest(index, builder, finalSort);
-                    } else if ((finalSort != null) && finalSort.isSorted()) {
+                    } else if (finalSort.isSorted()) {
                         manageSortRequest(index, builder, finalSort);
                     }
                 } catch (IOException e) {
@@ -1225,30 +1235,32 @@ public class EsRepository implements IEsRepository {
                                                                                      facetsMap);
             SearchResponse response = responseNFacets.v1();
             long start = System.currentTimeMillis();
-            SearchHits hits = response.getHits();
-            for (SearchHit hit : hits) {
-                try {
-                    JsonParser parser = new JsonParser();
-                    JsonObject jo = parser.parse(hit.getSourceAsString()).getAsJsonObject();
-                    String hitType = jo.get("type").getAsString();
-                    results.add(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(),
-                                                                        searchKey.getSearchTypeMap().get(hitType)));
-                } catch (JsonParseException e) {
-                    LOGGER.error("Unable to jsonify entity with id {}, source: \"{}\"",
-                                 hit.getId(),
-                                 hit.getSourceAsString());
-                    throw new RsRuntimeException(e);
-                }
-            }
+            List<T> results = deserializeHits(searchKey, response);
             LOGGER.debug("After Elasticsearch request execution, gsonification : {} ms",
                          System.currentTimeMillis() - start);
-            return new FacetPage<T>(results,
-                                    responseNFacets.v2(),
-                                    pageRequest,
-                                    response.getHits().getTotalHits().value);
+            return new FacetPage<T>(results, responseNFacets.v2(), pageRequest, getTotalHits(response));
         } catch (final JsonSyntaxException | IOException e) {
             throw new RsRuntimeException(e);
         }
+    }
+
+    private <T extends IIndexable> List<T> deserializeHits(SearchKey<T, T> searchKey, SearchResponse response) {
+        final List<T> results = new ArrayList<>();
+        SearchHits hits = response.getHits();
+        for (SearchHit hit : hits) {
+            try {
+                JsonObject jo = JsonParser.parseString(hit.getSourceAsString()).getAsJsonObject();
+                String hitType = jo.get("type").getAsString();
+                results.add(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(),
+                                                                    searchKey.getSearchTypeMap().get(hitType)));
+            } catch (JsonParseException e) {
+                LOGGER.error("Unable to jsonify entity with id {}, source: \"{}\"",
+                             hit.getId(),
+                             hit.getSourceAsString());
+                throw new RsRuntimeException(e);
+            }
+        }
+        return results;
     }
 
     private Tuple<SearchResponse, Set<IFacet<?>>> searchWithFacets(SearchKey<?, ?> searchKey,
@@ -1279,7 +1291,7 @@ public class EsRepository implements IEsRepository {
 
         start = System.currentTimeMillis();
         Set<IFacet<?>> facetResults = new HashSet<>();
-        if (response.getHits().getTotalHits().value != 0) {
+        if (getTotalHits(response) != 0) {
             // At least one numeric facet is present, we need to replace all numeric facets by associated range
             // facets
             if (twoPassRequestNeeded) {
@@ -1324,7 +1336,7 @@ public class EsRepository implements IEsRepository {
             for (Map.Entry<String, FacetType> entry : facetsMap.entrySet()) {
                 FacetType facetType = entry.getValue();
                 String attributeName = entry.getKey();
-                fillFacets(aggsMap, facetResults, facetType, attributeName, response.getHits().getTotalHits().value);
+                fillFacets(aggsMap, facetResults, facetType, attributeName, getTotalHits(response));
             }
         }
     }
@@ -1409,8 +1421,7 @@ public class EsRepository implements IEsRepository {
                 offset += MAX_RESULT_WINDOW;
             }
             // hack: -1min because a conflict problem with scheduler in the method saveReminder(..)
-            OffsetDateTime expirationDate = OffsetDateTime.now()
-                                                          .plus(KEEP_ALIVE_SCROLLING_TIME_MN - 1, ChronoUnit.MINUTES);
+            OffsetDateTime expirationDate = OffsetDateTime.now().plusMinutes(KEEP_ALIVE_SCROLLING_TIME_MN - 1);
 
             int nextToLastOffset = (int) (pageRequest.getOffset() - (pageRequest.getOffset() % MAX_RESULT_WINDOW));
             // Execute as many request with search after as necessary to advance to next to last page of
@@ -1833,9 +1844,12 @@ public class EsRepository implements IEsRepository {
      * @param builder search request
      * @param sort    map(attribute name, true if ascending)
      */
-    private void manageSortRequest(String index, SearchSourceBuilder builder, Sort sort) throws IOException {
+    private void manageSortRequest(String index, SearchSourceBuilder builder, @NonNull Sort sort) throws IOException {
         // Convert Sort into linked hash map
         LinkedHashMap<String, Boolean> ascSortMap = new SortToLinkedHashMap().convert(sort);
+        if (ascSortMap == null) {
+            throw new IllegalArgumentException("Sorted cannot be null");
+        }
 
         // Because string attributes are not indexed with Elasticsearch, it is necessary to add ".keyword" at
         // end of attribute name into sort request. So we need to know string attributes
@@ -2124,7 +2138,7 @@ public class EsRepository implements IEsRepository {
                 results.add(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(),
                                                                     searchKey.fromType(hit.getType())));
             }
-            return new PageImpl<>(results, pageRequest, response.getHits().getTotalHits().value);
+            return new PageImpl<>(results, pageRequest, getTotalHits(response));
         } catch (final JsonSyntaxException | IOException e) {
             throw new RsRuntimeException(e);
         }
@@ -2152,7 +2166,7 @@ public class EsRepository implements IEsRepository {
             SearchResponse response = getSearchResponse(request);
 
             // First "global" aggregations results
-            summary.addDocumentsCount(response.getHits().getTotalHits().value);
+            summary.addDocumentsCount(getTotalHits(response));
             Aggregations aggs = response.getAggregations();
             for (String fileType : fileTypes) {
 
@@ -2392,7 +2406,7 @@ public class EsRepository implements IEsRepository {
             // Launch the request
             SearchResponse response = getSearchResponse(request);
             // First "global" aggregations results
-            summary.addDocumentsCount(response.getHits().getTotalHits().value);
+            summary.addDocumentsCount(getTotalHits(response));
             Aggregations aggs = response.getAggregations();
             for (String fileType : fileTypes) {
                 // ref
@@ -2574,6 +2588,15 @@ public class EsRepository implements IEsRepository {
             return tenantResolver.getTenant();
         } else {
             throw new RsRuntimeException("Index not defined for elasticsearch request");
+        }
+    }
+
+    private long getTotalHits(SearchResponse response) {
+        TotalHits totalHits = response.getHits().getTotalHits();
+        if (totalHits != null) {
+            return totalHits.value;
+        } else {
+            return 0;
         }
     }
 

@@ -89,23 +89,19 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
             throw new FlywayException(e);
         }
 
         return users;
     }
 
+    @SuppressWarnings("java:S2221") // Catch all Exception to rethrow as FlywayException
     private void updateUser(String email, Connection connection) {
-
         LOGGER.info("Updating projects for user {}", email);
-
         String error = "Unable to update user " + email;
-
         try {
-
             FeignSecurityManager.asSystem();
-
             ResponseEntity<Void> linkResponse = accountsClient.link(email, runtimeTenantResolver.getTenant());
             if (linkResponse == null || !linkResponse.getStatusCode().is2xxSuccessful()) {
                 throw new FlywayException(error);
@@ -113,7 +109,6 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
 
             Account account = HateoasUtils.unwrap(accountsClient.retrieveAccountByEmail(email).getBody());
             updateUser(email, account.getFirstName(), account.getLastName(), connection);
-
         } catch (Exception e) {
             LOGGER.error(error, e);
             throw new FlywayException(error);

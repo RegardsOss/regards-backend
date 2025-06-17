@@ -35,6 +35,7 @@ public class Application {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
+    @SuppressWarnings("java:S2221")  // main entrypoint: catch all to ensure clean exit
     public static void main(final String[] args) {
         try {
             SpringApplication.run(Application.class, args); // NOSONAR

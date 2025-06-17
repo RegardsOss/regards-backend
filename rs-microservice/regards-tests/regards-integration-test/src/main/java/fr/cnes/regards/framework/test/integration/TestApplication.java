@@ -32,7 +32,7 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 public class TestApplication {
 
-    public static void main(final String[] pArgs) {
-        SpringApplication.run(TestApplication.class, pArgs); // NOSONAR
+    public static void main(final String[] args) {
+        SpringApplication.run(TestApplication.class, args);
     }
 }

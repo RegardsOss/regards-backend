@@ -16,8 +16,8 @@ public class Application {
      *
      * @param pArgs microservice bootstrap arguments
      */
-    public static void main(final String[] pArgs) {
-        SpringApplication.run(Application.class, pArgs); // NOSONAR
+    public static void main(final String[] args) {
+        SpringApplication.run(Application.class, args);
     }
 
 }

@@ -31,14 +31,13 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Set;
@@ -91,7 +90,7 @@ public class RoleResourceController implements IResourceController<ResourcesAcce
     }
 
     @GetMapping(value = "/{microservice}", produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity<List<EntityModel<ResourcesAccess>>> getRoleResourcesForMicroservice(
+    public ResponseEntity<List<EntityModel<ResourcesAccess>>> getRoleResourcesForMicroservice(
         @PathVariable("role_name") final String roleName, @PathVariable("microservice") final String microserviceName)
         throws ModuleException {
         Role role = roleService.retrieveRole(roleName);
@@ -105,8 +104,8 @@ public class RoleResourceController implements IResourceController<ResourcesAcce
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Add access to one resource for a role", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<EntityModel<ResourcesAccess>> addRoleResource(@PathVariable("role_name") String roleName,
-                                                                        @RequestBody
-                                                                        @Valid ResourcesAccess newResourcesAccess)
+                                                                        @RequestBody @Valid
+                                                                        ResourcesAccess newResourcesAccess)
         throws ModuleException {
         Role role = roleService.retrieveRole(roleName);
         roleService.addResourceAccesses(role.getId(), newResourcesAccess);
@@ -156,6 +155,8 @@ public class RoleResourceController implements IResourceController<ResourcesAcce
      *
      * @return whether the resource access can be removed from the given role
      */
+    @SuppressWarnings("java:S1166")
+    // S1166: Exception handling is used to handle a specific case where the role does not exist. Not need to rethrow an exception here.
     private boolean isRemovable(ResourcesAccess resourcesAccess, String roleName) {
         try {
             Role currentRole = roleService.retrieveRole(roleName);

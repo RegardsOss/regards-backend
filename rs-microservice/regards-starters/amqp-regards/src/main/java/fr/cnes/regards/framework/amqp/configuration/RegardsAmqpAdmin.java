@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
+import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.InitializingBean;
@@ -392,11 +393,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
                 }
                 break;
             case BROADCAST:
-                if (broadcastRoutingKey.isPresent()) {
-                    routingKey = broadcastRoutingKey.get();
-                } else {
-                    routingKey = DEFAULT_ROUTING_KEY;
-                }
+                routingKey = broadcastRoutingKey.orElse(DEFAULT_ROUTING_KEY);
                 break;
             default:
                 throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
@@ -412,6 +409,11 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
     @Override
     public boolean isQueueEmpty(String queueName) {
         QueueInformation queueInfo = rabbitAdmin.getQueueInfo(queueName);
+        // method getQueueInfo is annotated @Nullable, but the package is annotated @NonNullApi.
+        // noinspection ConstantConditions — Intellij assumes that queueInfo cannot be null, but it actually can be
+        if (queueInfo == null) {
+            throw new AmqpException("Failed to retrieve queue information for: " + queueName);
+        }
         return queueInfo.getMessageCount() == 0;
     }
 

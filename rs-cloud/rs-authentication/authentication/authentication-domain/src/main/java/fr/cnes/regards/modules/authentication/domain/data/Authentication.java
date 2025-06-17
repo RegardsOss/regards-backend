@@ -37,8 +37,8 @@ public class Authentication {
     /**
      * It's a constant but the aim is to be serialized in json => final with a getter
      */
-    @SerializedName("token_type")
-    private final String tokenType = "bearer"; // NOSONAR : @SerializedName(pour Gson) impossible with static
+    @SerializedName("token_type") // NOSONAR : @SerializedName(pour Gson) impossible with static
+    private final String tokenType = "bearer";
 
     /**
      * project, tenant and scope is same thing
