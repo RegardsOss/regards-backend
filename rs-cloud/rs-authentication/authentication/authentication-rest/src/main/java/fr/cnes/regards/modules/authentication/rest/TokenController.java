@@ -72,11 +72,11 @@ public class TokenController {
      * are used with different values, body property prepends on request parameter.
      * <b>Use of request parameters is deprecated (please use body) and will be removed in next version</b>
      */
-    @Operation(summary = "Oauth2 authentication endpoint.")
+    @Operation(summary = "Oauth2 authentication.")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Authentication granted."),
                             @ApiResponse(responseCode = "400", description = "Authentication denied.") })
-    @ResourceAccess(role = DefaultRole.PUBLIC, description = "Oauth2 authentication endpoint.")
-    @PostMapping(path = PATH_TOKEN, consumes = { MediaType.ALL_VALUE })
+    @ResourceAccess(description = "Endpoint for the Oauth2 authentication.", role = DefaultRole.PUBLIC)
+    @PostMapping(path = PATH_TOKEN, consumes = { MediaType.ALL_VALUE }, produces = "application/json")
     public ResponseEntity<Authentication> postAccessToken(
         @Deprecated @RequestParam(required = false) Map<String, String> requestParameters,
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authentication credentials.")
@@ -93,8 +93,8 @@ public class TokenController {
     }
 
     /**
-     * requestParameters map may or may not contain all user authentication properties.
-     * If not, userAuthentication must contain these properties
+     * The given requestParameters map may or may not contain all user authentication properties.
+     * If not, userAuthentication must contain these properties.
      *
      * @param requestParameters     from request
      * @param userAuthenticationOpt from body
@@ -130,6 +130,7 @@ public class TokenController {
         headers.set("Cache-Control", "no-store");
         headers.set("Pragma", "no-cache");
         headers.set("Content-Type", "application/json;charset=UTF-8");
+
         return new ResponseEntity<>(authentication, headers, HttpStatus.OK);
     }
 

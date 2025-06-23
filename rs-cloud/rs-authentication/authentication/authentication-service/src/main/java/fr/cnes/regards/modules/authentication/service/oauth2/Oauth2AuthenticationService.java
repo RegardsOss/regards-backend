@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.authentication.service.oauth2;
 
+import com.google.common.base.Strings;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -29,6 +30,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framwork.logger.LogConstants;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
@@ -76,9 +78,13 @@ import java.util.Objects;
 @Service
 public class Oauth2AuthenticationService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Oauth2AuthenticationService.class);
+
     private static final String CHECK_USER_INFO_ERROR_MSG = "An error occurred while trying to check user status";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Oauth2AuthenticationService.class);
+    private static final String ACCESS_DENIED_USER_TEMPLATE = "Access denied for user %s for the project %s. Cause:";
+
+    private static final String STATUS_ACCESS_DENIED_USER_TEMPLATE = ACCESS_DENIED_USER_TEMPLATE + " status is %s";
 
     /**
      * Default authentication plugin to use if none is configured
@@ -118,7 +124,6 @@ public class Oauth2AuthenticationService {
                                        IUserAccountManager userAccountManager,
                                        JWTService jwtService,
                                        @Value("${regards.accounts.root.user.login}") String staticRootLogin) {
-        super();
         this.runTimeTenantResolver = runTimeTenantResolver;
         this.projectUsersClient = projectUsersClient;
         this.pluginService = pluginService;
@@ -140,74 +145,76 @@ public class Oauth2AuthenticationService {
      * @return Authentication token
      */
     public Authentication doAuthentication(String login, String password, String scope) {
-        if ((login == null) || (password == null)) {
+        if (Strings.isNullOrEmpty(login) || Strings.isNullOrEmpty(password)) {
             throw new BadCredentialsException("User login / password cannot be empty");
         }
-        if (scope == null) {
-            String message = "Attribute scope is missing";
-            LOGGER.error(message);
-            throw new BadCredentialsException(message);
+        if (Strings.isNullOrEmpty(scope)) {
+            throw new BadCredentialsException("Attribute scope is missing");
         }
 
-        AuthenticationPluginResponse response = new AuthenticationPluginResponse(false, null);
-        // If the given is a valid project, then check for project authentication plugins
+        AuthenticationPluginResponse authentificationResponse = new AuthenticationPluginResponse(false, null);
+        // If the scope is a valid project, then check for project authentication plugins
         if (checkScopeValidity(scope)) {
-            response = doScopePluginsAuthentication(login, password, scope);
+            authentificationResponse = doScopePluginsAuthentication(login, password, scope);
         }
         // If authentication is not valid, try with the default plugin
-        if (!response.isAccessGranted()) {
+        if (!authentificationResponse.isAccessGranted()) {
             // Use default REGARDS internal plugin
-            response = doPluginAuthentication(defaultAuthenticationPlugin, login, password, scope);
+            authentificationResponse = doPluginAuthentication(defaultAuthenticationPlugin, login, password, scope);
         }
         // Before returning generating token, check user status.
-        AuthenticationStatus status = checkUserStatus(response.getEmail(), scope);
+        AuthenticationStatus status = checkUserStatus(authentificationResponse.getEmail(), scope);
         // If authentication is granted and user does not exist and plugin is not the regards internal authentication.
-        if (response.isAccessGranted()
+        if (authentificationResponse.isAccessGranted()
             && ((status == AuthenticationStatus.USER_UNKNOWN) || //
                 (status == AuthenticationStatus.ACCOUNT_UNKNOWN))
-            && !response.getPluginClassName().equals(defaultAuthenticationPlugin.getClass().getName())) {
-            this.createExternalProjectUser(response.getEmail(), response.getServiceProviderName());
-            status = checkUserStatus(response.getEmail(), scope);
+            && !authentificationResponse.getPluginClassName()
+                                        .equals(defaultAuthenticationPlugin.getClass().getName())) {
+            createExternalProjectUser(authentificationResponse.getEmail(),
+                                      authentificationResponse.getServiceProviderName());
+
+            status = checkUserStatus(authentificationResponse.getEmail(), scope);
         }
 
         if (status != AuthenticationStatus.ACCESS_GRANTED) {
-            String message = String.format("Access denied for user %s. cause : user status is %s",
-                                           response.getEmail(),
-                                           status.name());
-            throw new AuthenticationException(message, status);
+            throw new AuthenticationException(String.format(STATUS_ACCESS_DENIED_USER_TEMPLATE,
+                                                            authentificationResponse.getEmail(),
+                                                            scope,
+                                                            status.name()), status);
         }
-
         // If access is not allowed then return an unknown account error response
-        if (!response.isAccessGranted()) {
-            String message = String.format("Access denied for user %s. cause: %s",
-                                           response.getEmail(),
-                                           response.getErrorMessage());
-            throw new AuthenticationException(message, AuthenticationStatus.ACCOUNT_UNKNOWN);
+        if (!authentificationResponse.isAccessGranted()) {
+            throw new AuthenticationException(String.format(ACCESS_DENIED_USER_TEMPLATE + " %s",
+                                                            authentificationResponse.getEmail(),
+                                                            scope,
+                                                            authentificationResponse.getErrorMessage()),
+                                              AuthenticationStatus.ACCOUNT_UNKNOWN);
         }
-
-        LOGGER.info("The user <{}> is authenticated for the project {}", response.getEmail(), scope);
 
         AbstractAuthenticationToken abstractAuthenticationToken = generateAuthenticationUser(scope,
                                                                                              login,
-                                                                                             response.getEmail(),
+                                                                                             authentificationResponse.getEmail(),
                                                                                              password);
+        LOGGER.info(LogConstants.SECURITY_MARKER,
+                    "The user <{}> is authenticated for the project {}",
+                    authentificationResponse.getEmail(),
+                    scope);
+
         UserDetails userDetails = (UserDetails) abstractAuthenticationToken.getPrincipal();
+        String tenant = userDetails.getTenant();
         String email = userDetails.getEmail();
+        String role = userDetails.getRole();
+
         OffsetDateTime expirationDate = jwtService.getExpirationDate(OffsetDateTime.now());
-        Map<String, Object> claims = jwtService.generateClaims(userDetails.getTenant(),
-                                                               userDetails.getRole(),
-                                                               email,
-                                                               email);
-        String token = jwtService.generateToken(userDetails.getTenant(),
-                                                email,
-                                                email,
-                                                userDetails.getRole(),
-                                                expirationDate,
-                                                claims);
-        return new Authentication(userDetails.getTenant(),
+
+        Map<String, Object> claims = jwtService.generateClaims(tenant, role, email, email);
+
+        String token = jwtService.generateToken(tenant, email, email, role, expirationDate, claims);
+
+        return new Authentication(tenant,
                                   email,
-                                  userDetails.getRole(),
-                                  response.getServiceProviderName(),
+                                  role,
+                                  authentificationResponse.getServiceProviderName(),
                                   token,
                                   expirationDate);
     }
@@ -371,7 +378,7 @@ public class Oauth2AuthenticationService {
                                                                 String userName,
                                                                 String userPassword,
                                                                 String scope) {
-        // Check user/password
+        // Check username/password against the scope
         AuthenticationPluginResponse response = plugin.authenticate(userName, userPassword, scope);
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             Validator validator = factory.getValidator();
@@ -405,11 +412,15 @@ public class Oauth2AuthenticationService {
             // Retrieve account
             userDetails = retrieveUserDetails(login, email, scope);
         } else {
+            AuthenticationStatus status = AuthenticationStatus.INSTANCE_ACCESS_DENIED;
             // Unauthorized access to instance tenant for authenticated user.
-            throw new AuthenticationException("Access denied to REGARDS instance administration for user " + login,
-                                              AuthenticationStatus.INSTANCE_ACCESS_DENIED);
+            throw new AuthenticationException(String.format(STATUS_ACCESS_DENIED_USER_TEMPLATE,
+                                                            login,
+                                                            "REGARDS instance administration",
+                                                            status.name()), status);
         }
         grantedAuths.add(new SimpleGrantedAuthority(userDetails.getRole()));
+
         return new UsernamePasswordAuthenticationToken(userDetails, password, grantedAuths);
     }
 

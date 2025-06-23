@@ -137,13 +137,13 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     @Override
+    @SuppressWarnings("java:S1166") // EntityNotFoundException is part of the nominal flow
     public boolean shouldAccessToResourceRequiring(String roleName) {
         try {
             return roleService.isCurrentRoleSuperiorTo(roleName);
         } catch (EntityNotFoundException e) {
-            // Nothing to do
+            return false;
         }
-        return false;
     }
 
 }

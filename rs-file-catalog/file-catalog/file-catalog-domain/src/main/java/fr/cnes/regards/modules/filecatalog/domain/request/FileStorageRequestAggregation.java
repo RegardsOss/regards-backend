@@ -165,7 +165,7 @@ public class FileStorageRequestAggregation {
         this.storage = storage;
         this.metaInfo = metaInfo;
         this.status = status;
-        this.statusString = statusString;
+        this.statusString = status;
         this.errorCause = errorCause;
         this.creationDate = creationDate;
         this.jobId = jobId;

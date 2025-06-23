@@ -73,7 +73,7 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
     }
 
     /**
-     * A deletion request can be scheduled only if the product is fully created. Thtat means :
+     * A deletion request can be scheduled only if the product is fully created. That means :
      * - No creation request with same urn exists
      * - No dissemination update request exists with same urn. Indeed, after creation request is done the request is
      * deleted and the dissemination update requested are created. Product is fully created when dissemination info

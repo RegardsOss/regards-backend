@@ -36,8 +36,7 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.framwork.logbackappender.LogConstants;
+import fr.cnes.regards.framwork.logger.LogConstants;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;
@@ -189,6 +188,7 @@ public class AccessRightService implements IAccessRightService {
             throw new RuntimeException("SHA-256 non disponible", e);
         }
     }
+
     private void calculateAccessRights(AccessRight accessRight, DatasetMetadata metadata) {
         String metadataPluginId = null;
         String metadataPluginChecksum = null;
@@ -284,36 +284,39 @@ public class AccessRightService implements IAccessRightService {
     }
 
     /**
-     * Handle security log
+     * Handle log messages for the security
      */
     private void logForSecurity(AccessRight accessRight) {
         // Access rights have diferent method of being configured, each one should has its own log format to be understandable.
-        String message = String.format("%sDataset %s access right has been modified.",
-                                       LogConstants.SECURITY_MARKER,
+        String message = String.format("Dataset %s access right has been modified.",
                                        accessRight.getConstrained().getLabel());
         switch (accessRight.getMetadataAccessLevel()) {
             case FULL_ACCESS:
-                LOGGER.info(message
+                LOGGER.info(LogConstants.SECURITY_MARKER,
+                            message
                             + " Users from group {} has access to this dataset metadata and its data metadata."
                             + " Access to physical data is: {}",
                             accessRight.getAccessGroup().getName(),
                             accessRight.getFileAccessLevel());
                 break;
             case RESTRICTED_ACCESS:
-                LOGGER.info(message
+                LOGGER.info(LogConstants.SECURITY_MARKER,
+                            message
                             + " Users from group {} has access to this dataset."
                             + " This means they can only see its metadata and no information about its data.",
                             accessRight.getAccessGroup().getName());
                 break;
             case CUSTOM_ACCESS:
-                LOGGER.info(message
+                LOGGER.info(LogConstants.SECURITY_MARKER,
+                            message
                             + " Users from group {} has access to this dataset metadata"
                             + " and its data access is decided by the plugin {}.",
                             accessRight.getAccessGroup().getName(),
                             accessRight.getDataAccessPlugin().getLabel());
                 break;
             case NO_ACCESS:
-                LOGGER.info(message + " Users from group {} has no access to this dataset metadata and its data.",
+                LOGGER.info(LogConstants.SECURITY_MARKER,
+                            message + " Users from group {} has no access to this dataset metadata and its data.",
                             accessRight.getAccessGroup().getName());
                 break;
             default:
@@ -367,24 +370,25 @@ public class AccessRightService implements IAccessRightService {
 
     @Override
     public void deleteAccessRight(Long id) throws ModuleException {
-        Optional<AccessRight> accessRightOpt = accessRightRepository.findById(id);
-        if (!accessRightOpt.isPresent()) {
-            throw new EntityNotFoundException(id, AccessRight.class);
-        }
-        AccessRight accessRight = accessRightOpt.get();
+        AccessRight accessRight = accessRightRepository.findById(id)
+                                                       .orElseThrow(() -> new EntityNotFoundException(id,
+                                                                                                      AccessRight.class));
         // Remove current group from dataset if accessRight is a GroupAccessRight
         Dataset dataset = datasetService.load(accessRight.getDataset().getId());
         if (dataset != null) {
             dataset.getGroups().remove(accessRight.getAccessGroup().getName());
+            //Update the dataset in the database with the access group that has been removed
             datasetService.update(dataset);
         }
 
         PluginConfiguration confToDelete = accessRight.getDataAccessPlugin();
+        // Delete the access right in the database
         accessRightRepository.deleteById(id);
-        LOGGER.info("{}Dataset {} has no more configured access for users from group {}",
-                    LogConstants.SECURITY_MARKER,
+        LOGGER.info(LogConstants.SECURITY_MARKER,
+                    "Dataset {} has no more configured access for users from group {}",
                     accessRight.getConstrained().getLabel(),
                     accessRight.getAccessGroup().getName());
+
         if ((confToDelete != null) && (confToDelete.getId() != null)) {
             pluginService.deletePluginConfiguration(confToDelete.getBusinessId());
         }

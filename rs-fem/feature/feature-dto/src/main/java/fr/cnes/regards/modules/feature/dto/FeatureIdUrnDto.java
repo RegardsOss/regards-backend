@@ -1,5 +1,6 @@
 /*
- * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+
+ * Copyright 2017-2025 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -14,9 +15,18 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
+package fr.cnes.regards.modules.feature.dto;
+
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+
 /**
- * Package for Spring Configuration Server Application Bootsrap
- */
-package fr.cnes.regards.cloud.config;
+ * Dto projection from {@link FeatureSimpleEntity}
+ *
+ * @author Stephane Cortine
+ **/
+public record FeatureIdUrnDto(Long id,
+                              FeatureUniformResourceName urn) {
+
+}

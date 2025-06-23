@@ -31,6 +31,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class TestApplication {
 
     public static void main(final String[] pArgs) {
-        SpringApplication.run(TestApplication.class, pArgs); // NOSONAR
+        SpringApplication.run(TestApplication.class, pArgs);
     }
 }

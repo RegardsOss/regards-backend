@@ -239,4 +239,30 @@ public class Account implements IIdentifiable<Long> {
     public int hashCode() {
         return email.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "Account ["
+               + "id="
+               + id
+               + ", email='"
+               + email
+               + ", firstName='"
+               + firstName
+               + ", lastName='"
+               + lastName
+               + ", invalidityDate="
+               + invalidityDate
+               + ", origin='"
+               + origin
+               + ", authenticationFailedCounter="
+               + authenticationFailedCounter
+               + ", passwordUpdateDate="
+               + passwordUpdateDate
+               + ", status="
+               + status
+               + ", projects="
+               + projects
+               + ']';
+    }
 }

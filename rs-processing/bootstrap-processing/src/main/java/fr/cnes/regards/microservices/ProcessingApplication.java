@@ -19,6 +19,8 @@
 package fr.cnes.regards.microservices;
 
 import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -31,6 +33,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @MicroserviceInfo(name = "processing", version = "2.0.0-SNAPSHOT")
 public class ProcessingApplication {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingApplication.class);
+
     /**
      * Microservice bootstrap method
      *
@@ -41,5 +45,4 @@ public class ProcessingApplication {
         // app.setWebApplicationType(WebApplicationType.REACTIVE);
         app.run(args);
     }
-
 }

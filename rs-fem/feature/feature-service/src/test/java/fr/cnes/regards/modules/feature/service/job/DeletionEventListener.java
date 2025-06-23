@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.service.job;
 
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
+import fr.cnes.regards.modules.feature.service.flow.FeatureDeletionRequestEventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.Errors;
@@ -27,6 +28,9 @@ import org.springframework.validation.Errors;
 import java.util.List;
 
 /**
+ * This handler absorbs the incoming deletion request flow for feature(GeoJson) in test mode
+ * This class is a mock of {@link FeatureDeletionRequestEventHandler}
+ *
  * @author Sébastien Binda
  */
 public class DeletionEventListener implements IBatchHandler<FeatureDeletionRequestEvent> {

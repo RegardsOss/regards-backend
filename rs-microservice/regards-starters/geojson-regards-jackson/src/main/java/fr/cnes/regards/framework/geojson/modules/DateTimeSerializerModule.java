@@ -28,7 +28,7 @@ import java.time.OffsetDateTime;
  *
  * @author tguillou
  */
-public class DateTimeSerializerModule extends SimpleModule {
+public final class DateTimeSerializerModule extends SimpleModule {
 
     public DateTimeSerializerModule() {
         addSerializer(OffsetDateTime.class, new SerializerOffsetDateTime());

@@ -33,7 +33,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
- * allow us to create URN with the following format:
+ * This class allows us to create an URN(UniformResourceName) with the following format:
  * URN:StringId:entityType:tenant:UUID(entityId):Vversion[,order][:REVrevision]
  * <p>
  * <br/>

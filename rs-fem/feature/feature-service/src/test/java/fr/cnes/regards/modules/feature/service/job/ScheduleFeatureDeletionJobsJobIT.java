@@ -36,7 +36,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Test class to check {@link PublishFeatureDeletionEventsJob}s and  {@link ScheduleFeatureDeletionJobsJob}s
+ * Test class to check {@link PublishFeatureDeletionEventsJob}s and {@link ScheduleFeatureDeletionJobsJob}s
  *
  * @author Sébastien Binda
  */
@@ -60,40 +60,46 @@ public class ScheduleFeatureDeletionJobsJobIT extends AbstractFeatureMultitenant
 
     @Test
     public void test() throws InterruptedException, ExecutionException {
+        // Given
         DeletionEventListener listener = new DeletionEventListener();
         subscriber.subscribeTo(FeatureDeletionRequestEvent.class, listener);
 
-        // Initialize some feature
+        // Initialize 100 features
         initData(100);
 
-        // Schedule global deletion job with feature filters that results to no feature
-        JobInfo job = featureService.scheduleDeletionJob(new SearchFeatureSimpleEntityParameters().withSource("unknown"));
+        // When: Schedule global deletion jobs with feature filters that results to no feature
+        JobInfo job = featureService.scheduleDeletionJob(new SearchFeatureSimpleEntityParameters().withSource(
+            "unknown_source_test"));
         if (job != null) {
             String tenant = runtimeTenantResolver.getTenant();
             jobService.runJob(job, tenant).get();
         }
-        // No job should be scheduled
+        // Then
+        // No job should be scheduled because no feature with the source UNKNOWN_SOURCE.
         Assert.assertEquals(
-            "No PublishFeatureDeletionEventsJob should be scheduled as the feature selection should be empty",
+            "No PublishFeatureDeletionEventsJob should be scheduled as the feature selection should be returns empty",
             Long.valueOf(0L),
             jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName()));
         Thread.sleep(1_000);
         Assert.assertEquals("No deletion request event should be sent", 0, listener.getNumberOfRequests());
 
-        // Rerun schedule of deletion jobs for all features this time
+        // When: Schedule global deletion jobs without feature filters that results to all features, this time.
         job = featureService.scheduleDeletionJob(new SearchFeatureSimpleEntityParameters());
         if (job != null) {
             String tenant = runtimeTenantResolver.getTenant();
             jobService.runJob(job, tenant).get();
         }
+        // Then
         // As the number of features to handle is 100 and each job should handle 30 features, there should be 4 jobs scheduled
-        Assert.assertEquals("There should be 100/regards.feature.deletion.notification.job.size jobs scheduled ",
-                            Long.valueOf(4L),
-                            jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName(),
-                                                             JobStatus.TO_BE_RUN,
-                                                             JobStatus.QUEUED,
-                                                             JobStatus.RUNNING,
-                                                             JobStatus.SUCCEEDED));
+        Assert.assertEquals(
+            "There should be 100 features/regards.feature.deletion.notification.job.size(=30) jobs scheduled "
+            + "(4 jobs for each bulk: 30 features, 30 features, 30 features, 10 features)",
+            Long.valueOf(4L),
+            jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName(),
+                                             JobStatus.TO_BE_RUN,
+                                             JobStatus.QUEUED,
+                                             JobStatus.RUNNING,
+                                             JobStatus.SUCCEEDED));
         int loop = 0;
         while ((listener.getNumberOfRequests() < 100) && (loop < 100)) {
             Thread.sleep(100);

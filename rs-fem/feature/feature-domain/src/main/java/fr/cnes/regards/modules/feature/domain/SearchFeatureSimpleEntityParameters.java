@@ -163,4 +163,27 @@ public class SearchFeatureSimpleEntityParameters implements AbstractSearchParame
         this.featureIds = new ValuesRestriction<>(featureIds, ValuesRestrictionMode.EXCLUDE);
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "SearchFeatureSimpleEntityParameters{"
+               + "featureIds="
+               + featureIds
+               + ", model='"
+               + model
+               + '\''
+               + ", providerIds="
+               + providerIds
+               + ", source='"
+               + source
+               + '\''
+               + ", session='"
+               + session
+               + '\''
+               + ", lastUpdate="
+               + lastUpdate
+               + ", disseminationStatus="
+               + disseminationStatus
+               + '}';
+    }
 }

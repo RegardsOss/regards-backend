@@ -1,10 +1,5 @@
 package fr.cnes.regards.modules.emails.domain;
 
-import java.time.OffsetDateTime;
-
-import org.hibernate.annotations.Type;
-import org.springframework.util.ObjectUtils;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
@@ -13,6 +8,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.util.ObjectUtils;
+
+import java.time.OffsetDateTime;
 
 /**
  * Models a request for a simple mail message, including data such as the from, to, cc, subject, and text fields.

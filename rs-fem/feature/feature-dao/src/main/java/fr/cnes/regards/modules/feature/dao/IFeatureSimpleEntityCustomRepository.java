@@ -1,5 +1,6 @@
 /*
- * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+
+ * Copyright 2017-2025 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -14,24 +15,26 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
 package fr.cnes.regards.modules.feature.dao;
 
 import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
+import fr.cnes.regards.modules.feature.dto.FeatureIdUrnDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.stereotype.Repository;
 
 /**
- * Repository to handle access to {@link FeatureSimpleEntity} entities.
- */
-@Repository
-public interface IFeatureSimpleEntityRepository
-    extends JpaRepository<FeatureSimpleEntity, Long>, JpaSpecificationExecutor<FeatureSimpleEntity> {
+ * Repository in order to load {@link  FeatureIdUrnDto} projection from {@link FeatureSimpleEntity} entities.
+ * <p>
+ * Note: in Spring Boot 3.5, this repository is no longer necessary. See comments in FeatureService.findAll
+ * (Specification<FeatureSimpleEntity>, Pageable).
+ *
+ * @author Stephane Cortine
+ **/
+public interface IFeatureSimpleEntityCustomRepository {
 
-    Page<FeatureSimpleEntity> findAll(Specification<FeatureSimpleEntity> spec, Pageable page);
+    Page<FeatureIdUrnDto> findAll(Specification<FeatureSimpleEntity> spec, Pageable pageable);
+
 }

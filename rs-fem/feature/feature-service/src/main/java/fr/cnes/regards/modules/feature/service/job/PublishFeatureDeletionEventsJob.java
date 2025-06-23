@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -36,7 +35,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Job to publis {@link FeatureDeletionRequestEvent}s for each {@link FeatureEntityDto} urn
+ * Job to publish {@link FeatureDeletionRequestEvent}s for each urn of feature.
  *
  * @author Sébastien Binda
  */
@@ -62,14 +61,15 @@ public class PublishFeatureDeletionEventsJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        // Prepare features
+        // Prepare urns of feature
         List<FeatureUniformResourceName> features = new ArrayList<>();
         for (String urn : urns) {
             try {
                 features.add(FeatureUniformResourceName.fromString(urn));
             } catch (IllegalArgumentException e) {
                 logger.error(
-                    "Error trying to delete feature {} from FEM microservice. Feature identifier is not a valid FeatureUniformResourceName. Cause: {}",
+                    "Error trying to delete feature {} from rs-FEM microservice. Feature identifier is not a valid "
+                    + "urn of feature(FeatureUniformResourceName). Cause: {}",
                     urn,
                     e.getMessage());
             }
@@ -79,7 +79,9 @@ public class PublishFeatureDeletionEventsJob extends AbstractJob<Void> {
             FeatureDeletionRequestEvent event = FeatureDeletionRequestEvent.build(owner, urn, PriorityLevel.HIGH);
             events.add(event);
         }
+        // Publish feature deletion request events
         publisher.publish(events);
-        logger.info("{} feature deletion requests sended.", features.size());
+        
+        logger.info("{} feature deletion request events published.", features.size());
     }
 }

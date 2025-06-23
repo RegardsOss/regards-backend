@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactiona
 import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framwork.logger.LogConstants;
 import fr.cnes.regards.modules.accessrights.instance.dao.AccountSpecificationsBuilder;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
@@ -215,12 +216,13 @@ public class AccountService implements IAccountService, InitializingBean {
         if (!StringUtils.hasText(account.getOrigin())) {
             account.setOrigin(Account.REGARDS_ORIGIN);
         }
-        account = accountRepository.save(account);
+        Account newAccount = accountRepository.save(account);
+        LOG.info(LogConstants.SECURITY_MARKER, "Create new account : " + newAccount.toString());
         // Send email only once account is saved (the token that will be created has a reference to the account)
-        if (AccountStatus.EMAIL_VERIFICATION.equals(account.getStatus())) {
-            sendVerificationEmail(account, originUrl, requestLink);
+        if (AccountStatus.EMAIL_VERIFICATION.equals(newAccount.getStatus())) {
+            sendVerificationEmail(newAccount, originUrl, requestLink);
         }
-        return account;
+        return newAccount;
     }
 
     /**

@@ -530,8 +530,10 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
         Set<FeatureEntity> entities = requests.stream().map(request -> {
             Integer previousVersion = versionByProviders.get(request.getProviderId());
             FeatureUniformResourceName previousUrn = urnByProviders.get(request.getProviderId());
+
             return initFeatureEntity(request, previousVersion, previousUrn, featureCreationJob);
         }).collect(Collectors.toSet());
+
         featureEntityRepository.saveAll(entities);
 
         LOGGER.trace("------------->>> {} feature saved in {} ms", entities.size(), System.currentTimeMillis() - start);

@@ -97,7 +97,7 @@ public final class S3ServerUtils {
             }
         } else {
             s3server = Optional.empty();
-            LOGGER.info("Accessing url {} from HTTP server (not found in configured S3 server).", url);
+            LOGGER.debug("No known S3 server matching url {}", url);
         }
         return s3server;
     }

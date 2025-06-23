@@ -98,52 +98,52 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
     /**
      * The XML file used as a model
      */
-    private final String modelFile = "modelTest1.xml";
+    private static final String modelFile = "modelTest1.xml";
 
     /**
      * The mission name
      */
-    private final String missionName = "MISSION";
+    private static final String missionName = "MISSION";
 
     /**
      * The mission SipID
      */
-    private final String providerId = "PROVIDERID";
+    private static final String providerId = "PROVIDERID";
 
     /**
      * The reference attribute name
      */
-    private final String refAtt = "reference";
+    private static final String refAtt = "reference";
 
     /**
      * the reference attribute value
      */
-    private final String refValue = "REFTEST";
+    private static final String refValue = "REFTEST";
 
     /**
      * The active attribute name
      */
-    private final String actAtt = "active";
+    private static final String actAtt = "active";
 
     /**
      * the active attribute value
      */
-    private final Boolean actValue = true;
+    private static final Boolean actValue = true;
 
     /**
      * the geo fragment name
      */
-    private final String geo = "geo";
+    private static final String geo = "geo";
 
     /**
      * the crs attribute name
      */
-    private final String crsAtt = "crs";
+    private static final String crsAtt = "crs";
 
     /**
      * the crs attribute value
      */
-    private final String crsValue = "Earth";
+    private static final String crsValue = "Earth";
 
     /**
      * Collection label

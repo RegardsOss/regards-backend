@@ -81,6 +81,10 @@
             <artifactId>spring-aspects</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>microservice-logger</artifactId>
+        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

@@ -27,12 +27,14 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.dao.FeatureSimpleEntitySpecificationBuilder;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureSimpleEntityCustomRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureSimpleEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
 import fr.cnes.regards.modules.feature.domain.RecipientsSearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeatureIdUrnDto;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
@@ -43,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 
@@ -64,6 +67,8 @@ public class FeatureService implements IFeatureService {
 
     private final IFeatureSimpleEntityRepository featureSimpleEntityRepository;
 
+    private final IFeatureSimpleEntityCustomRepository featureSimpleEntityCustomRepository;
+
     private final IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo;
 
     private final IAuthenticationResolver authResolver;
@@ -73,11 +78,13 @@ public class FeatureService implements IFeatureService {
     public FeatureService(IFeatureSimpleEntityRepository featureSimpleEntityRepository,
                           IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo,
                           IAuthenticationResolver authResolver,
-                          IJobInfoService jobInfoService) {
+                          IJobInfoService jobInfoService,
+                          IFeatureSimpleEntityCustomRepository featureSimpleEntityCustomRepository) {
         this.featureSimpleEntityRepository = featureSimpleEntityRepository;
         this.featureWithDisseminationRepo = featureWithDisseminationRepo;
         this.authResolver = authResolver;
         this.jobInfoService = jobInfoService;
+        this.featureSimpleEntityCustomRepository = featureSimpleEntityCustomRepository;
     }
 
     /**
@@ -100,6 +107,8 @@ public class FeatureService implements IFeatureService {
     @MultitenantTransactional(isolation = Isolation.REPEATABLE_READ)
     @Timed(value = "feature_find_all", description = "Durée d'exécution de FeatureService#findAll")
     public Page<FeatureEntityDto> findAll(SearchFeatureSimpleEntityParameters filters, Pageable pageable) {
+        LOGGER.debug("Filters feature deletion: {}", filters);
+        long start = System.currentTimeMillis();
         // Workaround to avoid in-memory pagination with specification
         // 1. use simple entities with specification + pagination to get 1 page
         // 2. fetch full entities for objects in this page
@@ -113,7 +122,26 @@ public class FeatureService implements IFeatureService {
                                                                                       featureSimpleEntities.getSort());
 
         List<FeatureEntityDto> featureEntityDtos = featureEntities.stream().map(entity -> entity.toDto(true)).toList();
+        LOGGER.debug("Filters feature deletion registered in {} ms", System.currentTimeMillis() - start);
         return new PageImpl<>(featureEntityDtos, pageable, featureSimpleEntities.getTotalElements());
+    }
+
+    @Override
+    @MultitenantTransactional(readOnly = true)
+    public Page<FeatureIdUrnDto> findAll(Specification<FeatureSimpleEntity> filters, Pageable pageable) {
+        LOGGER.debug("Filters feature deletion: {}", filters);
+        long start = System.currentTimeMillis();
+
+        // With Spring Boot 3.5, the following code should work and just load the fields required by the projection
+        // (in Spring Boot 3.3, it works but it does the projection on the java side)
+        //        Page<FeatureIdUrnDto> featureIdUrnDto = featureSimpleEntityRepository.findBy(filters,
+        //                                                                                           q -> q.as(FeatureIdUrnDto.class)
+        //                                                                                                 .page(pageable));
+        // So in spring boot 3.3, use a custom repository with a specialized DTO:
+        Page<FeatureIdUrnDto> featureIdUrnDto = featureSimpleEntityCustomRepository.findAll(filters, pageable);
+
+        LOGGER.debug("Filters feature deletion registered in {} ms", System.currentTimeMillis() - start);
+        return featureIdUrnDto;
     }
 
     @Override
@@ -131,13 +159,11 @@ public class FeatureService implements IFeatureService {
         jobParameters.add(new JobParameter(PublishFeatureNotificationJob.RECIPIENTS_PARAMETER,
                                            selection.getRecipientIds()));
         // the job priority will be set according the priority of the first request to schedule
-        JobInfo jobInfo = new JobInfo(false,
-                                      PriorityLevel.HIGH.getPriorityLevel(),
-                                      jobParameters,
-                                      authResolver.getUser(),
-                                      PublishFeatureNotificationJob.class.getName());
-
-        return jobInfoService.createAsQueued(jobInfo);
+        return jobInfoService.createAsQueued(new JobInfo(false,
+                                                         PriorityLevel.HIGH.getPriorityLevel(),
+                                                         jobParameters,
+                                                         authResolver.getUser(),
+                                                         PublishFeatureNotificationJob.class.getName()));
     }
 
     @Override
@@ -146,13 +172,13 @@ public class FeatureService implements IFeatureService {
         Set<JobParameter> jobParameters = Sets.newHashSet();
         jobParameters.add(new JobParameter(ScheduleFeatureDeletionJobsJob.SELECTION_PARAMETER, selection));
         jobParameters.add(new JobParameter(ScheduleFeatureDeletionJobsJob.OWNER_PARAMETER, authResolver.getUser()));
+
         // the job priority will be set according the priority of the first request to schedule
-        JobInfo jobInfo = new JobInfo(false,
-                                      PriorityLevel.HIGH.getPriorityLevel(),
-                                      jobParameters,
-                                      authResolver.getUser(),
-                                      ScheduleFeatureDeletionJobsJob.class.getName());
-        return jobInfoService.createAsQueued(jobInfo);
+        return jobInfoService.createAsQueued(new JobInfo(false,
+                                                         PriorityLevel.HIGH.getPriorityLevel(),
+                                                         jobParameters,
+                                                         authResolver.getUser(),
+                                                         ScheduleFeatureDeletionJobsJob.class.getName()));
     }
 
 }

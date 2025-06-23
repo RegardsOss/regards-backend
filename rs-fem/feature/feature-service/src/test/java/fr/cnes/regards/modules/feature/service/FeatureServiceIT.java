@@ -20,11 +20,14 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.dao.FeatureSimpleEntitySpecificationBuilder;
 import fr.cnes.regards.modules.feature.domain.DisseminationFilterStatusEnum;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeatureIdUrnDto;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
@@ -35,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -63,21 +67,27 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
 
     private FeatureEntity firstFeature;
 
+    private FeatureUniformResourceName firstURN;
+
     private FeatureEntity secondFeature;
+
+    private FeatureUniformResourceName secondURN;
 
     private OffsetDateTime dateAfterCreatedFirstFeature;
 
     @Before
     public void init() {
+        // Create one feature in DB
+        firstURN = FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                    EntityType.DATA,
+                                                    "peps",
+                                                    UUID.randomUUID(),
+                                                    1);
         firstFeature = FeatureEntity.build("owner",
                                            "session",
                                            Feature.build("id2",
                                                          "owner",
-                                                         FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
-                                                                                          EntityType.DATA,
-                                                                                          "peps",
-                                                                                          UUID.randomUUID(),
-                                                                                          1),
+                                                         firstURN,
                                                          IGeometry.point(IGeometry.position(10.0, 20.0)),
                                                          EntityType.DATA,
                                                          featureModelName),
@@ -90,15 +100,17 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
 
         dateAfterCreatedFirstFeature = OffsetDateTime.now();
 
+        // Create second feature in DB
+        secondURN = FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                     EntityType.DATA,
+                                                     "peps",
+                                                     UUID.randomUUID(),
+                                                     1);
         secondFeature = FeatureEntity.build("owner",
                                             "session",
                                             Feature.build("id2",
                                                           "owner",
-                                                          FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
-                                                                                           EntityType.DATA,
-                                                                                           "peps",
-                                                                                           UUID.randomUUID(),
-                                                                                           1),
+                                                          secondURN,
                                                           IGeometry.point(IGeometry.position(10.0, 20.0)),
                                                           EntityType.DATA,
                                                           featureModelName),
@@ -106,7 +118,6 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
                                             featureModelName);
         secondFeature.getFeature().addProperty(IProperty.buildString("data_type", "TYPE01"));
         secondFeature.setProviderId("providerId2");
-
         featureRepo.save(secondFeature);
     }
 
@@ -271,6 +282,25 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
         assertEquals(1, results.getNumberOfElements());
         assertEquals(1, featureEntityDtos.getNumberOfElements());
         assertEquals("providerId1", results.getContent().get(0).getProviderId());
+    }
+
+    @Test
+    public void test_find_feature() {
+        // Given
+        Pageable page = PageRequest.of(0, 10);
+        Specification<FeatureSimpleEntity> specification = new FeatureSimpleEntitySpecificationBuilder().build();
+        // When
+        Page<FeatureIdUrnDto> results = featureService.findAll(specification, page);
+        // Then
+        assertEquals(2, results.getNumberOfElements());
+
+        // Given
+        specification = new FeatureSimpleEntitySpecificationBuilder().withParameters(new SearchFeatureSimpleEntityParameters().withModel(
+            featureModelName)).build();
+        // When
+        results = featureService.findAll(specification, page);
+        // Then
+        assertEquals(2, results.getNumberOfElements());
     }
 
 }
