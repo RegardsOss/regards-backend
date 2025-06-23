@@ -49,10 +49,12 @@ import org.springframework.context.annotation.Profile;
 public class RemoteTenantAutoConfiguration {
 
     /**
-     * Microservice name
+     * Current database connection name. By default, this is the microservice name unless the property
+     * regards.connection.name is set to use another microservice's connection name (for example: the
+     * microservice rs-downloader uses "rs-storage" as its connection name).
      */
-    @Value("${spring.application.name}")
-    private String microserviceName;
+    @Value("${regards.connection.name:${spring.application.name}}")
+    private String databaseConnectionName;
 
     /**
      * @param tenantConnectionClient Feign clien
@@ -68,14 +70,12 @@ public class RemoteTenantAutoConfiguration {
     /**
      * Remote tenant resolver. Retrieve tenants from the administration service.
      *
-     * @param pInitClients Do not use the IProjectsClient. It must not be initialized at this time. To do so, we use the specials
-     *                     administration clients manually configured {@link FeignInitialAdminClients}
      * @return RemoteTenantResolver
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     ITenantResolver tenantResolver(final DiscoveryClient pDiscoveryClient, final ITenantClient tenantClient) {
-        return new RemoteTenantResolver(pDiscoveryClient, tenantClient, microserviceName);
+        return new RemoteTenantResolver(pDiscoveryClient, tenantClient, databaseConnectionName);
     }
 
     /**

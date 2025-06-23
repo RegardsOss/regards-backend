@@ -57,9 +57,11 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
     private static final Logger LOGGER = LoggerFactory.getLogger(MultitenantJpaEventHandler.class);
 
     /**
-     * Current microservice name
+     * Current database connection name. This is usually the same as the microservice name, but it might be another
+     * microservice name if the current microservice must use the same database as the other microservice (for example,
+     * rs-downloader uses the database of rs-storage).
      */
-    private final String microserviceName;
+    private final String databaseConnectionName;
 
     /**
      * AMQP Message subscriber
@@ -102,7 +104,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
 
     private final LockService lockService;
 
-    public MultitenantJpaEventHandler(String microserviceName,
+    public MultitenantJpaEventHandler(String databaseConnectionName,
                                       Map<String, DataSource> dataSources,
                                       ILockingTaskExecutors lockingTaskExecutors,
                                       MultitenantDaoProperties daoProperties,
@@ -113,7 +115,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                                       IEncryptionService encryptionService,
                                       JpaProperties jpaProperties,
                                       LockService lockService) {
-        this.microserviceName = microserviceName;
+        this.databaseConnectionName = databaseConnectionName;
         this.dataSources = dataSources;
         this.lockingTaskExecutors = lockingTaskExecutors;
         this.daoProperties = daoProperties;
@@ -145,7 +147,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
      * @param tenantConnection      {@link TenantConnection} for the microservice
      */
     private void handleTenantConnection(String eventMicroserviceName, TenantConnection tenantConnection) {
-        if (microserviceName.equals(eventMicroserviceName)) {
+        if (databaseConnectionName.equals(eventMicroserviceName)) {
             String tenant = tenantConnection.getTenant();
             try {
                 // Trying to connect data source
@@ -192,11 +194,11 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
 
     private void updateConnectionState(String tenant, TenantConnectionState state, Optional<String> errorCause) {
         try {
-            multitenantResolver.updateState(microserviceName, tenant, state, errorCause);
+            multitenantResolver.updateState(databaseConnectionName, tenant, state, errorCause);
         } catch (JpaMultitenantException ex) {
             LOGGER.error(String.format("Cannot update datasource for tenant %s and microservice %s. Update fails.",
                                        tenant,
-                                       microserviceName), ex);
+                                       databaseConnectionName), ex);
         }
     }
 
@@ -240,7 +242,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
         @Override
         public void handle(TenantWrapper<TenantConnectionConfigurationDeleted> pEvent) {
 
-            if ((pEvent.getContent() != null) && microserviceName.equals(pEvent.getContent().getMicroserviceName())) {
+            if ((pEvent.getContent() != null) && databaseConnectionName.equals(pEvent.getContent()
+                                                                                     .getMicroserviceName())) {
                 final TenantConnection tenantConnection = pEvent.getContent().getTenant();
                 try {
                     // Remove existing datasource
@@ -274,7 +277,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
         @Override
         public void handle(TenantWrapper<TenantConnectionFailed> pEvent) {
 
-            if ((pEvent.getContent() != null) && microserviceName.equals(pEvent.getContent().getMicroserviceName())) {
+            if ((pEvent.getContent() != null) && databaseConnectionName.equals(pEvent.getContent()
+                                                                                     .getMicroserviceName())) {
                 final TenantConnectionFailed tcf = pEvent.getContent();
                 try {
                     // Remove existing datasource
@@ -287,7 +291,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                         oldDataSource.unwrap(HikariDataSource.class).close();
                     }
                     // Disable connection
-                    multitenantResolver.updateState(microserviceName,
+                    multitenantResolver.updateState(databaseConnectionName,
                                                     tcf.getTenant(),
                                                     TenantConnectionState.ERROR,
                                                     Optional.of("Connection failed event received!"));
