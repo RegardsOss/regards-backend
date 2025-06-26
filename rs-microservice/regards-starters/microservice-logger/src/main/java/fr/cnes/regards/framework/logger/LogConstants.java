@@ -1,4 +1,4 @@
-package fr.cnes.regards.framwork.logger;
+package fr.cnes.regards.framework.logger;
 
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;

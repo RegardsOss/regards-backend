@@ -17,13 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
-package fr.cnes.regards.framwork.logger;
+package fr.cnes.regards.framework.logger;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
 /**
@@ -31,7 +30,6 @@ import org.springframework.core.env.Environment;
  *
  * @author Stephane Cortine
  **/
-@Configuration
 public class LogMicroserviceLifecycle {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LogMicroserviceLifecycle.class);
