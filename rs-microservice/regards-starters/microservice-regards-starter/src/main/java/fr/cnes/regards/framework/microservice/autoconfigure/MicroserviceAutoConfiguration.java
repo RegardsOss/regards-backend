@@ -26,20 +26,17 @@ import fr.cnes.regards.framework.microservice.web.ControllerHandlingConfiguratio
 import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityFilterConfiguration;
+import jakarta.servlet.Filter;
 import org.springframework.boot.ExitCodeExceptionMapper;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.ForwardedHeaderFilter;
-
-import jakarta.servlet.Filter;
 
 /**
  * FIXME microservice starter should not depends on security starter to manage maintenance mode!

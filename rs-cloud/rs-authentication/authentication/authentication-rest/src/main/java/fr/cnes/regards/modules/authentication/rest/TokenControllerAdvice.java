@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.authentication.rest;
 
-import fr.cnes.regards.framwork.logger.LogConstants;
+import fr.cnes.regards.framework.logger.LogConstants;
 import fr.cnes.regards.modules.authentication.domain.exception.oauth2.AuthenticationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

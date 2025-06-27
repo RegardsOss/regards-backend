@@ -46,9 +46,11 @@ public class RemoteTenantResolver extends AbstractInstanceDiscoveryClientChecker
     public static final String ACTIVE_TENANT_CACHE_NAME = "activeTenants";
 
     /**
-     * Microservice name
+     * Current database connection name. This is usually the same as the microservice name, but it might be another
+     * microservice name if the current microservice must use the same database as the other microservice (for example,
+     * rs-downloader uses the database of rs-storage).
      */
-    private final String microserviceName;
+    private final String databaseConnectionName;
 
     /**
      * Initial Feign client to administration service to retrieve informations about projects
@@ -57,9 +59,9 @@ public class RemoteTenantResolver extends AbstractInstanceDiscoveryClientChecker
 
     public RemoteTenantResolver(final DiscoveryClient pDiscoveryClient,
                                 ITenantClient tenantClient,
-                                String microserviceName) {
+                                String databaseConnectionName) {
         super(pDiscoveryClient);
-        this.microserviceName = microserviceName;
+        this.databaseConnectionName = databaseConnectionName;
         this.tenantClient = tenantClient;
     }
 
@@ -81,7 +83,7 @@ public class RemoteTenantResolver extends AbstractInstanceDiscoveryClientChecker
         try {
             // Bypass authorization for internal request
             FeignSecurityManager.asSystem();
-            return tenantClient.getAllActiveTenants(microserviceName).getBody();
+            return tenantClient.getAllActiveTenants(databaseConnectionName).getBody();
         } finally {
             FeignSecurityManager.reset();
         }

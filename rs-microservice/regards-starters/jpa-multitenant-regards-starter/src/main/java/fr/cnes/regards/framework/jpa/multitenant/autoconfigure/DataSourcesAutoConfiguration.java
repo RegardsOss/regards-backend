@@ -94,10 +94,12 @@ public class DataSourcesAutoConfiguration {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourcesAutoConfiguration.class);
 
     /**
-     * Current microservice name
+     * Current database connection name. By default, this is the microservice name unless the property
+     * regards.connection.name is set to use another microservice's connection name (for example: the
+     * microservice rs-downloader uses "rs-storage" as its connection name).
      */
-    @Value("${spring.application.name}")
-    private String microserviceName;
+    @Value("${regards.connection.name:${spring.application.name}}")
+    private String databaseConnectionName;
 
     @Value(
         "${spring.jpa.hibernate.naming.implicit-strategy:org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl}")
@@ -176,7 +178,7 @@ public class DataSourcesAutoConfiguration {
         throws JpaMultitenantException, EncryptionException {
         ConcurrentMap<String, DataSource> datasources = new ConcurrentHashMap<>();
         // Retrieve microservice tenant connections from multitenant resolver
-        List<TenantConnection> connections = tenantConnectionResolver.getTenantConnections(microserviceName);
+        List<TenantConnection> connections = tenantConnectionResolver.getTenantConnections(databaseConnectionName);
         // Initialize tenant connections
         // First lets decrypt connections password
         for (TenantConnection connection : connections) {
@@ -243,7 +245,7 @@ public class DataSourcesAutoConfiguration {
                                                                  ILockingTaskExecutors lockingTaskExecutors,
                                                                  MultitenantJpaEventPublisher localPublisher,
                                                                  LockService lockService) {
-        return new MultitenantJpaEventHandler(microserviceName,
+        return new MultitenantJpaEventHandler(databaseConnectionName,
                                               dataSources,
                                               lockingTaskExecutors,
                                               daoProperties,
@@ -282,7 +284,7 @@ public class DataSourcesAutoConfiguration {
                     datasourceSchemaHelper().migrate(dataSource, tenant);
                     // Register connection
                     if (needRegistration) {
-                        tenantConnectionResolver.addTenantConnection(microserviceName, tenantConnection);
+                        tenantConnectionResolver.addTenantConnection(databaseConnectionName, tenantConnection);
                     }
                     // Register data source
                     existingDataSources.put(tenant, dataSource);

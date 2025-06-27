@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.event.EventListener;
@@ -36,11 +37,11 @@ public class StorageSettingService extends AbstractSettingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageSettingService.class);
 
-    private ITenantResolver tenantsResolver;
+    private final ITenantResolver tenantsResolver;
 
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    private StorageSettingService self;
+    private final StorageSettingService self;
 
     @Value("${regards.storage.cache.path:cache}")
     private String defaultCachePath;
@@ -69,6 +70,7 @@ public class StorageSettingService extends AbstractSettingService {
 
     @EventListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Profile("!downloader") // Since storage & downloader share the same settings, only one of them need initialize them
     public void onApplicationStartedEvent(ApplicationStartedEvent applicationStartedEvent) throws EntityException {
         for (String tenant : tenantsResolver.getAllActiveTenants()) {
             initialize(tenant);
@@ -89,6 +91,7 @@ public class StorageSettingService extends AbstractSettingService {
 
     @EventListener
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Profile("!downloader") // Since storage & downloader share the same settings, only one of them need initialize them
     public void onTenantConnectionReady(TenantConnectionReady event) throws EntityException {
         initialize(event.getTenant());
     }
