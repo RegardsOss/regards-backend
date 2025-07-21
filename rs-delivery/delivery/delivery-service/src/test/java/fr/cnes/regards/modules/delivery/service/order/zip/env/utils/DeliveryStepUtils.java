@@ -56,12 +56,6 @@ public class DeliveryStepUtils {
 
     public static final Path TEST_FILES_ORDER_RESOURCES = TEST_RESOURCES.resolve("files");
 
-    // DELIVERY PATTERNS
-
-    public static final String PRODUCT_FOLDER_PATTERN = "%s_%d"; // <productId>_<version>
-
-    public static final String MULTIPLE_FILES_ZIP_NAME_PATTERN = "delivery-%s.zip"; // delivery-<corrId>.zip
-
     public static DeliveryRequest buildDeliveryRequest() {
         return new DeliveryRequest(DELIVERY_CORRELATION_ID,
                                    "regards-delivery@test.fr",

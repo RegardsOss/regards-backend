@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.delivery.service.order.zip.steps;
 import feign.Request;
 import feign.RequestTemplate;
 import feign.Response;
-import fr.cnes.regards.framework.modules.workspace.service.WorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.delivery.domain.exception.DeliveryOrderException;
@@ -86,9 +85,6 @@ public class DeliveryDownloadServiceTest {
     private IOrderDataFileClient dataFileClient;
 
     @Mock
-    private WorkspaceService workspaceService;
-
-    @Mock
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     private DeliveryDownloadWorkspaceManager deliveryWorkspaceManager;
@@ -139,7 +135,7 @@ public class DeliveryDownloadServiceTest {
         // check files were successfully downloaded in tmp delivery workspace
         for (OrderDataFileDTO dataFile : simulatedOrderDataFiles) {
             Path expectedDownloadedFilePath = deliveryWorkspaceManager.getDownloadSubfolder()
-                                                                      .resolve(String.format(DeliveryStepUtils.PRODUCT_FOLDER_PATTERN,
+                                                                      .resolve(String.format(DeliveryDownloadService.PRODUCT_FOLDER_PATTERN,
                                                                                              dataFile.getProductId(),
                                                                                              dataFile.getVersion()))
                                                                       .resolve(dataFile.getFilename());

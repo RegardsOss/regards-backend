@@ -46,7 +46,7 @@ public class DeliveryZipCreateService {
     /**
      * Pattern to build zip name if it contains more than 1 entry.
      */
-    private static final String MULTIPLE_FILES_ZIP_NAME_PATTERN = "delivery-%s.zip"; // delivery-<corrId>.zip
+    public static final String MULTIPLE_FILES_ZIP_NAME_PATTERN = "delivery-%s.zip"; // delivery-<correlationId>.zip
 
     /**
      * Create a delivery zip from files previously downloaded in the {@link DeliveryDownloadWorkspaceManager}.
@@ -63,12 +63,12 @@ public class DeliveryZipCreateService {
         LOGGER.debug("Starting creating zip from delivery files located at '{}'", downloadFolderPath);
 
         // Zip delivery files
-        String zipName = getZipName(correlationId, downloadFolderPath);
-        Path zipPath = workspaceFolderPath.resolve(zipName);
+        ZipNameAndSource zip = getZipNameAndSource(correlationId, downloadFolderPath);
+        Path zipPath = workspaceFolderPath.resolve(zip.name());
         try {
-            CompressToZipUtils.compressDirectoriesToZip(downloadFolderPath, zipPath);
+            CompressToZipUtils.compressDirectoriesToZip(zip.sourceDirectory(), zipPath);
             ZipDeliveryInfo zipInfo = new ZipDeliveryInfo(correlationId,
-                                                          zipName,
+                                                          zip.name(),
                                                           zipPath.toFile().length(),
                                                           computeChecksum(zipPath),
                                                           zipPath.toUri().toString());
@@ -80,18 +80,23 @@ public class DeliveryZipCreateService {
     }
 
     /**
-     * Get the zip name according to the number of files present in the download folder.
+     * Get the zip name and source folder (parent folder of files to zip) according to the number of files present in
+     * the download folder.
+     * <p>
+     * DeliveryDownService creates one sub-folder per product. So if there is only one sub-folder, the zip should be
+     * named after this sub-folder and directly contain its files. If there are multiple sub-folders (meaning
+     * multiple products), the sub-folders should be preserved in the zip, and the zip should be named according to
+     * the delivery correlation id.
      */
-    private String getZipName(String correlationId, Path downloadPath) {
-        String zipName;
+    private ZipNameAndSource getZipNameAndSource(String correlationId, Path downloadPath) {
         File[] downloadFolder = downloadPath.toFile().listFiles();
         assert downloadFolder != null;
         if (downloadFolder.length == 1) {
-            zipName = removeExtension(getName(downloadFolder[0].getName())) + ".zip";
+            return new ZipNameAndSource(removeExtension(getName(downloadFolder[0].getName())) + ".zip",
+                                        downloadFolder[0].toPath());
         } else {
-            zipName = String.format(MULTIPLE_FILES_ZIP_NAME_PATTERN, correlationId);
+            return new ZipNameAndSource(String.format(MULTIPLE_FILES_ZIP_NAME_PATTERN, correlationId), downloadPath);
         }
-        return zipName;
     }
 
     /**
@@ -104,5 +109,13 @@ public class DeliveryZipCreateService {
             throw new DeliveryOrderException(String.format("Could not compute MD5 md5Checksum from zip located at '%s'",
                                                            zipFolderPath), e);
         }
+    }
+
+    /**
+     * Information about a zip to create: its name, and the source folder containing the files/directories to zip.
+     */
+    private record ZipNameAndSource(String name,
+                                    Path sourceDirectory) {
+
     }
 }

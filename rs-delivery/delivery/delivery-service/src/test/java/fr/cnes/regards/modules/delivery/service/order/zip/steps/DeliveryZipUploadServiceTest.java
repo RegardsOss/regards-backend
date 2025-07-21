@@ -44,6 +44,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils.*;
+import static fr.cnes.regards.modules.delivery.service.order.zip.steps.DeliveryZipCreateService.MULTIPLE_FILES_ZIP_NAME_PATTERN;
 import static org.mockito.ArgumentMatchers.any;
 
 /**

@@ -28,8 +28,8 @@ import fr.cnes.regards.modules.delivery.domain.input.DeliveryRequest;
 import fr.cnes.regards.modules.delivery.service.order.zip.workspace.DeliveryDownloadWorkspaceManager;
 import fr.cnes.regards.modules.order.client.feign.IOrderDataFileAvailableClient;
 import fr.cnes.regards.modules.order.client.feign.IOrderDataFileClient;
-import jakarta.validation.constraints.NotNull;
 import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
+import jakarta.validation.constraints.NotNull;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +66,7 @@ public class DeliveryDownloadService {
     /**
      * Pattern to build the parent folder of a file ordered.
      */
-    private static final String PRODUCT_FOLDER_PATTERN = "%s_%d"; // <productId>_<version>
+    public static final String PRODUCT_FOLDER_PATTERN = "%s_v%d"; // <productId>_v<version>
 
     // SERVICES
 

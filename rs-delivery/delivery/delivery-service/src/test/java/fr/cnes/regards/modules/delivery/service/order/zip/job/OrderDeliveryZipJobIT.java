@@ -65,14 +65,13 @@ import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import static fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils.DELIVERY_CORRELATION_ID;
-import static fr.cnes.regards.modules.delivery.service.order.zip.env.utils.DeliveryStepUtils.MULTIPLE_FILES_ZIP_NAME_PATTERN;
+import static fr.cnes.regards.modules.delivery.service.order.zip.steps.DeliveryZipCreateService.MULTIPLE_FILES_ZIP_NAME_PATTERN;
 
 /**
  * Test for {@link OrderDeliveryZipJob}.
@@ -136,7 +135,7 @@ public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
     }
 
     @Test
-    public void givenDeliveryRequest_whenZipJobRun_thenZipCreatedOnS3() throws URISyntaxException, IOException {
+    public void givenDeliveryRequest_whenZipJobRun_thenZipCreatedOnS3() throws IOException {
         // GIVEN
         DeliveryAndJob deliveryAndJob = initDeliveryRequestAndJob();
         JobInfo jobInfo = deliveryAndJob.getJobInfo();
@@ -209,7 +208,7 @@ public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
         Assertions.assertThat(responses.get(1).getJobEventType()).isEqualTo(finalJobStatus);
     }
 
-    public void checkZipDeliveryExistsOnS3() throws MalformedURLException {
+    public void checkZipDeliveryExistsOnS3() {
         StorageConfigDto storageConfig = getStorageConfig();
 
         StorageCommandID cmdId = new StorageCommandID("test-exists-S3-delivery", UUID.randomUUID());
@@ -229,7 +228,7 @@ public class OrderDeliveryZipJobIT extends AbstractMultitenantServiceWithJobIT {
         }
     }
 
-    private StorageConfigDto getStorageConfig() throws MalformedURLException {
+    private StorageConfigDto getStorageConfig() {
         // Actually, delivery gets its S3 config from {@link DeliverySettingService} and not from StorageConfig
         return new StorageConfigBuilder(getS3Server()).rootPath(DELIVERY_CORRELATION_ID).build();
     }
