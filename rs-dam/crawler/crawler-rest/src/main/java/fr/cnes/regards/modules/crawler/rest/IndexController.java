@@ -22,8 +22,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.crawler.service.service.IEntityIndexerService;
 import fr.cnes.regards.modules.crawler.service.service.CatalogResetService;
+import fr.cnes.regards.modules.crawler.service.service.IEntityIndexerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,7 +76,7 @@ public class IndexController {
     @RequestMapping(path = TYPE_MAPPING + UPDATE_DATASETS, method = RequestMethod.POST)
     public ResponseEntity<Void> updateDatasets() throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
-        entityIndexerService.updateAllDatasets(tenant, OffsetDateTime.now());
+        entityIndexerService.updateAllDatasets(tenant, OffsetDateTime.now(), false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

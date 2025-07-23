@@ -53,7 +53,7 @@ public interface IEntityIndexerService {
                                     UniformResourceName ipId,
                                     OffsetDateTime updateDate,
                                     boolean forceAssociatedEntitiesUpdate) throws ModuleException {
-        this.updateEntityIntoEs(tenant, ipId, null, updateDate, forceAssociatedEntitiesUpdate, null);
+        this.updateEntityIntoEs(tenant, ipId, null, updateDate, forceAssociatedEntitiesUpdate, null, false);
     }
 
     /**
@@ -73,13 +73,15 @@ public interface IEntityIndexerService {
      * @param updateDate                    current update date (usually now)
      * @param forceAssociatedEntitiesUpdate if true, force associated entities update (usually data objects for dataset)
      * @param dsiId                         {@link DatasourceIngestion} id
+     * @param isNewIndex                    indicates whether the elastic index where entities will be updated is new
      */
     void updateEntityIntoEs(String tenant,
                             UniformResourceName ipId,
                             OffsetDateTime lastUpdateDate,
                             OffsetDateTime updateDate,
                             boolean forceAssociatedEntitiesUpdate,
-                            String dsiId) throws ModuleException;
+                            String dsiId,
+                            boolean isNewIndex) throws ModuleException;
 
     /**
      * Transactional method updating a set of datasets
@@ -94,12 +96,13 @@ public interface IEntityIndexerService {
                         OffsetDateTime minLastUpdateCriteria,
                         OffsetDateTime updateDate,
                         boolean forceDataObjectsUpdate,
-                        String dsiId) throws ModuleException;
+                        String dsiId,
+                        boolean isNewIndex) throws ModuleException;
 
     /**
      * Force update of all {@link Dataset}s
      */
-    void updateAllDatasets(String tenant, OffsetDateTime updateDate) throws ModuleException;
+    void updateAllDatasets(String tenant, OffsetDateTime updateDate, boolean isNewIndex) throws ModuleException;
 
     /**
      * Force update of all {@link fr.cnes.regards.modules.dam.domain.entities.Collection}s

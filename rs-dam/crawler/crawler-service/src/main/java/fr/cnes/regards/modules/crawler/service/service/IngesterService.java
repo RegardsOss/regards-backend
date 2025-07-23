@@ -152,35 +152,7 @@ public class IngesterService implements IHandler<PluginConfEvent> {
         }
         try {
             do {
-                // First, update all DatasourceIngestions of all tenants (to reflect all datasource plugin configurations
-                // states and to update nextPlannedIngestDate)
-                for (String tenant : tenantResolver.getAllActiveTenants()) {
-                    runtimeTenantResolver.forceTenant(tenant);
-                    dsIngestionService.updateAndCleanTenantDatasourceIngestions();
-                }
-                // Then ingest...
-                boolean atLeastOneIngestionDone;
-                do {
-                    atLeastOneIngestionDone = false;
-                    for (String tenant : tenantResolver.getAllActiveTenants()) {
-                        runtimeTenantResolver.forceTenant(tenant);
-                        // Pick an available dsIngestion marking it as STARTED if present
-                        Optional<String> dsIngestionOpt = dsIngestionService.pickAndStartDatasourceIngestion();
-                        if (dsIngestionOpt.isPresent()) {
-                            String dsId = dsIngestionOpt.get();
-                            atLeastOneIngestionDone = true;
-                            try {
-                                Optional<IngestionResult> summary = ingest(dsId);
-                                summary.ifPresent(ingestionResult -> dsIngestionService.updateIngesterResult(dsId,
-                                                                                                             ingestionResult));
-                            } catch (Throwable e) {
-                                // Catch all other possible exceptions to set ingestion to error status
-                                setDatasourceIngestInError(dsId, e);
-                            }
-                        }
-                    }
-                    // At least one ingestion has to be done while looping through all tenants
-                } while (atLeastOneIngestionDone);
+                runDatasourceIngestionsForAllTenants();
                 // set doItAgain to false in all cases and redo if asked to (this means a datasource has been created
                 // or updated while manage() method was currently executing
             } while (doItAgain.getAndSet(false));
@@ -188,6 +160,38 @@ public class IngesterService implements IHandler<PluginConfEvent> {
             managing.set(false);
         }
         LOGGER.info("...IngesterService.manage() ended.");
+    }
+
+    private void runDatasourceIngestionsForAllTenants() {
+        // First, update all DatasourceIngestions of all tenants (to reflect all datasource plugin configurations
+        // states and to update nextPlannedIngestDate)
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            dsIngestionService.updateAndCleanTenantDatasourceIngestions();
+        }
+        // Then ingest...
+        boolean atLeastOneIngestionDone;
+        do {
+            atLeastOneIngestionDone = false;
+            for (String tenant : tenantResolver.getAllActiveTenants()) {
+                runtimeTenantResolver.forceTenant(tenant);
+                // Pick an available dsIngestion marking it as STARTED if present
+                Optional<String> dsIngestionOpt = dsIngestionService.pickAndStartDatasourceIngestion();
+                if (dsIngestionOpt.isPresent()) {
+                    String dsId = dsIngestionOpt.get();
+                    atLeastOneIngestionDone = true;
+                    try {
+                        Optional<IngestionResult> summary = ingest(dsId);
+                        summary.ifPresent(ingestionResult -> dsIngestionService.updateIngesterResult(dsId,
+                                                                                                     ingestionResult));
+                    } catch (Throwable e) {
+                        // Catch all other possible exceptions to set ingestion to error status
+                        setDatasourceIngestInError(dsId, e);
+                    }
+                }
+            }
+            // At least one ingestion has to be done while looping through all tenants
+        } while (atLeastOneIngestionDone);
     }
 
     private Optional<IngestionResult> ingest(String dsId) {

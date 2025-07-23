@@ -498,7 +498,8 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                                                             minLastUpdateCriteria,
                                                             OffsetDateTime.now(),
                                                             true,
-                                                            datasourceIngestionId);
+                                                            datasourceIngestionId,
+                                                            false);
                     } catch (ModuleException e) {
                         sendMessage(String.format("Error updating datasets associated to datasource. Cause : %s.",
                                                   e.getMessage()), datasourceIngestionId);

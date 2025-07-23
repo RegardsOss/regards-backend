@@ -246,7 +246,8 @@ public class EntityIndexerService implements IEntityIndexerService {
                                    OffsetDateTime minLastUpdateCriteria,
                                    OffsetDateTime updateDate,
                                    boolean forceAssociatedEntitiesUpdate,
-                                   String dsiId) throws ModuleException {
+                                   String dsiId,
+                                   boolean isNewIndex) throws ModuleException {
         LOGGER.info("Updating {}", ipId.toString());
         runtimeTenantResolver.forceTenant(tenant);
         AbstractEntity<?> entity = entitiesService.loadWithRelations(ipId);
@@ -295,9 +296,9 @@ public class EntityIndexerService implements IEntityIndexerService {
             boolean needAssociatedDataObjectsUpdate = (minLastUpdateCriteria != null) || forceAssociatedEntitiesUpdate;
             // A dataset change may need associated data objects update
             if (!needAssociatedDataObjectsUpdate && (entity instanceof Dataset dataset)) {
-                needAssociatedDataObjectsUpdate |= needAssociatedDataObjectsUpdate(dataset,
-                                                                                   esRepos.get(Optional.of(tenant),
-                                                                                               dataset));
+                needAssociatedDataObjectsUpdate = needAssociatedDataObjectsUpdate(dataset,
+                                                                                  esRepos.get(Optional.of(tenant),
+                                                                                              dataset));
             }
             boolean created = esRepos.save(tenant, entity);
             LOGGER.debug("Elasticsearch saving result : {}", created);
@@ -310,7 +311,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                             forceAssociatedEntitiesUpdate,
                             needAssociatedDataObjectsUpdate);
                 ((Dataset) entity).setSubsettingClause(savedSubsettingClause);
-                manageDatasetUpdate((Dataset) entity, minLastUpdateCriteria, updateDate, dsiId);
+                manageDatasetUpdate((Dataset) entity, minLastUpdateCriteria, updateDate, dsiId, isNewIndex);
             } else {
                 LOGGER.info("Avoid dataset entity {} - {} data objects association calculation into elasticsearch. "
                             + "Cause : force calculation = {}, calculation needed cause of dataset update = {}",
@@ -437,7 +438,8 @@ public class EntityIndexerService implements IEntityIndexerService {
     private void manageDatasetUpdate(Dataset dataset,
                                      OffsetDateTime minLastUpdateCriteria,
                                      OffsetDateTime updateDate,
-                                     String datasourceIngestionId) throws ModuleException {
+                                     String datasourceIngestionId,
+                                     boolean isNewIndex) throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
         sendDataSourceMessage(String.format(
             "      Updating dataset %s indexation and all its associated data objects...",
@@ -455,17 +457,20 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                                                       tenant,
                                                                                       dataset.getId());
         // Remove association between dataobjects and dataset for all dataobjects which does not match the dataset filter anymore.
-        try {
-            removeOldDatasetDataObjectsAssoc(dataset,
-                                             updateDate,
-                                             searchKey,
-                                             executor,
-                                             saveDataObjectsCallable,
-                                             datasourceIngestionId);
-        } catch (ModuleException e) {
-            LOGGER.error(e.getMessage(), e);
-            sendDataSourceMessage(String.format("Error removing all dataset objects. Cause: %s.", e.getMessage()),
-                                  datasourceIngestionId);
+        // little improvement : do it only if index is not new
+        if (!isNewIndex) {
+            try {
+                removeOldDatasetDataObjectsAssoc(dataset,
+                                                 updateDate,
+                                                 searchKey,
+                                                 executor,
+                                                 saveDataObjectsCallable,
+                                                 datasourceIngestionId);
+            } catch (ModuleException e) {
+                LOGGER.error(e.getMessage(), e);
+                sendDataSourceMessage(String.format("Error removing all dataset objects. Cause: %s.", e.getMessage()),
+                                      datasourceIngestionId);
+            }
         }
         // Associate dataset to all dataobjets. Associate groups of dataset to the dataobjets through metadata
         try {
@@ -835,7 +840,8 @@ public class EntityIndexerService implements IEntityIndexerService {
                                OffsetDateTime minLastUpdateCriteria,
                                OffsetDateTime updateDate,
                                boolean forceDataObjectsUpdate,
-                               String dsiId) throws ModuleException {
+                               String dsiId,
+                               boolean isNewIndex) throws ModuleException {
         for (Dataset dataset : datasets) {
             LOGGER.info("Updating dataset {} ...", dataset.getLabel());
             sendDataSourceMessage(String.format("  Updating dataset %s...", dataset.getLabel()), dsiId);
@@ -844,7 +850,8 @@ public class EntityIndexerService implements IEntityIndexerService {
                                minLastUpdateCriteria,
                                updateDate,
                                forceDataObjectsUpdate,
-                               dsiId);
+                               dsiId,
+                               isNewIndex);
             sendDataSourceMessage(String.format("  ...Dataset %s updated.", dataset.getLabel()), dsiId);
             LOGGER.info("Dataset {} updated.", dataset.getLabel());
         }
@@ -868,9 +875,9 @@ public class EntityIndexerService implements IEntityIndexerService {
             pageToRequest = pageSessionStep.nextPageable();
         } while (pageSessionStep.hasNext());
         //2. Then re-create all entities
-        indexService.createIndexIfNeeded(tenant);
+        boolean isNewIndex = indexService.createIndexIfNeeded(tenant);
         OffsetDateTime updateDate = OffsetDateTime.now();
-        updateAllDatasets(tenant, updateDate);
+        updateAllDatasets(tenant, updateDate, isNewIndex);
         updateAllCollections(tenant, updateDate);
     }
 
@@ -1386,14 +1393,14 @@ public class EntityIndexerService implements IEntityIndexerService {
     }
 
     @Override
-    public void updateAllDatasets(String tenant, OffsetDateTime updateDate) throws ModuleException {
-        self.updateDatasets(tenant, datasetService.findAll(), null, updateDate, true, null);
+    public void updateAllDatasets(String tenant, OffsetDateTime updateDate, boolean isNewIndex) throws ModuleException {
+        self.updateDatasets(tenant, datasetService.findAll(), null, updateDate, true, null, isNewIndex);
     }
 
     @Override
     public void updateAllCollections(String tenant, OffsetDateTime updateDate) throws ModuleException {
         for (fr.cnes.regards.modules.dam.domain.entities.Collection col : collectionService.findAll()) {
-            updateEntityIntoEs(tenant, col.getIpId(), null, updateDate, false, null);
+            updateEntityIntoEs(tenant, col.getIpId(), null, updateDate, false, null, false);
         }
     }
 
