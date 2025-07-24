@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
 
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * @author Marc SORDI
@@ -59,6 +60,6 @@ public final class GeodeProperties {
                                                       IProperty.buildInteger("corpus_id", 10),
                                                       IProperty.buildString("corpus_lot", "lot2"));
 
-        feature.setProperties(IProperty.set(system, swot, corpus, data));
+        feature.setProperties(Set.of(system, swot, corpus, data));
     }
 }

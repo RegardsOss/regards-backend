@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.model.dto.properties.logger;
+package fr.cnes.regards.modules.feature.service.logger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,22 +26,31 @@ import org.slf4j.LoggerFactory;
  *
  * @author Kevin Marchois
  */
-public class PropertyPatchLogger {
-
-    private PropertyPatchLogger() {
-    }
+public final class PropertyPatchLogger {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PropertyPatchLogger.class);
 
     private static final String PREFIX = "[MONITORING] ";
 
-    private static final String FORMAT = PREFIX + "Feature PATCHED | %s | %s | %s | %s => %s";
+    private static final String FORMAT = PREFIX + "Feature PATCHED | {} | {} | {} | {} => {}";
 
-    public static void log(String modifier, String identifier, String key, Object oldValue, Object newValue) {
-        LOGGER.debug(String.format(FORMAT, modifier, identifier, key, oldValue, newValue));
+    private PropertyPatchLogger() {
     }
 
-    public static void log(String modifier, String identifier, String key, Object newValue) {
-        LOGGER.debug(String.format(FORMAT, modifier, identifier, key, "none", newValue));
+    public static void logPropertyUpdated(String modifier,
+                                          String identifier,
+                                          String key,
+                                          Object oldValue,
+                                          Object newValue) {
+        LOGGER.debug(FORMAT, modifier, identifier, key, oldValue, newValue);
     }
+
+    public static void logPropertyAdded(String modifier, String identifier, String key, Object newValue) {
+        LOGGER.debug(FORMAT, modifier, identifier, key, "none", newValue);
+    }
+
+    public static void logPropertyRemoved(String modifier, String identifier, String key, Object oldValue) {
+        LOGGER.debug(FORMAT, modifier, identifier, key, oldValue, "none");
+    }
+
 }

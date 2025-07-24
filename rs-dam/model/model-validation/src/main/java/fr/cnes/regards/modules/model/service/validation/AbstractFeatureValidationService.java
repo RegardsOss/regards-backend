@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.model.domain.ComputationMode;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.model.dto.properties.set.PropertySet;
 import fr.cnes.regards.modules.model.service.validation.validator.iproperty.ComputationModePropertyValidator;
 import fr.cnes.regards.modules.model.service.validation.validator.iproperty.PropertyTypeValidator;
 import fr.cnes.regards.modules.model.service.validation.validator.iproperty.restriction.RestrictionValidatorFactory;
@@ -63,10 +64,9 @@ public abstract class AbstractFeatureValidationService<F extends AbstractFeature
             return errors;
         }
         // Build fast property access map
-        Map<String, IProperty<?>> pptyMap = IProperty.getPropertyMap(feature.getProperties());
+        PropertySet properties = new PropertySet(feature.getProperties());
         // Get a copy of entity attributes values to optimize the search of unexpected properties
-        // FIXME check it's a real copy!
-        Set<String> toCheckProperties = new HashSet<>(pptyMap.keySet());
+        Set<String> toCheckProperties = new HashSet<>(properties.getAllQualifiedNames());
 
         // Loop over model attributes ... to validate each properties
         for (ModelAttrAssoc modelAttrAssoc : modAtts) {
@@ -74,7 +74,7 @@ public abstract class AbstractFeatureValidationService<F extends AbstractFeature
                                                     objectName,
                                                     mode,
                                                     feature,
-                                                    pptyMap,
+                                                    properties,
                                                     toCheckProperties));
         }
 
@@ -94,7 +94,7 @@ public abstract class AbstractFeatureValidationService<F extends AbstractFeature
      *
      * @param modelAttrAssoc    model attribute
      * @param objectName        name of the object to validate
-     * @param pptyMap           properties to check
+     * @param allProperties     properties to check
      * @param toCheckProperties properties not already checked
      * @return validation errors
      */
@@ -102,7 +102,7 @@ public abstract class AbstractFeatureValidationService<F extends AbstractFeature
                                          String objectName,
                                          ValidationMode mode,
                                          F feature,
-                                         Map<String, IProperty<?>> pptyMap,
+                                         PropertySet allProperties,
                                          Set<String> toCheckProperties) {
 
         Errors errors = new MapBindingResult(new HashMap<>(), objectName);
@@ -116,7 +116,7 @@ public abstract class AbstractFeatureValidationService<F extends AbstractFeature
             LOGGER.debug("Computed key : \"{}\"", attPath);
 
             // Retrieve property
-            IProperty<?> att = pptyMap.get(attPath);
+            IProperty<?> att = allProperties.get(attPath);
 
             // Null property check
             if (att == null) {

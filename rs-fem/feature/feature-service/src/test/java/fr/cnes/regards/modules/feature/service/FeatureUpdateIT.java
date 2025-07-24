@@ -1453,7 +1453,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         AtomicInteger nbUpdate = new AtomicInteger();
         AtomicInteger nbCreate = new AtomicInteger();
         assertEquals(createNotificationExpected + updateNotificationExpected,
-                     recordsCaptor.getAllValues().stream().flatMap(Collection::stream).count());
+                     recordsCaptor.getAllValues().stream().mapToLong(Collection::size).sum());
         recordsCaptor.getAllValues().stream().flatMap(Collection::stream).forEach(notification -> {
             CreateNotificationRequestEventVisitor.NotificationActionEventMetadata metadata = gson.fromJson(notification.getMetadata(),
                                                                                                            CreateNotificationRequestEventVisitor.NotificationActionEventMetadata.class);
@@ -1461,7 +1461,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                 assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
                     FeatureManagementAction.UPDATED,
                     owner,
-                    session)), notification.getMetadata().toString());
+                    session,
+                    List.of())), notification.getMetadata().toString());
                 nbUpdate.getAndIncrement();
             } else if (metadata.getAction().equals(FeatureManagementAction.CREATED.toString())) {
                 assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(

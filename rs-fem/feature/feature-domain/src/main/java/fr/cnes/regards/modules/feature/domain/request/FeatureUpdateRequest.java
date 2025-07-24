@@ -19,13 +19,16 @@
 package fr.cnes.regards.modules.feature.domain.request;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.feature.dto.*;
+import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -64,6 +67,15 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
 
     @Column(name = "sourceToNotify", length = 255)
     private String sourceToNotify;
+
+    /**
+     * Comma-separated string of attribute names that are affected (created/modified/deleted) by the update. Should be
+     * null until it reaches {@link FeatureRequestStep#LOCAL_TO_BE_NOTIFIED}.
+     * <p>
+     * Example: "data_type,file_characterization.invalidation_date"
+     */
+    @Column(name = "changed_attributes_to_notify", nullable = true)
+    private String changedAttributesToNotify;
 
     @Column(name = "acknowledged_recipient", length = 255, nullable = true)
     private String acknowledgedRecipient;
@@ -116,18 +128,8 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
     }
 
     @Override
-    public FeatureUniformResourceName getUrn() {
-        return urn;
-    }
-
-    @Override
     public <U> U accept(IAbstractFeatureRequestVisitor<U> visitor) {
         return visitor.visitUpdateRequest(this);
-    }
-
-    @Override
-    public void setUrn(FeatureUniformResourceName urn) {
-        this.urn = urn;
     }
 
     public String getProviderId() {
@@ -195,4 +197,13 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
         this.fileUpdateMode = mode;
     }
 
+    public List<String> getChangedAttributesToNotify() {
+        return StringUtils.hasLength(changedAttributesToNotify) ?
+            List.of(changedAttributesToNotify.split(",")) :
+            List.of();
+    }
+
+    public void setChangedAttributesToNotify(List<String> changedAttributesToNotify) {
+        this.changedAttributesToNotify = String.join(",", changedAttributesToNotify);
+    }
 }

@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -206,7 +207,7 @@ public class FeatureEntityIT extends AbstractDaoIT {
                                                       IProperty.buildInteger("corpus_id", 10),
                                                       IProperty.buildString("corpus_lot", "lot2"));
 
-        feature.setProperties(IProperty.set(system, fileInfos, groundSegment, swot, corpus));
+        feature.setProperties(Set.of(system, fileInfos, groundSegment, swot, corpus));
     }
 
     /**

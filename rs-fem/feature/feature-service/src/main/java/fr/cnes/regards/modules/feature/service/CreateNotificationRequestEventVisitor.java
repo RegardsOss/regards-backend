@@ -7,7 +7,9 @@ import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureManagementAction;
+import org.springframework.util.Assert;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,24 +21,32 @@ public class CreateNotificationRequestEventVisitor
 
     public static class NotificationActionEventMetadata {
 
-        private String action;
+        private final String action;
 
         private final String sessionOwner;
 
         private final String session;
 
+        private final List<String> changedAttributes;
+
         public NotificationActionEventMetadata(FeatureManagementAction action, String sessionOwner, String session) {
+            this(action, sessionOwner, session, null);
+        }
+
+        public NotificationActionEventMetadata(FeatureManagementAction action,
+                                               String sessionOwner,
+                                               String session,
+                                               List<String> changedAttributes) {
+            Assert.isTrue((action == FeatureManagementAction.UPDATED) == (changedAttributes != null),
+                          "changedAttributes must be non-null if and only if action is UPDATED");
             this.action = action.toString();
             this.sessionOwner = sessionOwner;
             this.session = session;
+            this.changedAttributes = changedAttributes;
         }
 
         public String getAction() {
             return action;
-        }
-
-        public void setAction(String action) {
-            this.action = action;
         }
 
         public String getSessionOwner() {
@@ -45,6 +55,10 @@ public class CreateNotificationRequestEventVisitor
 
         public String getSession() {
             return session;
+        }
+
+        public List<String> getChangedAttributes() {
+            return changedAttributes;
         }
     }
 
@@ -77,12 +91,12 @@ public class CreateNotificationRequestEventVisitor
 
     @Override
     public Optional<NotificationRequestEvent> visitDeletionRequest(FeatureDeletionRequest deletionRequest) {
-        FeatureManagementAction action = deletionRequest.isAlreadyDeleted() ? FeatureManagementAction.ALREADY_DELETED :
+        FeatureManagementAction action = deletionRequest.isAlreadyDeleted() ?
+            FeatureManagementAction.ALREADY_DELETED :
             FeatureManagementAction.DELETED;
         NotificationActionEventMetadata metadata = new NotificationActionEventMetadata(action,
                                                                                        deletionRequest.getSourceToNotify(),
                                                                                        deletionRequest.getSessionToNotify());
-
 
         return Optional.of(new NotificationRequestEvent(gson.toJsonTree(deletionRequest.getToNotify())
                                                             .getAsJsonObject(),
@@ -117,9 +131,11 @@ public class CreateNotificationRequestEventVisitor
         if (feature != null) {
             return Optional.of(new NotificationRequestEvent(gson.toJsonTree(feature).getAsJsonObject(),
                                                             gson.toJsonTree(new NotificationActionEventMetadata(
-                                                                FeatureManagementAction.UPDATED,
-                                                                updateRequest.getSourceToNotify(),
-                                                                updateRequest.getSessionToNotify())).getAsJsonObject(),
+                                                                    FeatureManagementAction.UPDATED,
+                                                                    updateRequest.getSourceToNotify(),
+                                                                    updateRequest.getSessionToNotify(),
+                                                                    updateRequest.getChangedAttributesToNotify()))
+                                                                .getAsJsonObject(),
                                                             updateRequest.getRequestId(),
                                                             updateRequest.getRequestOwner()));
         } else {

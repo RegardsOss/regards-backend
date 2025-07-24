@@ -31,11 +31,13 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.agent.client.ISessionAgentClient;
-import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
-import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
-import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import fr.cnes.regards.modules.feature.dao.*;
-import fr.cnes.regards.modules.feature.domain.*;
+import fr.cnes.regards.modules.feature.dao.FeatureUpdateRequestSpecificationBuilder;
+import fr.cnes.regards.modules.feature.dao.IAbstractFeatureRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureDeletionRequestRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.IFeatureRequestToSchedule;
+import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.*;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.DisseminationAckEvent;
@@ -49,12 +51,14 @@ import fr.cnes.regards.modules.feature.service.FeatureMetrics.FeatureUpdateState
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
 import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
+import fr.cnes.regards.modules.feature.service.logger.PropertyPatchLogger;
 import fr.cnes.regards.modules.feature.service.request.FeatureUpdateDisseminationService;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionNotifier;
 import fr.cnes.regards.modules.feature.service.session.FeatureSessionProperty;
 import fr.cnes.regards.modules.feature.service.settings.IFeatureNotificationSettingsService;
 import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.model.dto.properties.set.PropertySet;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -70,6 +74,7 @@ import org.springframework.validation.Validator;
 
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -101,9 +106,6 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
     @Autowired
     private IFeatureDeletionRequestRepository featureDeletionRequestRepository;
-
-    @Autowired
-    private IFeatureDisseminationInfoRepository featureDisseminationInfoRepository;
 
     @Autowired
     private FeatureUpdateDisseminationService featureUpdateDisseminationService;
@@ -386,7 +388,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         long processStart = System.currentTimeMillis();
 
         Set<FeatureEntity> featureEntities = new HashSet<>();
-        Set<FeatureUpdateRequest> successfulRequest = new HashSet<>();
+        Set<FeatureUpdateRequest> successfulRequests = new HashSet<>();
         Set<FeatureUpdateRequest> storagePendingRequests = new HashSet<>();
         List<FeatureUpdateRequest> errorRequests = new ArrayList<>();
         List<DisseminationAckEvent> disseminationAckEvents = new ArrayList<>();
@@ -397,9 +399,6 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                                                                                              .collect(Collectors.toMap(
                                                                                                  FeatureEntity::getUrn,
                                                                                                  Function.identity()));
-        Map<FeatureEntity, Set<FeatureDisseminationInfo>> disseminationInfosByFeature = computeDisseminationInfoIfNeeded(
-            featureByUrn,
-            requests);
         // Update feature update request
         for (FeatureUpdateRequest request : requests) {
             Feature patch = request.getFeature();
@@ -421,66 +420,17 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                 // Register
                 metrics.count(request.getProviderId(), FeatureUpdateState.UPDATE_REQUEST_ERROR);
             } else {
-                featureEntity.setLastUpdate(OffsetDateTime.now());
-                if (featureEntity.getFeature().getHistory() != null) {
-                    featureEntity.getFeature().getHistory().setUpdatedBy(request.getRequestOwner());
-                } else {
-                    featureEntity.getFeature()
-                                 .setHistory(FeatureHistory.build(request.getRequestOwner(),
-                                                                  request.getRequestOwner()));
-                }
-
-                // Merge properties handling null property values to unset properties
-                IProperty.mergeProperties(featureEntity.getFeature().getProperties(),
-                                          patch.getProperties(),
-                                          patch.getUrn().toString(),
-                                          request.getRequestOwner());
-                // Geometry cannot be unset but can be mutated
-                if (!GeoJsonType.UNLOCATED.equals(patch.getGeometry().getType())) {
-                    featureEntity.getFeature().setGeometry(patch.getGeometry());
-                }
-                // Monitoring log
-                FeatureLogger.updateSuccess(request.getRequestOwner(),
-                                            request.getRequestId(),
-                                            request.getProviderId(),
-                                            request.getFeature().getUrn());
-
-                // Update source/session for request notification
-                request.setSourceToNotify(featureEntity.getSessionOwner());
-                request.setSessionToNotify(featureEntity.getSession());
-
-                // Check files update
-                try {
-                    featureFilesService.handleFeatureUpdateFiles(request, featureEntity);
-                    if (request.getStep() != FeatureRequestStep.REMOTE_STORAGE_REQUESTED) {
-                        // Publish request success
-                        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH,
-                                                                    request.getRequestId(),
-                                                                    request.getRequestOwner(),
-                                                                    featureEntity.getProviderId(),
-                                                                    featureEntity.getUrn(),
-                                                                    RequestState.SUCCESS));
-
-                        // add entity to request (toNotify)
-                        request.setToNotify(featureEntity.getFeature());
-                        successfulRequest.add(request);
-                    } else {
-                        storagePendingRequests.add(request);
-                    }
-                    // Manage acknowledges
-                    Set<FeatureDisseminationInfo> disseminationInfos = disseminationInfosByFeature.getOrDefault(
-                        featureEntity,
-                        Sets.newHashSet());
-                    // Add ack event to list of ack events to create if needed
-                    handleAcknowledgedRecipient(request, featureEntity, disseminationInfos).ifPresent(
-                        disseminationAckEvents::add);
+                if (processRequest(request,
+                                   featureEntity,
+                                   patch,
+                                   successfulRequests::add,
+                                   storagePendingRequests::add,
+                                   disseminationAckEvents::add)) {
                     // Register
                     metrics.count(request.getProviderId(), FeatureUpdateState.FEATURE_MERGED);
                     // Add updated feature
                     featureEntities.add(featureEntity);
-                } catch (ModuleException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    request.addError(FeatureRequestStep.LOCAL_ERROR, e.getMessage());
+                } else {
                     errorRequests.add(request);
                 }
             }
@@ -495,7 +445,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         featureUpdateRequestRepository.saveAll(storagePendingRequests);
 
         doOnError(errorRequests);
-        doOnSuccess(successfulRequest);
+        doOnSuccess(successfulRequests);
 
         LOGGER.trace("------------->>> {} update requests processed with {} entities updated in {}ms",
                      requests.size(),
@@ -504,31 +454,121 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         return featureEntities;
     }
 
-    private Map<FeatureEntity, Set<FeatureDisseminationInfo>> computeDisseminationInfoIfNeeded(Map<FeatureUniformResourceName, FeatureEntity> featureByUrn,
-                                                                                               List<FeatureUpdateRequest> requests) {
-        List<FeatureEntity> requestNeedingDisseminationInfo = requests.stream()
-                                                                      .filter(request -> StringUtils.isNotBlank(request.getAcknowledgedRecipient()))
-                                                                      .map(request -> featureByUrn.get(request.getUrn()))
-                                                                      .filter(Objects::nonNull)
-                                                                      .toList();
-
-        Map<Long, FeatureEntity> idToFeature = requestNeedingDisseminationInfo.stream()
-                                                                              .collect(Collectors.toMap(
-                                                                                  AbstractFeatureEntity::getId,
-                                                                                  Function.identity()));
-        if (!requestNeedingDisseminationInfo.isEmpty()) {
-            Set<FeatureDisseminationInfo> featureDisseminationInfos = featureDisseminationInfoRepository.findByFeatureIdIn(
-                requestNeedingDisseminationInfo.stream().map(AbstractFeatureEntity::getId).toList());
-            return featureDisseminationInfos.stream()
-                                            .collect(Collectors.groupingBy(d -> idToFeature.get(d.getFeatureId()),
-                                                                           Collectors.toSet()));
+    /**
+     * Process a single update request.
+     *
+     * @param request            The request to process
+     * @param featureEntity      The associated feature entity
+     * @param patch              The request's feature
+     * @param onSuccess          Consumer to call if request is completed
+     * @param onStoragePending   Consumer to call if storage is pending
+     * @param onDisseminationAck Consumer to call if a DisseminationAckEvent must be published
+     */
+    private boolean processRequest(FeatureUpdateRequest request,
+                                   FeatureEntity featureEntity,
+                                   Feature patch,
+                                   Consumer<FeatureUpdateRequest> onSuccess,
+                                   Consumer<FeatureUpdateRequest> onStoragePending,
+                                   Consumer<DisseminationAckEvent> onDisseminationAck) {
+        featureEntity.setLastUpdate(OffsetDateTime.now());
+        if (featureEntity.getFeature().getHistory() != null) {
+            featureEntity.getFeature().getHistory().setUpdatedBy(request.getRequestOwner());
+        } else {
+            featureEntity.getFeature()
+                         .setHistory(FeatureHistory.build(request.getRequestOwner(), request.getRequestOwner()));
         }
-        return new HashMap<>();
+
+        // Merge properties handling null property values to unset properties
+        List<String> affectedProperties = mergeProperties(featureEntity.getFeature().getProperties(),
+                                                          patch.getProperties(),
+                                                          patch.getUrn().toString(),
+                                                          request.getRequestOwner());
+        // Geometry cannot be unset but can be mutated
+        // TODO Devrait-on inclure la geometry dans la liste affectedProperties?
+        if (!GeoJsonType.UNLOCATED.equals(patch.getGeometry().getType())) {
+            featureEntity.getFeature().setGeometry(patch.getGeometry());
+        }
+        // Monitoring log
+        FeatureLogger.updateSuccess(request.getRequestOwner(),
+                                    request.getRequestId(),
+                                    request.getProviderId(),
+                                    request.getFeature().getUrn());
+
+        // Update source/session for request notification
+        request.setSourceToNotify(featureEntity.getSessionOwner());
+        request.setSessionToNotify(featureEntity.getSession());
+
+        // Check files update
+        try {
+            featureFilesService.handleFeatureUpdateFiles(request, featureEntity);
+            if (request.getStep() != FeatureRequestStep.REMOTE_STORAGE_REQUESTED) {
+                // Publish request success
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH,
+                                                            request.getRequestId(),
+                                                            request.getRequestOwner(),
+                                                            featureEntity.getProviderId(),
+                                                            featureEntity.getUrn(),
+                                                            RequestState.SUCCESS));
+
+                // add entity to request (toNotify)
+                request.setToNotify(featureEntity.getFeature());
+                onSuccess.accept(request);
+            } else {
+                affectedProperties.add("files");
+                onStoragePending.accept(request);
+            }
+            request.setChangedAttributesToNotify(affectedProperties);
+            // Manage acknowledges
+            // Add ack event to list of ack events to create if needed
+            buildAcknowledgeEvent(request, featureEntity).ifPresent(onDisseminationAck);
+            return true;
+        } catch (ModuleException e) {
+            LOGGER.error(e.getMessage(), e);
+            request.addError(FeatureRequestStep.LOCAL_ERROR, e.getMessage());
+            return false;
+        }
     }
 
-    private Optional<DisseminationAckEvent> handleAcknowledgedRecipient(FeatureUpdateRequest request,
-                                                                        FeatureEntity featureEntity,
-                                                                        Set<FeatureDisseminationInfo> disseminationInfoCache) {
+    /**
+     * Merge the properties from a patch into the original properties.
+     *
+     * @param properties      The original set. This set is modified by this operation.
+     * @param patchProperties The patch set. This set is not modified.
+     * @param modifier        The modifier, used for logging.
+     * @param identifier      The identifier, used for logging.
+     * @return The list of property (qualified) names that were added, removed or updated.
+     */
+    private List<String> mergeProperties(Set<IProperty<?>> properties,
+                                         Set<IProperty<?>> patchProperties,
+                                         String modifier,
+                                         String identifier) {
+        List<String> affectedProperties = new ArrayList<>();
+        PropertySet.MergeListener listener = new PropertySet.MergeListener() {
+
+            @Override
+            public void propertyAdded(String qualifiedName, Object value) {
+                PropertyPatchLogger.logPropertyAdded(modifier, identifier, qualifiedName, value);
+                affectedProperties.add(qualifiedName);
+            }
+
+            @Override
+            public void propertyUpdated(String qualifiedName, Object oldValue, Object newValue) {
+                PropertyPatchLogger.logPropertyUpdated(modifier, identifier, qualifiedName, oldValue, newValue);
+                affectedProperties.add(qualifiedName);
+            }
+
+            @Override
+            public void propertyRemoved(String qualifiedName, Object oldValue) {
+                PropertyPatchLogger.logPropertyRemoved(modifier, identifier, qualifiedName, oldValue);
+                affectedProperties.add(qualifiedName);
+            }
+        };
+        new PropertySet(properties).mergeProperties(patchProperties, listener);
+        return affectedProperties;
+    }
+
+    private Optional<DisseminationAckEvent> buildAcknowledgeEvent(FeatureUpdateRequest request,
+                                                                  FeatureEntity featureEntity) {
         String acknowledgedRecipient = request.getAcknowledgedRecipient();
         if (!StringUtils.isBlank(acknowledgedRecipient)) {
             LOGGER.debug("acknowledged recipient: {}", acknowledgedRecipient);
@@ -678,22 +718,6 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         }
     }
 
-    private StepProperty getStepProperty(String source,
-                                         String session,
-                                         FeatureSessionProperty property,
-                                         String recipientLabel,
-                                         int nbProducts) {
-        return new StepProperty("fem_dissemination",
-                                source,
-                                session,
-                                new StepPropertyInfo(StepTypeEnum.DISSEMINATION,
-                                                     property.getState(),
-                                                     String.format(property.getName(), recipientLabel),
-                                                     String.valueOf(nbProducts),
-                                                     property.isInputRelated(),
-                                                     property.isOutputRelated()));
-    }
-
     @Override
     public void doOnTerminated(Collection<FeatureUpdateRequest> requests) {
         requests.forEach(request -> {
@@ -751,4 +775,5 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     public List<FeatureUpdateRequest> findAllByOrderIdsByRequestDateAsc(Set<Long> ids) {
         return featureUpdateRequestRepository.findAllByIdInOrderByRequestDateAsc(ids);
     }
+
 }

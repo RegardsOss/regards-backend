@@ -22,8 +22,6 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.modules.model.dto.properties.logger.PropertyPatchLogger;
-import org.springframework.util.Assert;
 
 import java.lang.reflect.Array;
 import java.net.MalformedURLException;
@@ -32,7 +30,6 @@ import java.time.DateTimeException;
 import java.time.OffsetDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.function.Function;
 
 /**
@@ -100,6 +97,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
      * @return converted attribute value
      * @throws IllegalArgumentException when conversion is not possible
      */
+    @SuppressWarnings("java:S1166") // See comment
     static OffsetDateTime toDateValue(Object value) throws IllegalArgumentException {
         // only strings are accepted here as valid input
         if (value instanceof TemporalAccessor) {
@@ -227,7 +225,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
      * @return converted list
      * @throws IllegalArgumentException when conversion is not possible
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "java:S1166" }) // java:S1166 exception is handled
     static <T> T[] toArrayValue(Object value, Function<Object, T> elementsConverter, Class<T> elementsClass)
         throws IllegalArgumentException {
         Collection<?> sourceList = null;
@@ -438,6 +436,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 break;
             case DOUBLE_RANGE:
                 ((DoubleRangeProperty) property).updateValue((AbstractRangeProperty.RangePropertyValue<Double>) value);
+                break;
             case DOUBLE_INTERVAL:
                 ((DoubleIntervalProperty) property).updateValue((Range<Double>) value);
                 break;
@@ -821,131 +820,6 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         att.setName(name);
         att.setValue(value);
         return att;
-    }
-
-    static Set<IProperty<?>> set(IProperty<?>... properties) {
-        Set<IProperty<?>> set = new HashSet<>();
-        if (properties != null) {
-            for (IProperty<?> ppty : properties) {
-                set.add(ppty);
-            }
-        }
-        return set;
-    }
-
-    /**
-     * Build a fast access map for current properties
-     */
-    public static Map<String, IProperty<?>> getPropertyMap(Set<IProperty<?>> properties) {
-        Map<String, IProperty<?>> pmap = new HashMap<>();
-        Map<String, ObjectProperty> omap = new HashMap<>();
-        getPropertyMap(pmap, omap, properties);
-        return pmap;
-    }
-
-    /**
-     * Build a fast access map for properties and objects
-     */
-    public static void getPropertyMap(Map<String, IProperty<?>> pmap,
-                                      Map<String, ObjectProperty> omap,
-                                      Set<IProperty<?>> properties) {
-        if (properties != null) {
-            for (IProperty<?> ppt : properties) {
-                addPropertyToMap(pmap, omap, ppt, null);
-            }
-        }
-    }
-
-    public static void addPropertyToMap(Map<String, IProperty<?>> pmap,
-                                        Map<String, ObjectProperty> omap,
-                                        IProperty<?> ppt,
-                                        String namespace) {
-        if (ppt.represents(PropertyType.OBJECT)) {
-            omap.put(ppt.getName(), (ObjectProperty) ppt);
-            for (IProperty<?> inner : ((ObjectProperty) ppt).getValue()) {
-                addPropertyToMap(pmap, omap, inner, ppt.getName());
-            }
-        } else {
-            StringBuilder builder = new StringBuilder();
-            if ((namespace != null) && !namespace.isEmpty()) {
-                builder.append(namespace);
-                builder.append(DOT);
-            }
-            pmap.put(builder.append(ppt.getName()).toString(), ppt);
-        }
-    }
-
-    public static Optional<String> getPropertyNamespace(String propertyKey) {
-        if ((propertyKey != null) && propertyKey.contains(DOT)) {
-            return Optional.of(propertyKey.substring(0, propertyKey.indexOf(DOT)));
-        }
-        return Optional.empty();
-    }
-
-    /**
-     * Merge patch properties into reference ones
-     *
-     * @param reference  not <code>null</code> reference properties
-     * @param patch      not <code>null</code> patch properties
-     * @param identifier not <code>null</code>
-     * @param modifier   user that modify the feature
-     */
-    public static void mergeProperties(Set<IProperty<?>> reference,
-                                       Set<IProperty<?>> patch,
-                                       String identifier,
-                                       String modifier) {
-
-        Assert.notNull(reference, "Reference properties must not be null");
-        Assert.notNull(patch, "Patch properties must not be null");
-
-        // Build fast property access maps
-        Map<String, IProperty<?>> refMap = new HashMap<>();
-        Map<String, ObjectProperty> refObjectMap = new HashMap<>();
-        IProperty.getPropertyMap(refMap, refObjectMap, reference);
-
-        // Build fast property for patch feature
-        Map<String, IProperty<?>> patchMap = new HashMap<>();
-        Map<String, ObjectProperty> patchObjectMap = new HashMap<>();
-        IProperty.getPropertyMap(patchMap, patchObjectMap, patch);
-
-        // Loop on patch properties
-        for (Entry<String, IProperty<?>> entry : patchMap.entrySet()) {
-            IProperty<?> property = entry.getValue();
-
-            if (property.getValue() == null) {
-                if (refMap.containsKey(entry.getKey())) {
-                    // Unset property if exists
-                    refMap.get(entry.getKey()).updateValue(null);
-                }
-            } else {
-                if (refMap.containsKey(entry.getKey())) {
-                    PropertyPatchLogger.log(modifier,
-                                            identifier,
-                                            entry.getKey(),
-                                            refMap.get(entry.getKey()).getValue(),
-                                            property.getValue());
-                    // Update property if already exists
-                    IProperty.updatePropertyValue(refMap.get(entry.getKey()), property.getValue());
-                } else {
-                    PropertyPatchLogger.log(modifier, identifier, entry.getKey(), property.getValue());
-                    // Add property
-                    Optional<String> namespace = IProperty.getPropertyNamespace(entry.getKey());
-                    if (namespace.isPresent()) {
-                        if (refObjectMap.containsKey(namespace.get())) {
-                            refObjectMap.get(namespace.get()).addProperty(property);
-                        } else {
-                            // Create object
-                            ObjectProperty o = IProperty.buildObject(namespace.get(), property);
-                            // Add it to the feature and to the reference map
-                            reference.add(o);
-                            refObjectMap.put(o.getName(), o);
-                        }
-                    } else {
-                        reference.add(property);
-                    }
-                }
-            }
-        }
     }
 
 }

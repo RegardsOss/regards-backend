@@ -38,7 +38,6 @@ import fr.cnes.regards.modules.storage.client.IStorageClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MimeType;
 
@@ -47,12 +46,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Service to handle actions on {@link Feature} files
+ * Service to handle actions on {@link Feature} files.
+ * <p>
+ * This class only interacts with the rs-storage microservice via the client {@link IStorageClient}.
  *
  * @author Sébastien Binda
  */
 @Service
-@MultitenantTransactional
 public class FeatureFilesService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureFilesService.class);
@@ -72,7 +72,7 @@ public class FeatureFilesService {
      * @param entity  {@link FeatureEntity} associated feature
      * @throws ModuleException if error occurs sending requests to storage microservice
      */
-    @Transactional(noRollbackFor = ModuleException.class)
+    @MultitenantTransactional(noRollbackFor = ModuleException.class)
     public void handleFeatureUpdateFiles(FeatureUpdateRequest request, FeatureEntity entity) throws ModuleException {
 
         LOGGER.trace("File update mode set to {} for feature {}.", request.getFileUpdateMode(), entity.getProviderId());
@@ -85,10 +85,10 @@ public class FeatureFilesService {
             // For each file from feature update information, check if it's a new file or if the file already exists if there
             // is some new locations.
             for (FeatureFile fileToUpdate : request.getFeature().getFiles()) {
-                List<StorageMetadata> storageLocations = new ArrayList<>();
-                if (request.getMetadata() != null && !CollectionUtils.isEmpty(request.getMetadata().getStorages())) {
-                    storageLocations = request.getMetadata().getStorages();
-                }
+                List<StorageMetadata> storageLocations = Optional.ofNullable(request.getMetadata())
+                                                                 .filter(FeatureStorageMedataEntity::hasStorage)
+                                                                 .map(FeatureStorageMedataEntity::getStorages)
+                                                                 .orElseGet(List::of);
 
                 switch (request.getFileUpdateMode()) {
                     case APPEND -> handleFeatureUpdateFile(entity,
@@ -361,6 +361,7 @@ public class FeatureFilesService {
      * @param requestedFiles   original request files
      * @return FeatureEntity updated (or not) feature
      */
+    @MultitenantTransactional
     public FeatureEntity updateFeatureLocations(FeatureEntity originalFeature,
                                                 List<RequestResultInfoDto> storageResponses,
                                                 List<FeatureFile> requestedFiles) {
@@ -443,6 +444,7 @@ public class FeatureFilesService {
      *
      * @param fcr currently creating feature
      */
+    @MultitenantTransactional
     public FeatureCreationRequest handleRequestFiles(FeatureCreationRequest fcr) {
 
         long subProcessStart = System.currentTimeMillis();
@@ -550,7 +552,7 @@ public class FeatureFilesService {
         if (updatedLocation.isPresent() && !updatedLocation.get().getUrl().equals(newUrl)) {
             updatedLocation.get().setUrl(newUrl);
             featureUpdated = true;
-        } else if (!updatedLocation.isPresent()) {
+        } else if (updatedLocation.isEmpty()) {
             file.getLocations().add(FeatureFileLocation.build(newUrl, newStorage));
             featureUpdated = true;
         }

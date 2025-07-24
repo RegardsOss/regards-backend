@@ -44,6 +44,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.validation.Errors;
 
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * Test feature validation
@@ -94,9 +95,9 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
         Errors errors;
 
         // Add required properties and validate
-        feature.withProperties(IProperty.set(IProperty.buildString("data_type", "TYPE01"),
-                                             IProperty.buildObject("file_characterization",
-                                                                   IProperty.buildBoolean("valid", Boolean.TRUE))));
+        feature.withProperties(Set.of(IProperty.buildString("data_type", "TYPE01"),
+                                      IProperty.buildObject("file_characterization",
+                                                            IProperty.buildBoolean("valid", Boolean.TRUE))));
 
         errors = validationService.validate(feature, ValidationMode.CREATION);
 
@@ -127,10 +128,10 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
     private void testUpdateAlterableAttr(Feature feature) {
         Errors errors;
         // Update feature with authorized properties
-        feature.withProperties(IProperty.set(IProperty.buildObject("file_characterization",
-                                                                   IProperty.buildBoolean("valid", Boolean.TRUE),
-                                                                   IProperty.buildDate("invalidation_date",
-                                                                                       OffsetDateTime.now()))));
+        feature.withProperties(Set.of(IProperty.buildObject("file_characterization",
+                                                            IProperty.buildBoolean("valid", Boolean.TRUE),
+                                                            IProperty.buildDate("invalidation_date",
+                                                                                OffsetDateTime.now()))));
 
         errors = validationService.validate(feature, ValidationMode.PATCH);
 
