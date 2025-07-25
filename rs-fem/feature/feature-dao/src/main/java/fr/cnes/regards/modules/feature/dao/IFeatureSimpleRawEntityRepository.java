@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
+import fr.cnes.regards.modules.feature.domain.FeatureSimpleRawEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
 
-/**
- * Specification builder for {@link FeatureSimpleEntity} using
- * {@link AbstractFeatureSimpleEntitySpecificationBuilder}
- *
- * @author Thibaud Michaudel
- */
-public class FeatureSimpleEntitySpecificationBuilder
-    extends AbstractFeatureSimpleEntitySpecificationBuilder<FeatureSimpleEntity> {
+@Repository
+public interface IFeatureSimpleRawEntityRepository
+    extends JpaRepository<FeatureSimpleRawEntity, Long>, JpaSpecificationExecutor<FeatureSimpleRawEntity> {
 
 }
