@@ -85,6 +85,10 @@
             <groupId>fr.cnes.regards.framework.utils</groupId>
             <artifactId>json-utils</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+        </dependency>
         <!-- Tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -545,22 +545,26 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         List<String> affectedProperties = new ArrayList<>();
         PropertySet.MergeListener listener = new PropertySet.MergeListener() {
 
+            private void addAffectedProperty(String qualifiedName) {
+                affectedProperties.add("properties." + qualifiedName);
+            }
+
             @Override
             public void propertyAdded(String qualifiedName, Object value) {
                 PropertyPatchLogger.logPropertyAdded(modifier, identifier, qualifiedName, value);
-                affectedProperties.add(qualifiedName);
+                addAffectedProperty(qualifiedName);
             }
 
             @Override
             public void propertyUpdated(String qualifiedName, Object oldValue, Object newValue) {
                 PropertyPatchLogger.logPropertyUpdated(modifier, identifier, qualifiedName, oldValue, newValue);
-                affectedProperties.add(qualifiedName);
+                addAffectedProperty(qualifiedName);
             }
 
             @Override
             public void propertyRemoved(String qualifiedName, Object oldValue) {
                 PropertyPatchLogger.logPropertyRemoved(modifier, identifier, qualifiedName, oldValue);
-                affectedProperties.add(qualifiedName);
+                addAffectedProperty(qualifiedName);
             }
         };
         new PropertySet(properties).mergeProperties(patchProperties, listener);

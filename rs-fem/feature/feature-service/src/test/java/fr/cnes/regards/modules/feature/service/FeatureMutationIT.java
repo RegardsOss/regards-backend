@@ -216,6 +216,7 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceIT {
         assertThatJson(event.getMetadata()).isObject()
                                            .node("changedAttributes")
                                            .isArray()
-                                           .containsExactlyInAnyOrder("label", "file_characterization.valid");
+                                           .containsExactlyInAnyOrder("properties.label",
+                                                                      "properties.file_characterization.valid");
     }
 }
