@@ -8,13 +8,14 @@ import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.queryparser.flexible.standard.config.StandardQueryConfigHandler;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryVisitor;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ParserTest {
 
@@ -71,100 +72,121 @@ public class ParserTest {
 
     @Test
     public void matchingInRule() throws QueryNodeException {
-        parseRule(RULE_PARSER,
-                  String.format("%s.%s: (%s OR titi)", DATA, DATA_STRING, DATA_STRING_VALUE, DATA_STRING_VALUE),
-                  example1(),
-                  Boolean.TRUE);
+        visitRule(String.format("%s.%s: (%s OR titi)", DATA, DATA_STRING, DATA_STRING_VALUE), example1(), Boolean.TRUE);
     }
 
     @Test
     public void matchingRuleAnd() throws QueryNodeException {
-        parseRule(RULE_PARSER,
-                  String.format("%s.%s:\"%s\" AND %s.%s:%s",
+        visitRule(String.format("%s.%s:\"%s\" AND %s.%s:%s",
                                 DATA,
                                 DATA_STRING,
                                 DATA_STRING_VALUE,
                                 DATA,
                                 DATA_BOOLEAN,
-                                DATA_BOOLEAN_VALUE),
-                  example1(),
-                  Boolean.TRUE);
+                                DATA_BOOLEAN_VALUE), example1(), Boolean.TRUE);
     }
 
     @Test
     public void matchingRuleOr() throws QueryNodeException {
-        parseRule(RULE_PARSER,
-                  String.format("%s.%s:\"%s\" OR %s.%s:%s",
+        visitRule(String.format("%s.%s:\"%s\" OR %s.%s:%s",
                                 DATA,
                                 DATA_STRING,
                                 DATA_STRING_VALUE,
                                 DATA,
                                 DATA_BOOLEAN,
-                                DATA_BOOLEAN_VALUE),
-                  example1(),
-                  Boolean.TRUE);
+                                DATA_BOOLEAN_VALUE), example1(), Boolean.TRUE);
     }
 
     @Test
     public void regexpRulesEqualRegex() throws QueryNodeException {
-        parseRule(RULE_PARSER,
-                  String.format("%s.%s:%s", DATA, DATA_STRING, DATA_STRING_VALUE_REGEXP),
-                  example1(),
-                  Boolean.TRUE);
+        visitRule(String.format("%s.%s:%s", DATA, DATA_STRING, DATA_STRING_VALUE_REGEXP), example1(), Boolean.TRUE);
     }
 
     @Test
     public void regexpRulesEqualLong() throws QueryNodeException {
-        parseRule(RULE_PARSER, String.format("%s.%s:%s", DATA, DATA_LONG, DATA_LONG_VALUE), example1(), Boolean.TRUE);
+        visitRule(String.format("%s.%s:%s", DATA, DATA_LONG, DATA_LONG_VALUE), example1(), Boolean.TRUE);
     }
 
     @Test
     public void regexpRulesEqualInteger() throws QueryNodeException {
-        parseRule(RULE_PARSER,
-                  String.format("%s.%s:%s", DATA, DATA_INTEGER, DATA_INTEGER_VALUE),
-                  example1(),
-                  Boolean.TRUE);
+        visitRule(String.format("%s.%s:%s", DATA, DATA_INTEGER, DATA_INTEGER_VALUE), example1(), Boolean.TRUE);
     }
 
     @Test
     public void regexpRulesEqualDate() throws QueryNodeException {
-        parseRule(RULE_PARSER,
-                  String.format("%s.%s:%s", DATA, DATA_DATE, DATA_DATE_VALUE_ESCAPED_FOR_QUERY),
+        visitRule(String.format("%s.%s:%s", DATA, DATA_DATE, DATA_DATE_VALUE_ESCAPED_FOR_QUERY),
                   example1(),
                   Boolean.TRUE);
     }
 
     @Test
     public void notMatchingRulesString() throws QueryNodeException {
-        parseRule(RULE_PARSER, String.format("%s.%s:\"%s\"", DATA, DATA_STRING, null), example1(), Boolean.FALSE);
+        visitRule(String.format("%s.%s:\"%s\"", DATA, DATA_STRING, null), example1(), Boolean.FALSE);
     }
 
     @Test
     public void matchingNotRulesString() throws QueryNodeException {
-        parseRule(RULE_PARSER, String.format("NOT %s.%s:\"%s\"", DATA, DATA_STRING, null), example1(), Boolean.TRUE);
+        visitRule(String.format("NOT %s.%s:\"%s\"", DATA, DATA_STRING, null), example1(), Boolean.TRUE);
     }
 
-    private void parseRule(RuleParser parser, String ruleExpression, JsonObject target, Boolean match)
-        throws QueryNodeException {
+    @Test
+    public void rangeRuleInclusiveMatchingInteger() throws QueryNodeException {
+        visitRule(String.format("%s.%s:[%s TO %s]", DATA, DATA_LONG, 33L, 38L), example1(), Boolean.TRUE);
+        visitRule(String.format("%s.%s:[%s TO %s]", DATA, DATA_LONG, 28L, 33L), example1(), Boolean.TRUE);
+        visitRule(String.format("%s.%s:[%s TO %s]", DATA, DATA_LONG, 34L, 38L), example1(), Boolean.FALSE);
+        visitRule(String.format("%s.%s:[%s TO %s]", DATA, DATA_LONG, -34L, 8L), example1(), Boolean.FALSE);
+    }
+
+    @Test
+    public void rangeRuleHalfInclusiveMatchingInteger() throws QueryNodeException {
+        visitRule(String.format("%s.%s:[%s TO *]", DATA, DATA_LONG, 32L), example1(), Boolean.TRUE);
+        visitRule(String.format("%s.%s:[%s TO *]", DATA, DATA_LONG, 33L), example1(), Boolean.TRUE);
+        visitRule(String.format("%s.%s:[%s TO *]", DATA, DATA_LONG, 34L), example1(), Boolean.FALSE);
+        visitRule(String.format("%s.%s:[* TO %s]", DATA, DATA_LONG, 34L), example1(), Boolean.TRUE);
+        visitRule(String.format("%s.%s:[* TO %s]", DATA, DATA_LONG, 33L), example1(), Boolean.TRUE);
+        visitRule(String.format("%s.%s:[* TO %s]", DATA, DATA_LONG, 32L), example1(), Boolean.FALSE);
+    }
+
+    @Test
+    public void rangeRuleExclusiveMatchingDouble() throws QueryNodeException {
+        visitRule(String.format("%s.%s:{%s TO %s}", DATA, DATA_LONG, 32.9999999999999d, 34d), example1(), Boolean.TRUE);
+        visitRule(String.format("%s.%s:{%s TO %s}", DATA, DATA_LONG, 28d, 33.00000000000001d),
+                  example1(),
+                  Boolean.TRUE);
+        visitRule(String.format("%s.%s:{%s TO %s}", DATA, DATA_LONG, 33d, 38d), example1(), Boolean.FALSE);
+        visitRule(String.format("%s.%s:{%s TO %s}", DATA, DATA_LONG, -34d, 33d), example1(), Boolean.FALSE);
+    }
+
+    @Test
+    public void rangeRuleHalfExclusiveMatchingInteger() throws QueryNodeException {
+        visitRule(String.format("%s.%s:{%s TO *}", DATA, DATA_LONG, 32L), example1(), Boolean.TRUE);
+        visitRule(String.format("%s.%s:{%s TO *}", DATA, DATA_LONG, 33L), example1(), Boolean.FALSE);
+        visitRule(String.format("%s.%s:{%s TO *}", DATA, DATA_LONG, 34L), example1(), Boolean.FALSE);
+        visitRule(String.format("%s.%s:{* TO %s}", DATA, DATA_LONG, 34L), example1(), Boolean.TRUE);
+        visitRule(String.format("%s.%s:{* TO %s}", DATA, DATA_LONG, 33L), example1(), Boolean.FALSE);
+        visitRule(String.format("%s.%s:{* TO %s}", DATA, DATA_LONG, 32L), example1(), Boolean.FALSE);
+    }
+
+    private void visitRule(String ruleExpression, JsonObject target, Boolean expectedResult) throws QueryNodeException {
         // Parse rule(s)
-        IRule rule = parser.parse(ruleExpression, "defaultField");
-        Assert.assertNotNull("Rule must not be null!", rule);
+        IRule rule = RULE_PARSER.parse(ruleExpression, "defaultField");
+        assertThat(rule).as("Rule must not be null").isNotNull();
         // Visit rule(s) to check if notification matches!
         JsonObjectMatchVisitor visitor = new JsonObjectMatchVisitor(target);
         Boolean result = rule.accept(visitor);
         LOGGER.debug("JSON object {}.", result ? "MATCHES" : "DOES NOT MATCH");
-        Assert.assertEquals(match, result);
+        assertThat(result).isEqualTo(expectedResult);
     }
 
     private JsonObject example1() {
-        JsonObject o = new JsonObject();
+        JsonObject result = new JsonObject();
         JsonObject data = new JsonObject();
-        o.add(DATA, data);
+        result.add(DATA, data);
         data.addProperty(DATA_STRING, DATA_STRING_VALUE);
         data.addProperty(DATA_BOOLEAN, DATA_BOOLEAN_VALUE);
         data.addProperty(DATA_LONG, DATA_LONG_VALUE);
         data.addProperty(DATA_INTEGER, DATA_INTEGER_VALUE);
         data.addProperty(DATA_DATE, DATA_DATE_VALUE);
-        return o;
+        return result;
     }
 }

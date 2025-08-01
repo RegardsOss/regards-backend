@@ -1,12 +1,14 @@
 package fr.cnes.regards.framework.utils.parser.rule;
 
 import fr.cnes.regards.framework.utils.parser.IRuleVisitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class NotRule implements IRule {
+import java.util.Objects;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NotRule.class);
+/**
+ * A NotRule is a rule that negates another rule, i.e. that is satisfied if and only if the other rule is not
+ * satisfied.
+ */
+public final class NotRule extends AbstractRule {
 
     private final IRule rule;
 
@@ -16,11 +18,38 @@ public class NotRule implements IRule {
 
     @Override
     public <U> U accept(IRuleVisitor<U> visitor) {
-        LOGGER.debug("Accepting {}", this.getClass().getName());
         return visitor.visitNot(this);
+    }
+
+    @Override
+    public IRule canonicalize() {
+        if (rule instanceof NotRule not) {
+            // (NOT (NOT a)) == a
+            return not.getRule();
+        }
+        return new NotRule(rule.canonicalize());
+    }
+
+    @Override
+    protected void toString(StringBuilder sb, boolean parenthesizeIfNeeded) {
+        sb.append("NOT ");
+        ((AbstractRule) rule).toString(sb, true);
     }
 
     public IRule getRule() {
         return rule;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof NotRule notRule)) {
+            return false;
+        }
+        return Objects.equals(rule, notRule.rule);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(rule);
     }
 }

@@ -1,33 +1,57 @@
 package fr.cnes.regards.framework.utils.parser.rule;
 
 import fr.cnes.regards.framework.utils.parser.IRuleVisitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class PropertyRule implements IRule {
+import java.util.Objects;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PropertyRule.class);
-
-    private final String property;
+/**
+ * A PropertyRule is a rule that matches properties whose value is equal to a specific value. The value is compared
+ * as a string, i.e. if the property is a number or boolean property, its string representation is used for comparison.
+ */
+public final class PropertyRule extends AbstractPropertyRule {
 
     private final String value;
 
     public PropertyRule(String property, String value) {
-        this.property = property;
+        super(property);
+        this.value = value;
+    }
+
+    public PropertyRule(String[] propertyPath, String value) {
+        super(propertyPath);
         this.value = value;
     }
 
     @Override
     public <U> U accept(IRuleVisitor<U> visitor) {
-        LOGGER.debug("Accepting {}", this.getClass().getName());
         return visitor.visitProperty(this);
     }
 
-    public String getProperty() {
-        return property;
+    @Override
+    public IRule canonicalize() {
+        return this;
+    }
+
+    @Override
+    protected void toString(StringBuilder sb, boolean parenthesizeIfNeeded) {
+        super.toString(sb, parenthesizeIfNeeded);
+        sb.append(value);
     }
 
     public String getValue() {
         return value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof PropertyRule that)) {
+            return false;
+        }
+        return super.equals(o) && Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), value);
     }
 }

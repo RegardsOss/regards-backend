@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.utils.parser;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import fr.cnes.regards.framework.utils.parser.rule.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,36 +25,48 @@ public class JsonObjectMatchVisitor implements IRuleVisitor<Boolean> {
     }
 
     @Override
+    public Boolean visitAlways() {
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public Boolean visitNever() {
+        return Boolean.FALSE;
+    }
+
+    @Override
     public Boolean visitAnd(AndRule rule) {
-        logVisit(rule.getClass());
-        Boolean result = Boolean.TRUE;
-        for (IRule child : rule.getRules()) {
-            result = result && child.accept(this);
+        logVisit(rule);
+        for (IRule subRule : rule.getRules()) {
+            if (!subRule.accept(this)) {
+                return false;
+            }
         }
-        return result;
+        return true;
     }
 
     @Override
     public Boolean visitOr(OrRule rule) {
-        logVisit(rule.getClass());
-        Boolean result = Boolean.FALSE;
-        for (IRule child : rule.getRules()) {
-            result = result || child.accept(this);
+        logVisit(rule);
+        for (IRule subRule : rule.getRules()) {
+            if (subRule.accept(this)) {
+                return true;
+            }
         }
-        return result;
+        return false;
     }
 
     @Override
     public Boolean visitNot(NotRule rule) {
-        logVisit(rule.getClass());
+        logVisit(rule);
         return !rule.getRule().accept(this);
     }
 
     @Override
     public Boolean visitProperty(PropertyRule rule) {
-        logVisit(rule.getClass());
+        logVisit(rule);
         // Find property to test
-        JsonElement el = findPropertyByPath(rule.getProperty(), this.object);
+        JsonElement el = findPropertyByPath(rule.getPropertyPath());
 
         // Test if property is matching rule
         // - null element
@@ -65,18 +78,29 @@ public class JsonObjectMatchVisitor implements IRuleVisitor<Boolean> {
             return el.getAsString() == null;
         }
         // - real value
+        return matchesString(rule.getValue(), el);
+    }
+
+    private boolean matchesString(String value, JsonElement el) {
         if (el.isJsonPrimitive()) {
-            return rule.getValue().equals(el.getAsString());
+            return value.equals(el.getAsString());
+        } else if (el.isJsonArray()) {
+            for (JsonElement item : el.getAsJsonArray()) {
+                if (matchesString(value, item)) {
+                    return true;
+                }
+            }
+            return false;
         } else {
-            return Boolean.FALSE;
+            return false;
         }
     }
 
     @Override
     public Boolean visitRegex(RegexpPropertyRule rule) {
-        logVisit(rule.getClass());
+        logVisit(rule);
         // Find property to test
-        JsonElement el = findPropertyByPath(rule.getProperty(), this.object);
+        JsonElement el = findPropertyByPath(rule.getPropertyPath());
 
         // Test if property is matching rule
         // - null element
@@ -92,28 +116,41 @@ public class JsonObjectMatchVisitor implements IRuleVisitor<Boolean> {
         }
     }
 
-    private JsonElement findPropertyByPath(String absolutePath, JsonElement element) {
-        // Retrieve property from absolute JSON path
-        String[] paths = absolutePath.split("\\.");
+    @Override
+    public Boolean visitNumberRange(NumberRangePropertyRule rule) {
+        logVisit(rule);
+        // Find property to test
+        JsonElement el = findPropertyByPath(rule.getPropertyPath());
 
+        if (el == null || !el.isJsonPrimitive()) {
+            return Boolean.FALSE;
+        }
+        JsonPrimitive primitive = el.getAsJsonPrimitive();
+        if (!primitive.isNumber()) {
+            return Boolean.FALSE;
+        }
+        return rule.matchesValue(primitive.getAsBigDecimal());
+    }
+
+    private JsonElement findPropertyByPath(String[] absolutePath) {
         // Retrieve leaf
         JsonElement el = this.object;
-        for (String path : paths) {
+        for (String path : absolutePath) {
             if (el == null) {
                 LOGGER.debug("Skipping search");
-                continue;
+                break;
             }
             if (el.isJsonObject()) {
                 el = ((JsonObject) el).get(path);
             } else {
-                LOGGER.debug("Property not found at {}!", absolutePath);
+                LOGGER.debug("Property not found at {}", String.join(".", absolutePath));
                 return null;
             }
         }
         return el;
     }
 
-    private static void logVisit(Class<? extends IRule> ruleClass) {
-        LOGGER.debug("Visiting {}", ruleClass.getName());
+    private static void logVisit(IRule rule) {
+        LOGGER.debug("Visiting {}", rule.getClass().getName());
     }
 }

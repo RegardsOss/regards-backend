@@ -23,6 +23,7 @@ import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.*;
 import org.apache.lucene.queryparser.flexible.standard.nodes.RegexpQueryNode;
+import org.apache.lucene.queryparser.flexible.standard.nodes.TermRangeQueryNode;
 
 /**
  * Build rule tree
@@ -36,10 +37,10 @@ public class RuleQueryTreeBuilder extends QueryTreeBuilder implements IRuleBuild
         // Register builder
         super.setBuilder(AndQueryNode.class, new AndQueryNodeBuilder());
         super.setBuilder(OrQueryNode.class, new OrQueryNodeBuilder());
-        super.setBuilder(QuotedFieldQueryNode.class, new QuotedFieldQueryNodeBuilder());
+        super.setBuilder(QuotedFieldQueryNode.class, new FieldQueryNodeBuilder());
         super.setBuilder(FieldQueryNode.class, new FieldQueryNodeBuilder());
         super.setBuilder(ModifierQueryNode.class, new ModifierQueryNodeBuilder());
-        // setBuilder(TermRangeQueryNode.class, new TermRangeQueryNodeBuilder(finder));
+        super.setBuilder(TermRangeQueryNode.class, new TermRangeQueryNodeBuilder());
         // setBuilder(WildcardQueryNode.class, new WildcardQueryNodeBuilder(finder));
         super.setBuilder(GroupQueryNode.class, new GroupQueryNodeBuilder());
         // setBuilder(FuzzyQueryNode.class, new UnsupportedQueryNodeBuilder());

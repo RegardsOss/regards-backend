@@ -1,29 +1,51 @@
 package fr.cnes.regards.framework.utils.parser.rule;
 
 import fr.cnes.regards.framework.utils.parser.IRuleVisitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class OrRule implements IRule {
+/**
+ * An OrRule is a rule that consists of multiple sub-rules, and that is satisfied if any one of its sub-rules is
+ * satisfied.
+ */
+public class OrRule extends AbstractCompositeRule {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrRule.class);
+    public OrRule(IRule... rules) {
+        super(rules);
+    }
 
-    private final List<IRule> rules = new ArrayList<>();
+    public OrRule(List<IRule> rules) {
+        super(rules);
+    }
+
+    @Override
+    protected boolean isNeutralRule(IRule rule) {
+        return rule == IRule.NEVER;
+    }
+
+    @Override
+    protected boolean isOverriddenByRule(IRule rule) {
+        return rule == IRule.ALWAYS;
+    }
+
+    @Override
+    protected IRule canonicalizeEmpty() {
+        return IRule.NEVER;
+    }
+
+    @Override
+    protected IRule with(List<IRule> rules) {
+        return new OrRule(rules);
+    }
+
+    @Override
+    protected String getOperatorAsString() {
+        return "OR";
+    }
 
     @Override
     public <U> U accept(IRuleVisitor<U> visitor) {
-        LOGGER.debug("Accepting {}", this.getClass().getName());
         return visitor.visitOr(this);
     }
 
-    public void add(IRule rule) {
-        rules.add(rule);
-    }
-
-    public List<IRule> getRules() {
-        return rules;
-    }
 }

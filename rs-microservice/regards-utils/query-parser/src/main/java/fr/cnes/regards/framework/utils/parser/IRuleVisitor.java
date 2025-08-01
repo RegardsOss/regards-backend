@@ -13,4 +13,11 @@ public interface IRuleVisitor<T> {
     T visitProperty(PropertyRule rule);
 
     T visitRegex(RegexpPropertyRule rule);
+
+    T visitNumberRange(NumberRangePropertyRule rule);
+
+    T visitAlways();
+
+    T visitNever();
+    
 }

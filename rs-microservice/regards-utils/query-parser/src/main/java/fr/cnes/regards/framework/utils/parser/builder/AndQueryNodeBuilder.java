@@ -9,6 +9,7 @@ import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
 import org.apache.lucene.queryparser.flexible.messages.MessageImpl;
 
 import java.util.List;
+import java.util.Objects;
 
 public class AndQueryNodeBuilder implements IRuleBuilder {
 
@@ -18,14 +19,10 @@ public class AndQueryNodeBuilder implements IRuleBuilder {
 
         List<QueryNode> children = node.getChildren();
         if (children != null) {
-            AndRule rule = new AndRule();
-            for (QueryNode child : children) {
-                Object obj = child.getTag(QueryTreeBuilder.QUERY_TREE_BUILDER_TAGID);
-                if (obj != null) {
-                    rule.add((IRule) obj);
-                }
-            }
-            return rule;
+            return new AndRule(children.stream()
+                                       .map(child -> (IRule) child.getTag(QueryTreeBuilder.QUERY_TREE_BUILDER_TAGID))
+                                       .filter(Objects::nonNull)
+                                       .toList());
         }
 
         throw new QueryNodeException(new MessageImpl("Empty AND is not supported"));
