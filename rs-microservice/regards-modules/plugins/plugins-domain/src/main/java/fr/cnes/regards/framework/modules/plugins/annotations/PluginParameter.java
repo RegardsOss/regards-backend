@@ -100,7 +100,7 @@ public @interface PluginParameter {
     String defaultValue() default "";
 
     /**
-     * Is the plugin parameter sensitive and should be encrypted into database?<br/>
+     * Is the plugin parameter sensitive and should it be encrypted into database?<br/>
      * BE AWARE: only plugin parameters of type {@link String} can be sensitive.
      *
      * @return true if the plugin parameter is sensitive.
@@ -108,9 +108,9 @@ public @interface PluginParameter {
     boolean sensitive() default false;
 
     /**
-     * Is the Plugin parameter is mandatory ?
+     * Is the Plugin parameter optional?
      *
-     * @return true if the plugin parameter is mandatory.
+     * @return true if the plugin parameter is optional.
      */
     boolean optional() default false;
 
