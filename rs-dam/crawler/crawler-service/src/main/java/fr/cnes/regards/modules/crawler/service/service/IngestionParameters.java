@@ -27,11 +27,11 @@ import java.time.OffsetDateTime;
  *
  * @author oroussel
  */
-record IngestionParameters(OffsetDateTime lastUpdateDate,
-                          String tenant,
-                          IDataSourcePlugin dsPlugin,
-                          Long datasourceId,
-                          OffsetDateTime ingestionStart) {
+public record IngestionParameters(OffsetDateTime lastUpdateDate,
+                                  String tenant,
+                                  IDataSourcePlugin dsPlugin,
+                                  Long datasourceId,
+                                  OffsetDateTime ingestionStart) {
 
 }
 

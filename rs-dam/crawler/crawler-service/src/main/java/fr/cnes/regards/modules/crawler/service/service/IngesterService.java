@@ -32,13 +32,13 @@ import fr.cnes.regards.modules.crawler.domain.IngestionStatus;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -124,7 +124,7 @@ public class IngesterService implements IHandler<PluginConfEvent> {
             runtimeTenantResolver.forceTenant(tenant);
             // If it concerns a data source, manage it
             if (event.getPluginTypes().contains(IDataSourcePlugin.class.getName()) && !this.consumeOnlyMode) {
-                this.manage();
+                this.manageCrawlingForAllTenants();
 
             }
         } catch (RuntimeException t) {
@@ -132,14 +132,8 @@ public class IngesterService implements IHandler<PluginConfEvent> {
         }
     }
 
-    /**
-     * By default, launched 1 mn after last one. BUT this method is also executed each time a datasource is created
-     * Initial delay of 5 mn to avoid been launched too soon.
-     */
-    @Scheduled(initialDelayString = "${regards.ingester.rate.init.ms:300000}",
-               fixedDelayString = "${regards.ingester.rate.ms:60000}")
     @SuppressWarnings("java:S1181") // guarding against plugin errors requires catching all Throwables
-    public void manage() {
+    public void manageCrawlingForAllTenants() {
         if (startup.get()) {
             // Service is starting. Wait ...
             return;
@@ -191,6 +185,7 @@ public class IngesterService implements IHandler<PluginConfEvent> {
                 }
             }
             // At least one ingestion has to be done while looping through all tenants
+            // Loop do an ingestion for only one datasource per tenant, so retry until there is no more to ingest in all tenants
         } while (atLeastOneIngestionDone);
     }
 
@@ -246,13 +241,17 @@ public class IngesterService implements IHandler<PluginConfEvent> {
     }
 
     private void setDatasourceIngestInError(String dsId, Throwable e) {
-        LOGGER.error(e.getMessage(), e);
+        LOGGER.error("Datasource ingestion error : {}", e.getMessage(), e);
+        CrawlingCursor cursorToSet = null;
+        if (e instanceof FirstFindException firstFindException) {
+            cursorToSet = firstFindException.getErrorCursor();
+        }
         try (StringWriter sw = new StringWriter()) {
             e.printStackTrace(new PrintWriter(sw));
-            dsIngestionService.setError(dsId, sw.toString());
+            dsIngestionService.setError(dsId, sw.toString(), cursorToSet);
         } catch (IOException e1) {
             LOGGER.error(e1.getMessage(), e1);
-            dsIngestionService.setError(dsId, e.getMessage());
+            dsIngestionService.setError(dsId, e.getMessage(), cursorToSet);
         }
     }
 

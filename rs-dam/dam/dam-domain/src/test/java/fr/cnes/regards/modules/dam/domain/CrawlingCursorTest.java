@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -43,6 +44,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 class CrawlingCursorTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CrawlingCursorTest.class);
+
+    private static final OffsetDateTime REFERENCE_DATE = LocalDate.of(2020, 1, 1)
+                                                                  .atStartOfDay()
+                                                                  .toInstant(ZoneOffset.UTC)
+                                                                  .atOffset(ZoneOffset.UTC);
 
     @Test
     @Purpose("Test if all data are returned with all pages if data dont have a last update date")
@@ -284,6 +290,89 @@ class CrawlingCursorTest {
         Assertions.assertTrue(results.isEmpty());
         Assertions.assertNotNull(cursor.getPreviousLastId());
         Assertions.assertNotNull(cursor.getLastId());
+    }
+
+    @Test
+    public void testCrawlingCursorComparation_CrawlEverything() {
+        CrawlingCursor cursor = new CrawlingCursor(0, 10);
+        CrawlingCursor cursorCloned = cursor.clone();
+        cursor.setHasNext(true);
+        cursor.next(CrawlingCursorMode.CRAWL_EVERYTHING);
+        Assertions.assertEquals(1, cursor.getPosition());
+        Assertions.assertEquals(0, cursorCloned.getPosition());
+        Assertions.assertTrue(cursor.isAfter(cursorCloned, CrawlingCursorMode.CRAWL_EVERYTHING));
+
+        cursor = new CrawlingCursor(0, 10);
+        cursor.setHasNext(true);
+        cursorCloned = cursor.clone();
+        cursor.next(CrawlingCursorMode.CRAWL_EVERYTHING);
+        cursorCloned.next(CrawlingCursorMode.CRAWL_EVERYTHING);
+        cursorCloned.next(CrawlingCursorMode.CRAWL_EVERYTHING);
+        Assertions.assertEquals(1, cursor.getPosition());
+        Assertions.assertEquals(2, cursorCloned.getPosition());
+        Assertions.assertFalse(cursor.isAfter(cursorCloned, CrawlingCursorMode.CRAWL_EVERYTHING));
+    }
+
+    @Test
+    public void testCrawlingCursorComparation_CrawlSinceLastUpdateWithoutDate() {
+        CrawlingCursor cursor = new CrawlingCursor(0, 10);
+        CrawlingCursor cursorCloned = cursor.clone();
+        cursor.setHasNext(true);
+        cursor.next(CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE);
+        Assertions.assertEquals(1, cursor.getPosition());
+        Assertions.assertEquals(0, cursorCloned.getPosition());
+        Assertions.assertTrue(cursor.isAfter(cursorCloned, CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE));
+    }
+
+    @Test
+    public void testCrawlingCursorComparation_CrawlSinceLastUpdateWithSameLastDate() {
+        CrawlingCursor cursor = new CrawlingCursor(REFERENCE_DATE);
+        CrawlingCursor cursorCloned = cursor.clone();
+        cursor.setHasNext(true);
+        cursor.setCurrentLastEntityDate(REFERENCE_DATE);
+        cursor.next(CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE);
+        // Only position changed, lastEntityDate is the same
+        Assertions.assertEquals(1, cursor.getPosition());
+        Assertions.assertEquals(0, cursorCloned.getPosition());
+        Assertions.assertTrue(cursor.isAfter(cursorCloned, CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE));
+    }
+
+    @Test
+    public void testCrawlingCursorComparation_CrawlSinceLastUpdateWithDifferentLastDate() {
+        CrawlingCursor cursor = new CrawlingCursor(REFERENCE_DATE);
+        CrawlingCursor cursorCloned = cursor.clone();
+        cursor.setHasNext(true);
+        cursor.setCurrentLastEntityDate(REFERENCE_DATE.plusDays(1));
+        cursor.next(CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE);
+        // cursor position doesn't change, only lastEntityDate is different
+        Assertions.assertEquals(0, cursor.getPosition());
+        Assertions.assertEquals(0, cursorCloned.getPosition());
+        Assertions.assertTrue(cursor.isAfter(cursorCloned, CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE));
+    }
+
+    @Test
+    public void testCrawlingCursorComparation_CrawlFromLastIdWithDifferentId() {
+        CrawlingCursor cursor = new CrawlingCursor(1L);
+        CrawlingCursor cursorCloned = cursor.clone();
+        cursor.setHasNext(true);
+        cursor.setCurrentLastId(2L);
+        cursor.next(CrawlingCursorMode.CRAWL_FROM_LAST_ID);
+        // cursor position doesn't change, only lastId is different
+        Assertions.assertEquals(0, cursor.getPosition());
+        Assertions.assertEquals(0, cursorCloned.getPosition());
+        Assertions.assertTrue(cursor.isAfter(cursorCloned, CrawlingCursorMode.CRAWL_FROM_LAST_ID));
+    }
+
+    @Test
+    public void testCrawlingCursorComparation_CrawlFromLastIdWithSameId() {
+        CrawlingCursor cursor = new CrawlingCursor(1L);
+        CrawlingCursor cursorCloned = cursor.clone();
+        cursor.setHasNext(true);
+        cursor.next(CrawlingCursorMode.CRAWL_FROM_LAST_ID);
+        // cursor position doesn't change, only lastId is different
+        Assertions.assertEquals(1, cursor.getPosition());
+        Assertions.assertEquals(0, cursorCloned.getPosition());
+        Assertions.assertTrue(cursor.isAfter(cursorCloned, CrawlingCursorMode.CRAWL_FROM_LAST_ID));
     }
 
     private CrawlingCursor simulateDatabaseNextCursor(CrawlingCursor previousCrawlingCursor, boolean noData) {

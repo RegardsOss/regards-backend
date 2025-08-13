@@ -17,18 +17,32 @@ package fr.cnes.regards.modules.crawler.service.exception;/*
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
+
 import java.io.Serial;
 
 /**
  * Should be thrown only when first find of {@link fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin} encounters an exception.
+ * <p>
+ * The error cursor must be set when the error come from the entity save to Elasticsearch,
+ * because this operation is asynchronous — the cursor may have been updated before the exception is thrown by the first async task.
+ * <p>
+ * If the errorCursor is null, it indicates that the error comes from the datasource plugin itself
+ * (e.g., network error, data source failure, etc.), in which case the cursor was not updated.
  */
 public class FirstFindException extends Exception {
+
+    private final CrawlingCursor errorCursor;
 
     @Serial
     private static final long serialVersionUID = 8422354822435901366L;
 
-    public FirstFindException(Throwable e) {
+    public FirstFindException(Throwable e, CrawlingCursor errorCursor) {
         super(e);
+        this.errorCursor = errorCursor;
     }
 
+    public CrawlingCursor getErrorCursor() {
+        return errorCursor;
+    }
 }

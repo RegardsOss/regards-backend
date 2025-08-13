@@ -32,6 +32,8 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
+import static fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE;
+
 /**
  * Cursor to retrieve a bunch of elements.
  *
@@ -113,8 +115,75 @@ public class CrawlingCursor {
         this(0, 1, null, null, lastId);
     }
 
+    public CrawlingCursor clone() {
+        CrawlingCursor crawlingCursorClone = new CrawlingCursor();
+        crawlingCursorClone.hasNext = this.hasNext;
+        crawlingCursorClone.position = this.position;
+        crawlingCursorClone.size = this.size;
+        crawlingCursorClone.currentLastEntityDate = this.currentLastEntityDate;
+        crawlingCursorClone.lastEntityDate = this.lastEntityDate;
+        crawlingCursorClone.previousLastEntityDate = this.previousLastEntityDate;
+        crawlingCursorClone.currentLastId = this.currentLastId;
+        crawlingCursorClone.lastId = this.lastId;
+        crawlingCursorClone.previousLastId = this.previousLastId;
+        return crawlingCursorClone;
+    }
+
+    /**
+     * Check if this cursor is after than another one.
+     * That means that other cursor is previous to this one. (other.next() may return this cursor).
+     */
+    public boolean isAfter(CrawlingCursor other, CrawlingCursorMode mode) {
+        return this.compareTo(other, mode) > 0;
+    }
+
+    /**
+     * Check if this cursor is before than another one.
+     * That means that current cursor is previous to this one. (this.next() may return the other cursor).
+     */
+    public boolean isBefore(CrawlingCursor other, CrawlingCursorMode mode) {
+        return this.compareTo(other, mode) < 0;
+    }
+
+    /**
+     * Returns a negative integer if current cursor concern older dataObject than the other.
+     * Returns zero if is equal to the other (may not happen).
+     * Returns a positive integer if the other cursor concern older than the current cursor.
+     * <p>
+     * Note : if cursor2 = cursor1().next(), so cursor1 is older than cursor2
+     * so cursor1.compareTo(cursor2) returns something < 0
+     */
+    public int compareTo(CrawlingCursor other, CrawlingCursorMode mode) {
+        return switch (mode) {
+            case CRAWL_EVERYTHING -> Integer.compare(this.position, other.getPosition());
+            case CRAWL_SINCE_LAST_UPDATE -> {
+                if (this.lastEntityDate == null || other.getLastEntityDate() == null) {
+                    yield Integer.compare(this.position, other.getPosition());
+                } else {
+                    if (this.lastEntityDate.equals(other.getLastEntityDate())) {
+                        yield Integer.compare(this.position, other.getPosition());
+                    } else {
+                        yield this.lastEntityDate.compareTo(other.getLastEntityDate());
+                    }
+                }
+            }
+            case CRAWL_FROM_LAST_ID -> {
+                if (this.lastId == null || other.getLastId() == null) {
+                    yield Integer.compare(this.position, other.getPosition());
+                } else {
+                    if (this.lastId.equals(other.getLastId())) {
+                        yield Integer.compare(this.position, other.getPosition());
+                    } else {
+                        yield this.lastId.compareTo(other.getLastId());
+                    }
+                }
+            }
+            default -> throw new IllegalStateException("Unexpected crawling mode: " + mode);
+        };
+    }
+
     public void next() {
-        next(CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE);
+        next(CRAWL_SINCE_LAST_UPDATE);
     }
 
     /**

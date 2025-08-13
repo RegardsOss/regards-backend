@@ -39,7 +39,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 /**
- * Scheduler that will periodicaly try to handle {@link fr.cnes.regards.modules.crawler.domain.EntityDeletionRequest}
+ * Scheduler that will periodically try to handle {@link fr.cnes.regards.modules.crawler.domain.EntityDeletionRequest}
  *
  * @author Thibaud Michaudel
  **/
