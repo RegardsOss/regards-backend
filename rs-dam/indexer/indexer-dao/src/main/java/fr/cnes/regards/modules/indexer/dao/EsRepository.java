@@ -29,6 +29,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
@@ -51,6 +52,7 @@ import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonConverter;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonMerger;
+import fr.cnes.regards.modules.indexer.dao.scripts.UpsertDataObjectEsScript;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
 import fr.cnes.regards.modules.indexer.domain.*;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
@@ -93,6 +95,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.*;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory;
 import org.elasticsearch.client.RequestOptions.Builder;
@@ -113,7 +116,10 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
+import org.elasticsearch.index.reindex.UpdateByQueryRequest;
 import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.script.Script;
+import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
@@ -231,7 +237,7 @@ public class EsRepository implements IEsRepository {
     /**
      * QueryBuilder visitor used for Elasticsearch search requests
      */
-    private static final QueryBuilderCriterionVisitor CRITERION_VISITOR = new QueryBuilderCriterionVisitor();
+    public static final QueryBuilderCriterionVisitor CRITERION_VISITOR = new QueryBuilderCriterionVisitor();
 
     /**
      * Index used to store search after cursors
@@ -758,6 +764,25 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
+    public <T extends IIndexable> void updateByQuery(SimpleSearchKey<DataObject> searchKey,
+                                                     ICriterion subsettingCrit,
+                                                     String scriptId,
+                                                     Map<String, Object> params) {
+        subsettingCrit = addTypes(subsettingCrit, searchKey.getSearchTypes());
+        QueryBuilder queryBuilder = subsettingCrit.accept(CRITERION_VISITOR);
+        Script script = new Script(ScriptType.STORED, null, scriptId, params);
+        UpdateByQueryRequest updateByQueryRequest = new UpdateByQueryRequest(searchKey.getSearchIndex());
+        updateByQueryRequest.setQuery(queryBuilder);
+        updateByQueryRequest.setScript(script);
+        updateByQueryRequest.setRefresh(true); // refresh when the update is done because elastic is near-real-time, documents are indexed within 1 sec
+        try {
+            client.updateByQuery(updateByQueryRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new RsRuntimeException(e);
+        }
+    }
+
+    @Override
     public <T extends IIndexable> T get(Optional<String> index, String type, String id, Class<T> clazz) {
 
         GetRequest request = new GetRequest(getIndex(index).toLowerCase(), id);
@@ -820,13 +845,79 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
+    public <T extends IIndexable> BulkSaveResult upsert(String inIndex,
+                                                        BulkSaveResult bulkSaveResult,
+                                                        StringBuilder errorBuffer,
+                                                        T... documents) {
+        try {
+            // Use existing one or create
+            BulkSaveResult result = Objects.requireNonNullElse(bulkSaveResult, new BulkSaveResult());
+            if (documents.length == 0) {
+                return result;
+            }
+            String index = inIndex.toLowerCase();
+            // Check mandatory properties (as docId, type, ...)
+            for (T doc : documents) {
+                checkDocument(doc);
+            }
+            // Create Save bulk request
+            BulkRequest bulkRequest = new BulkRequest();
+            Map<String, T> map = new HashMap<>();
+            for (T doc : documents) {
+                String json = gson.toJson(doc);
+                // convert all attributes of the current dataobject (document) in a map of attribute/value
+                // this map will be the params of the script
+                Map<String, Object> params = gson.fromJson(json, new TypeToken<Map<String, Object>>() {
+
+                }.getType());
+                Script script = new Script(ScriptType.STORED, null, UpsertDataObjectEsScript.ID, params);
+                // upsert content (the complete json) is used if docId does not exist yet.
+                // if exist, the script with params is called
+                UpdateRequest updateRequest = new UpdateRequest(index, doc.getDocId()).script(script)
+                                                                                      .upsert(json, XContentType.JSON);
+                bulkRequest.add(updateRequest);
+                map.put(doc.getDocId(), doc);
+            }
+
+            // Bulk save
+            BulkResponse response = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+            // Parse response to creata a more exploitable object
+            for (BulkItemResponse itemResponse : response.getItems()) {
+                T document = map.get(itemResponse.getId());
+                if (itemResponse.isFailed()) {
+                    manageFailedResponse(errorBuffer, documents, itemResponse, document, result, map);
+                } else {
+                    if (document instanceof DataObject) {
+                        DataObjectFeature docFeature = (((DataObject) document).getFeature());
+                        result.addSavedDoc(itemResponse.getId(),
+                                           itemResponse.getResponse().getResult(),
+                                           Optional.ofNullable(docFeature.getSession()),
+                                           Optional.ofNullable(docFeature.getSessionOwner()));
+                    } else {
+                        result.addSavedDoc(itemResponse.getId(),
+                                           itemResponse.getResponse().getResult(),
+                                           Optional.empty(),
+                                           Optional.empty());
+                    }
+                }
+            }
+            // To make just saved documents searchable, the associated index must be refreshed
+            this.refresh(index);
+            return result;
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new RsRuntimeException(e);
+        }
+    }
+
+    @Override
     public <T extends IIndexable> BulkSaveResult saveBulk(String inIndex,
                                                           BulkSaveResult bulkSaveResult,
                                                           StringBuilder errorBuffer,
                                                           T... documents) {
         try {
             // Use existing one or create
-            BulkSaveResult result = bulkSaveResult == null ? new BulkSaveResult() : bulkSaveResult;
+            BulkSaveResult result = Objects.requireNonNullElse(bulkSaveResult, new BulkSaveResult());
             if (documents.length == 0) {
                 return result;
             }
@@ -845,6 +936,7 @@ public class EsRepository implements IEsRepository {
                 bulkRequest.add(source);
                 map.put(doc.getDocId(), doc);
             }
+
             // Bulk save
             BulkResponse response = client.bulk(bulkRequest, RequestOptions.DEFAULT);
             // Parse response to creata a more exploitable object
@@ -948,7 +1040,6 @@ public class EsRepository implements IEsRepository {
     @Override
     public <T extends IIndexable> void searchAll(SearchKey<T, T> searchKey, Consumer<T> action, ICriterion inCrit) {
         try {
-
             SearchSourceBuilder builder = createSourceBuilder4Agg(addTypes(inCrit, searchKey.getSearchTypes()));
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).source(builder);
             ICriterion crit = inCrit == null ? ICriterion.all() : inCrit;
@@ -2494,6 +2585,21 @@ public class EsRepository implements IEsRepository {
         } catch (IOException e) {
             throw new RsRuntimeException(e);
         }
+    }
+
+    @Override
+    public void registerScript(String scriptId, String scriptSourceAsString) throws IOException {
+        String json = """
+                {
+                  "script": {
+                    "lang": "painless",
+                    "source": %s
+                  }
+                }
+            """.formatted(gson.toJson(scriptSourceAsString)); // escape quotes and cie with gson
+        Request request = new Request("PUT", "/_scripts/" + scriptId);
+        request.setJsonEntity(json);
+        client.getLowLevelClient().performRequest(request);
     }
 
     /**

@@ -1,0 +1,25 @@
+def preservedTags = [];
+for (key in params.keySet()) {
+  if (key == "tags") {
+    for (tag in ctx._source.tags) {
+      // Preserve existing tags that start with "URN:AIP:DATASET"
+      if (tag != null && tag.startsWith("URN:AIP:DATASET")) {
+        preservedTags.add(tag);
+      }
+    }
+    // And add all tags presents in new dataobject value
+    for (tag in params[key]) {
+      if (!preservedTags.contains(tag)) {
+        preservedTags.add(tag);
+      }
+    }
+  }
+  else if (key != "creationDate" && key != "metadata" && key != "groups" && key != "datasetModelNames") {
+    // Simple replacement for all fields except calculated fields, which keep their previous values
+    // If dataset or group is updated, these fields will be updated in another way
+    ctx._source[key] = params[key];
+  }
+}
+// Always keep tags in the feature AND in the source root
+ctx._source.tags = preservedTags;
+ctx._source.feature.tags = preservedTags;

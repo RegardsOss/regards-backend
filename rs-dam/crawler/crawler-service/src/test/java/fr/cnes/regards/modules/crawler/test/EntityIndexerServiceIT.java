@@ -66,6 +66,7 @@ import fr.cnes.regards.modules.dam.service.dataaccess.IAccessGroupService;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessRightService;
 import fr.cnes.regards.modules.dam.service.datasources.IDataSourceService;
 import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
+import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -75,10 +76,12 @@ import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.apache.commons.collections4.IterableUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +92,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -111,6 +115,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     private static final String SESSION = "SESSION 1";
 
     private static final String TENANT = "entity_indexer";
+
+    private static final OffsetDateTime REFERENCE_DATE = OffsetDateTime.now();
 
     private final List<DataObject> objects = Lists.newArrayList();
 
@@ -245,14 +251,14 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         objects.add(createObject("DO2", "DataObject 2"));
         objects.add(createObject("DO3", "DataObject 3"));
         dataAccessPlugin = createDataAccessPlugin();
-        indexerService.createDataObjects(TENANT, datasource.getId(), OffsetDateTime.now().minusDays(1), objects, "");
+        indexerService.upsertDataObjects(TENANT, datasource.getId(), REFERENCE_DATE.minusDays(1), objects, "");
         List<DataObject> otherObj = Lists.newArrayList();
         otherObj.add(createObject("DO4", "DataObject 4"));
         otherObj.add(createObject("DO5", "DataObject 5"));
         otherObj.add(createObject("DO6", "DataObject 6"));
-        indexerService.createDataObjects(TENANT, datasource.getId(), OffsetDateTime.now().minusDays(10), otherObj, "");
+        indexerService.upsertDataObjects(TENANT, datasource.getId(), REFERENCE_DATE.minusDays(10), otherObj, "");
         objects.addAll(otherObj);
-        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), REFERENCE_DATE, false);
     }
 
     private AccessGroup createGroup(String name) throws EntityAlreadyExistsException {
@@ -343,7 +349,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar.setFileAccessLevel(FileAccessLevel.INHERITED_ACCESS);
         ar.setDataAccessPlugin(newPluginConf);
         ar = rightsService.createAccessRight(ar);
-        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), REFERENCE_DATE, false);
 
         @SuppressWarnings("rawtypes") final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(
             EntityType.DATA);
@@ -386,7 +392,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar.setFileAccessLevel(FileAccessLevel.INHERITED_ACCESS);
         ar = rightsService.createAccessRight(ar);
         // All data should be only in group1
-        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), REFERENCE_DATE, false);
         results = searchService.search(searchKey,
                                        100,
                                        ICriterion.contains("groups", "group1", StringMatchType.KEYWORD));
@@ -398,7 +404,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar2 = new AccessRight(new QualityFilter(0, 0, QualityLevel.ACCEPTED), AccessLevel.FULL_ACCESS, dataset, group2);
         ar2.setFileAccessLevel(FileAccessLevel.INHERITED_ACCESS);
         rightsService.createAccessRight(ar2);
-        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), REFERENCE_DATE, false);
         // All data should be only in group1 and group2
         results = searchService.search(searchKey,
                                        100,
@@ -413,7 +419,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // -------------------------------------------------------------------------------
         rightsService.deleteAccessRight(ar.getId());
         ar = null;
-        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), REFERENCE_DATE, false);
         // All data should be only in group2
         results = searchService.search(searchKey,
                                        100,
@@ -435,7 +441,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar3.setDataAccessPlugin(dataAccessPlugin);
         ar3.setFileAccessLevel(FileAccessLevel.INHERITED_ACCESS);
         rightsService.createAccessRight(ar3);
-        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), REFERENCE_DATE, false);
         // All data should be in group2 and only one (DO1) in group3
         results = searchService.search(searchKey,
                                        100,
@@ -465,7 +471,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         dataAccessPlugin.getParameter(TestDataAccessRightPlugin.LABEL_PARAM).value("unknown");
         dataAccessPlugin = pluginService.updatePluginConfiguration(dataAccessPlugin);
         pluginService.cleanLocalPluginCache(dataAccessPlugin.getBusinessId());
-        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), REFERENCE_DATE, false);
         // All data should be in group2 and only one (DO1) in group3
         results = searchService.search(searchKey,
                                        100,
@@ -490,7 +496,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         dataAccessPlugin.getParameter(TestDataAccessRightPlugin.LABEL_PARAM).value("DataObject 2");
         dataAccessPlugin = pluginService.updatePluginConfiguration(dataAccessPlugin);
         pluginService.cleanLocalPluginCache(dataAccessPlugin.getBusinessId());
-        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), REFERENCE_DATE, false);
         results = searchService.search(searchKey,
                                        100,
                                        ICriterion.contains("groups", "group3", StringMatchType.KEYWORD));
@@ -500,18 +506,34 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // 9. Create a second dataset and an accessRight to check that all datas are in new GROUP4 through new dataset
         // -------------------------------------------------------------------------------
         dataset2 = createDataset("dataset2", datasource);
-        indexerService.updateEntityIntoEs(TENANT, dataset2.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset2.getIpId(), REFERENCE_DATE, false);
         ar4 = new AccessRight(new QualityFilter(0, 0, QualityLevel.ACCEPTED),
                               AccessLevel.FULL_ACCESS,
                               dataset2,
                               group4);
         ar4.setFileAccessLevel(FileAccessLevel.INHERITED_ACCESS);
         ar4 = rightsService.createAccessRight(ar4);
-        indexerService.updateEntityIntoEs(TENANT, dataset2.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset2.getIpId(), REFERENCE_DATE, false);
         results = searchService.search(searchKey,
                                        100,
                                        ICriterion.contains("groups", "group4", StringMatchType.KEYWORD));
         Assert.assertEquals(objects.size(), results.getTotalElements());
+        // check if modelNames are correctly set
+        List<DataObject> dataObjects = results.stream().map(a -> (DataObject) a).toList();
+        for (DataObject dataObject : dataObjects) {
+            // dataset1 and 2 have the same model, so only one model name should be present
+            Assertions.assertEquals(1, dataObject.getDatasetModelNames().size());
+            Assertions.assertEquals(Set.of(dataset.getModel().getName()), dataObject.getDatasetModelNames());
+            // but both datasets should be present in metadata modelNames
+            Assertions.assertEquals(1, dataObject.getMetadata().getModelNames().size());
+            String modelName = dataObject.getMetadata().getModelNames().iterator().next();
+            Iterable<String> datasetsLinkedToModelName = dataObject.getMetadata()
+                                                                   .getDatasetsLinkedToModelName(modelName);
+            List<String> datasets = IterableUtils.toList(datasetsLinkedToModelName);
+            Assertions.assertTrue(datasets.contains(dataset.getIpId().toString()));
+            Assertions.assertTrue(datasets.contains(dataset2.getIpId().toString()));
+            Assertions.assertEquals(2, datasets.size());
+        }
 
         results = searchService.search(searchKey,
                                        100,
@@ -527,7 +549,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // -------------------------------------------------------------------------------
         ar3.setMetadataAccessLevel(AccessLevel.NO_ACCESS);
         ar3 = rightsService.updateAccessRight(ar3.getId(), ar3);
-        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), REFERENCE_DATE, false);
         results = searchService.search(searchKey,
                                        100,
                                        ICriterion.contains("groups", "group3", StringMatchType.KEYWORD));
@@ -545,7 +567,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar.setFileAccessLevel(FileAccessLevel.NO_ACCESS);
         ar = rightsService.createAccessRight(ar);
         // All data should be only in group1
-        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), REFERENCE_DATE, false);
         results = searchService.search(searchKey,
                                        100,
                                        ICriterion.contains("groups", "group5", StringMatchType.KEYWORD));
@@ -560,12 +582,40 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar.setFileAccessLevel(FileAccessLevel.NO_ACCESS);
         ar = rightsService.createAccessRight(ar);
         // All data should be only in group1
-        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
+        indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), REFERENCE_DATE, false);
         results = searchService.search(searchKey,
                                        100,
                                        ICriterion.contains("groups", "group5", StringMatchType.KEYWORD));
         Assert.assertEquals(6L, results.getTotalElements());
 
+        // -------------------------------------------------------------------------------
+        // 12. Remove dataset2 to check if modelNames are correctly set
+        // -------------------------------------------------------------------------------
+
+        datasetService.delete(dataset2.getId());
+        // All data should be only in group1
+        indexerService.updateEntityIntoEs(TENANT, dataset2.getIpId(), REFERENCE_DATE, false);
+        results = searchService.search(searchKey,
+                                       100,
+                                       ICriterion.contains("groups", "group5", StringMatchType.KEYWORD));
+        Assert.assertEquals(6L, results.getTotalElements());
+
+        // check if modelNames are correctly set (dataset2 must be removed in modelNames)
+        dataObjects = results.stream().map(a -> (DataObject) a).toList();
+        for (DataObject dataObject : dataObjects) {
+            Assertions.assertEquals(1, dataObject.getDatasetModelNames().size());
+            Assertions.assertEquals(Set.of(dataset.getModel().getName()), dataObject.getDatasetModelNames());
+            // but both datasets should be present in metadata modelNames
+            Assertions.assertEquals(1, dataObject.getMetadata().getModelNames().size());
+            String modelName = dataObject.getMetadata().getModelNames().iterator().next();
+            Iterable<String> datasetsLinkedToModelName = dataObject.getMetadata()
+                                                                   .getDatasetsLinkedToModelName(modelName);
+            List<String> datasets = IterableUtils.toList(datasetsLinkedToModelName);
+            Assertions.assertTrue(datasets.contains(dataset.getIpId().toString()));
+            Assertions.assertFalse(datasets.contains(dataset2.getIpId().toString()));
+            Assertions.assertEquals(1, datasets.size());
+            // check that dataset2 is not present in modelNames
+        }
     }
 
     /**
@@ -601,9 +651,9 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         UniformResourceName virtualId = taggingWith.getVirtualId();
         Assert.assertNotNull(virtualId);
         taggedWithLatest.addTags(virtualId.toString());
-        indexerService.createDataObjects(TENANT,
+        indexerService.upsertDataObjects(TENANT,
                                          datasource.getId(),
-                                         OffsetDateTime.now().minusDays(1),
+                                         REFERENCE_DATE.minusDays(1),
                                          Lists.newArrayList(taggedWithLatest),
                                          "");
         Page<AbstractEntity> taggedWithVirtualId = searchService.search(searchKey,
@@ -702,9 +752,9 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
         taggedWithLatest.getFeature().setCrs("WGS_84");
         taggedWithLatest.setGeometry(geometry);
-        indexerService.createDataObjects(TENANT,
+        indexerService.upsertDataObjects(TENANT,
                                          datasource.getId(),
-                                         OffsetDateTime.now().minusDays(1),
+                                         REFERENCE_DATE.minusDays(1),
                                          Lists.newArrayList(taggedWithLatest),
                                          "");
 
@@ -813,6 +863,86 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                        StepPropertyEventTypeEnum.VALUE,
                        SESSION_OWNER,
                        SESSION);
+    }
+
+    @Test
+    public void testUpsertEntity() throws ModuleException {
+        DataObject dataObject = objects.get(0);
+        dataObject.addTags("tag1", "tag2");
+        // now this is an upsert, all new tags must be present
+        indexerService.upsertDataObjects(TENANT, datasource.getId(), REFERENCE_DATE.minusYears(10),
+                                         // creation date change must be ignored
+                                         List.of(dataObject), "");
+        AbstractEntity<?> d01 = searchObjectWithId("DO1");
+        // compare date with toInstant to ensure both timestamps are compared in UTC
+        // Elasticsearch stores date-time values with microsecond precision
+        // That's why we need to truncate to same precision the reference date in java
+        Assertions.assertEquals(REFERENCE_DATE.minusDays(1).toInstant().truncatedTo(ChronoUnit.MICROS),
+                                d01.getCreationDate().toInstant());
+        Assertions.assertEquals(3, d01.getTags().size());
+        Assertions.assertTrue(d01.getTags().contains("tag1"));
+        Assertions.assertTrue(d01.getTags().contains("tag2"));
+        // dataset ipId is added as tag by crawler
+        Assertions.assertTrue(d01.getTags().contains(dataset.getIpId().toString()));
+    }
+
+    @Test
+    public void testUpsertEntityWithTagWithURN() throws ModuleException {
+        DataObject dataObject = objects.get(0);
+        dataObject.addTags("tag1", "tag2", "URN:AIP:DATASET:HELLO:V1");
+        dataObject.setLabel("DataObject 1-update");
+        // now this is an upsert, all new tags must be present
+        BulkSaveResult dataObjects = indexerService.upsertDataObjects(TENANT,
+                                                                      datasource.getId(),
+                                                                      REFERENCE_DATE.minusYears(10),
+                                                                      // creation date change must be ignored
+                                                                      List.of(dataObject),
+                                                                      "");
+        System.err.println(dataObjects.getDetailedErrorMsg());
+        System.err.println(dataObjects.getInErrorDocCause(dataObject.getDocId()));
+        Assertions.assertEquals(1, dataObjects.getSavedDocsCount());
+        AbstractEntity<DataObjectFeature> d01 = searchObjectWithId(dataObject.getProviderId());
+        // compare date with toInstant to ensure both timestamps are compared in UTC
+        // Elasticsearch stores date-time values with microsecond precision
+        // That's why we need to truncate to same precision the reference date in java
+        Assertions.assertEquals(REFERENCE_DATE.minusDays(1).toInstant().truncatedTo(ChronoUnit.MICROS),
+                                d01.getCreationDate().toInstant());
+        Assertions.assertEquals(4, d01.getTags().size());
+        Assertions.assertTrue(d01.getTags().contains("tag1"));
+        Assertions.assertTrue(d01.getTags().contains("tag2"));
+        Assertions.assertTrue(d01.getTags().contains("URN:AIP:DATASET:HELLO:V1"));
+        // dataset ipId is added as tag by crawler
+        Assertions.assertTrue(d01.getTags().contains(dataset.getIpId().toString()));
+        // phase 2
+        dataObject.clearTags();
+        dataObject.addTags("tag1", "tag3");
+        dataObject.setLabel("DataObject 1-update2");
+        // now this is an upsert, all new tags must be present
+        indexerService.upsertDataObjects(TENANT,
+                                         datasource.getId(),
+                                         REFERENCE_DATE.minusYears(10),
+                                         List.of(dataObject),
+                                         "");
+        d01 = searchObjectWithId(dataObject.getProviderId());
+        Assertions.assertEquals(4, d01.getTags().size());
+        Assertions.assertTrue(d01.getTags().contains("tag1"));
+        Assertions.assertTrue(d01.getTags().contains("tag3"));
+        Assertions.assertTrue(d01.getTags().contains("URN:AIP:DATASET:HELLO:V1"));
+        // dataset ipId is added as tag by crawler
+        Assertions.assertTrue(d01.getTags().contains(dataset.getIpId().toString()));
+        Assertions.assertEquals("DataObject 1-update2", d01.getLabel());
+    }
+
+    @SuppressWarnings("rawtypes")
+    private AbstractEntity<DataObjectFeature> searchObjectWithId(String providerId) {
+        final SimpleSearchKey<AbstractEntity<DataObjectFeature>> searchKey = Searches.onSingleEntity(EntityType.DATA);
+        searchKey.setSearchIndex(TENANT);
+        Page<AbstractEntity<DataObjectFeature>> results = searchService.search(searchKey,
+                                                                               100,
+                                                                               ICriterion.contains("feature.providerId",
+                                                                                                   providerId,
+                                                                                                   StringMatchType.FULL_TEXT_SEARCH));
+        return results.getContent().get(0);
     }
 
     /**

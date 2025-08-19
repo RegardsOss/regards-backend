@@ -16,18 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
-package fr.cnes.regards.modules.crawler.service.exception;
+package fr.cnes.regards.modules.crawler.service.service.parallel;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
+import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
+
+import java.util.concurrent.Future;
 
 /**
- * Exception thrown when some errors are detected during the async bulk save operation in ElasticSearch.
+ * This record holds information about the bulk save task, including the cursor and the bulk save result
  *
+ * @param cursor               the cursor associated with the save task, needed to reset the crawling cursor in case of error
+ * @param futureBulkSaveResult the future result of the bulk save operation, can be null if an exception occurred
  * @author tguillou
  */
-public class ElasticSearchSaveBulkException extends ModuleException {
+record EsBulkTaskInformation(CrawlingCursor cursor,
+                             Future<BulkSaveResult> futureBulkSaveResult) {
 
-    public ElasticSearchSaveBulkException() {
-        super("Some errors are detected during the bulk save operation in ElasticSearch");
-    }
 }

@@ -136,4 +136,8 @@ public class DataObjectMetadata {
     public Set<String> getModelNames() {
         return modelNames.keySet();
     }
+
+    public Iterable<String> getDatasetsLinkedToModelName(String modelName) {
+        return modelNames.get(modelName);
+    }
 }

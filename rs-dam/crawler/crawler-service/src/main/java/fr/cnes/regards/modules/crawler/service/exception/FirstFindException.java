@@ -27,7 +27,7 @@ import java.io.Serial;
  * The error cursor must be set when the error come from the entity save to Elasticsearch,
  * because this operation is asynchronous — the cursor may have been updated before the exception is thrown by the first async task.
  * <p>
- * If the errorCursor is null, it indicates that the error comes from the datasource plugin itself
+ * If the errorCursor is not set (is null), it indicates that the error comes from the datasource plugin itself, and not from elastic.
  * (e.g., network error, data source failure, etc.), in which case the cursor was not updated.
  */
 public class FirstFindException extends Exception {

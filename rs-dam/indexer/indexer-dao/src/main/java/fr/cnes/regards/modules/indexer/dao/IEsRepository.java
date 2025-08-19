@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.indexer.dao;
 
 import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.dao.converter.LinkedHashMapToSort;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.indexer.domain.*;
@@ -32,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Consumer;
@@ -127,6 +129,26 @@ public interface IEsRepository {
      * @param index index to refresh
      */
     void refresh(String index);
+
+    /**
+     * Apply the script indicated in parameter to all documents (dataObject) matching the searchKey and subsettingCrit.
+     */
+    <T extends IIndexable> void updateByQuery(SimpleSearchKey<DataObject> searchKey,
+                                              ICriterion subsettingCrit,
+                                              String scriptId,
+                                              Map<String, Object> params);
+
+    default void upsert(String tenant,
+                        BulkSaveResult bulkSaveResult,
+                        Set<DataObject> toSaveObjects,
+                        StringBuilder buf) {
+        upsert(tenant, bulkSaveResult, buf, toSaveObjects.toArray(new DataObject[0]));
+    }
+
+    <T extends IIndexable> BulkSaveResult upsert(String inIndex,
+                                                 BulkSaveResult bulkSaveResult,
+                                                 StringBuilder errorBuffer,
+                                                 T... documents);
 
     /**
      * Create or update several documents into same index. Errors are logged.
@@ -452,6 +474,7 @@ public interface IEsRepository {
 
     /**
      * Retrieve the desired specific aggregations.
+     *
      * @param searchRequest aggregation search context as a record
      * @return the aggregations
      */
@@ -460,6 +483,7 @@ public interface IEsRepository {
     /**
      * Retrieve the desired specific aggregations. This method is used to retrieve aggregations using parallel search
      * requests.
+     *
      * @param searchRequests multiple aggregation search contexts as a map
      * @return all corresponding aggregations as a map
      */
@@ -577,4 +601,13 @@ public interface IEsRepository {
      *
      */
     long deleteByDatasource(String tenant, Long datasourceId);
+
+    /**
+     * Register a script in Elasticsearch.
+     * The script will be visible in elastic with a GET /index/_scripts/scriptId request.
+     *
+     * @param scriptId             the script id (should be unique)
+     * @param scriptSourceAsString script source as a string in painless language
+     */
+    void registerScript(String scriptId, String scriptSourceAsString) throws IOException;
 }

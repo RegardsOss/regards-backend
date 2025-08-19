@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
-package fr.cnes.regards.modules.crawler.service.service;
+package fr.cnes.regards.modules.crawler.service.conf;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -46,6 +46,7 @@ public class ESThreadPoolConfiguration {
      */
     @Bean
     public ExecutorService esThreadPool() {
+        // fixed thread pool alloc all threads at startup, to reserve them for Elasticsearch operations
         return Executors.newFixedThreadPool(threadPoolSize);
     }
 }

@@ -90,6 +90,8 @@ public interface IEntityIndexerService {
      * @param updateDate             update date saved inside data objects
      * @param forceDataObjectsUpdate true to force all associated data objects update
      * @param dsiId                  datasetIngestion id   @throws ModuleException
+     * @param skipDissociationStep   if true, skip the dissociation step (step needed only if dataset has been updated)
+     *                               the dissociation step is the step where all data objects which do not match the dataset subsetting clause anymore are detached to the dataset
      */
     void updateDatasets(String tenant,
                         Collection<Dataset> datasets,
@@ -97,12 +99,13 @@ public interface IEntityIndexerService {
                         OffsetDateTime updateDate,
                         boolean forceDataObjectsUpdate,
                         String dsiId,
-                        boolean isNewIndex) throws ModuleException;
+                        boolean skipDissociationStep) throws ModuleException;
 
     /**
      * Force update of all {@link Dataset}s
      */
-    void updateAllDatasets(String tenant, OffsetDateTime updateDate, boolean isNewIndex) throws ModuleException;
+    void updateAllDatasets(String tenant, OffsetDateTime updateDate, boolean skipDissociationStep)
+        throws ModuleException;
 
     /**
      * Force update of all {@link fr.cnes.regards.modules.dam.domain.entities.Collection}s
@@ -110,7 +113,7 @@ public interface IEntityIndexerService {
     void updateAllCollections(String tenant, OffsetDateTime updateDate) throws ModuleException;
 
     /**
-     * Create given data objects into Elasticsearch
+     * Create or update given data objects into Elasticsearch
      *
      * @param tenant       concerned tenant
      * @param datasourceId id of data source from where data objects come
@@ -118,26 +121,11 @@ public interface IEntityIndexerService {
      * @param objects      objects to save
      * @return bulk save result
      */
-    BulkSaveResult createDataObjects(String tenant,
+    BulkSaveResult upsertDataObjects(String tenant,
                                      Long datasourceId,
                                      OffsetDateTime now,
                                      List<DataObject> objects,
                                      String datasourceIngestionId) throws ModuleException;
-
-    /**
-     * Merge given data objects into Elasticsearch
-     *
-     * @param tenant       concerned tenant
-     * @param datasourceId id of data source from where data objects come
-     * @param now          update date (usually now)
-     * @param objects      objects to save
-     * @return bulk save result
-     */
-    BulkSaveResult mergeDataObjects(String tenant,
-                                    Long datasourceId,
-                                    OffsetDateTime now,
-                                    List<DataObject> objects,
-                                    String datasourceIngestionId) throws ModuleException;
 
     /**
      * Delete given data object from Elasticsearch

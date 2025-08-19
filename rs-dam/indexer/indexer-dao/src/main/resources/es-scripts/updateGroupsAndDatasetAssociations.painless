@@ -1,0 +1,199 @@
+/**
+ * This function adds a tag in 'tags' and 'feature.tags' attribute, if it does not already exist.
+ * @return true if dataObject is updated
+ */
+boolean addDatasetTag(def dataObject, def datasetIpId) {
+    boolean isObjectUpdated = false;
+    if (dataObject.tags == null) {
+        dataObject.tags = [];
+    }
+    if (!dataObject.feature.tags.contains(datasetIpId)) {
+        dataObject.feature.tags.add(datasetIpId);
+        isObjectUpdated = true;
+    }
+    if (!dataObject.tags.contains(datasetIpId)) {
+        dataObject.tags.add(datasetIpId);
+        isObjectUpdated = true;
+    }
+    return isObjectUpdated;
+}
+
+/**
+ * This function removes the group associated with a dataset from the metadata.
+ * It also removes the group in groups attribute if no other dataset is associated with this group.
+  * @return true if dataObject is updated
+ */
+boolean removeExistingGroupOfDataset(def dataObject, def datasetIpId) {
+    boolean isObjectUpdated = false;
+    List groupsRemoved = [];
+    for (group in dataObject.metadata.groups.entrySet()) {
+        def groupName = group.getKey();
+        // remove dataset from the group if it exists
+        if (dataObject.metadata.groups.containsKey(groupName)) {
+            for (int i = 0; i < group.value.size(); i++) {
+                def currentAccessRight = group.value.get(i);
+                if (currentAccessRight.dataset.equals(datasetIpId)) {
+                    dataObject.metadata.groups[groupName].remove(i);
+                    groupsRemoved.add(groupName);
+                    isObjectUpdated = true;
+                    break;
+                }
+            }
+        }
+    }
+    dataObject.groupToRemove = groupsRemoved;
+    // If a group in metadata is now empty (no other dataset associated with this group), we remove it from the 'groups' attribute
+    for (groupName in groupsRemoved) {
+        if (dataObject.metadata.groups[groupName].isEmpty()) {
+            dataObject.metadata.groups.remove(groupName);
+            for (int i = 0; i < dataObject.groups.size(); i++) {
+                if (dataObject.groups.get(i).equals(groupName)) {
+                    dataObject.groups.remove(i);
+                    dataObject.removed = groupName;
+                    break;
+                }
+            }
+        }
+    }
+    return isObjectUpdated;
+}
+
+/**
+ * This function adds the groups and dataset associations to the metadata.
+ * It creates a new group if it does not exist, or adds the dataset to an existing group.
+ * It also updates the 'groups' attribute of the dataObject.
+ * @return true if dataObject is updated
+ */
+boolean addGroupsAndDatasetAssociations(def dataObject, def groups) {
+    boolean isObjectUpdated = false;
+    def metadataGroups = dataObject.metadata.groups;
+    for (newGroup in groups) {
+        // Avoid modifying input params with creating new map, because other dataObjects will be affected
+        def groupCopy = new HashMap(newGroup);
+        String groupName = groupCopy.remove("groupName");
+        // groupCopy contains only dataset id and file access rights
+        if (!metadataGroups.containsKey(groupName)) {
+            // if the group does not exist, simply create it and add the dataset
+            metadataGroups[groupName] = new ArrayList();
+            metadataGroups[groupName].add(groupCopy);
+            isObjectUpdated = true;
+        } else {
+            // else, check if dataset already exists in the existint group
+            def currentList = metadataGroups[groupName];
+            boolean exists = false;
+            for (obj in currentList) {
+                if (obj.dataset.equals(groupCopy.dataset)) {
+                    exists = true;
+                    break;
+                }
+            }
+            // if not exist, add the dataset to the existing group
+            if (exists == false) {
+                metadataGroups[groupName].add(groupCopy);
+                isObjectUpdated = true;
+            }
+        }
+        // Add the group to the 'groups' attribute if it does not already exist
+        if (!dataObject.groups.contains(groupName)) {
+            dataObject.groups.add(groupName);
+            isObjectUpdated = true;
+        }
+    }
+    return isObjectUpdated;
+}
+
+/**
+ * This function removes all model name from the metadata and datasetModelNames, linked to indicated datasetIpId.
+ */
+boolean removeLinkedModelName(def dataObject, def datasetIpId) {
+    boolean isObjectUpdated = false;
+    List modelNameToRemove = [];
+    // manage metadata.modelNames
+    for (modelObject in dataObject.metadata.modelNames.entrySet()) {
+        def modelName = modelObject.getKey();
+        def datasetList = modelObject.getValue();
+        for (int i = 0 ; i < datasetList.size(); i++) {
+            if (datasetList.get(i).equals(datasetIpId)) {
+                datasetList.remove(i);
+                if (datasetList.isEmpty()) {
+                    modelNameToRemove.add(modelName);
+                }
+                isObjectUpdated = true;
+                break;
+            }
+        }
+    }
+    // manage datasetModelNames
+    for (modelName in modelNameToRemove) {
+        for (int i = dataObject.datasetModelNames.size() - 1; i >= 0; i--) {
+            if (dataObject.datasetModelNames.get(i).equals(modelName)) {
+                dataObject.datasetModelNames.remove(i);
+            }
+        }
+    }
+    return isObjectUpdated;
+}
+
+/**
+ * Add model name if not exists to the metadata.modelNames and datasetModelNames.
+ * metadata.modelNames sample : 
+ * "modelNames" : {
+*     "myDatasetName" : [
+*        "URN:AIP:DATASET:validation:16fdf228-08d8-45c7-b4c7-e3207d0c9b30:V1"
+*       ]
+*   }
+ */
+boolean addModelName(def dataObject, def datasetIpId, def datasetModelName) {
+    boolean isObjectUpdated = false;
+    // search in metadata if model name already exists
+    if (!dataObject.metadata.modelNames.containsKey(datasetModelName)) {
+        dataObject.metadata.modelNames[datasetModelName] = new ArrayList();
+        dataObject.metadata.modelNames[datasetModelName].add(datasetIpId);
+        isObjectUpdated = true;
+    } else {
+        def currentList = dataObject.metadata.modelNames[datasetModelName];
+        // if modelName exists but dataset not exist in list, add the dataset to the existing modelName
+        // remember that modelName is the key, and list of dataset is the value
+        boolean exists = false;
+        for (modelName in currentList) {
+            if (modelName.equals(datasetModelName)) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
+            dataObject.metadata.modelNames[datasetModelName].add(datasetIpId);
+            isObjectUpdated = true;
+        }
+    }
+    if (!dataObject.datasetModelNames.contains(datasetModelName)) {
+        dataObject.datasetModelNames.add(datasetModelName);
+        isObjectUpdated = true;
+    }
+    return isObjectUpdated;
+}
+
+// Params must contains : 
+// - datasetIpId: the id of the dataset to be associated with the groups
+// - groups: a list of groups to be associated with the dataset, each group is a map with 'groupName' and 'dataset' keys
+// - datasetModelName: the model name of the dataset
+// - updateDate: the date of the update, used to set the lastUpdate field in the dataObject if any update is done
+// MAIN CODE
+if (ctx._source.metadata == null) {
+    ctx._source.metadata = [:];
+}
+if (ctx._source.metadata.groups == null) {
+    ctx._source.metadata.groups = [:];
+}
+if (ctx._source.metadata.modelNames == null) {
+    ctx._source.metadata.modelNames = [:];
+}
+boolean isObjectUpdated = addDatasetTag(ctx._source, params.datasetIpId);
+isObjectUpdated = removeExistingGroupOfDataset(ctx._source, params.datasetIpId) || isObjectUpdated;
+isObjectUpdated = addGroupsAndDatasetAssociations(ctx._source, params.groups) || isObjectUpdated;
+isObjectUpdated = removeLinkedModelName(ctx._source, params.datasetIpId) || isObjectUpdated;
+isObjectUpdated = addModelName(ctx._source, params.datasetIpId, params.datasetModelName) || isObjectUpdated;
+
+if (isObjectUpdated) {
+    ctx._source.lastUpdate = params.updateDate;
+}

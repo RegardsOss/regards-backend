@@ -16,12 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
-package fr.cnes.regards.modules.crawler.service.service;
+package fr.cnes.regards.modules.crawler.service.service.parallel;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
+import fr.cnes.regards.modules.crawler.service.service.DatasourceIngestionService;
+import fr.cnes.regards.modules.crawler.service.service.IngestionParameters;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -30,19 +31,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 /**
- * Service to instantiate and help saveBulkManager.
+ * Service to instantiate and help {@link EsBulkParallelSaver}.
  *
  * @author tguillou
  */
 @Service
-public class ElasticBulkSaveService {
+public class EsBulkSaveService {
 
-    @Autowired
-    @Qualifier("esThreadPool")
-    private ExecutorService saveThreadPoolExecutor;
+    private final ExecutorService saveThreadPoolExecutor;
 
-    @Autowired
-    protected IRuntimeTenantResolver runtimeTenantResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    public EsBulkSaveService(@Qualifier("esThreadPool") ExecutorService saveThreadPoolExecutor,
+                             IRuntimeTenantResolver runtimeTenantResolver) {
+        this.saveThreadPoolExecutor = saveThreadPoolExecutor;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+    }
 
     public Future<BulkSaveResult> submitToSaveThreadPool(Callable<BulkSaveResult> runnable) {
         return saveThreadPoolExecutor.submit(runnable);
@@ -52,9 +56,10 @@ public class ElasticBulkSaveService {
         runtimeTenantResolver.forceTenant(tenant);
     }
 
-    public ElasticParallelBulkSaver createNewBulkManager(IngestionParameters ingestionParameters,
-                                                         DatasourceIngestion dsi,
-                                                         DatasourceIngestionService datasourceIngestionService) {
-        return new ElasticParallelBulkSaver(ingestionParameters, dsi, this, datasourceIngestionService);
+    public EsBulkParallelSaver createBulkParallelSaver(IngestionParameters ingestionParameters,
+                                                       DatasourceIngestion dsi,
+                                                       DatasourceIngestionService datasourceIngestionService) {
+        return new EsBulkParallelSaver(ingestionParameters, dsi, this, datasourceIngestionService);
     }
+
 }

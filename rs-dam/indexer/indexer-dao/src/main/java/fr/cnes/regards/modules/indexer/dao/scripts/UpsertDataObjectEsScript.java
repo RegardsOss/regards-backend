@@ -16,16 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
-package fr.cnes.regards.modules.crawler.service.service.parallel;
+package fr.cnes.regards.modules.indexer.dao.scripts;
 
-import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
+import java.io.IOException;
 
 /**
- * Failure context for bulk operations in Elasticsearch.
+ * Script to upsert a feature in Elasticsearch.
+ * This script erase all fields, but preserves calculated fields like 'metadata', 'creationDate', 'groups' and 'datasetModelName'.
+ * The existing tags that start with "URN:AIP:DATASET" are preserved, and the script
+ * merges them with new tags provided.
+ * Note : Limitation of the algorithm: if a user add a custom tag that starts with URN:AIP:DATASET, it can never be removed.
  *
  * @author tguillou
  */
-public record ElasticBulkFailureContext(CrawlingCursor cursor,
-                                        Exception exception) {
+public class UpsertDataObjectEsScript extends AbstractEsScript {
 
+    public static final String ID = "upsertDataObject";
+
+    public UpsertDataObjectEsScript() throws IOException {
+        super(ID, "es-scripts/upsertDataObject.painless");
+    }
 }

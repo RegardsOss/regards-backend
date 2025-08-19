@@ -16,14 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
-package fr.cnes.regards.modules.crawler.service.service;
+package fr.cnes.regards.modules.crawler.service.service.parallel;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
-import fr.cnes.regards.modules.crawler.service.service.parallel.ElasticBulkFailureContext;
-import fr.cnes.regards.modules.crawler.service.service.parallel.EsSaveTaskInformation;
+import fr.cnes.regards.modules.crawler.service.service.DatasourceIngestionService;
+import fr.cnes.regards.modules.crawler.service.service.IngestionParameters;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveLightResult;
@@ -40,14 +40,16 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This class manages the bulk save operations to ElasticSearch in separated threads for a specific datasource ingestion.
+ * Each use of {@link #saveDataObjectAsync(List)} creates an upsert operation for each DataObject in the provided list.
+ * These operations are stored in a bulk and then the method creates a new asynchronous task that sends the bulk to the ElasticSearch index, and waits for the result.
  * <p>
- * This class is created in {@link ElasticBulkSaveService} for each datasource ingestion and allows to save data objects asynchronously.
+ * This class is created in {@link EsBulkSaveService} for each datasource ingestion and allows to save data objects asynchronously.
  */
-public class ElasticParallelBulkSaver {
+public class EsBulkParallelSaver {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ElasticParallelBulkSaver.class);
-    
-    private final ElasticBulkSaveService elasticBulkSaveService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(EsBulkParallelSaver.class);
+
+    private final EsBulkSaveService esBulkSaveService;
 
     private final DatasourceIngestionService datasourceIngestionService;
 
@@ -59,25 +61,25 @@ public class ElasticParallelBulkSaver {
      * This list contains all the async tasks that were executed during the ingestion process.
      * It is used to wait for all tasks to complete and to collect the results.
      */
-    private final List<EsSaveTaskInformation> allAsyncTasks = new ArrayList<>();
+    private final List<EsBulkTaskInformation> allAsyncTasks = new ArrayList<>();
 
     /**
      * This variable holds the failure context (exception and cursor) of the bulk save operations.
      */
-    private final AtomicReference<ElasticBulkFailureContext> failureContext = new AtomicReference<>(null);
+    private final AtomicReference<EsBulkFailureContext> failureContext = new AtomicReference<>(null);
 
     /**
      * This variable holds the first bulk that has been added to the current bulk save manager.
      */
-    private EsSaveTaskInformation firstBulk;
+    private EsBulkTaskInformation firstBulk;
 
-    public ElasticParallelBulkSaver(IngestionParameters ingestionParameters,
-                                    DatasourceIngestion datasourceIngestion,
-                                    ElasticBulkSaveService elasticBulkSaveService,
-                                    DatasourceIngestionService ingesterService) {
+    public EsBulkParallelSaver(IngestionParameters ingestionParameters,
+                               DatasourceIngestion datasourceIngestion,
+                               EsBulkSaveService esBulkSaveService,
+                               DatasourceIngestionService ingesterService) {
         this.ingestionParameters = ingestionParameters;
         this.datasourceIngestion = datasourceIngestion;
-        this.elasticBulkSaveService = elasticBulkSaveService;
+        this.esBulkSaveService = esBulkSaveService;
         this.datasourceIngestionService = ingesterService;
     }
 
@@ -91,9 +93,9 @@ public class ElasticParallelBulkSaver {
     /**
      * This method saves a list of DataObjects asynchronously.
      */
-    public void saveDataObjectAsync(List<DataObject> dataObjects, boolean mergeNeeded) {
+    public void saveDataObjectAsync(List<DataObject> dataObjects) {
         CrawlingCursor currentCursor = datasourceIngestion.getCursor().clone();
-        Future<BulkSaveResult> bulkSaveResultFuture = elasticBulkSaveService.submitToSaveThreadPool(() -> {
+        Future<BulkSaveResult> bulkSaveResultFuture = esBulkSaveService.submitToSaveThreadPool(() -> {
             if (hasErrors()) {
                 if (currentCursor.isAfter(failureContext.get().cursor(),
                                           ingestionParameters.dsPlugin().getCrawlingCursorMode())) {
@@ -102,24 +104,24 @@ public class ElasticParallelBulkSaver {
                                 currentCursor.getPosition());
                     return null;
                 }
+                // continue execution because the cursor in error concerns one of the next cursors in the bulk.
             }
             try {
-                elasticBulkSaveService.setTenant(ingestionParameters.tenant());
-                return datasourceIngestionService.createOrMergeDataObjects(ingestionParameters,
-                                                                           datasourceIngestion.getId(),
-                                                                           dataObjects,
-                                                                           mergeNeeded);
+                esBulkSaveService.setTenant(ingestionParameters.tenant());
+                return datasourceIngestionService.createOrUpdateDataObjects(ingestionParameters,
+                                                                            datasourceIngestion.getId(),
+                                                                            dataObjects);
             } catch (ModuleException e) {
                 LOGGER.error("Error while creating or merging data objects", e);
                 storeErrorIfNeeded(currentCursor, e);
                 return null;
             }
         });
-        EsSaveTaskInformation esSaveTaskInformation = new EsSaveTaskInformation(currentCursor, bulkSaveResultFuture);
+        EsBulkTaskInformation esBulkTaskInformation = new EsBulkTaskInformation(currentCursor, bulkSaveResultFuture);
         if (firstBulk == null) {
-            firstBulk = esSaveTaskInformation;
+            firstBulk = esBulkTaskInformation;
         }
-        allAsyncTasks.add(esSaveTaskInformation);
+        allAsyncTasks.add(esBulkTaskInformation);
     }
 
     /**
@@ -129,7 +131,7 @@ public class ElasticParallelBulkSaver {
         failureContext.updateAndGet(existing -> {
             if (existing == null || cursorToStore.isBefore(existing.cursor(),
                                                            ingestionParameters.dsPlugin().getCrawlingCursorMode())) {
-                return new ElasticBulkFailureContext(cursorToStore, e);
+                return new EsBulkFailureContext(cursorToStore, e);
             } else {
                 return existing;
             }
@@ -145,7 +147,7 @@ public class ElasticParallelBulkSaver {
     @SuppressWarnings("java:S1166") // No need to rethrow exception here
     public BulkSaveLightResult waitAllResultsOrThrowIfAnyFail() throws FirstFindException, NotFinishedException {
         // 1. loop of get() -> wait for all futures to complete, and catch unexpected exceptions to set the first error
-        for (EsSaveTaskInformation task : allAsyncTasks) {
+        for (EsBulkTaskInformation task : allAsyncTasks) {
             try {
                 task.futureBulkSaveResult().get();
             } catch (CancellationException | InterruptedException | ExecutionException ex) {
@@ -160,7 +162,7 @@ public class ElasticParallelBulkSaver {
         }
         // 3. no errors occurred, we can collect the results of all tasks
         BulkSaveLightResult bulkSaveLightResult = new BulkSaveLightResult();
-        for (EsSaveTaskInformation task : allAsyncTasks) {
+        for (EsBulkTaskInformation task : allAsyncTasks) {
             try {
                 bulkSaveLightResult.append(task.futureBulkSaveResult().get());
             } catch (CancellationException | InterruptedException | ExecutionException ignored) {
@@ -177,9 +179,9 @@ public class ElasticParallelBulkSaver {
     @SuppressWarnings("java:S1166") // No need to rethrow exception here
     private void collectSuccessResultsAndThrow() throws FirstFindException, NotFinishedException {
         BulkSaveLightResult partialResult = new BulkSaveLightResult();
-        ElasticBulkFailureContext failure = failureContext.get();
+        EsBulkFailureContext failure = failureContext.get();
         // loop to collect the results that are before the first error of the bulk save operations
-        for (EsSaveTaskInformation task : allAsyncTasks) {
+        for (EsBulkTaskInformation task : allAsyncTasks) {
             try {
                 if (!task.cursor().equals(failure.cursor()) && task.cursor()
                                                                    .isBefore(failure.cursor(),

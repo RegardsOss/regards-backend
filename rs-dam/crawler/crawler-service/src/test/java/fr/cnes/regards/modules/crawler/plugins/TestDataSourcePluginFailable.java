@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.crawler.plugins;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.crawler.service.exception.ElasticSearchSaveBulkException;
+import fr.cnes.regards.modules.crawler.service.exception.EsBulkException;
 import fr.cnes.regards.modules.crawler.service.service.DatasourceIngestionService;
 import fr.cnes.regards.modules.crawler.service.service.IngestionParameters;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
@@ -112,15 +112,14 @@ public class TestDataSourcePluginFailable implements IDataSourcePlugin {
                        }
                        if (saveCallToFail.contains(currentCall)) {
                            LOGGER.warn("Force fail save call number {}", currentCall);
-                           throw new ElasticSearchSaveBulkException();
+                           throw new EsBulkException();
                        }
                        return invocation.callRealMethod();
                    })
                    .when(datasourceIngestionService)
-                   .createOrMergeDataObjects(Mockito.any(IngestionParameters.class),
-                                             Mockito.anyString(),
-                                             Mockito.anyList(),
-                                             Mockito.anyBoolean());
+                   .createOrUpdateDataObjects(Mockito.any(IngestionParameters.class),
+                                              Mockito.anyString(),
+                                              Mockito.anyList());
         } catch (Exception e) {
             throw new RuntimeException("Error configuring long task at calls", e);
         }

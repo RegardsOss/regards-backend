@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.crawler.service.service;
 
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.geojson.GeoJsonType;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
@@ -44,7 +45,10 @@ import fr.cnes.regards.modules.crawler.dao.IEntityEventRequestRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.EntityEventRequest;
 import fr.cnes.regards.modules.crawler.domain.EntityEventRequestStatus;
-import fr.cnes.regards.modules.crawler.service.consumer.*;
+import fr.cnes.regards.modules.crawler.service.consumer.DataObjectAssocRemover;
+import fr.cnes.regards.modules.crawler.service.consumer.DataObjectGroupAssocRemover;
+import fr.cnes.regards.modules.crawler.service.consumer.DataObjectGroupAssocUpdater;
+import fr.cnes.regards.modules.crawler.service.consumer.SaveDataObjectsCallable;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.job.UpdateEntityIntoEsJob;
 import fr.cnes.regards.modules.crawler.service.session.SessionNotifier;
@@ -64,6 +68,7 @@ import fr.cnes.regards.modules.dam.service.entities.IEntitiesService;
 import fr.cnes.regards.modules.dam.service.entities.visitor.AttributeBuilderVisitor;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.indexer.dao.scripts.UpdateGroupsAndDatasetAssociationEsScript;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
@@ -102,6 +107,7 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.ObjectError;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -127,6 +133,10 @@ public class EntityIndexerService implements IEntityIndexerService {
     private static final DateTimeFormatter ISO_TIME_UTC = new DateTimeFormatterBuilder().parseCaseInsensitive()
                                                                                         .append(DateTimeFormatter.ISO_LOCAL_TIME)
                                                                                         .toFormatter();
+
+    private static final Type GROUPS_TYPE_GSON = new TypeToken<List<Map<String, Object>>>() {
+
+    }.getType();
 
     /**
      * Current tenant resolver
@@ -239,6 +249,8 @@ public class EntityIndexerService implements IEntityIndexerService {
      * @param updateDate                    update date saved inside data objects
      * @param forceAssociatedEntitiesUpdate for dataset entity, force associated entities (ie data objects) update
      * @param dsiId                         DataSourceIngestion identifier
+     * @param skipDissociationStep          if true, skip the dissociation step (step needed only if dataset has been updated)
+     *                                      the dissociation step is the step where all data objects which do not match the dataset subsetting clause anymore are detached to the dataset
      */
     @Override
     public void updateEntityIntoEs(String tenant,
@@ -247,7 +259,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                    OffsetDateTime updateDate,
                                    boolean forceAssociatedEntitiesUpdate,
                                    String dsiId,
-                                   boolean isNewIndex) throws ModuleException {
+                                   boolean skipDissociationStep) throws ModuleException {
         LOGGER.info("Updating {}", ipId.toString());
         runtimeTenantResolver.forceTenant(tenant);
         AbstractEntity<?> entity = entitiesService.loadWithRelations(ipId);
@@ -311,7 +323,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                             forceAssociatedEntitiesUpdate,
                             needAssociatedDataObjectsUpdate);
                 ((Dataset) entity).setSubsettingClause(savedSubsettingClause);
-                manageDatasetUpdate((Dataset) entity, minLastUpdateCriteria, updateDate, dsiId, isNewIndex);
+                manageDatasetUpdate((Dataset) entity, minLastUpdateCriteria, updateDate, dsiId, skipDissociationStep);
             } else {
                 LOGGER.info("Avoid dataset entity {} - {} data objects association calculation into elasticsearch. "
                             + "Cause : force calculation = {}, calculation needed cause of dataset update = {}",
@@ -439,7 +451,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                      OffsetDateTime minLastUpdateCriteria,
                                      OffsetDateTime updateDate,
                                      String datasourceIngestionId,
-                                     boolean isNewIndex) throws ModuleException {
+                                     boolean skipDissociationStep) throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
         sendDataSourceMessage(String.format(
             "      Updating dataset %s indexation and all its associated data objects...",
@@ -457,8 +469,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                                                       tenant,
                                                                                       dataset.getId());
         // Remove association between dataobjects and dataset for all dataobjects which does not match the dataset filter anymore.
-        // little improvement : do it only if index is not new
-        if (!isNewIndex) {
+        if (!skipDissociationStep) {
             try {
                 removeOldDatasetDataObjectsAssoc(dataset,
                                                  updateDate,
@@ -474,13 +485,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         }
         // Associate dataset to all dataobjets. Associate groups of dataset to the dataobjets through metadata
         try {
-            addOrUpdateDatasetDataObjectsAssoc(dataset,
-                                               minLastUpdateCriteria,
-                                               updateDate,
-                                               searchKey,
-                                               executor,
-                                               saveDataObjectsCallable,
-                                               datasourceIngestionId);
+            addOrUpdateDatasetDataObjectsAssoc(dataset, minLastUpdateCriteria, updateDate, searchKey);
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             sendDataSourceMessage(String.format("Error updating new dataset objects. Cause: %s.", e.getMessage()),
@@ -593,8 +598,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         createComputedAttributes(dataset, computationPlugins);
 
         List<IComputedAttribute<Dataset, ?>> ll = new ArrayList<>(computationPlugins);
-        ll.stream()
-          .forEach(comAtt -> LOGGER.info("attribute {} is computed", comAtt.getAttributeToCompute().getName()));
+        ll.forEach(comAtt -> LOGGER.info("attribute {} is computed", comAtt.getAttributeToCompute().getName()));
 
         LOGGER.info("...computing OK");
         sendDataSourceMessage(String.format("        ...Computing ended.", computationPlugins.size()), dsiId);
@@ -603,51 +607,48 @@ public class EntityIndexerService implements IEntityIndexerService {
     /**
      * Associate all DATA entities matching the subsetting clause to the given DATASET entity and dataset groups.<br/>
      * Only groups with no {@link AccessLevel#CUSTOM_ACCESS} are associated the dataobjects in this method.<br/>
-     * The association is done by the {@link DataObjectUpdater} consumer.<br/>
+     * The association is done by the es script {@see indexer-dao/src/main/resources/es-scripts/updateGroupsAndDatasetAssociations.painless} .<br/>
      * To handle the groups with {@link AccessLevel#CUSTOM_ACCESS} see {@link EntityIndexerService#addOrUpdateDataObectGroupAssoc}.<br/>
      * <b>NOTE</b> : The subsetting clause to find DATA entities is computed by adding dataset subsetting clause and "lastUpdate > minLastUpdateCriteria parameter".<br/>
      *
-     * @param dataset                 {@link Dataset} to associate to DATA entities
-     * @param minLastUpdateCriteria   {@link OffsetDateTime}. If not null, add a datatime criterion in the subsesstin clause
-     *                                to find only DATA with a minLastUpdateCriteria greter than this parameter
-     * @param updateDate              {@link OffsetDateTime} of the current update process
-     * @param searchKey               {@link SimpleSearchKey} used to run elasticsearch searh of DATA entities to update
-     * @param executor                {@link ExecutorService}
-     * @param saveDataObjectsCallable {@link SaveDataObjectsCallable} used to save data
-     * @param dsiId                   {@link DatasourceIngestion} identifier
+     * @param dataset               {@link Dataset} to associate to DATA entities
+     * @param minLastUpdateCriteria {@link OffsetDateTime}. If not null, add a datatime criterion in the subsesstin clause
+     *                              to find only DATA with a minLastUpdateCriteria greter than this parameter
+     * @param updateDate            {@link OffsetDateTime} of the current update process
+     * @param searchKey             {@link SimpleSearchKey} used to run elasticsearch searh of DATA entities to update
      */
     private void addOrUpdateDatasetDataObjectsAssoc(Dataset dataset,
                                                     OffsetDateTime minLastUpdateCriteria,
                                                     OffsetDateTime updateDate,
-                                                    SimpleSearchKey<DataObject> searchKey,
-                                                    ExecutorService executor,
-                                                    SaveDataObjectsCallable saveDataObjectsCallable,
-                                                    String dsiId) throws ModuleException {
-        // A set used to accumulate data objects to save into ES
-        HashSet<DataObject> toSaveObjects = new HashSet<>();
-        sendDataSourceMessage("          Adding or updating dataset data objects association...", dsiId);
-        // Create an updater to be executed on each data object of dataset subsetting criteria results
-        DataObjectUpdater dataObjectUpdater = new DataObjectUpdater(dataset,
-                                                                    updateDate,
-                                                                    toSaveObjects,
-                                                                    saveDataObjectsCallable,
-                                                                    executor,
-                                                                    maxBulkSize);
+                                                    SimpleSearchKey<DataObject> searchKey) throws ModuleException {
         ICriterion subsettingCrit = dataset.getSubsettingClause();
         // Add lastUpdate restriction if a date is provided
         if (minLastUpdateCriteria != null) {
             subsettingCrit = ICriterion.and(subsettingCrit,
                                             ICriterion.gt(StaticProperties.LAST_UPDATE_PATH, minLastUpdateCriteria));
         }
-        try {
-            esRepos.searchAll(searchKey, dataObjectUpdater, subsettingCrit);
-        } catch (ElasticsearchException e) {
-            throw new ModuleException(e);
+        // set current groups with no plugin access filter from groupsMap on metadata for this datasetIpId
+        // Computation of group access with plugins are done in another step.
+        // This step only associate group to dataobjets of dataset with no filter. All objets of the dataset have the same groups.
+        List<DatasetAccessWrite> groups = new ArrayList<>();
+        for (DataObjectGroup group : dataset.getMetadata().getDataObjectsGroups().values()) {
+            // Ignore any accessGroup not giving the access to the dataset
+            if (group.getMetaDataObjectAccessFilterPluginBusinessId() == null
+                && group.getDatasetAccess()
+                && group.getDataObjectAccess()) {
+                groups.add(new DatasetAccessWrite(group.getGroupName(),
+                                                  dataset.getIpId().toString(),
+                                                  group.getDataFileAccess()));
+            }
         }
-        // Saving remaining objects...
-        dataObjectUpdater.finalSave();
-        sendDataSourceMessage(String.format("          ...%d data objects dataset association saved.",
-                                            dataObjectUpdater.getObjectsCount()), dsiId);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("datasetIpId", dataset.getIpId().toString());
+        params.put("datasetModelName", dataset.getModel().getName());
+        params.put("groups", gson.fromJson(gson.toJson(groups), GROUPS_TYPE_GSON));
+        params.put("updateDate", updateDate);
+
+        esRepos.updateByQuery(searchKey, subsettingCrit, UpdateGroupsAndDatasetAssociationEsScript.ID, params);
     }
 
     /**
@@ -718,6 +719,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                   ExecutorService executor,
                                                   SaveDataObjectsCallable saveDataObjectsCallable,
                                                   String dsiId) throws ModuleException {
+
         // A set used to accumulate data objects to save into ES
         HashSet<DataObject> toSaveObjects = new HashSet<>();
         sendDataSourceMessage("          Removing old dataset data objects association...", dsiId);
@@ -841,7 +843,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                OffsetDateTime updateDate,
                                boolean forceDataObjectsUpdate,
                                String dsiId,
-                               boolean isNewIndex) throws ModuleException {
+                               boolean skipDissociationStep) throws ModuleException {
         for (Dataset dataset : datasets) {
             LOGGER.info("Updating dataset {} ...", dataset.getLabel());
             sendDataSourceMessage(String.format("  Updating dataset %s...", dataset.getLabel()), dsiId);
@@ -851,7 +853,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                updateDate,
                                forceDataObjectsUpdate,
                                dsiId,
-                               isNewIndex);
+                               skipDissociationStep);
             sendDataSourceMessage(String.format("  ...Dataset %s updated.", dataset.getLabel()), dsiId);
             LOGGER.info("Dataset {} updated.", dataset.getLabel());
         }
@@ -1037,7 +1039,7 @@ public class EntityIndexerService implements IEntityIndexerService {
     }
 
     @Override
-    public BulkSaveResult createDataObjects(String tenant,
+    public BulkSaveResult upsertDataObjects(String tenant,
                                             Long datasourceId,
                                             OffsetDateTime now,
                                             List<DataObject> objects,
@@ -1065,39 +1067,13 @@ public class EntityIndexerService implements IEntityIndexerService {
             validateDataObject(toSaveObjects, dataObject, bulkSaveResult, buf, datasourceId);
         }
         try {
-            esRepos.saveBulk(tenant, bulkSaveResult, toSaveObjects, buf);
+            esRepos.upsert(tenant, bulkSaveResult, toSaveObjects, buf);
         } catch (ElasticsearchException e) {
             throw new ModuleException(e);
         } finally {
             publishEventsAndManageErrors(tenant, datasourceIngestionId, buf, bulkSaveResult);
         }
 
-        return bulkSaveResult;
-    }
-
-    @Override
-    public BulkSaveResult mergeDataObjects(String tenant,
-                                           Long datasourceId,
-                                           OffsetDateTime now,
-                                           List<DataObject> objects,
-                                           String datasourceIngestionId) throws ModuleException {
-        StringBuilder buf = new StringBuilder();
-        BulkSaveResult bulkSaveResult = new BulkSaveResult();
-        // Set of data objects to be saved (depends on existence of data objects into ES)
-        Set<DataObject> toSaveObjects = new HashSet<>();
-
-        for (DataObject dataObject : objects) {
-            normalizeAndReprojectGeometry(dataObject, bulkSaveResult, buf);
-            mergeDataObject(tenant, datasourceId, now, dataObject);
-            validateDataObject(toSaveObjects, dataObject, bulkSaveResult, buf, datasourceId);
-        }
-        try {
-            esRepos.saveBulk(tenant, bulkSaveResult, toSaveObjects, buf);
-        } catch (ElasticsearchException e) {
-            throw new ModuleException(e);
-        } finally {
-            publishEventsAndManageErrors(tenant, datasourceIngestionId, buf, bulkSaveResult);
-        }
         return bulkSaveResult;
     }
 
@@ -1114,7 +1090,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         DataObjectFeature feature = dataObject.getFeature();
         // This geometry has been set by plugin, IT IS NOT NORMALIZED
         IGeometry geometry = feature.getGeometry();
-        if ((geometry != null) && (geometry.getType() != GeoJsonType.UNLOCATED)) {
+        if (geometry != null && !Objects.equals(geometry.getType(), GeoJsonType.UNLOCATED)) {
             // Always normalize geometry in its origin CRS
             try {
                 feature.setNormalizedGeometry(GeoHelper.normalize(geometry));
@@ -1148,7 +1124,7 @@ public class EntityIndexerService implements IEntityIndexerService {
 
             } catch (InvalidShapeException e) {
                 // Validation error
-                NormalizeGeometryError(dataObject,
+                normalizeGeometryError(dataObject,
                                        bulkSaveResult,
                                        errorBuffer,
                                        feature,
@@ -1156,7 +1132,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                        e.getMessage());
             } catch (ParseException e) {
                 // Validation error
-                NormalizeGeometryError(dataObject,
+                normalizeGeometryError(dataObject,
                                        bulkSaveResult,
                                        errorBuffer,
                                        feature,
@@ -1164,7 +1140,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                        e.getMessage());
             } catch (IOException e) {
                 // Validation error
-                NormalizeGeometryError(dataObject,
+                normalizeGeometryError(dataObject,
                                        bulkSaveResult,
                                        errorBuffer,
                                        feature,
@@ -1183,7 +1159,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         return "{" + type + "," + json.replaceFirst("\\{", "");
     }
 
-    private void NormalizeGeometryError(DataObject dataObject,
+    private void normalizeGeometryError(DataObject dataObject,
                                         BulkSaveResult bulkSaveResult,
                                         StringBuilder errorBuffer,
                                         DataObjectFeature feature,
@@ -1211,36 +1187,6 @@ public class EntityIndexerService implements IEntityIndexerService {
     private GeoJSONReader makeGeoJsonReader(Function<JtsSpatialContextFactory, JtsSpatialContextFactory> makeFactory) {
         JtsSpatialContextFactory factory = makeFactory.apply(new JtsSpatialContextFactory());
         return new GeoJSONReader(new JtsSpatialContext(factory), factory);
-    }
-
-    /**
-     * Merge data object with current indexed one if it does exist
-     */
-    private void mergeDataObject(String tenant, Long datasourceId, OffsetDateTime now, DataObject dataObject) {
-        DataObject curObject = esRepos.get(Optional.of(tenant), dataObject);
-        // Be careful : in some case, some data objects from another datasource can be retrieved (AipDataSource
-        // search objects from storage only using tags so if this tag has been used
-        // if current object does already exist into ES, the new one wins. It is then mandatory to retrieve from
-        // current creationDate, groups, tags and modelNames
-        if (curObject != null) {
-            dataObject.setCreationDate(curObject.getCreationDate());
-            dataObject.setMetadata(curObject.getMetadata());
-            dataObject.setGroups(dataObject.getMetadata().getGroups());
-            dataObject.setDatasetModelNames(dataObject.getMetadata().getModelNames());
-            // In case to ingest object has new tags
-            if (!curObject.getTags().isEmpty()) {
-                dataObject.addTags(curObject.getTags());
-            }
-        } else { // else it must be created
-            dataObject.setCreationDate(now);
-        }
-        // Don't forget to update lastUpdate
-        dataObject.setLastUpdate(now);
-        // Don't forget to set datasourceId
-        dataObject.setDataSourceId(datasourceId);
-        if (Strings.isNullOrEmpty(dataObject.getLabel())) {
-            dataObject.setLabel(dataObject.getIpId().toString());
-        }
     }
 
     /**
@@ -1393,8 +1339,9 @@ public class EntityIndexerService implements IEntityIndexerService {
     }
 
     @Override
-    public void updateAllDatasets(String tenant, OffsetDateTime updateDate, boolean isNewIndex) throws ModuleException {
-        self.updateDatasets(tenant, datasetService.findAll(), null, updateDate, true, null, isNewIndex);
+    public void updateAllDatasets(String tenant, OffsetDateTime updateDate, boolean skipDissociationStep)
+        throws ModuleException {
+        self.updateDatasets(tenant, datasetService.findAll(), null, updateDate, true, null, skipDissociationStep);
     }
 
     @Override
@@ -1418,4 +1365,9 @@ public class EntityIndexerService implements IEntityIndexerService {
         }
     }
 
+    private record DatasetAccessWrite(String groupName,
+                                      String dataset,
+                                      boolean dataAccessRight) {
+
+    }
 }

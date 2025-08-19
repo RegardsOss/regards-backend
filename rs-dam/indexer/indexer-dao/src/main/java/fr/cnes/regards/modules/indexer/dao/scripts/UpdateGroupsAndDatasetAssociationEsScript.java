@@ -16,21 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
-package fr.cnes.regards.modules.crawler.service.service.parallel;
+package fr.cnes.regards.modules.indexer.dao.scripts;
 
-import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
-import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
-
-import java.util.concurrent.Future;
+import java.io.IOException;
 
 /**
- * This record holds information about the save task, including the cursor and the bulk save result
+ * Script to update groups and dataset associations in Elasticsearch.
+ * 1. add tags
+ * 2. remove existing groups and dataset associations
+ * 3. add new groups and dataset associations
+ * The script removes old groups to make sure rules or access have not changed.
  *
- * @param cursor               the cursor associated with the save task, needed to reset the crawling cursor in case of error
- * @param futureBulkSaveResult the future result of the bulk save operation, can be null if an exception occurred
  * @author tguillou
  */
-public record EsSaveTaskInformation(CrawlingCursor cursor,
-                                    Future<BulkSaveResult> futureBulkSaveResult) {
+public class UpdateGroupsAndDatasetAssociationEsScript extends AbstractEsScript {
 
+    public static final String ID = "updateGroupsAndDatasetAssociation";
+
+    public UpdateGroupsAndDatasetAssociationEsScript() throws IOException {
+        super(ID, "es-scripts/updateGroupsAndDatasetAssociations.painless");
+    }
 }

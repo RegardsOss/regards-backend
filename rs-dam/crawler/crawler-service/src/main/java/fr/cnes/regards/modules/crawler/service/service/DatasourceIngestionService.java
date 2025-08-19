@@ -40,9 +40,11 @@ import fr.cnes.regards.modules.crawler.domain.IngestionResult;
 import fr.cnes.regards.modules.crawler.domain.IngestionStatus;
 import fr.cnes.regards.modules.crawler.service.conf.CrawlerPropertiesConfiguration;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
-import fr.cnes.regards.modules.crawler.service.exception.ElasticSearchSaveBulkException;
+import fr.cnes.regards.modules.crawler.service.exception.EsBulkException;
 import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
+import fr.cnes.regards.modules.crawler.service.service.parallel.EsBulkParallelSaver;
+import fr.cnes.regards.modules.crawler.service.service.parallel.EsBulkSaveService;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceException;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
@@ -138,7 +140,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     private CrawlerPropertiesConfiguration crawlerConf;
 
     @Autowired
-    private ElasticBulkSaveService elasticBulkSaveService;
+    private EsBulkSaveService esBulkSaveService;
 
     @Autowired
     private IndexService indexService;
@@ -464,25 +466,18 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             BulkSaveLightResult saveResult;
             OffsetDateTime ingestionStart = OffsetDateTime.now();
             Long datasourceId = pluginConf.getId();
-            // If index doesn't exist, just create all data objects
-            boolean mergeNeeded = indexService.createIndexIfNeeded(tenant);
+            indexService.createIndexIfNeeded(tenant);
             // i decided not to put a cache here because attribute can be updated... even if it is minor updates it can
             // be taken into account by mappings. In case crawling seem to be slower because of this we can always add one
             // but it should be reset with attribute updates
             //lets find the model attributes so that we can have mappings for this model and try to put them.
             String modelName = dsPlugin.getModelName();
             indexService.configureMappings(tenant, modelName);
-            // If index already exist, check if index already contains data objects (if not, no need to merge)
-            if (mergeNeeded) {
-                SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(),
-                                                                              DataObject.class);
-                mergeNeeded = esRepos.count(searchKey, ICriterion.all()) != 0;
-            }
             saveResult = readDatasource(new IngestionParameters(lastUpdateDate,
                                                                 tenant,
                                                                 dsPlugin,
                                                                 datasourceId,
-                                                                ingestionStart), dsi, mergeNeeded);
+                                                                ingestionStart), dsi);
 
             // Only update dataset if new docs are indexed
             if (saveResult.getSavedDocsCount() > 0) {
@@ -511,7 +506,9 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                                                             OffsetDateTime.now(),
                                                             true,
                                                             datasourceIngestionId,
-                                                            false);
+                                                            true);
+                        // skipDissociationStep is set to true because this method only upserts dataObjects,
+                        // and dissociation step is needed only when dataset is updated
                     } catch (ModuleException e) {
                         sendMessage(String.format("Error updating datasets associated to datasource. Cause : %s.",
                                                   e.getMessage()), datasourceIngestionId);
@@ -560,12 +557,10 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         eventPublisher.publishEvent(new DataSourceMessageEvent(this, runtimeTenantResolver.getTenant(), msg, dsId));
     }
 
-    private BulkSaveLightResult readDatasource(IngestionParameters ingestionParameters,
-                                               DatasourceIngestion dsi,
-                                               boolean mergeNeeded) throws FirstFindException, NotFinishedException {
+    private BulkSaveLightResult readDatasource(IngestionParameters ingestionParameters, DatasourceIngestion dsi)
+        throws FirstFindException, NotFinishedException {
         String dsiId = dsi.getId();
-        sendMessage(String.format("Start reading datasource and %screating objects...", mergeNeeded ? "merging/" : ""),
-                    dsiId);
+        sendMessage("Start reading datasource and creating objects...", dsiId);
         int availableRecordsCount = 0;
 
         // Use a thread pool of size 1 to merge data while datasource pull other data
@@ -582,18 +577,16 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         }
         boolean isFirstFind = true;
 
-        ElasticParallelBulkSaver bulkManager = elasticBulkSaveService.createNewBulkManager(ingestionParameters,
-                                                                                           dsi,
-                                                                                           this);
+        EsBulkParallelSaver bulkManager = esBulkSaveService.createBulkParallelSaver(ingestionParameters, dsi, this);
         try {
-            availableRecordsCount = doReadSyncAndIndexAsync(ingestionParameters, dsi, mergeNeeded, bulkManager);
+            availableRecordsCount = doReadSyncAndIndexAsync(ingestionParameters, dsi, bulkManager);
             cursor = dsi.getCursor();
             while (cursor.hasNext()) {
                 cursor.next(ingestionParameters.dsPlugin().getCrawlingCursorMode());
                 isFirstFind = false;
                 sendMessage(String.format("  Searching page of %d records from datasource...", cursor.getSize()),
                             dsiId);
-                int lastRecordsCount = doReadSyncAndIndexAsync(ingestionParameters, dsi, mergeNeeded, bulkManager);
+                int lastRecordsCount = doReadSyncAndIndexAsync(ingestionParameters, dsi, bulkManager);
                 availableRecordsCount += lastRecordsCount;
                 sendMessage(String.format("  ...Found %d records from datasource. Total currently found=%d",
                                           lastRecordsCount,
@@ -611,9 +604,8 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         }
         // An Elasticsearch error might occur after the end of the loop — the following methods will throw in that case
         BulkSaveLightResult saveResult = bulkManager.waitAllResultsOrThrowIfAnyFail();
-        sendMessage(String.format("  ...Finally indexed %d%s objects for %d available records.",
+        sendMessage(String.format("  ...Finally indexed %d objects for %d available records.",
                                   saveResult.getSavedDocsCount(),
-                                  mergeNeeded ? "" : " distinct",
                                   availableRecordsCount), dsiId);
         sendMessage("...End reading datasource.", dsiId);
         return saveResult;
@@ -626,27 +618,15 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
      */
     private Integer doReadSyncAndIndexAsync(IngestionParameters ingestionParameters,
                                             DatasourceIngestion dsi,
-                                            boolean mergeNeeded,
-                                            ElasticParallelBulkSaver elasticParallelBulkSaver)
+                                            EsBulkParallelSaver esBulkParallelSaver)
         throws DataSourceException, ModuleException {
-        if (elasticParallelBulkSaver.hasErrors()) {
+        if (esBulkParallelSaver.hasErrors()) {
             // Stop processing if there is an error in any task
-            throw new ElasticSearchSaveBulkException();
+            throw new EsBulkException();
         }
         List<DataObject> dataObjects = findAllFromDatasource(ingestionParameters, dsi.getCursor());
-        elasticParallelBulkSaver.saveDataObjectAsync(dataObjects, mergeNeeded);
+        esBulkParallelSaver.saveDataObjectAsync(dataObjects);
         return dataObjects.size();
-    }
-
-    public BulkSaveResult createOrMergeDataObjects(IngestionParameters ingestionParameters,
-                                                   String dsiId,
-                                                   final List<DataObject> dataObjects,
-                                                   boolean mergeNeeded) throws ModuleException {
-        if (mergeNeeded) {
-            return mergeDataObjects(ingestionParameters, dsiId, dataObjects);
-        } else {
-            return createDataObjects(ingestionParameters, dsiId, dataObjects);
-        }
     }
 
     /**
@@ -737,38 +717,15 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     /**
      * Get Callable to be used by parallel tasks to create a bulk of data objects
      */
-    private BulkSaveResult createDataObjects(IngestionParameters ingestionParameters,
-                                             String datasourceIngestionId,
-                                             List<DataObject> dataObjects) throws ModuleException {
+    public BulkSaveResult createOrUpdateDataObjects(IngestionParameters ingestionParameters,
+                                                    String datasourceIngestionId,
+                                                    List<DataObject> dataObjects) throws ModuleException {
         sendMessage(String.format("  Indexing %d objects...", dataObjects.size()), datasourceIngestionId);
-        BulkSaveResult bulkSaveResult = entityIndexerService.createDataObjects(ingestionParameters.tenant(),
+        BulkSaveResult bulkSaveResult = entityIndexerService.upsertDataObjects(ingestionParameters.tenant(),
                                                                                ingestionParameters.datasourceId(),
                                                                                ingestionParameters.ingestionStart(),
                                                                                dataObjects,
                                                                                datasourceIngestionId);
-        if (bulkSaveResult.getInErrorDocsCount() > 0) {
-            sendMessage(String.format("  ...%d objects cannot be saved:%n%s",
-                                      bulkSaveResult.getInErrorDocsCount(),
-                                      bulkSaveResult.getDetailedErrorMsg().replace("\n", "\n    ")),
-                        datasourceIngestionId);
-        }
-        sendMessage(String.format("  ...%d objects effectively indexed.", bulkSaveResult.getSavedDocsCount()),
-                    datasourceIngestionId);
-        return bulkSaveResult;
-    }
-
-    /**
-     * Get Callable to be used by parallel tasks to merge a bulk of data objects
-     */
-    private BulkSaveResult mergeDataObjects(IngestionParameters ingestionParameters,
-                                            String datasourceIngestionId,
-                                            List<DataObject> list) throws ModuleException {
-        sendMessage(String.format("  Indexing %d objects...", list.size()), datasourceIngestionId);
-        BulkSaveResult bulkSaveResult = entityIndexerService.mergeDataObjects(ingestionParameters.tenant(),
-                                                                              ingestionParameters.datasourceId(),
-                                                                              ingestionParameters.ingestionStart(),
-                                                                              list,
-                                                                              datasourceIngestionId);
         if (bulkSaveResult.getInErrorDocsCount() > 0) {
             sendMessage(String.format("  ...%d objects cannot be saved:%n%s",
                                       bulkSaveResult.getInErrorDocsCount(),
