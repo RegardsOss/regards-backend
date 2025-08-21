@@ -195,24 +195,21 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     }
 
     /**
-     * Find the next ready data source to be ingested and mark it at "STARTED" in a transaction
+     * Find all ready datasources to be ingested and mark them as "STARTED" in a transaction
      */
-    public Optional<String> pickAndStartDatasourceIngestion() {
-        Optional<String> startedDatasourceIngestionId = Optional.empty();
-        Optional<DatasourceIngestion> dsIngestionOpt = dsIngestionRepos.findNextReady(OffsetDateTime.now()
-                                                                                                    .withOffsetSameInstant(
-                                                                                                        ZoneOffset.UTC));
-        if (dsIngestionOpt.isPresent()) {
-            DatasourceIngestion dsIngestion = dsIngestionOpt.get();
+    public List<String> startAllReadyDatasourceIngestion() {
+        List<DatasourceIngestion> allDatasourceIngestionReady = dsIngestionRepos.findAllReady(OffsetDateTime.now()
+                                                                                                            .withOffsetSameInstant(
+                                                                                                                ZoneOffset.UTC));
+        for (DatasourceIngestion datasourceIngestion : allDatasourceIngestionReady) {
             // Reinit old DatasourceIngestion properties
-            dsIngestion.setStackTrace(null);
-            dsIngestion.setSavedObjectsCount(0);
-            dsIngestion.setInErrorObjectsCount(0);
-            dsIngestion.setStatus(IngestionStatus.STARTED);
-            dsIngestion = dsIngestionRepos.save(dsIngestion);
-            startedDatasourceIngestionId = Optional.of(dsIngestion.getId());
+            datasourceIngestion.setStackTrace(null);
+            datasourceIngestion.setSavedObjectsCount(0);
+            datasourceIngestion.setInErrorObjectsCount(0);
+            datasourceIngestion.setStatus(IngestionStatus.STARTED);
         }
-        return startedDatasourceIngestionId;
+        allDatasourceIngestionReady = dsIngestionRepos.saveAll(allDatasourceIngestionReady);
+        return allDatasourceIngestionReady.stream().map(DatasourceIngestion::getId).toList();
     }
 
     /**

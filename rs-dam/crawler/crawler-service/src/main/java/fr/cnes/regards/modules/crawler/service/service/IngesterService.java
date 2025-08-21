@@ -20,19 +20,16 @@ package fr.cnes.regards.modules.crawler.service.service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
-import fr.cnes.regards.modules.crawler.domain.IngestionResult;
 import fr.cnes.regards.modules.crawler.domain.IngestionStatus;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
-import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
-import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
-import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
+import fr.cnes.regards.modules.crawler.service.job.CrawlOneDatasourceJob;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
 import org.slf4j.Logger;
@@ -41,12 +38,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -90,7 +83,7 @@ public class IngesterService implements IHandler<PluginConfEvent> {
     private IDatasourceIngestionRepository datasourceIngestionRepository;
 
     @Autowired
-    private IDatasourceIngesterService datasourceIngester;
+    private IJobInfoService jobInfoService;
 
     /**
      * Boolean indicating whether or not crawler service is in "consume only" mode (to be used by tests only)
@@ -125,7 +118,6 @@ public class IngesterService implements IHandler<PluginConfEvent> {
             // If it concerns a data source, manage it
             if (event.getPluginTypes().contains(IDataSourcePlugin.class.getName()) && !this.consumeOnlyMode) {
                 this.manageCrawlingForAllTenants();
-
             }
         } catch (RuntimeException t) {
             LOGGER.error("Cannot manage plugin conf event message", t);
@@ -164,46 +156,21 @@ public class IngesterService implements IHandler<PluginConfEvent> {
             dsIngestionService.updateAndCleanTenantDatasourceIngestions();
         }
         // Then ingest...
-        boolean atLeastOneIngestionDone;
-        do {
-            atLeastOneIngestionDone = false;
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
-                runtimeTenantResolver.forceTenant(tenant);
-                // Pick an available dsIngestion marking it as STARTED if present
-                Optional<String> dsIngestionOpt = dsIngestionService.pickAndStartDatasourceIngestion();
-                if (dsIngestionOpt.isPresent()) {
-                    String dsId = dsIngestionOpt.get();
-                    atLeastOneIngestionDone = true;
-                    try {
-                        Optional<IngestionResult> summary = ingest(dsId);
-                        summary.ifPresent(ingestionResult -> dsIngestionService.updateIngesterResult(dsId,
-                                                                                                     ingestionResult));
-                    } catch (Throwable e) {
-                        // Catch all other possible exceptions to set ingestion to error status
-                        setDatasourceIngestInError(dsId, e);
-                    }
-                }
-            }
-            // At least one ingestion has to be done while looping through all tenants
-            // Loop do an ingestion for only one datasource per tenant, so retry until there is no more to ingest in all tenants
-        } while (atLeastOneIngestionDone);
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            // Start all ready datasourceIngestion : marking its as STARTED
+            List<String> startedDatasourceIngestionIds = dsIngestionService.startAllReadyDatasourceIngestion();
+            startedDatasourceIngestionIds.forEach(this::createCrawlJob);
+        }
     }
 
-    private Optional<IngestionResult> ingest(String dsId) {
-        Optional<IngestionResult> summary = Optional.empty();
-        try {
-            summary = datasourceIngester.ingest(dsId);
-        } catch (InactiveDatasourceException ide) {
-            LOGGER.warn(ide.getMessage());
-            dsIngestionService.setInactive(dsId, ide.getMessage());
-        } catch (ModuleException | FirstFindException e) {
-            // ModuleException can only be thrown before we start reading the datasource so it's simply an error
-            setDatasourceIngestInError(dsId, e);
-        } catch (NotFinishedException nfe) {
-            LOGGER.error(nfe.getMessage(), nfe);
-            dsIngestionService.setNotFinished(dsId, nfe);
-        }
-        return summary;
+    private void createCrawlJob(String dsId) {
+        LOGGER.info("Creating crawl job for datasource with id {}", dsId);
+        jobInfoService.createAsQueued(new JobInfo(false,
+                                                  0,
+                                                  CrawlOneDatasourceJob.buildJobParameters(dsId),
+                                                  null,
+                                                  CrawlOneDatasourceJob.class.getName()));
     }
 
     /**
@@ -237,21 +204,6 @@ public class IngesterService implements IHandler<PluginConfEvent> {
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
-        }
-    }
-
-    private void setDatasourceIngestInError(String dsId, Throwable e) {
-        LOGGER.error("Datasource ingestion error : {}", e.getMessage(), e);
-        CrawlingCursor cursorToSet = null;
-        if (e instanceof FirstFindException firstFindException) {
-            cursorToSet = firstFindException.getErrorCursor();
-        }
-        try (StringWriter sw = new StringWriter()) {
-            e.printStackTrace(new PrintWriter(sw));
-            dsIngestionService.setError(dsId, sw.toString(), cursorToSet);
-        } catch (IOException e1) {
-            LOGGER.error(e1.getMessage(), e1);
-            dsIngestionService.setError(dsId, e.getMessage(), cursorToSet);
         }
     }
 

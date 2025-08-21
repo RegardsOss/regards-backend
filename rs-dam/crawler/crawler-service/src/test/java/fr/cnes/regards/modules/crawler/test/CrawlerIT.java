@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.crawler.test;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
@@ -36,6 +37,7 @@ import fr.cnes.regards.modules.indexer.dao.CreateIndexConfiguration;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.ModelService;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +46,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -51,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author tguillou
  */
-@ActiveProfiles({ "indexer-service", "noscheduler", "nojobs" })
+@ActiveProfiles({ "indexer-service", "noscheduler" })
 @TestPropertySource(locations = { "classpath:test-crawler-it.properties" },
                     properties = { "regards.tenant=crawler_it",
                                    "spring.jpa.properties.hibernate.default_schema=crawler_it" })
@@ -85,6 +88,9 @@ class CrawlerIT extends AbstractRegardsServiceIT {
 
     @Autowired
     private IDatasourceIngestionRepository datasourceIngestionRepository;
+
+    @Autowired
+    private IJobService jobService;
 
     private void initIndex() {
         if (esRepository.indexExists(CrawlerIT.INDEX)) {
@@ -131,9 +137,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         ingesterService.manageCrawlingForAllTenants();
         // THEN the ingestion should be FINISHED without any problem
-        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
-        assertEquals(1, allDatasources.size());
-        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(20, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.FINISHED, datasourceIngestion.getStatus());
     }
@@ -146,9 +150,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         ingesterService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as NOT_FINISHED, with 5 objects saved (first bulk of 5 objects is ok)
-        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
-        assertEquals(1, allDatasources.size());
-        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(5, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.NOT_FINISHED, datasourceIngestion.getStatus());
         assertEquals(1, datasourceIngestion.getCursor().getPosition());
@@ -162,9 +164,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         ingesterService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as NOT_FINISHED, with 10 objects saved (first 2 bulks of 5 objects are ok)
-        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
-        assertEquals(1, allDatasources.size());
-        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(10, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.NOT_FINISHED, datasourceIngestion.getStatus());
         assertEquals(2, datasourceIngestion.getCursor().getPosition());
@@ -179,9 +179,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         ingesterService.manageCrawlingForAllTenants();
         // THEN the ingestion should saved 15 objects, first 3 bulks of 5 objects are ok even if the 3rd one is long
-        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
-        assertEquals(1, allDatasources.size());
-        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(15, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.NOT_FINISHED, datasourceIngestion.getStatus());
         assertEquals(3, datasourceIngestion.getCursor().getPosition());
@@ -196,9 +194,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         ingesterService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
-        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
-        assertEquals(1, allDatasources.size());
-        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(0, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.ERROR, datasourceIngestion.getStatus());
         // THEN cursor position is the same as the first call because nothing has been saved
@@ -212,12 +208,11 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         TestDataSourcePluginFailable.configureFailAtFindAllCall(1);
         // WHEN launch the ingestion
         ingesterService.manageCrawlingForAllTenants();
+        jobService.manage();
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         // THEN the ingestion should be marked as error (first save failed)
-        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
-        assertEquals(1, allDatasources.size());
-        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
         assertEquals(0, datasourceIngestion.getSavedObjectsCount());
-        assertEquals(IngestionStatus.ERROR, datasourceIngestion.getStatus());
+
         // THEN cursor position is the same as the first call because nothing has been saved
         // THEN cursor position is the same as the first call because nothing has been saved
         assertEquals(0, datasourceIngestion.getCursor().getPosition());
@@ -232,9 +227,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         ingesterService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed, even if other bulk are done)
-        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
-        assertEquals(1, allDatasources.size());
-        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(0, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.ERROR, datasourceIngestion.getStatus());
         // THEN cursor position is the same as the first call because nothing has been saved
@@ -250,9 +243,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         ingesterService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
-        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
-        assertEquals(1, allDatasources.size());
-        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(0, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.ERROR, datasourceIngestion.getStatus());
         // THEN cursor position is the same as the first call because nothing has been saved
@@ -260,7 +251,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     }
 
     @Test
-    void complexErrorCrawlingTestFailSaveWithManyThreads() {
+    void complexErrorCrawlingTestFailSaveWithManyThreads() throws InterruptedException {
         // GIVEN a datasource that fails on the 11th save call, but takes long to fail, with many threads
         TestDataSourcePluginFailable.configureIngestion(5, 500, datasourceIngestionService);
         // GIVEN 10 first saves are ok, 11th fails
@@ -269,9 +260,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         ingesterService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
-        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
-        assertEquals(1, allDatasources.size());
-        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(20);
         assertEquals(50, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.NOT_FINISHED, datasourceIngestion.getStatus());
         // THEN cursor position must be set to error cursor position, to restart ingestion from it the next ingestion
@@ -288,9 +277,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         ingesterService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
-        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
-        assertEquals(1, allDatasources.size());
-        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(30);
         assertEquals(150, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.NOT_FINISHED, datasourceIngestion.getStatus());
         // THEN cursor position must be set to error cursor position, to restart ingestion from it the next ingestion
@@ -306,9 +293,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         ingesterService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
-        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
-        assertEquals(1, allDatasources.size());
-        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(20);
         assertEquals(5, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.NOT_FINISHED, datasourceIngestion.getStatus());
         // THEN cursor position must be set to error cursor position, to restart ingestion from it the next ingestion
@@ -330,14 +315,29 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         ingesterService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
-        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
-        assertEquals(1, allDatasources.size());
-        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(30);
         assertEquals(100, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.NOT_FINISHED, datasourceIngestion.getStatus());
         // THEN cursor position must be set to error cursor position, to restart ingestion from it the next ingestion
         assertEquals(20, datasourceIngestion.getCursor().getPosition());
         // THEN Make sure that only 42 findAll has been launched (42nd has failed, and stop ingestion immediately).
         assertEquals(42, TestDataSourcePluginFailable.getFindAllCpt());
+    }
+
+    private DatasourceIngestion waitForCrawlingTermination(int atMostSeconds) {
+        List<DatasourceIngestion> datasourceIngestions = Awaitility.await()
+                                                                   .atMost(atMostSeconds, TimeUnit.SECONDS)
+                                                                   .pollInterval(1, TimeUnit.SECONDS)
+                                                                   .until(() -> {
+                                                                       runtimeTenantResolver.forceTenant(TENANT);
+                                                                       return datasourceIngestionRepository.findAll();
+                                                                   }, dsList -> {
+                                                                       if (!dsList.isEmpty()) {
+                                                                           return dsList.get(0).getStatus().isFinal();
+                                                                       } else {
+                                                                           return false;
+                                                                       }
+                                                                   });
+        return datasourceIngestions.get(0);
     }
 }

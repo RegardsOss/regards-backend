@@ -46,9 +46,9 @@ import java.time.Instant;
 @Component
 @Profile("!noscheduler")
 @EnableScheduling
-public class EntityDeletionScheduler extends AbstractTaskScheduler {
+public class DeletionRequestScheduler extends AbstractTaskScheduler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EntityDeletionScheduler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeletionRequestScheduler.class);
 
     private static final String LOCK = "crawler-feature-deletion-requests";
 
@@ -66,13 +66,13 @@ public class EntityDeletionScheduler extends AbstractTaskScheduler {
 
     public static final int PAGE_LIMIT = 1000;
 
-    private ITenantResolver tenantResolver;
+    private final ITenantResolver tenantResolver;
 
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private final IRuntimeTenantResolver runtimeTenantResolver;
 
     private ILockingTaskExecutors lockingTaskExecutors;
 
-    private EntityDeletionService featureService;
+    private final EntityDeletionService featureService;
 
     private final IngesterService ingesterService;
 
@@ -81,25 +81,11 @@ public class EntityDeletionScheduler extends AbstractTaskScheduler {
         handleEntityDeletion();
     };
 
-    public void handleEntityDeletion() {
-        if (!ingesterService.lockIngestion()) {
-            return;
-        }
-        try {
-            Pageable page = PageRequest.of(0, PAGE_SIZE);
-            do {
-                page = featureService.handleEntityDeletion(page);
-            } while (page.isPaged() && page.getPageNumber() < PAGE_LIMIT);
-        } finally {
-            ingesterService.releaseIngestionLock();
-        }
-    }
-
-    public EntityDeletionScheduler(ITenantResolver tenantResolver,
-                                   IRuntimeTenantResolver runtimeTenantResolver,
-                                   ILockingTaskExecutors lockingTaskExecutors,
-                                   EntityDeletionService featureService,
-                                   IngesterService ingesterService) {
+    public DeletionRequestScheduler(ITenantResolver tenantResolver,
+                                    IRuntimeTenantResolver runtimeTenantResolver,
+                                    ILockingTaskExecutors lockingTaskExecutors,
+                                    EntityDeletionService featureService,
+                                    IngesterService ingesterService) {
         this.tenantResolver = tenantResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.lockingTaskExecutors = lockingTaskExecutors;
@@ -124,6 +110,20 @@ public class EntityDeletionScheduler extends AbstractTaskScheduler {
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
+        }
+    }
+
+    public void handleEntityDeletion() {
+        if (!ingesterService.lockIngestion()) {
+            return;
+        }
+        try {
+            Pageable page = PageRequest.of(0, PAGE_SIZE);
+            do {
+                page = featureService.handleEntityDeletion(page);
+            } while (page.isPaged() && page.getPageNumber() < PAGE_LIMIT);
+        } finally {
+            ingesterService.releaseIngestionLock();
         }
     }
 

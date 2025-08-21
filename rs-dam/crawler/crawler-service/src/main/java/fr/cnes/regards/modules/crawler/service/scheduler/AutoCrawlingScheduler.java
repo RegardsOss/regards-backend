@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
  * Scheduler that will periodically launch the crawling for all datasource of all tenants.
  * <p>
  * By default, launched 1 mn after last one. BUT crawling is also executed each time a datasource is created
- * Initial delay of 5 mn to avoid been launched too soon.
+ * Initial delay of 5 mn to avoid being launched too soon.
  *
  * @author tguillou
  */
