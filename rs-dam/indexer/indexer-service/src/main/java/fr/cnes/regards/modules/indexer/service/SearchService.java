@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.indexer.service;
 
-import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
@@ -56,6 +56,9 @@ public class SearchService implements ISearchService {
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
+    private IndexAliasResolver indexAliasResolver;
+
+    @Autowired
     private ProjectGeoSettings projectGeoSettings;
 
     @SuppressWarnings("unchecked")
@@ -86,7 +89,7 @@ public class SearchService implements ISearchService {
      * Add project informations as index or associated CRS into searchKey
      */
     private void addProjectInfos(SearchKey<?, ?> searchKey) {
-        searchKey.setSearchIndex(tenantResolver.getTenant());
+        searchKey.setSearchIndex(indexAliasResolver.resolveAliasName());
         searchKey.setCrs(projectGeoSettings.getCrs());
     }
 

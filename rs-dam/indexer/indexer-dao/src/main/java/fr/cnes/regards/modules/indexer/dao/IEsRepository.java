@@ -93,6 +93,13 @@ public interface IEsRepository {
      */
     boolean createAlias(String index, String alias);
 
+    /**
+     * Does specified alias exist ?
+     *
+     * @param name alias name
+     */
+    boolean aliasExists(String name);
+
     boolean setSettingsForBulk(String index);
 
     boolean unsetSettingsForBulk(String index);
@@ -109,7 +116,6 @@ public interface IEsRepository {
      * Does specified index <b>or alias</b>exist ?
      *
      * @param name index or alias name
-     * @return true or false
      */
     boolean indexExists(String name);
 
@@ -138,11 +144,8 @@ public interface IEsRepository {
                                               String scriptId,
                                               Map<String, Object> params);
 
-    default void upsert(String tenant,
-                        BulkSaveResult bulkSaveResult,
-                        Set<DataObject> toSaveObjects,
-                        StringBuilder buf) {
-        upsert(tenant, bulkSaveResult, buf, toSaveObjects.toArray(new DataObject[0]));
+    default void upsert(String index, BulkSaveResult bulkSaveResult, Set<DataObject> toSaveObjects, StringBuilder buf) {
+        upsert(index, bulkSaveResult, buf, toSaveObjects.toArray(new DataObject[0]));
     }
 
     <T extends IIndexable> BulkSaveResult upsert(String inIndex,
@@ -610,4 +613,27 @@ public interface IEsRepository {
      * @param scriptSourceAsString script source as a string in painless language
      */
     void registerScript(String scriptId, String scriptSourceAsString) throws IOException;
+
+    /**
+     * Retrieve the single index name an alias points to
+     * <p>
+     * This method assumes the alias is mono-index. If the alias points to multiple
+     * indices, an {@link IllegalStateException} is thrown.
+     */
+    String getSingleIndexPointedByAlias(String alias) throws IllegalStateException;
+
+    /**
+     * Switches an alias from one index to another in Elasticsearch.
+     *
+     * <p>This operation atomically removes the alias from the specified {@code oldIndex}
+     * and adds it to the specified {@code newIndex}. After completion, the alias will
+     * exclusively point to the {@code newIndex}.
+     *
+     * @param oldIndex the current index from which the alias must be removed
+     * @param newIndex the target index to which the alias must be added
+     * @param alias    the alias to switch
+     * @return {@code true} if the alias was successfully switched and acknowledged by Elasticsearch,
+     * {@code false} otherwise
+     */
+    boolean switchAlias(String oldIndex, String newIndex, String alias);
 }

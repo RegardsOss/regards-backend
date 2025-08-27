@@ -43,6 +43,8 @@ import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
+import fr.cnes.regards.modules.indexer.service.IndexAliasService;
 import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
 import fr.cnes.regards.modules.model.dao.IFragmentRepository;
 import fr.cnes.regards.modules.model.dao.IModelAttrAssocRepository;
@@ -173,7 +175,13 @@ public abstract class AbstractIndexerServiceDataSourceIT {
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
+    protected IndexAliasResolver indexAliasResolver;
+
+    @Autowired
     protected IPluginService pluginService;
+
+    @Autowired
+    protected IndexAliasService indexAliasService;
 
     @Autowired
     protected IPluginConfigurationRepository pluginConfRepo;
@@ -206,12 +214,18 @@ public abstract class AbstractIndexerServiceDataSourceIT {
         // Simulate spring boot ApplicationStarted event to start mapping for each tenants.
         gsonAttributeFactoryHandler.onApplicationEvent(null);
         jsoniterAttributeFactoryHandler.onApplicationEvent(null);
+        String aliasName = indexAliasResolver.resolveAliasName(tenant);
 
         runtimeTenantResolver.forceTenant(tenant);
         if (esRepos.indexExists(tenant)) {
             esRepos.deleteIndex(tenant);
         }
+        if (esRepos.indexExists(aliasName)) {
+            esRepos.deleteIndex(aliasName);
+        }
         esRepos.createIndex(tenant);
+        esRepos.createAlias(tenant, aliasName);
+        indexAliasService.saveOrUpdate(aliasName, tenant);
 
         ingesterService.setConsumeOnlyMode(true);
 

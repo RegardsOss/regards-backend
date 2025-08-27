@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.crawler.service.consumer;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,11 @@ public class SaveDataObjectsCallable implements Callable<Void> {
      * Tenant resolver needed to force tenant because ot multi-threading
      */
     private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    /**
+     * Alias resolver needed to find the ES alias from the tenant name
+     */
+    private IndexAliasResolver indexAliasResolver;
 
     /**
      * Elasticsearch repository
@@ -44,10 +50,12 @@ public class SaveDataObjectsCallable implements Callable<Void> {
     private final long datasetId;
 
     public SaveDataObjectsCallable(IRuntimeTenantResolver runtimeTenantResolver,
+                                   IndexAliasResolver indexAliasResolver,
                                    IEsRepository esRepos,
                                    String tenant,
                                    long datasetId) {
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.indexAliasResolver = indexAliasResolver;
         this.esRepos = esRepos;
         this.tenant = tenant;
         this.datasetId = datasetId;
@@ -67,7 +75,7 @@ public class SaveDataObjectsCallable implements Callable<Void> {
         if ((set != null) && !set.isEmpty()) {
             LOGGER.info("Saving {} data objects (dataset {})...", set.size(), datasetId);
             runtimeTenantResolver.forceTenant(tenant);
-            esRepos.saveBulk(tenant, set);
+            esRepos.saveBulk(indexAliasResolver.resolveAliasName(tenant), set);
             LOGGER.info("...data objects saved");
         }
         return null;

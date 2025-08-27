@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import fr.cnes.regards.modules.search.rest.CatalogDownloadController;
 import fr.cnes.regards.modules.search.rest.FakeFileFactory;
 import fr.cnes.regards.modules.search.rest.FakeProductFactory;
@@ -76,6 +77,9 @@ public class CatalogDownloadControllerIT extends AbstractRegardsTransactionalIT 
     @Autowired
     private ICatalogSearchService searchService;
 
+    @Autowired
+    protected IndexAliasResolver indexAliasResolver;
+
     @Mock
     private DataAccessRightService dataAccessRightService;
 
@@ -95,10 +99,13 @@ public class CatalogDownloadControllerIT extends AbstractRegardsTransactionalIT 
     }
 
     protected void initIndex(String index) {
+        String aliasName = indexAliasResolver.resolveAliasName(index);
+
         if (esRepository.indexExists(index)) {
             esRepository.deleteIndex(index);
         }
         esRepository.createIndex(index);
+        esRepository.createAlias(index, aliasName);
     }
 
     @Override

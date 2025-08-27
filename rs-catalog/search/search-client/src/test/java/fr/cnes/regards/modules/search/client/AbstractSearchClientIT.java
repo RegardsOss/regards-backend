@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
@@ -100,6 +101,9 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
     protected ISearchEngineConfigurationService searchEngineService;
 
     @Autowired
+    protected IndexAliasResolver indexAliasResolver;
+
+    @Autowired
     private Gson gson;
 
     protected T client;
@@ -109,17 +113,23 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
         client = FeignClientBuilder.build(new TokenClientProvider<>(getClazz(),
                                                                     "http://" + serverAddress + ":" + getPort(),
                                                                     feignSecurityManager), gson);
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
+        String tenant = getDefaultTenant();
+        runtimeTenantResolver.forceTenant(tenant);
 
         engineRepo.deleteAll();
         pluginConfRepo.deleteAll();
 
         // Init required index in the ElasticSearch repository
-        if (!esRepository.indexExists(getDefaultTenant())) {
-            esRepository.createIndex(getDefaultTenant());
-        } else {
-            esRepository.deleteAll(getDefaultTenant());
+        String aliasName = indexAliasResolver.resolveAliasName(tenant);
+        if (esRepository.indexExists(tenant)) {
+            esRepository.deleteIndex(tenant);
         }
+        if (esRepository.indexExists(aliasName)) {
+            esRepository.deleteAll(aliasName);
+        }
+        esRepository.createIndex(tenant);
+        esRepository.createAlias(tenant, aliasName);
 
         initPlugins();
 

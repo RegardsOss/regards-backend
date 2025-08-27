@@ -76,6 +76,7 @@ import fr.cnes.regards.modules.indexer.domain.builders.GeoPointBuilder;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
@@ -209,6 +210,9 @@ public class EntityIndexerService implements IEntityIndexerService {
     private IndexService indexService;
 
     @Autowired
+    private IndexAliasResolver indexAliasResolver;
+
+    @Autowired
     private IEntityEventRequestRepository entityEventRequestRepository;
 
     @Autowired
@@ -262,18 +266,19 @@ public class EntityIndexerService implements IEntityIndexerService {
                                    boolean skipDissociationStep) throws ModuleException {
         LOGGER.info("Updating {}", ipId.toString());
         runtimeTenantResolver.forceTenant(tenant);
+        String alias = indexAliasResolver.resolveAliasName(tenant);
         AbstractEntity<?> entity = entitiesService.loadWithRelations(ipId);
         // If entity does no more exist in database, it must be deleted from ES
         if (entity == null) {
             LOGGER.debug("Entity is null !!");
             if (ipId.getEntityType() == EntityType.DATASET) {
                 sendDataSourceMessage(String.format("    Dataset with IP_ID %s no more exists...", ipId), dsiId);
-                manageDatasetDelete(tenant, ipId.toString(), dsiId);
+                manageDatasetDelete(alias, ipId.toString(), dsiId);
             }
-            esRepos.delete(tenant, ipId.getEntityType().toString(), ipId.toString());
+            esRepos.delete(alias, ipId.getEntityType().toString(), ipId.toString());
             sendDataSourceMessage(String.format("    ...Dataset with IP_ID %s de-indexed.", ipId), dsiId);
         } else { // entity has been created or updated, it must be saved into ES
-            indexService.createIndexIfNeeded(tenant);
+            indexService.createIndexAndAliasIfNeeded(tenant);
             indexService.configureMappings(tenant, entity.getModel().getName());
             ICriterion savedSubsettingClause = null;
             // Remove parameters of dataset datasource to avoid expose security values
@@ -309,10 +314,10 @@ public class EntityIndexerService implements IEntityIndexerService {
             // A dataset change may need associated data objects update
             if (!needAssociatedDataObjectsUpdate && (entity instanceof Dataset dataset)) {
                 needAssociatedDataObjectsUpdate = needAssociatedDataObjectsUpdate(dataset,
-                                                                                  esRepos.get(Optional.of(tenant),
+                                                                                  esRepos.get(Optional.of(alias),
                                                                                               dataset));
             }
-            boolean created = esRepos.save(tenant, entity);
+            boolean created = esRepos.save(alias, entity);
             LOGGER.debug("Elasticsearch saving result : {}", created);
             if ((entity instanceof Dataset) && needAssociatedDataObjectsUpdate) {
                 // Subsetting clause is needed by many things
@@ -386,10 +391,10 @@ public class EntityIndexerService implements IEntityIndexerService {
     /**
      * Search and update associated dataset data objects (ie remove dataset IpId from tags)
      *
-     * @param tenant concerned tenant
-     * @param ipId   dataset identifier
+     * @param alias concerned alias
+     * @param ipId  dataset identifier
      */
-    private void manageDatasetDelete(String tenant, String ipId, String dsiId) throws ModuleException {
+    private void manageDatasetDelete(String alias, String ipId, String dsiId) throws ModuleException {
         // Search all DataObjects tagging this Dataset (only DataObjects because all other entities are already managed
         // with the system Postgres/RabbitMQ)
         sendDataSourceMessage(String.format("      Searching for all data objects tagging dataset IP_ID %s", ipId),
@@ -414,7 +419,7 @@ public class EntityIndexerService implements IEntityIndexerService {
             toSaveObjects.add(object);
             if (toSaveObjects.size() == maxBulkSize) {
                 try {
-                    esRepos.saveBulk(tenant, toSaveObjects);
+                    esRepos.saveBulk(alias, toSaveObjects);
                     objectsCount.addAndGet(toSaveObjects.size());
                     toSaveObjects.clear();
                 } catch (ElasticsearchException e) {
@@ -424,12 +429,12 @@ public class EntityIndexerService implements IEntityIndexerService {
         };
         // Apply updateTag function to all tagging objects
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
-        addProjectInfos(tenant, searchKey);
+        addProjectInfos(alias, searchKey);
         try {
             esRepos.searchAll(searchKey, updateDataObject, taggingObjectsCrit);
             // Bulk save remaining objects to save
             if (!toSaveObjects.isEmpty()) {
-                esRepos.saveBulk(tenant, toSaveObjects);
+                esRepos.saveBulk(alias, toSaveObjects);
                 objectsCount.addAndGet(toSaveObjects.size());
             }
             sendDataSourceMessage(String.format("      ...Removed dataset IP_ID from %d data objects tags.",
@@ -453,18 +458,20 @@ public class EntityIndexerService implements IEntityIndexerService {
                                      String datasourceIngestionId,
                                      boolean skipDissociationStep) throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
+        String alias = indexAliasResolver.resolveAliasName(tenant);
         sendDataSourceMessage(String.format(
             "      Updating dataset %s indexation and all its associated data objects...",
             dataset.getLabel()), datasourceIngestionId);
         sendDataSourceMessage(String.format("        Searching for dataset %s associated data objects...",
                                             dataset.getLabel()), datasourceIngestionId);
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
-        addProjectInfos(tenant, searchKey);
+        addProjectInfos(alias, searchKey);
 
         ExecutorService executor = Executors.newFixedThreadPool(1);
 
         // Create a callable which bulk save into ES a set of data objects
         SaveDataObjectsCallable saveDataObjectsCallable = new SaveDataObjectsCallable(runtimeTenantResolver,
+                                                                                      indexAliasResolver,
                                                                                       esRepos,
                                                                                       tenant,
                                                                                       dataset.getId());
@@ -494,7 +501,7 @@ public class EntityIndexerService implements IEntityIndexerService {
 
         // Update dataset access groups for dynamic plugin access rights
         try {
-            manageDatasetUpdateFilteredAccessRights(tenant,
+            manageDatasetUpdateFilteredAccessRights(alias,
                                                     dataset,
                                                     updateDate,
                                                     executor,
@@ -512,27 +519,27 @@ public class EntityIndexerService implements IEntityIndexerService {
         computeComputedAttributes(dataset, datasourceIngestionId, tenant);
 
         prepareDatasetForEs(dataset);
-        esRepos.save(tenant, dataset);
+        esRepos.save(alias, dataset);
         LOGGER.info("Dataset {} updated", dataset.getId());
         sendDataSourceMessage("      ...Dataset indexation updated.", datasourceIngestionId);
     }
 
-    private void addProjectInfos(String tenant, SimpleSearchKey<DataObject> searchKey) {
-        searchKey.setSearchIndex(tenant);
+    private void addProjectInfos(String alias, SimpleSearchKey<DataObject> searchKey) {
+        searchKey.setSearchIndex(alias);
         searchKey.setCrs(projectGeoSettings.getCrs());
     }
 
     /**
      * Handle Access rights filter for the given dataset. An Access right filter is an accessRight with a {@link IDataObjectAccessFilterPlugin}.
      */
-    private void manageDatasetUpdateFilteredAccessRights(String tenant,
+    private void manageDatasetUpdateFilteredAccessRights(String alias,
                                                          Dataset dataset,
                                                          OffsetDateTime updateDate,
                                                          ExecutorService executor,
                                                          SaveDataObjectsCallable saveDataObjectsCallable,
                                                          String dsiId) throws ModuleException {
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
-        addProjectInfos(tenant, searchKey);
+        addProjectInfos(alias, searchKey);
         // handle association between dataobjects and groups for all access rights set by plugin
         for (DataObjectGroup group : dataset.getMetadata().getDataObjectsGroups().values()) {
             // If access to the dataset is allowed and a plugin access filter is set on dataobject metadata, calculate which dataObjects are in the given group
@@ -866,7 +873,7 @@ public class EntityIndexerService implements IEntityIndexerService {
 
     @Override
     public void deleteIndexNRecreateEntities(String tenant) throws ModuleException {
-        //1. Delete existing index
+        //1. Delete existing index (it will also delete the alias)
         indexService.deleteIndex(tenant);
         // get all sessions to notify
         Pageable pageToRequest = PageRequest.of(0, sessionStepBulkSize, Sort.by(Sort.Order.asc("source")));
@@ -877,7 +884,7 @@ public class EntityIndexerService implements IEntityIndexerService {
             pageToRequest = pageSessionStep.nextPageable();
         } while (pageSessionStep.hasNext());
         //2. Then re-create all entities
-        boolean isNewIndex = indexService.createIndexIfNeeded(tenant);
+        boolean isNewIndex = indexService.createIndexAndAliasIfNeeded(tenant);
         OffsetDateTime updateDate = OffsetDateTime.now();
         updateAllDatasets(tenant, updateDate, isNewIndex);
         updateAllCollections(tenant, updateDate);
@@ -1067,7 +1074,7 @@ public class EntityIndexerService implements IEntityIndexerService {
             validateDataObject(toSaveObjects, dataObject, bulkSaveResult, buf, datasourceId);
         }
         try {
-            esRepos.upsert(tenant, bulkSaveResult, toSaveObjects, buf);
+            esRepos.upsert(indexAliasResolver.resolveAliasName(tenant), bulkSaveResult, toSaveObjects, buf);
         } catch (ElasticsearchException e) {
             throw new ModuleException(e);
         } finally {
@@ -1229,30 +1236,34 @@ public class EntityIndexerService implements IEntityIndexerService {
     }
 
     @Override
-    public boolean deleteDataObject(String tenant, String ipId) {
+    public boolean deleteDataObject(String alias, String ipId) {
         // get object deleted
-        DataObject obj = esRepos.get(Optional.of(tenant), EntityType.DATA.toString(), ipId, DataObject.class);
+        DataObject obj = esRepos.get(Optional.of(alias), EntityType.DATA.toString(), ipId, DataObject.class);
         // decrement the related session
         if (obj != null && obj.getFeature() != null) {
             sessionNotifier.notifyIndexDeletion(obj.getFeature().getSessionOwner(), obj.getFeature().getSession());
         }
         // delete object
-        return esRepos.delete(tenant, EntityType.DATA.toString(), ipId);
+        return esRepos.delete(alias, EntityType.DATA.toString(), ipId);
     }
 
     @Override
-    public long deleteDataObjectsFromDatasource(String tenant, Long datasourceId) {
-        return esRepos.deleteByDatasource(tenant, datasourceId);
+    public long deleteDataObjectsFromDatasource(String alias, Long datasourceId) {
+        return esRepos.deleteByDatasource(alias, datasourceId);
     }
 
     @Override
     public Set<UniformResourceName> deleteDataObjectsAndUpdate(String tenant, Set<String> ipIds) {
         Set<UniformResourceName> allDatasetUrns = new HashSet<>();
-        LOGGER.info("Deleting {} data object(s) for tenant {}", ipIds.size(), tenant);
+
+        // Warning: deletion by document ID using an alias is only supported for aliases mapped to a single index
+        String alias = indexAliasResolver.resolveAliasName(tenant);
+
+        LOGGER.info("Deleting {} data object(s) for index {}", ipIds.size(), alias);
         // Delete data and collect datasets to update
         for (String ipId : ipIds) {
             try {
-                Set<String> tags = deleteDataObjectReturningTags(tenant, ipId);
+                Set<String> tags = deleteDataObjectReturningTags(alias, ipId);
                 // Extract datasets from tags
                 allDatasetUrns.addAll(extractDatasetsFromTags(tags));
             } catch (RsRuntimeException e) {
@@ -1263,8 +1274,8 @@ public class EntityIndexerService implements IEntityIndexerService {
 
         if (!allDatasetUrns.isEmpty()) {
             // Make change available
-            esRepos.refresh(tenant);
-            updateDatasetComputedProperties(tenant, allDatasetUrns);
+            esRepos.refresh(alias);
+            updateDatasetComputedProperties(alias, allDatasetUrns);
         }
 
         return allDatasetUrns;
@@ -1273,21 +1284,21 @@ public class EntityIndexerService implements IEntityIndexerService {
     /**
      * Delete given data object from Elasticsearch
      *
-     * @param tenant concerned tenant
-     * @param ipId   id of Data object
+     * @param index concerned index
+     * @param ipId  id of Data object
      * @return if data object properly deleted, return tags else null
      */
-    private Set<String> deleteDataObjectReturningTags(String tenant, String ipId) {
+    private Set<String> deleteDataObjectReturningTags(String alias, String ipId) {
         // get object deleted
         LOGGER.debug("[DELETE] Loading data to delete : {}", ipId);
-        DataObject obj = esRepos.get(Optional.of(tenant), EntityType.DATA.toString(), ipId, DataObject.class);
+        DataObject obj = esRepos.get(Optional.of(alias), EntityType.DATA.toString(), ipId, DataObject.class);
         // decrement the related session
         if (obj != null && obj.getFeature() != null) {
             sessionNotifier.notifyIndexDeletion(obj.getFeature().getSessionOwner(), obj.getFeature().getSession());
         }
         // delete object
         LOGGER.debug("[DELETE] Deleting data {}", ipId);
-        return esRepos.delete(tenant, EntityType.DATA.toString(), ipId) && obj != null ? obj.getTags() : null;
+        return esRepos.delete(alias, EntityType.DATA.toString(), ipId) && obj != null ? obj.getTags() : null;
     }
 
     private Set<UniformResourceName> extractDatasetsFromTags(Set<String> tags) {
@@ -1326,7 +1337,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                     try {
                         computeComputedAttributes(dataset, null, tenant);
                         prepareDatasetForEs(dataset);
-                        esRepos.save(tenant, dataset);
+                        esRepos.save(indexAliasResolver.resolveAliasName(tenant), dataset);
                         LOGGER.info("Dataset {} computed properties updated", dataset.getId());
                     } catch (ModuleException e) {
                         LOGGER.error("Dataset {} computed properties cannot be updated!", dataset.getId(), e);

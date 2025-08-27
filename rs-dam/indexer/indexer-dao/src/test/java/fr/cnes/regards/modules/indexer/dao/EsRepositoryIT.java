@@ -9,7 +9,6 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 import de.svenjacobs.loremipsum.LoremIpsum;
-import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.geojson.coordinates.Position;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
@@ -17,6 +16,7 @@ import fr.cnes.regards.framework.geojson.geometry.Point;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.multitenant.test.SingleRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
@@ -439,10 +439,13 @@ public class EsRepositoryIT {
         cleanFct.accept("test");
         cleanFct.accept("titi");
         cleanFct.accept("tutu");
+        cleanFct.accept("toto");
         cleanFct.accept("items");
         cleanFct.accept("mergeditems");
         cleanFct.accept("bulktest");
         cleanFct.accept("loading");
+        cleanFct.accept("old_index");
+        cleanFct.accept("new_index");
     }
 
     @After
@@ -697,4 +700,70 @@ public class EsRepositoryIT {
         Assert.assertTrue(page.getFacets().isEmpty());
     }
     // CHECKSTYLE:ON
+
+    @Test
+    public void testGetSingleIndexPointedByAliasOk() {
+        // given
+        String idx1 = "toto";
+        String alias = "toto_alias";
+        repository.createIndex(idx1);
+        Assert.assertTrue(repository.createAlias(idx1, alias));
+        Assert.assertTrue(repository.aliasExists(alias));
+
+        // when
+        String target = repository.getSingleIndexPointedByAlias(alias);
+
+        // then
+        Assert.assertEquals(idx1, target);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testGetSingleIndexPointedByAliasAbsent() {
+        // given
+        String alias = "alias";
+
+        // when
+        Assert.assertFalse(repository.aliasExists(alias));
+        repository.getSingleIndexPointedByAlias(alias);
+
+        // then -> exception
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testGetSingleIndexPointedByAliasMultiTarget() {
+        // given
+        String idx1 = "titi";
+        String idx2 = "tutu";
+        String alias = "multi_alias";
+        repository.createIndex(idx1);
+        repository.createIndex(idx2);
+
+        Assert.assertTrue(repository.createAlias(idx1, alias));
+        Assert.assertTrue("Simulate multi-index alias", repository.createAlias(idx2, alias));
+        Assert.assertTrue(repository.aliasExists(alias));
+
+        // when
+        repository.getSingleIndexPointedByAlias(alias);
+        //then, throws exception
+    }
+
+    @Test
+    public void testSwitchAlias() {
+        // given
+        String oldIndex = "old_index";
+        String newIndex = "new_index";
+        String alias = "index_alias";
+        repository.createIndex(oldIndex);
+        repository.createIndex(newIndex);
+        Assert.assertTrue(repository.createAlias(oldIndex, alias));
+        Assert.assertEquals(oldIndex, repository.getSingleIndexPointedByAlias(alias));
+
+        // when
+        boolean switched = repository.switchAlias(oldIndex, newIndex, alias);
+
+        // then
+        Assert.assertTrue(switched);
+        Assert.assertEquals(newIndex, repository.getSingleIndexPointedByAlias(alias));
+    }
+
 }

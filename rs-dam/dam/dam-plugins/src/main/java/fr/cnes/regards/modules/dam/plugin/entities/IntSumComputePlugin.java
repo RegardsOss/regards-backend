@@ -92,7 +92,7 @@ public class IntSumComputePlugin extends AbstractDataObjectComputePlugin<Integer
         result = null;
         // create the search
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
-        searchKey.setSearchIndex(tenantResolver.getTenant());
+        searchKey.setSearchIndex(indexAliasResolver.resolveAliasName());
         searchKey.setCrs(projectGeoSettings.getCrs());
         Double doubleResult = esRepo.sum(searchKey,
                                          dataset.getSubsettingClause(),

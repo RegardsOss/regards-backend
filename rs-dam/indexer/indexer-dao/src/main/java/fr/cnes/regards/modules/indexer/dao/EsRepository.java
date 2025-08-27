@@ -187,6 +187,8 @@ public class EsRepository implements IEsRepository {
 
     public static final String REF_SUFFIX = "_ref";
 
+    public static final String ALIAS_SUFFIX = "_alias";
+
     public static final String NOT_REF_FILES_COUNT_SUFFIX = "_!ref_files_count";
 
     public static final String NOT_REF_FILES_SIZE_SUFFIX = "_!ref_files_size";
@@ -301,9 +303,9 @@ public class EsRepository implements IEsRepository {
 
     private final JsonDeserializeStrategy<IIndexable> deserializeHitsStrategy;
 
-    private IRuntimeTenantResolver tenantResolver;
+    private final IRuntimeTenantResolver tenantResolver;
 
-    private RequestOptions searchOptions;
+    private final RequestOptions searchOptions;
 
     /**
      * SearchAll cache used by {@link EsRepository#searchAll} to avoid redo same ES request while changing page.
@@ -607,16 +609,26 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
-    public boolean createAlias(String index, String alias) {
+    public boolean createAlias(String index, String aliasName) {
         try {
             IndicesAliasesRequest request = new IndicesAliasesRequest();
             AliasActions createAliasAction = new AliasActions(Type.ADD).index(index.toLowerCase())
-                                                                       .alias(alias.toLowerCase());
+                                                                       .alias(aliasName.toLowerCase());
             request.addAliasAction(createAliasAction);
             AcknowledgedResponse response = client.indices().updateAliases(request, RequestOptions.DEFAULT);
             return response.isAcknowledged();
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
+            throw new RsRuntimeException(e);
+        }
+    }
+
+    public boolean aliasExists(String aliasName) {
+        try {
+            GetAliasesRequest request = new GetAliasesRequest(aliasName.toLowerCase());
+            return client.indices().existsAlias(request, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            LOGGER.error("Error checking alias [{}]: {}", aliasName, e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -783,9 +795,9 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
-    public <T extends IIndexable> T get(Optional<String> index, String type, String id, Class<T> clazz) {
+    public <T extends IIndexable> T get(Optional<String> aliasName, String type, String id, Class<T> clazz) {
 
-        GetRequest request = new GetRequest(getIndex(index).toLowerCase(), id);
+        GetRequest request = new GetRequest(getAlias(aliasName).toLowerCase(), id);
 
         try {
             GetResponse response = client.get(request, RequestOptions.DEFAULT);
@@ -806,7 +818,7 @@ public class EsRepository implements IEsRepository {
                                                    Class<? extends IIndexable> clazz) {
         // use search0
         SimpleSearchKey<T> searchKey = new SimpleSearchKey(docType, clazz);
-        searchKey.setSearchIndex(getIndex(Optional.empty()));
+        searchKey.setSearchIndex(getAlias(Optional.empty()));
         ICriterion virtualIdCrit = ICriterion.eq("feature.virtualId", virtualId, StringMatchType.KEYWORD);
         return search0(searchKey, PageRequest.of(0, 1), virtualIdCrit, null).getContent().get(0);
     }
@@ -2602,6 +2614,55 @@ public class EsRepository implements IEsRepository {
         client.getLowLevelClient().performRequest(request);
     }
 
+    @Override
+    public String getSingleIndexPointedByAlias(String aliasName) throws IllegalStateException {
+        try {
+            GetAliasesRequest request = new GetAliasesRequest(aliasName.toLowerCase());
+            GetAliasesResponse response = client.indices().getAlias(request, RequestOptions.DEFAULT);
+
+            if (response.getAliases().isEmpty()) {
+                throw new IllegalStateException(String.format("Alias does not exist: %s", aliasName));
+            }
+            if (response.getAliases().size() > 1) {
+                throw new IllegalStateException(String.format("Alias [%s] points to multiple indices: %s",
+                                                              aliasName,
+                                                              response.getAliases().keySet()));
+            }
+            return response.getAliases().keySet().iterator().next();
+
+        } catch (IOException e) {
+            LOGGER.error("Failed to get index for alias [{}]: {}", aliasName, e.getMessage(), e);
+            throw new RsRuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean switchAlias(String oldIndex, String newIndex, String alias) {
+        String oldIndexLowerCase = oldIndex.toLowerCase();
+        String newIndexLowerCase = newIndex.toLowerCase();
+        String aliasLowerCase = alias.toLowerCase();
+        try {
+            IndicesAliasesRequest request = new IndicesAliasesRequest();
+
+            AliasActions remove = new AliasActions(AliasActions.Type.REMOVE).index(oldIndexLowerCase)
+                                                                            .alias(aliasLowerCase);
+            AliasActions add = new AliasActions(AliasActions.Type.ADD).index(newIndexLowerCase).alias(aliasLowerCase);
+
+            request.addAliasAction(remove);
+            request.addAliasAction(add);
+            AcknowledgedResponse response = client.indices().updateAliases(request, RequestOptions.DEFAULT);
+            return response.isAcknowledged();
+        } catch (IOException e) {
+            LOGGER.error("Error switching alias [{}] from [{}] to [{}]: {}",
+                         aliasLowerCase,
+                         oldIndexLowerCase,
+                         newIndexLowerCase,
+                         e.getMessage(),
+                         e);
+            throw new RsRuntimeException(e);
+        }
+    }
+
     /**
      * Difference between addFilesCardinalityAgg and addFilesCountAndSumAggs is on the type of aggregagtion (and the
      * file size sum of course).
@@ -2682,18 +2743,18 @@ public class EsRepository implements IEsRepository {
     }
 
     /**
-     * Return given index if present or retrieve index from RunTimeTenantResolver
+     * Returns given alias if present or retrieves it from RunTimeTenantResolver
      *
-     * @return String index
-     * @throws RsRuntimeException if no index is found
+     * @return String aliasName
+     * @throws RsRuntimeException if no alias is found
      */
-    private String getIndex(Optional<String> index) {
-        if (index.isPresent()) {
-            return index.get();
+    private String getAlias(Optional<String> aliasName) {
+        if (aliasName.isPresent()) {
+            return aliasName.get();
         } else if (tenantResolver != null && tenantResolver.getTenant() != null) {
-            return tenantResolver.getTenant();
+            return tenantResolver.getTenant() + ALIAS_SUFFIX;
         } else {
-            throw new RsRuntimeException("Index not defined for elasticsearch request");
+            throw new RsRuntimeException("Alias not defined for elasticsearch request");
         }
     }
 
@@ -2737,5 +2798,4 @@ public class EsRepository implements IEsRepository {
         }
 
     }
-
 }

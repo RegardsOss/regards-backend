@@ -37,6 +37,7 @@ public class IndexerServiceDataSourceDeleteIT extends AbstractIndexerServiceData
     @Test
     public void testDeleteByDatasource() throws ModuleException, NotFinishedException, FirstFindException {
         String tenant = runtimeTenantResolver.getTenant();
+        String alias = indexAliasResolver.resolveAliasName(tenant);
 
         // Creation
         DatasourceIngestion dsi = new DatasourceIngestion(dataSourcePluginConf.getBusinessId());
@@ -49,11 +50,11 @@ public class IndexerServiceDataSourceDeleteIT extends AbstractIndexerServiceData
         // Check ingested datas
         Long datasourceId = dataSourcePluginConf.getId();
         SimpleSearchKey<DataObject> key = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
-        key.setSearchIndex(tenant);
+        key.setSearchIndex(alias);
         Assert.assertEquals(4, esRepos.count(key, ICriterion.all()).intValue());
 
         // Delete all from this datasource
-        long nbDeleted = esRepos.deleteByDatasource(tenant, datasourceId);
+        long nbDeleted = esRepos.deleteByDatasource(alias, datasourceId);
         Assert.assertEquals(4, nbDeleted);
         Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(tenant);

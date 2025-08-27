@@ -26,11 +26,10 @@ import fr.cnes.regards.modules.crawler.test.CrawlerConfiguration;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
+import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.service.IIndexerService;
-import fr.cnes.regards.modules.indexer.service.ISearchService;
-import fr.cnes.regards.modules.indexer.service.Searches;
+import fr.cnes.regards.modules.indexer.service.*;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.dto.properties.*;
 import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactory;
@@ -77,7 +76,13 @@ public class IndexerServiceIT {
     private IIndexerService indexerService;
 
     @Autowired
+    IndexAliasService indexAliasService;
+
+    @Autowired
     private ISearchService searchService;
+
+    @Autowired
+    protected IEsRepository esRepository;
 
     @Autowired
     private MultitenantFlattenedAttributeAdapterFactory gsonAttributeFactory;
@@ -91,6 +96,24 @@ public class IndexerServiceIT {
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    protected IndexAliasResolver indexAliasResolver;
+
+    private void initIndexAndAlias(String tenant) {
+        String index = tenant.toLowerCase();
+        String alias = indexAliasResolver.resolveAliasName(tenant);
+        
+        if (esRepository.indexExists(index)) {
+            esRepository.deleteIndex(index);
+        }
+
+        esRepository.createIndex(index);
+        if (!esRepository.aliasExists(alias)) {
+            esRepository.createAlias(index, alias);
+            indexAliasService.saveOrUpdate(alias, index);
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
 
@@ -98,8 +121,7 @@ public class IndexerServiceIT {
         gsonAttributeFactoryHandler.onApplicationEvent(null);
 
         runtimeTenantResolver.forceTenant(tenant);
-        indexerService.deleteIndex(tenant);
-        // indexerService.deleteIndex(SEARCH);
+        initIndexAndAlias(tenant);
     }
 
     @Test

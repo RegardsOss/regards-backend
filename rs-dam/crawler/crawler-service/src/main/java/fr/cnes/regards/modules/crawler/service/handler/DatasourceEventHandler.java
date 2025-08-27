@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.crawler.service.service.IEntityIndexerService;
 import fr.cnes.regards.modules.dam.domain.datasources.event.DatasourceEvent;
 import fr.cnes.regards.modules.dam.domain.datasources.event.DatasourceEventType;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -40,6 +41,9 @@ public class DatasourceEventHandler implements IHandler<DatasourceEvent> {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IndexAliasResolver indexAliasResolver;
 
     @Autowired
     private IEntityIndexerService entityIndexerService;
@@ -58,7 +62,8 @@ public class DatasourceEventHandler implements IHandler<DatasourceEvent> {
         if ((event.getType() == DatasourceEventType.DELETED) && (event.getDatasourceId() != null)) {
             runtimeTenantResolver.forceTenant(wrapper.getTenant());
             try {
-                entityIndexerService.deleteDataObjectsFromDatasource(wrapper.getTenant(), event.getDatasourceId());
+                entityIndexerService.deleteDataObjectsFromDatasource(indexAliasResolver.resolveAliasName(wrapper.getTenant()),
+                                                                     event.getDatasourceId());
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

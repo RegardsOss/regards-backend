@@ -72,6 +72,8 @@ import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
+import fr.cnes.regards.modules.indexer.service.IndexAliasService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
@@ -139,6 +141,9 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
+    private IndexAliasResolver indexAliasResolver;
+
+    @Autowired
     private IAccessGroupService groupService;
 
     @Autowired
@@ -146,6 +151,9 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
     @Autowired
     private ISearchService searchService;
+
+    @Autowired
+    IndexAliasService indexAliasService;
 
     @Autowired
     private IAccessRightRepository arRepo;
@@ -214,10 +222,17 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     private IPluginService pluginService;
 
     private void initIndex(String index) {
+
+        String aliasName = indexAliasResolver.resolveAliasName(index);
         if (esRepository.indexExists(index)) {
             esRepository.deleteIndex(index);
         }
         esRepository.createIndex(index);
+        if (!esRepository.aliasExists(aliasName)) {
+            esRepository.createAlias(index, aliasName);
+            indexAliasService.saveOrUpdate(aliasName, index);
+        }
+
         Arrays.stream(EntityType.values()).map(EntityType::toString).toArray(length -> new String[length]);
     }
 
@@ -353,7 +368,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
         @SuppressWarnings("rawtypes") final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(
             EntityType.DATA);
-        searchKey.setSearchIndex(TENANT);
+        searchKey.setSearchIndex(indexAliasResolver.resolveCurrentIndex(TENANT));
         @SuppressWarnings("rawtypes") Page<AbstractEntity> results = searchService.search(searchKey,
                                                                                           100,
                                                                                           ICriterion.contains("groups",
@@ -374,7 +389,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         runtimeTenantResolver.forceTenant(TENANT);
         @SuppressWarnings("rawtypes") final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(
             EntityType.DATA);
-        searchKey.setSearchIndex(TENANT);
+        searchKey.setSearchIndex(indexAliasResolver.resolveCurrentIndex(TENANT));
         @SuppressWarnings("rawtypes") Page<AbstractEntity> results = searchService.search(searchKey,
                                                                                           100,
                                                                                           ICriterion.all());
@@ -628,7 +643,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // dataobjects have been tagged with dataset ipId (check init methods)
         // so lets try to get them with tag ipId and virtualId to compare results
         final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(EntityType.DATA);
-        searchKey.setSearchIndex(TENANT);
+        searchKey.setSearchIndex(indexAliasResolver.resolveCurrentIndex(TENANT));
         Page<AbstractEntity> fromIpId = searchService.search(searchKey,
                                                              100,
                                                              ICriterion.contains("tags",
@@ -680,7 +695,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     public void testGetBoundingBoxFromGeometry() throws ModuleException {
         final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(EntityType.DATA);
 
-        searchKey.setSearchIndex(TENANT);
+        searchKey.setSearchIndex(indexAliasResolver.resolveCurrentIndex(TENANT));
         DataObject taggedWithLatest = createObject("taggedWithLatest", "Tagged With Latest");
 
         DataObject taggingWith = objects.get(0);
@@ -804,7 +819,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         Mockito.clearInvocations(publisher);
 
         // delete object
-        indexerService.deleteDataObject(TENANT, objectId.toString());
+        indexerService.deleteDataObject(indexAliasResolver.resolveAliasName(TENANT), objectId.toString());
 
         // check the deletion of the first object and event sent
         Assert.assertNull("Object should have been deleted", searchService.get(objectId));
@@ -936,7 +951,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     @SuppressWarnings("rawtypes")
     private AbstractEntity<DataObjectFeature> searchObjectWithId(String providerId) {
         final SimpleSearchKey<AbstractEntity<DataObjectFeature>> searchKey = Searches.onSingleEntity(EntityType.DATA);
-        searchKey.setSearchIndex(TENANT);
+        searchKey.setSearchIndex(indexAliasResolver.resolveCurrentIndex(TENANT));
         Page<AbstractEntity<DataObjectFeature>> results = searchService.search(searchKey,
                                                                                100,
                                                                                ICriterion.contains("feature.providerId",

@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.service.IIndexerService;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import fr.cnes.regards.modules.indexer.service.MappingService;
 import fr.cnes.regards.modules.model.client.IAttributeModelClient;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
@@ -198,6 +199,9 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected IIndexerService indexerService;
 
     @Autowired
+    protected IndexAliasResolver indexAliasResolver;
+
+    @Autowired
     protected IPluginService pluginService;
 
     @Autowired
@@ -224,10 +228,16 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     GsonBuilder builder = new GsonBuilder();
 
     protected void initIndex(String index) {
+        String aliasName = indexAliasResolver.resolveAliasName(index);
+
         if (esRepository.indexExists(index)) {
             esRepository.deleteIndex(index);
         }
+        if (esRepository.indexExists(aliasName)) {
+            esRepository.deleteIndex(aliasName);
+        }
         esRepository.createIndex(index);
+        esRepository.createAlias(index, aliasName);
     }
 
     protected void prepareProject() {

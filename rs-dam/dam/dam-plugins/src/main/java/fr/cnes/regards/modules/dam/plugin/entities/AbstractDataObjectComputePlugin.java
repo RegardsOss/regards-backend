@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
 import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
@@ -66,6 +67,9 @@ public abstract class AbstractDataObjectComputePlugin<R> implements IComputedAtt
 
     @Autowired
     protected IRuntimeTenantResolver tenantResolver;
+
+    @Autowired
+    protected IndexAliasResolver indexAliasResolver;
 
     @Autowired
     protected IAttributeModelRepository attModelRepos;
@@ -143,7 +147,7 @@ public abstract class AbstractDataObjectComputePlugin<R> implements IComputedAtt
         result = null;
         // create the search
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
-        searchKey.setSearchIndex(tenantResolver.getTenant());
+        searchKey.setSearchIndex(indexAliasResolver.resolveAliasName());
         searchKey.setCrs(projectGeoSettings.getCrs());
         esRepo.searchAll(searchKey, this.doCompute(), dataset.getSubsettingClause());
         log.debug("Attribute {} computed for Dataset {}. Result: {}",

@@ -18,12 +18,18 @@
  */
 package fr.cnes.regards.modules.crawler.service.service;
 
+import com.google.common.base.Strings;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.indexer.dao.CreateIndexConfiguration;
 import fr.cnes.regards.modules.indexer.dao.EsRepository;
 import fr.cnes.regards.modules.indexer.service.IMappingService;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
+import fr.cnes.regards.modules.indexer.service.IndexAliasService;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,24 +53,97 @@ public class IndexService {
     @Autowired
     private IDamSettingsService damSettingsService;
 
+    @Autowired
+    private IndexAliasService indexAliasService;
+
+    @Autowired
+    private IndexAliasResolver indexAliasResolver;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IndexService.class);
+
     public void configureMappings(String tenant, String modelName) {
         List<ModelAttrAssoc> modelAttributes = modelAttrAssocService.getModelAttrAssocs(modelName);
         esMappingService.configureMappings(tenant, modelAttributes);
     }
 
     /**
-     * Create index if it doesn't exist
+     * Creates a new Elasticsearch index for the given tenant if it does not already exist,
+     * and ensures that the corresponding alias is created or updated to point to it.
      *
-     * @param tenant concerned tenant
-     * @return true if a creation has been done
+     * <p>The index name is derived directly from the tenant identifier.
+     * If the index already exists, no action is performed and the method returns {@code false}.
+     * If the index is created, the alias is also created or updated to ensure
+     * that all queries go through the alias rather than the raw index.</p>
+     *
+     * @param tenant the tenant identifier used as the index name
+     * @return {@code true} if the index was created, {@code false} if it already existed
      */
-    public boolean createIndexIfNeeded(String tenant) {
+    public boolean createIndexAndAliasIfNeeded(String tenant) {
         if (esRepos.indexExists(tenant)) {
             return false;
         }
         CreateIndexConfiguration configuration = new CreateIndexConfiguration(damSettingsService.getIndexNumberOfShards(),
                                                                               damSettingsService.getIndexNumberOfReplicas());
-        return esRepos.createIndex(tenant, configuration);
+        boolean created = esRepos.createIndex(tenant, configuration);
+
+        createOrUpdateAlias(tenant);
+        return created;
+    }
+
+    /**
+     * Ensures that, for a given tenant, the ES alias exists and correctly points to the expected index.
+     *
+     * <p>If the alias does not exist, it is created and persisted in the database, targeting
+     * the tenant's current index (with the same name as the tenant by default).
+     * If the alias already exists, its target index is validated against the one recorded in the database:
+     * <ul>
+     *   <li>If the alias points to the correct index, nothing is done.</li>
+     *   <li>If the alias points to an outdated or incorrect index, it is switched to the correct one.</li>
+     *   <li>If no current index is resolved from the database, an {@link IllegalStateException} is thrown,
+     *       as this indicates an inconsistency between Elasticsearch and the database.</li>
+     * </ul>
+     *
+     * @param tenant the tenant identifier whose alias must be created or updated
+     * @throws IllegalStateException if the alias exists but no current index is resolved for the tenant
+     */
+    private void createOrUpdateAlias(String tenant) {
+        String aliasName = indexAliasResolver.resolveAliasName(tenant);
+
+        //If alias does not exist, it is created here
+        if (!esRepos.aliasExists(aliasName)) {
+            if (esRepos.createAlias(tenant, aliasName)) {
+                indexAliasService.saveOrUpdate(aliasName, tenant);
+                LOGGER.info("Alias [{}] created on index [{}]", aliasName, tenant);
+            } else {
+                LOGGER.error("Alias [{}] creation not acknowledged on index [{}]", aliasName, tenant);
+                throw new RsRuntimeException("Alias " + aliasName + " could not be created on index " + tenant);
+
+            }
+            return;
+        }
+
+        //If alias is already present, we need to check its target index and maybe update it
+        String targetIndex = indexAliasResolver.resolveCurrentIndex(tenant);
+
+        //We should have a current index in the DB if alias already exists. If not, there is a problem
+        if (Strings.isNullOrEmpty(targetIndex)) {
+            throw new IllegalStateException(String.format(
+                "Cannot update alias [%s]: no current index resolved for tenant [%s]",
+                aliasName,
+                tenant));
+        }
+
+        //The correct index mapped by the alias is the one in the entity. If the alias already exists but with a bad
+        // mapped index, we need to change its index
+        String aliasPointsTo = esRepos.getSingleIndexPointedByAlias(aliasName);
+        if (!targetIndex.equals(aliasPointsTo)) {
+            boolean switched = esRepos.switchAlias(aliasPointsTo, targetIndex, aliasName);
+            if (switched) {
+                LOGGER.info("Alias [{}] switched from [{}] to [{}]", aliasName, aliasPointsTo, targetIndex);
+            } else {
+                LOGGER.error("Alias [{}] switch not acknowledged ({} to {})", aliasName, aliasPointsTo, targetIndex);
+            }
+        }
     }
 
     /**
@@ -79,4 +158,5 @@ public class IndexService {
         }
         return esRepos.deleteIndex(tenant);
     }
+
 }

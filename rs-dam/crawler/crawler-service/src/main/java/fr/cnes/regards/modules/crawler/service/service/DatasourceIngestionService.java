@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelService;
 import org.slf4j.Logger;
@@ -117,6 +118,9 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
      */
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IndexAliasResolver indexAliasResolver;
 
     @Autowired
     protected IEntityIndexerService entityIndexerService;
@@ -342,7 +346,8 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         deletionThreadPoolExecutor.submit(() -> {
             try {
                 LOGGER.info("Removing all data objects associated to data source {}...", dataSourceId);
-                long deletedCount = esRepos.deleteByQuery(tenant,
+                String alias = indexAliasResolver.resolveAliasName(tenant);
+                long deletedCount = esRepos.deleteByQuery(alias,
                                                           ICriterion.eq("dataSourceId",
                                                                         dataSourceId,
                                                                         StringMatchType.KEYWORD));
@@ -463,7 +468,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             BulkSaveLightResult saveResult;
             OffsetDateTime ingestionStart = OffsetDateTime.now();
             Long datasourceId = pluginConf.getId();
-            indexService.createIndexIfNeeded(tenant);
+            indexService.createIndexAndAliasIfNeeded(tenant);
             // i decided not to put a cache here because attribute can be updated... even if it is minor updates it can
             // be taken into account by mappings. In case crawling seem to be slower because of this we can always add one
             // but it should be reset with attribute updates
@@ -483,7 +488,8 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                 // objects which have a lastUpdate date >= now)
                 SimpleSearchKey<Dataset> searchKey = new SimpleSearchKey<>(EntityType.DATASET.toString(),
                                                                            Dataset.class);
-                searchKey.setSearchIndex(tenant);
+                String alias = indexAliasResolver.resolveAliasName(tenant);
+                searchKey.setSearchIndex(alias);
                 searchKey.setCrs(projectGeoSettings.getCrs());
                 Set<Dataset> datasetsToUpdate = new HashSet<>();
                 esRepos.searchAll(searchKey,
@@ -718,6 +724,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                                                     String datasourceIngestionId,
                                                     List<DataObject> dataObjects) throws ModuleException {
         sendMessage(String.format("  Indexing %d objects...", dataObjects.size()), datasourceIngestionId);
+
         BulkSaveResult bulkSaveResult = entityIndexerService.upsertDataObjects(ingestionParameters.tenant(),
                                                                                ingestionParameters.datasourceId(),
                                                                                ingestionParameters.ingestionStart(),
