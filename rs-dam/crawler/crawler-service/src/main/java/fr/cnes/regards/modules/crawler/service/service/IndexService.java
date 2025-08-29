@@ -36,6 +36,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
+ * Centralizes operations related to the lifecycle  of Elasticsearch indices and aliases
+ *
  * @author Thibaud Michaudel
  **/
 @Service
@@ -85,7 +87,6 @@ public class IndexService {
         CreateIndexConfiguration configuration = new CreateIndexConfiguration(damSettingsService.getIndexNumberOfShards(),
                                                                               damSettingsService.getIndexNumberOfReplicas());
         boolean created = esRepos.createIndex(tenant, configuration);
-
         createOrUpdateAlias(tenant);
         return created;
     }
@@ -106,7 +107,7 @@ public class IndexService {
      * @param tenant the tenant identifier whose alias must be created or updated
      * @throws IllegalStateException if the alias exists but no current index is resolved for the tenant
      */
-    private void createOrUpdateAlias(String tenant) {
+    public void createOrUpdateAlias(String tenant) {
         String aliasName = indexAliasResolver.resolveAliasName(tenant);
 
         //If alias does not exist, it is created here
@@ -119,6 +120,13 @@ public class IndexService {
                 throw new RsRuntimeException("Alias " + aliasName + " could not be created on index " + tenant);
 
             }
+            return;
+        }
+
+        //We control if the alias exists in the DB. If, for some reason, it is absent from the DB, we add it, as
+        // ElasticSearch and the DB must be synchronized all the time.
+        if (indexAliasService.getByAlias(aliasName) == null) {
+            indexAliasService.saveOrUpdate(aliasName, tenant);
             return;
         }
 
