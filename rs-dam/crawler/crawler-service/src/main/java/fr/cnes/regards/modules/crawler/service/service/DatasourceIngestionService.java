@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
 import fr.cnes.regards.modules.crawler.service.service.parallel.EsBulkParallelSaver;
 import fr.cnes.regards.modules.crawler.service.service.parallel.EsBulkSaveService;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursorMode;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceException;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IInternalDataSourcePlugin;
@@ -62,6 +63,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +78,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -94,8 +95,6 @@ import java.util.stream.Collectors;
 public class DatasourceIngestionService implements IDatasourceIngesterService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DatasourceIngestionService.class);
-
-    private static final int MAX_NOTIFICATION_LENGTH = 512;
 
     private static final DateTimeFormatter ISO_TIME_UTC = new DateTimeFormatterBuilder().parseCaseInsensitive()
                                                                                         .append(DateTimeFormatter.ISO_LOCAL_TIME)
@@ -148,6 +147,9 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
 
     @Autowired
     private IndexService indexService;
+
+    @Autowired
+    private DatasourceIngestionStatusService datasourceIngestionStatusService;
 
     private final ExecutorService deletionThreadPoolExecutor = Executors.newFixedThreadPool(1);
 
@@ -216,38 +218,6 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         return allDatasourceIngestionReady.stream().map(DatasourceIngestion::getId).toList();
     }
 
-    /**
-     * Launch ingestion associated to the given {@link DatasourceIngestion}
-     */
-    public void updateIngesterResult(String dsIngestionId, IngestionResult summary) {
-        Optional<DatasourceIngestion> oDsIngestion = dsIngestionRepos.findById(dsIngestionId);
-        if (oDsIngestion.isPresent()) {
-            DatasourceIngestion dsIngestion = oDsIngestion.get();
-            // dsIngestion.stackTrace has been updated by handleMessageEvent transactional method
-            if (summary.getInErrorObjectsCount() > 0) {
-                dsIngestion.setStatus(IngestionStatus.FINISHED_WITH_WARNINGS);
-            } else {
-                dsIngestion.setStatus(IngestionStatus.FINISHED);
-            }
-            dsIngestion.setSavedObjectsCount(summary.getSavedObjectsCount());
-            dsIngestion.setInErrorObjectsCount(summary.getInErrorObjectsCount());
-            dsIngestion.setLastIngestDate(summary.getDate());
-            // To avoid redoing an ingestion in this "do...while" (must be at next call to manage)
-            dsIngestion.setNextPlannedIngestDate(null);
-            // To avoid redoing an ingestion from beginning in case where plugin are date optimized (or id optimized)
-            if (summary.getLastEntityDate() != null) {
-                dsIngestion.setLastEntityDate(summary.getLastEntityDate(), summary.getPenultimateLastEntityDate());
-            }
-            if (summary.getLastId() != null) {
-                dsIngestion.setLastId(summary.getLastId(), summary.getPreviousLastId());
-            }
-            // Save ingestion status
-            sendNotificationSummary(dsIngestionRepos.save(dsIngestion));
-        } else {
-            LOGGER.warn("Unable to find datasource with id {} to set indexation results", dsIngestionId);
-        }
-    }
-
     public void setInactive(String datasourceId, String cause) {
         Optional<DatasourceIngestion> oDsIngestion = dsIngestionRepos.findById(datasourceId);
         if (oDsIngestion.isPresent()) {
@@ -255,7 +225,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             dsIngestion.setStatus(IngestionStatus.INACTIVE);
             dsIngestion.setStackTrace(cause);
             dsIngestion.setNextPlannedIngestDate(null);
-            sendNotificationSummary(dsIngestionRepos.save(dsIngestion));
+            datasourceIngestionStatusService.sendNotificationSummary(dsIngestionRepos.save(dsIngestion));
         } else {
             LOGGER.warn("Unable to find datasource with id {} to set status to inactive", datasourceId);
         }
@@ -282,7 +252,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                     dsIngestion.setCursor(cursorToSet);
                 }
                 dsIngestion = dsIngestionRepos.save(dsIngestion);
-                sendNotificationSummary(dsIngestion);
+                datasourceIngestionStatusService.sendNotificationSummary(dsIngestion);
             } else {
                 LOGGER.warn("Unable to find datasource with id {} to set error={}", dsIngestionId, cause);
             }
@@ -319,7 +289,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             dsIngestion.setSavedObjectsCount(partialSaveResult.getSavedDocsCount());
             dsIngestion.setInErrorObjectsCount(partialSaveResult.getInErrorDocsCount());
             dsIngestion.setNextPlannedIngestDate(null);
-            sendNotificationSummary(dsIngestionRepos.save(dsIngestion));
+            datasourceIngestionStatusService.sendNotificationSummary(dsIngestionRepos.save(dsIngestion));
         } else {
             LOGGER.warn("Unable to find datasource with id {} to set status to not finished", dsIngestionId);
         }
@@ -380,13 +350,12 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                     // relaunch now, it will probably fails again
                     OffsetDateTime nextPlannedIngestDate = OffsetDateTime.now()
                                                                          .withOffsetSameInstant(ZoneOffset.UTC)
-                                                                         .plus(refreshRate, ChronoUnit.SECONDS);
+                                                                         .plusSeconds(refreshRate);
                     dsIngestion.setNextPlannedIngestDate(nextPlannedIngestDate);
                     dsIngestionRepos.save(dsIngestion);
                 }
                 case FINISHED, FINISHED_WITH_WARNINGS -> { // last ingest + refreshRate
-                    dsIngestion.setNextPlannedIngestDate(dsIngestion.getLastIngestDate()
-                                                                    .plus(refreshRate, ChronoUnit.SECONDS));
+                    dsIngestion.setNextPlannedIngestDate(dsIngestion.getLastIngestDate().plusSeconds(refreshRate));
                     dsIngestionRepos.save(dsIngestion);
                 }
                 case INACTIVE -> {
@@ -399,46 +368,8 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                     // NEW: dsIngestion just been created with a next planned date as now() ie launch as soon as possible
                 }
                 default -> {
+                    // do nothing
                 }
-            }
-        }
-    }
-
-    private void sendNotificationSummary(DatasourceIngestion dsIngestion) {
-        // Send admin notification for ingestion ends if something as been done
-        if ((dsIngestion.getSavedObjectsCount() != 0) || (dsIngestion.getInErrorObjectsCount() != 0)) {
-            String title = String.format("%s indexation ends.", dsIngestion.getLabel());
-            String stackTrace = dsIngestion.getStackTrace();
-            if ((dsIngestion.getStackTrace() != null) && (stackTrace.length() > MAX_NOTIFICATION_LENGTH)) {
-                stackTrace = dsIngestion.getStackTrace()
-                                        .substring(0,
-                                                   Math.min(dsIngestion.getStackTrace().length(),
-                                                            MAX_NOTIFICATION_LENGTH)) + " ... [truncated]";
-            }
-            switch (dsIngestion.getStatus()) {
-                case ERROR -> notifClient.notify(String.format("Indexation error. Cause : %s", stackTrace),
-                                                 title,
-                                                 NotificationLevel.ERROR,
-                                                 DefaultRole.PROJECT_ADMIN);
-                case FINISHED_WITH_WARNINGS -> notifClient.notify(String.format(
-                    "Indexation ends with %s new indexed objects and %s errors.",
-                    dsIngestion.getSavedObjectsCount(),
-                    dsIngestion.getInErrorObjectsCount()), title, NotificationLevel.WARNING, DefaultRole.PROJECT_ADMIN);
-                case NOT_FINISHED -> notifClient.notify(String.format("""
-                                                                          Indexation ends with %s new indexed objects and %s errors but is not completely terminated.
-                                                                                     Something went wrong concerning datasource or Elasticsearch.
-                                                                          Associated datasets haven't been updated, ingestion may be manually re-scheduled
-                                                                          to be launched as soon as possible or will continue at its planned date
-                                                                          """,
-                                                                      dsIngestion.getSavedObjectsCount(),
-                                                                      dsIngestion.getInErrorObjectsCount()),
-                                                        title,
-                                                        NotificationLevel.WARNING,
-                                                        DefaultRole.PROJECT_ADMIN);
-                default -> notifClient.notify(String.format(
-                    "Indexation finished. %s new objects indexed. %s objects in error.",
-                    dsIngestion.getSavedObjectsCount(),
-                    dsIngestion.getInErrorObjectsCount()), title, NotificationLevel.INFO, DefaultRole.PROJECT_ADMIN);
             }
         }
     }
@@ -544,10 +475,59 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     }
 
     @Override
-    public void scheduleNowDatasourceIngestion(String id) {
-        DatasourceIngestion dsi = dsIngestionRepos.findById(id).orElseThrow();
+    public void scheduleNowDatasourceIngestion(String datasourceIngestionId) throws ModuleException {
+        DatasourceIngestion dsi = getDatasourceIngestionOrThrowIfRunning(datasourceIngestionId);
         dsi.setNextPlannedIngestDate(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC));
         dsIngestionRepos.save(dsi);
+    }
+
+    @Override
+    public void scheduleNowDatasourceIngestionFromDate(String datasourceIngestionId, OffsetDateTime fromDate)
+        throws ModuleException {
+        DatasourceIngestion dsi = getDatasourceIngestionOrThrowIfRunning(datasourceIngestionId);
+        PluginConfiguration pluginConf = pluginService.getPluginConfiguration(datasourceIngestionId);
+        IDataSourcePlugin dsPlugin;
+        try {
+            dsPlugin = pluginService.getPlugin(pluginConf.getBusinessId());
+        } catch (NotAvailablePluginConfigurationException e) {
+            throw new InactiveDatasourceException(e);
+        }
+        // Only set fromDate if crawlingCursorMode is CRAWL_SINCE_LAST_UPDATE
+        if (CrawlingCursorMode.CRAWL_SINCE_LAST_UPDATE.equals(dsPlugin.getCrawlingCursorMode())) {
+            if (fromDate.isAfter(dsi.getCursor().getLastEntityDate())) {
+                throw new ModuleException("The date to crawl must be before the last entity date.");
+            }
+            LOGGER.info("Setting cursor to fromDate={} for datasourceIngestionId={}", fromDate, datasourceIngestionId);
+            dsi.getCursor().setLastEntityDate(fromDate);
+            dsi.getCursor().setCurrentLastEntityDate(fromDate);
+        } else {
+            LOGGER.error(
+                "Cannot set cursor to fromDate={} for datasourceIngestionId={} because crawlingCursorMode is not CRAWL_SINCE_LAST_UPDATE but {}",
+                fromDate,
+                datasourceIngestionId,
+                dsPlugin.getCrawlingCursorMode());
+            throw new ModuleException("Cannot set date to crawl because the crawling mode is not from date.");
+        }
+        dsi.setNextPlannedIngestDate(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC));
+        dsIngestionRepos.save(dsi);
+    }
+
+    /**
+     * Get the {@link DatasourceIngestion} with given id, if it is not already running.
+     *
+     * @throws ModuleException        if it is already running (status is STARTED).
+     * @throws NoSuchElementException if no {@link DatasourceIngestion} with given id is found.
+     */
+    @NotNull
+    private DatasourceIngestion getDatasourceIngestionOrThrowIfRunning(String datasourceIngestionId)
+        throws ModuleException {
+        DatasourceIngestion dsi = dsIngestionRepos.findById(datasourceIngestionId).orElseThrow();
+        if (!dsi.getStatus().isFinal()) {
+            // If datasource is already started, we do not schedule it again
+            LOGGER.warn("Datasource with id {} is already started, not scheduling it again", datasourceIngestionId);
+            throw new ModuleException("Datasource is already started, cannot schedule it again");
+        }
+        return dsi;
     }
 
     /**
@@ -677,7 +657,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                         System.currentTimeMillis() - start);
         } catch (Exception e) {
             // Catch Exception in order to catch all exceptions (in particular runtime) from plugins. Plugins can be out of our scope.
-            String message = "Error retriving features from datasource " + dsPlugin.getClass().getName();
+            String message = "Error retrieving features from datasource " + dsPlugin.getClass().getName();
             if (e.getMessage() != null) {
                 message = message + ". Cause: " + e.getMessage();
             }

@@ -49,9 +49,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Sébastien Binda
  */
 @Component
-public class IngesterService implements IHandler<PluginConfEvent> {
+public class CrawlerCreatorService implements IHandler<PluginConfEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngesterService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CrawlerCreatorService.class);
 
     /**
      * An atomic boolean used to determine whether manage() method is currently executing (and avoid launching it

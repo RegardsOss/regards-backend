@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.service.service.IDatasourceIngesterService;
@@ -29,12 +30,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -93,12 +96,20 @@ public class CrawlerController implements IResourceController<DatasourceIngestio
      * Schedule datasource ingestion to be executed as soon as possible
      *
      * @param ingestionId {@link DatasourceIngestion} id
+     * @param from        Optional date from which the ingestion should start
      * @return {@link Void}
      */
     @ResourceAccess(description = "Schedule datasource to be ingested as soon as possible.")
     @RequestMapping(method = RequestMethod.PUT, value = INGESTION_ID)
-    public ResponseEntity<Void> scheduleNowDatasourceIngestion(@PathVariable("ingestion_id") String ingestionId) {
-        ingesterService.scheduleNowDatasourceIngestion(ingestionId);
+    public ResponseEntity<Void> scheduleNowDatasourceIngestion(@PathVariable("ingestion_id") String ingestionId,
+                                                               @RequestParam(value = "from", required = false)
+                                                               @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                                                               OffsetDateTime from) throws ModuleException {
+        if (from == null) {
+            ingesterService.scheduleNowDatasourceIngestion(ingestionId);
+        } else {
+            ingesterService.scheduleNowDatasourceIngestionFromDate(ingestionId, from);
+        }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

@@ -30,14 +30,16 @@ import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionStatus;
 import fr.cnes.regards.modules.crawler.plugins.TestDataSourcePluginFailable;
+import fr.cnes.regards.modules.crawler.service.service.CrawlerCreatorService;
 import fr.cnes.regards.modules.crawler.service.service.DatasourceIngestionService;
-import fr.cnes.regards.modules.crawler.service.service.IngesterService;
+import fr.cnes.regards.modules.crawler.service.service.IDatasourceIngesterService;
+import fr.cnes.regards.modules.crawler.service.service.IndexService;
 import fr.cnes.regards.modules.dam.service.datasources.IDataSourceService;
-import fr.cnes.regards.modules.indexer.dao.CreateIndexConfiguration;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.ModelService;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -57,12 +60,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ActiveProfiles({ "indexer-service", "noscheduler" })
 @TestPropertySource(locations = { "classpath:test-crawler-it.properties" },
                     properties = { "regards.tenant=crawler_it",
+                                   "es.thread.pool.size=10",
                                    "spring.jpa.properties.hibernate.default_schema=crawler_it" })
 class CrawlerIT extends AbstractRegardsServiceIT {
 
     private static final String TENANT = "crawler_it";
 
     private static final String INDEX = TENANT;
+
+    private static final String ALIAS = "crawler_it_alias=è";
 
     private static final String MODEL_NAME = "model";
 
@@ -78,10 +84,10 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     private IDataSourceService datasourceService;
 
     @SpyBean
-    private DatasourceIngestionService datasourceIngestionService;
+    private DatasourceIngestionService datasourceIngestionRunnerService;
 
     @Autowired
-    private IngesterService ingesterService;
+    private CrawlerCreatorService crawlerCreatorService;
 
     @Autowired
     private ModelService modelService;
@@ -92,11 +98,18 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     @Autowired
     private IJobService jobService;
 
+    @Autowired
+    private IDatasourceIngesterService datasourceIngesterService;
+
+    @Autowired
+    private IndexService indexService;
+
     private void initIndex() {
-        if (esRepository.indexExists(CrawlerIT.INDEX)) {
-            esRepository.deleteIndex(CrawlerIT.INDEX);
-        }
-        esRepository.createIndex(INDEX, CreateIndexConfiguration.DEFAULT);
+        indexService.deleteIndex(TENANT);
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> !esRepository.indexExists(TENANT));
+        indexService.deleteIndex(ALIAS);
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> !esRepository.aliasExists(ALIAS));
+        indexService.createIndexAndAliasIfNeeded(TENANT);
     }
 
     @BeforeEach
@@ -133,9 +146,9 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     @Test
     void nominalCrawlingTest() {
         // GIVEN a datasource that has 20 objects to save
-        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionService);
+        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionRunnerService);
         // WHEN launch the ingestion
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be FINISHED without any problem
         DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(20, datasourceIngestion.getSavedObjectsCount());
@@ -143,12 +156,26 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     }
 
     @Test
+    void nominalComplexCrawlingTest() {
+        // GIVEN a datasource that has 20 objects to save
+        TestDataSourcePluginFailable.configureIngestion(5, 250, datasourceIngestionRunnerService);
+        // Even if task is long, it should be taken into account
+        TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(15, 30, 45, 60);
+        // WHEN launch the ingestion
+        crawlerCreatorService.manageCrawlingForAllTenants();
+        // THEN the ingestion should be FINISHED without any problem
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(200);
+        assertEquals(250, datasourceIngestion.getSavedObjectsCount());
+        assertEquals(IngestionStatus.FINISHED, datasourceIngestion.getStatus());
+    }
+
+    @Test
     void simpleErrorCrawlingTest() {
         // GIVEN a datasource that fails on the 2nd findAll call
-        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionService);
+        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionRunnerService);
         TestDataSourcePluginFailable.configureFailAtFindAllCall(2);
         // WHEN launch the ingestion
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as NOT_FINISHED, with 5 objects saved (first bulk of 5 objects is ok)
         DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(5, datasourceIngestion.getSavedObjectsCount());
@@ -159,10 +186,10 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     @Test
     void simpleErrorCrawlingTest2() {
         // GIVEN a datasource that fails on the 3rd findAll call
-        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionService);
+        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionRunnerService);
         TestDataSourcePluginFailable.configureFailAtFindAllCall(3);
         // WHEN launch the ingestion
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as NOT_FINISHED, with 10 objects saved (first 2 bulks of 5 objects are ok)
         DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(10, datasourceIngestion.getSavedObjectsCount());
@@ -173,11 +200,11 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     @Test
     void complexErrorCrawlingTestWithLongTask() {
         // GIVEN a datasource that has 20 objects to save, but fails on the 4th findAll call, with a long task
-        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionService);
+        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionRunnerService);
         TestDataSourcePluginFailable.configureFailAtFindAllCall(4);
         TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(3); // Even if task is long, it should be taken into account
         // WHEN launch the ingestion
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should saved 15 objects, first 3 bulks of 5 objects are ok even if the 3rd one is long
         DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(15, datasourceIngestion.getSavedObjectsCount());
@@ -188,11 +215,11 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     @Test
     void complexErrorCrawlingTestFailAtFirstSave() {
         // GIVEN a datasource that fails on the 1st save call, but takes long to fail
-        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionService);
+        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionRunnerService);
         TestDataSourcePluginFailable.configureFailAtSaveCalls(1);
         TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(1);
         // WHEN launch the ingestion
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
         DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(0, datasourceIngestion.getSavedObjectsCount());
@@ -204,10 +231,10 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     @Test
     void simpleErrorCrawlingTestFailAtFirstFindAll() {
         // GIVEN a datasource that fails on the 1st save call, but takes long to fail
-        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionService);
+        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionRunnerService);
         TestDataSourcePluginFailable.configureFailAtFindAllCall(1);
         // WHEN launch the ingestion
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
         jobService.manage();
         DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         // THEN the ingestion should be marked as error (first save failed)
@@ -221,11 +248,11 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     @Test
     void complexErrorCrawlingTestFailAtFirstFindAllWithSaveLong() {
         // GIVEN a datasource that fails on the 1st save call, but takes long to fail
-        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionService);
+        TestDataSourcePluginFailable.configureIngestion(5, 20, datasourceIngestionRunnerService);
         TestDataSourcePluginFailable.configureFailAtFindAllCall(1);
         TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(1);
         // WHEN launch the ingestion
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed, even if other bulk are done)
         DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         assertEquals(0, datasourceIngestion.getSavedObjectsCount());
@@ -237,13 +264,13 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     @Test
     void complexErrorCrawlingTestFailAtFirstSaveWithManyThreads() {
         // GIVEN a datasource that fails on the 1st save call, but takes long to fail
-        TestDataSourcePluginFailable.configureIngestion(5, 500, datasourceIngestionService);
+        TestDataSourcePluginFailable.configureIngestion(5, 500, datasourceIngestionRunnerService);
         TestDataSourcePluginFailable.configureFailAtSaveCalls(1);
         TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(1);
         // WHEN launch the ingestion
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
-        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(20);
         assertEquals(0, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.ERROR, datasourceIngestion.getStatus());
         // THEN cursor position is the same as the first call because nothing has been saved
@@ -253,12 +280,12 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     @Test
     void complexErrorCrawlingTestFailSaveWithManyThreads() throws InterruptedException {
         // GIVEN a datasource that fails on the 11th save call, but takes long to fail, with many threads
-        TestDataSourcePluginFailable.configureIngestion(5, 500, datasourceIngestionService);
+        TestDataSourcePluginFailable.configureIngestion(5, 500, datasourceIngestionRunnerService);
         // GIVEN 10 first saves are ok, 11th fails
         TestDataSourcePluginFailable.configureFailAtSaveCalls(11);
         TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(11);
         // WHEN launch the ingestion
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
         DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(20);
         assertEquals(50, datasourceIngestion.getSavedObjectsCount());
@@ -270,14 +297,14 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     @Test
     void complexErrorCrawlingTestFailSaveWithManyThreadsAndManyErrors() {
         // GIVEN a datasource that fails on many bulk, and some are long. The first error must be kept
-        TestDataSourcePluginFailable.configureIngestion(5, 500, datasourceIngestionService);
+        TestDataSourcePluginFailable.configureIngestion(5, 500, datasourceIngestionRunnerService);
         // GIVEN 10 first saves are ok
         TestDataSourcePluginFailable.configureFailAtSaveCalls(31, 40, 41, 42);
         TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(31, 40);
         // WHEN launch the ingestion
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
-        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(30);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(300);
         assertEquals(150, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.NOT_FINISHED, datasourceIngestion.getStatus());
         // THEN cursor position must be set to error cursor position, to restart ingestion from it the next ingestion
@@ -287,11 +314,11 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     @Test
     void simpleErrorCrawlingTestFailSaveWithoutLongTask() {
         // GIVEN fail
-        TestDataSourcePluginFailable.configureIngestion(5, 500, datasourceIngestionService);
+        TestDataSourcePluginFailable.configureIngestion(5, 500, datasourceIngestionRunnerService);
         TestDataSourcePluginFailable.configureFailAtSaveCalls(2, 3);
         TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(99); // no long task for this test
         // WHEN launch the ingestion
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
         DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(20);
         assertEquals(5, datasourceIngestion.getSavedObjectsCount());
@@ -307,13 +334,13 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     void complexErrorCrawlingTestFailSaveWithManyThreadsAndManyErrorsHorrible() {
         // GIVEN a datasource that fails on many bulk, and some are long. The first error must be kept
         // Bulk 21 and 40 will fail and are long task, so bulk 42 will fail firstly, but cursor must be reset to 21 (first error in the list)
-        TestDataSourcePluginFailable.configureIngestion(5, 500, datasourceIngestionService);
+        TestDataSourcePluginFailable.configureIngestion(5, 500, datasourceIngestionRunnerService);
         // GIVEN 20 first saves are ok
         TestDataSourcePluginFailable.configureFailAtSaveCalls(21, 40, 42);
         TestDataSourcePluginFailable.configureFailAtFindAllCall(42);
         TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(1, 2, 3, 21, 40);
         // WHEN launch the ingestion
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
         DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(30);
         assertEquals(100, datasourceIngestion.getSavedObjectsCount());
@@ -322,6 +349,124 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         assertEquals(20, datasourceIngestion.getCursor().getPosition());
         // THEN Make sure that only 42 findAll has been launched (42nd has failed, and stop ingestion immediately).
         assertEquals(42, TestDataSourcePluginFailable.getFindAllCpt());
+    }
+
+    @Test
+    void nominalTestIntermediateResults() {
+        // GIVEN a datasource
+        TestDataSourcePluginFailable.configureIngestion(5, 100, datasourceIngestionRunnerService);
+        // GIVEN 20 bulk : 10 first bulk are fast, 10 next bulk are slow
+        TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(11,
+                                                                  12,
+                                                                  13,
+                                                                  14,
+                                                                  15,
+                                                                  16,
+                                                                  17,
+                                                                  18,
+                                                                  19,
+                                                                  20); // all bulk after the 10th must be long
+        // WHEN launch the ingestion
+        crawlerCreatorService.manageCrawlingForAllTenants();
+        // THEN the ingestion should store results at each bulk
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).pollInterval(500, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(TENANT);
+            List<DatasourceIngestion> dsList = datasourceIngestionRepository.findAll();
+            if (!dsList.isEmpty()) {
+                return dsList.get(0).getSavedObjectsCount().equals(50);
+            } else {
+                return false;
+            }
+        });
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
+        assertEquals(100, datasourceIngestion.getSavedObjectsCount());
+        assertEquals(IngestionStatus.FINISHED, datasourceIngestion.getStatus());
+        // THEN cursor position must be set to last cursor position
+        assertEquals(20, datasourceIngestion.getCursor().getPosition());
+    }
+
+    @Test
+    void testIntermediateResultsWellStoredWhenError() throws ModuleException, InterruptedException {
+        // GIVEN a datasource
+        TestDataSourcePluginFailable.configureIngestion(5, 100, datasourceIngestionRunnerService);
+        // GIVEN 20 bulk : 10 first bulk are fast, 10 next bulk are slow, but 16th failed
+        TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(11,
+                                                                  12,
+                                                                  13,
+                                                                  14,
+                                                                  15,
+                                                                  16,
+                                                                  17,
+                                                                  18,
+                                                                  19,
+                                                                  20); // all bulk after the 10th must be long
+        TestDataSourcePluginFailable.configureFailAtFindAllCall(16);
+        // WHEN launch the ingestion
+        crawlerCreatorService.manageCrawlingForAllTenants();
+        // THEN the ingestion should be marked as error
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
+        assertEquals(75, datasourceIngestion.getSavedObjectsCount()); // only 75 features are crawled
+        assertEquals(IngestionStatus.NOT_FINISHED, datasourceIngestion.getStatus());
+        // THEN cursor position must be set to the error position
+        assertEquals(15, datasourceIngestion.getCursor().getPosition());
+        // WHEN relaunch the ingestion
+        System.out.println("Relaunch the crawler");
+        datasourceIngesterService.scheduleNowDatasourceIngestion(datasourceIngestion.getId());
+        crawlerCreatorService.manageCrawlingForAllTenants();
+        datasourceIngestion = waitForCrawlingTermination(10);
+        // THEN the ingestion should be marked as FINISHED
+        assertEquals(20, datasourceIngestion.getSavedObjectsCount()); // Cause of the behaviour of the test plugin
+        // there is only 20 and not 25 dataObject : the bulk 16 failed, and plugin mock is configured to manage 20 bulk.
+        // So it restart to bulk 17 (and not 16), then 18, 19 and 20 : 4 bulk so 20 dataojbect
+        assertEquals(IngestionStatus.FINISHED, datasourceIngestion.getStatus());
+        // THEN cursor position must be set to the last position
+        assertEquals(19,
+                     datasourceIngestion.getCursor()
+                                        .getPosition()); // same reason, bulk 20 correspond to cursor 19 because of bulk 16 failed (cursor hasn't been incremented)
+    }
+
+    @Test
+    void restartNominal() throws ModuleException {
+        // GIVEN a datasource that successfully finish
+        TestDataSourcePluginFailable.configureIngestion(5, 100, datasourceIngestionRunnerService);
+        TestDataSourcePluginFailable.configureActivateDifferentDate();
+        // WHEN launch the ingestion
+        crawlerCreatorService.manageCrawlingForAllTenants();
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
+        assertEquals(100, datasourceIngestion.getSavedObjectsCount());
+        assertEquals(IngestionStatus.FINISHED, datasourceIngestion.getStatus());
+        // THEN cursor position must be set to the last cursor position ( 0 because the date determinate the position)
+        assertEquals(0, datasourceIngestion.getCursor().getPosition());
+        // TestDatasourcePlugin is configured to increment by 1 hour per bulk managed, so 20 hours.
+        assertEquals(TestDataSourcePluginFailable.REFERENCE_DATE.plusHours(20).atZoneSameInstant(ZoneOffset.UTC),
+                     datasourceIngestion.getCursor().getLastEntityDate().atZoneSameInstant(ZoneOffset.UTC));
+        // Wrong restart because date is after the last entity date
+        try {
+            datasourceIngesterService.scheduleNowDatasourceIngestionFromDate(datasourceIngestion.getId(),
+                                                                             TestDataSourcePluginFailable.REFERENCE_DATE.plusHours(
+                                                                                 30));
+            Assertions.fail("Should fail here");
+        } catch (ModuleException e) {
+            Assertions.assertEquals("The date to crawl must be before the last entity date.", e.getMessage());
+        }
+        // Restart ingestion from the 10th bulk
+        datasourceIngesterService.scheduleNowDatasourceIngestionFromDate(datasourceIngestion.getId(),
+                                                                         TestDataSourcePluginFailable.REFERENCE_DATE.plusHours(
+                                                                             10));
+        TestDataSourcePluginFailable.resetBulkCpt(10);
+        datasourceIngestion = datasourceIngestionRepository.findAll().get(0);
+        Assertions.assertEquals(TestDataSourcePluginFailable.REFERENCE_DATE.plusHours(10),
+                                datasourceIngestion.getCursor().getLastEntityDate());
+        // WHEN
+        crawlerCreatorService.manageCrawlingForAllTenants();
+        datasourceIngestion = waitForCrawlingTermination(10);
+        // THEN
+        assertEquals(50, datasourceIngestion.getSavedObjectsCount()); // bulk 10 to 20 managed = 50 dataobjects
+        assertEquals(IngestionStatus.FINISHED, datasourceIngestion.getStatus());
+        // THEN cursor position must be set to the last cursor position ( 0 because the date determinate the position)
+        assertEquals(0, datasourceIngestion.getCursor().getPosition());
+        assertEquals(TestDataSourcePluginFailable.REFERENCE_DATE.plusHours(20).atZoneSameInstant(ZoneOffset.UTC),
+                     datasourceIngestion.getCursor().getLastEntityDate().atZoneSameInstant(ZoneOffset.UTC));
     }
 
     private DatasourceIngestion waitForCrawlingTermination(int atMostSeconds) {

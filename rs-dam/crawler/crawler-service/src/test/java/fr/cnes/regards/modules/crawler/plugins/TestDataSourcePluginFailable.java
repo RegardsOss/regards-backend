@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,6 +55,18 @@ import java.util.stream.IntStream;
 public class TestDataSourcePluginFailable implements IDataSourcePlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDataSourcePluginFailable.class);
+
+    private static boolean activateDifferentDate = false;
+
+    public static OffsetDateTime REFERENCE_DATE = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+
+    public static void configureActivateDifferentDate() {
+        activateDifferentDate = true;
+    }
+
+    public static void resetBulkCpt(int i) {
+        findAllCpt = i;
+    }
 
     @Override
     public String getModelName() {
@@ -134,6 +147,7 @@ public class TestDataSourcePluginFailable implements IDataSourcePlugin {
         findAllCpt = 0;
         bulkToFail.clear();
         saveCallToFail.clear();
+        activateDifferentDate = false;
     }
 
     public static void configureFailAtFindAllCall(int i) {
@@ -164,6 +178,9 @@ public class TestDataSourcePluginFailable implements IDataSourcePlugin {
             dataObjectsRes = IntStream.range(0, dataObjectBulkSize)
                                       .mapToObj(i -> DataObjectGenerator.generate())
                                       .toList();
+        }
+        if (activateDifferentDate) {
+            cursor.setCurrentLastEntityDate(REFERENCE_DATE.plusHours(findAllCpt - 1));
         }
         return dataObjectsRes;
     }

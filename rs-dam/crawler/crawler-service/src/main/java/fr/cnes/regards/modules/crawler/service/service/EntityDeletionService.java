@@ -41,7 +41,7 @@ public class EntityDeletionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDeletionService.class);
 
-    private final IngesterService ingesterService;
+    private final CrawlerCreatorService crawlerCreatorService;
 
     private final EntityIndexerService entityIndexerService;
 
@@ -49,11 +49,11 @@ public class EntityDeletionService {
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public EntityDeletionService(IngesterService ingesterService,
+    public EntityDeletionService(CrawlerCreatorService crawlerCreatorService,
                                  EntityIndexerService entityIndexerService,
                                  IDeletionRequestRepository deletionRequestRepository,
                                  IRuntimeTenantResolver runtimeTenantResolver) {
-        this.ingesterService = ingesterService;
+        this.crawlerCreatorService = crawlerCreatorService;
         this.entityIndexerService = entityIndexerService;
         this.deletionRequestRepository = deletionRequestRepository;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -70,7 +70,7 @@ public class EntityDeletionService {
 
     /**
      * Handle all {@link EntityDeletionRequest}s if there is no running ingestion (using
-     * {@link IngesterService#lockIngestion()}. The requests are deleted after completion.
+     * {@link CrawlerCreatorService#lockIngestion()}. The requests are deleted after completion.
      */
     @MultitenantTransactional
     public Pageable handleEntityDeletion(Pageable page) {

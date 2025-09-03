@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.crawler.domain.IngestionResult;
 import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
 import fr.cnes.regards.modules.crawler.service.service.DatasourceIngestionService;
+import fr.cnes.regards.modules.crawler.service.service.DatasourceIngestionStatusService;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,6 +55,9 @@ public class CrawlOneDatasourceJob extends AbstractJob<Void> {
 
     @Autowired
     private DatasourceIngestionService datasourceIngesterService;
+
+    @Autowired
+    private DatasourceIngestionStatusService datasourceIngestionStatusService;
 
     private String datasourceId;
 
@@ -90,8 +94,9 @@ public class CrawlOneDatasourceJob extends AbstractJob<Void> {
 
     private void crawlDatasource(String datasourceId) {
         Optional<IngestionResult> summary = ingest(datasourceId);
-        summary.ifPresent(ingestionResult -> datasourceIngesterService.updateIngesterResult(datasourceId,
-                                                                                            ingestionResult));
+        summary.ifPresent(ingestionResult -> datasourceIngestionStatusService.updateIngesterResult(datasourceId,
+                                                                                                   ingestionResult,
+                                                                                                   true));
     }
 
     private Optional<IngestionResult> ingest(String dsId) {

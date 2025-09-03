@@ -7,6 +7,7 @@ import fr.cnes.regards.modules.crawler.domain.IngestionResult;
 import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,5 +45,10 @@ public interface IDatasourceIngesterService {
     /**
      * Schedule datasource ingestion to be executed as soon as possible
      */
-    void scheduleNowDatasourceIngestion(String id);
+    void scheduleNowDatasourceIngestion(String id) throws ModuleException;
+
+    /**
+     * Schedule datasource ingestion to be executed as soon as possible, but start with the given date
+     */
+    void scheduleNowDatasourceIngestionFromDate(String id, OffsetDateTime startDate) throws ModuleException;
 }

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.crawler.service.service.parallel;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.service.service.DatasourceIngestionService;
+import fr.cnes.regards.modules.crawler.service.service.DatasourceIngestionStatusService;
 import fr.cnes.regards.modules.crawler.service.service.IngestionParameters;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,10 +43,14 @@ public class EsBulkSaveService {
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
+    private final DatasourceIngestionStatusService datasourceIngestionStatusService;
+
     public EsBulkSaveService(@Qualifier("esThreadPool") ExecutorService saveThreadPoolExecutor,
-                             IRuntimeTenantResolver runtimeTenantResolver) {
+                             IRuntimeTenantResolver runtimeTenantResolver,
+                             DatasourceIngestionStatusService datasourceIngestionStatusService) {
         this.saveThreadPoolExecutor = saveThreadPoolExecutor;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.datasourceIngestionStatusService = datasourceIngestionStatusService;
     }
 
     public Future<BulkSaveResult> submitToSaveThreadPool(Callable<BulkSaveResult> runnable) {
@@ -59,7 +64,11 @@ public class EsBulkSaveService {
     public EsBulkParallelSaver createBulkParallelSaver(IngestionParameters ingestionParameters,
                                                        DatasourceIngestion dsi,
                                                        DatasourceIngestionService datasourceIngestionService) {
-        return new EsBulkParallelSaver(ingestionParameters, dsi, this, datasourceIngestionService);
+        return new EsBulkParallelSaver(ingestionParameters,
+                                       dsi,
+                                       this,
+                                       datasourceIngestionService,
+                                       datasourceIngestionStatusService);
     }
 
 }

@@ -22,8 +22,8 @@ import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
 import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.crawler.service.service.CrawlerCreatorService;
 import fr.cnes.regards.modules.crawler.service.service.EntityDeletionService;
-import fr.cnes.regards.modules.crawler.service.service.IngesterService;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import org.slf4j.Logger;
@@ -74,7 +74,7 @@ public class DeletionRequestScheduler extends AbstractTaskScheduler {
 
     private final EntityDeletionService featureService;
 
-    private final IngesterService ingesterService;
+    private final CrawlerCreatorService crawlerCreatorService;
 
     private final LockingTaskExecutor.Task handleRequestsTask = () -> {
         lockingTaskExecutors.assertLocked();
@@ -85,12 +85,12 @@ public class DeletionRequestScheduler extends AbstractTaskScheduler {
                                     IRuntimeTenantResolver runtimeTenantResolver,
                                     ILockingTaskExecutors lockingTaskExecutors,
                                     EntityDeletionService featureService,
-                                    IngesterService ingesterService) {
+                                    CrawlerCreatorService crawlerCreatorService) {
         this.tenantResolver = tenantResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.lockingTaskExecutors = lockingTaskExecutors;
         this.featureService = featureService;
-        this.ingesterService = ingesterService;
+        this.crawlerCreatorService = crawlerCreatorService;
     }
 
     @Scheduled(initialDelayString = "${regards.dam.schedule.initial.delay:" + DEFAULT_INITIAL_DELAY_IN_MS + "}",
@@ -114,7 +114,7 @@ public class DeletionRequestScheduler extends AbstractTaskScheduler {
     }
 
     public void handleEntityDeletion() {
-        if (!ingesterService.lockIngestion()) {
+        if (!crawlerCreatorService.lockIngestion()) {
             return;
         }
         try {
@@ -123,7 +123,7 @@ public class DeletionRequestScheduler extends AbstractTaskScheduler {
                 page = featureService.handleEntityDeletion(page);
             } while (page.isPaged() && page.getPageNumber() < PAGE_LIMIT);
         } finally {
-            ingesterService.releaseIngestionLock();
+            crawlerCreatorService.releaseIngestionLock();
         }
     }
 

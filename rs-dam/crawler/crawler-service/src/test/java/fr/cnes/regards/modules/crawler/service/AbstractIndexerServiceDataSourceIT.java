@@ -30,8 +30,8 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.plugins.TestDataSourcePlugin;
+import fr.cnes.regards.modules.crawler.service.service.CrawlerCreatorService;
 import fr.cnes.regards.modules.crawler.service.service.IDatasourceIngesterService;
-import fr.cnes.regards.modules.crawler.service.service.IngesterService;
 import fr.cnes.regards.modules.crawler.test.CrawlerConfiguration;
 import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
@@ -157,7 +157,7 @@ public abstract class AbstractIndexerServiceDataSourceIT {
     protected ISearchService searchService;
 
     @Autowired
-    protected IngesterService ingesterService;
+    protected CrawlerCreatorService crawlerCreatorService;
 
     @Autowired
     protected IDatasourceIngesterService datasourceIngesterService;
@@ -227,7 +227,7 @@ public abstract class AbstractIndexerServiceDataSourceIT {
         esRepos.createAlias(tenant, aliasName);
         indexAliasService.saveOrUpdate(aliasName, tenant);
 
-        ingesterService.setConsumeOnlyMode(true);
+        crawlerCreatorService.setConsumeOnlyMode(true);
 
         datasetRepos.deleteAll();
         entityRepos.deleteAll();

@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.crawler.service.scheduler;
 
-import fr.cnes.regards.modules.crawler.service.service.IngesterService;
+import fr.cnes.regards.modules.crawler.service.service.CrawlerCreatorService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -37,15 +37,15 @@ import org.springframework.stereotype.Component;
 @EnableScheduling
 public class AutoCrawlingScheduler {
 
-    private final IngesterService ingesterService;
+    private final CrawlerCreatorService crawlerCreatorService;
 
-    public AutoCrawlingScheduler(IngesterService ingesterService) {
-        this.ingesterService = ingesterService;
+    public AutoCrawlingScheduler(CrawlerCreatorService crawlerCreatorService) {
+        this.crawlerCreatorService = crawlerCreatorService;
     }
 
     @Scheduled(initialDelayString = "${regards.ingester.rate.init.ms:300000}",
                fixedDelayString = "${regards.ingester.rate.ms:60000}")
     public void manageAllIngestion() {
-        ingesterService.manageCrawlingForAllTenants();
+        crawlerCreatorService.manageCrawlingForAllTenants();
     }
 }
