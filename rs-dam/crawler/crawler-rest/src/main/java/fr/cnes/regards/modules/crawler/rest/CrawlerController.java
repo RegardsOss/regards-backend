@@ -125,7 +125,8 @@ public class CrawlerController implements IResourceController<DatasourceIngestio
                                 this.getClass(),
                                 "scheduleNowDatasourceIngestion",
                                 LinkRelation.of("SCHEDULE"),
-                                MethodParamFactory.build(String.class, element.getId()));
+                                MethodParamFactory.build(String.class, element.getId()),
+                                MethodParamFactory.build(OffsetDateTime.class));
         return resource;
     }
 

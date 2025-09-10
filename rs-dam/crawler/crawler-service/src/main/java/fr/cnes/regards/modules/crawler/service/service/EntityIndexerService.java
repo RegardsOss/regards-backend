@@ -328,7 +328,11 @@ public class EntityIndexerService implements IEntityIndexerService {
                             forceAssociatedEntitiesUpdate,
                             needAssociatedDataObjectsUpdate);
                 ((Dataset) entity).setSubsettingClause(savedSubsettingClause);
-                manageDatasetUpdate((Dataset) entity, minLastUpdateCriteria, updateDate, dsiId, skipDissociationStep);
+                updateAssociatedDataObjectsOfDataset((Dataset) entity,
+                                                     minLastUpdateCriteria,
+                                                     updateDate,
+                                                     dsiId,
+                                                     skipDissociationStep);
             } else {
                 LOGGER.info("Avoid dataset entity {} - {} data objects association calculation into elasticsearch. "
                             + "Cause : force calculation = {}, calculation needed cause of dataset update = {}",
@@ -451,12 +455,13 @@ public class EntityIndexerService implements IEntityIndexerService {
      * @param datasourceIngestionId {@link DatasourceIngestion} id
      * @param minLastUpdateCriteria Take into account only more recent minLastUpdateCriteria than provided
      * @param updateDate            update date saved inside data objects
+     * @param skipDissociationStep  if true, skip the dissociation step (step needed only if dataset has been updated)
      */
-    private void manageDatasetUpdate(Dataset dataset,
-                                     OffsetDateTime minLastUpdateCriteria,
-                                     OffsetDateTime updateDate,
-                                     String datasourceIngestionId,
-                                     boolean skipDissociationStep) throws ModuleException {
+    private void updateAssociatedDataObjectsOfDataset(Dataset dataset,
+                                                      OffsetDateTime minLastUpdateCriteria,
+                                                      OffsetDateTime updateDate,
+                                                      String datasourceIngestionId,
+                                                      boolean skipDissociationStep) throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
         String alias = indexAliasResolver.resolveAliasName(tenant);
         sendDataSourceMessage(String.format(

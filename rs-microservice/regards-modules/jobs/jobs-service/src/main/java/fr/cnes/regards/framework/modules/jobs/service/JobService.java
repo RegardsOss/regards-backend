@@ -399,7 +399,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
      * @param jobId job id
      */
     private void abort(UUID jobId) {
-        LOGGER.debug("Aborting job {}", jobId);
+        LOGGER.info("Aborting job {}", jobId);
         JobInfo jobInfo = jobInfoService.retrieveJob(jobId);
         if (jobInfo != null) {
             // Check job is currently running

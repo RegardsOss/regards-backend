@@ -95,7 +95,6 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -153,7 +152,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     private ISearchService searchService;
 
     @Autowired
-    IndexAliasService indexAliasService;
+    private IndexAliasService indexAliasService;
 
     @Autowired
     private IAccessRightRepository arRepo;
@@ -232,8 +231,6 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
             esRepository.createAlias(index, aliasName);
             indexAliasService.saveOrUpdate(aliasName, index);
         }
-
-        Arrays.stream(EntityType.values()).map(EntityType::toString).toArray(length -> new String[length]);
     }
 
     @After

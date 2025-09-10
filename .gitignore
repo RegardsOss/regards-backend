@@ -64,3 +64,6 @@ Thumbs.db
 **/.flattened-pom.xml
 
 rs-vendors/spring-data-jdbc-repository/.idea/
+
+# Remove run configurations
+.run

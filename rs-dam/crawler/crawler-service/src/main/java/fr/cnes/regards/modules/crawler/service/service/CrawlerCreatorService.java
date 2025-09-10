@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.crawler.service.service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -29,7 +28,6 @@ import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionStatus;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
-import fr.cnes.regards.modules.crawler.service.job.CrawlOneDatasourceJob;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
 import org.slf4j.Logger;
@@ -159,18 +157,9 @@ public class CrawlerCreatorService implements IHandler<PluginConfEvent> {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             // Start all ready datasourceIngestion : marking its as STARTED
-            List<String> startedDatasourceIngestionIds = dsIngestionService.startAllReadyDatasourceIngestion();
-            startedDatasourceIngestionIds.forEach(this::createCrawlJob);
+            List<DatasourceIngestion> startedDatasourceIngestionIds = dsIngestionService.startAllReadyDatasourceIngestion();
+            startedDatasourceIngestionIds.forEach(dsIngestionService::createCrawlJob);
         }
-    }
-
-    private void createCrawlJob(String dsId) {
-        LOGGER.info("Creating crawl job for datasource with id {}", dsId);
-        jobInfoService.createAsQueued(new JobInfo(false,
-                                                  0,
-                                                  CrawlOneDatasourceJob.buildJobParameters(dsId),
-                                                  null,
-                                                  CrawlOneDatasourceJob.class.getName()));
     }
 
     /**

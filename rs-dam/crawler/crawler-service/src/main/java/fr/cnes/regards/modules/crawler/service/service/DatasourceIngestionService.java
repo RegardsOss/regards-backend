@@ -22,6 +22,8 @@ import fr.cnes.regards.framework.geojson.geometry.Unlocated;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -43,6 +45,7 @@ import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.exception.EsBulkException;
 import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
+import fr.cnes.regards.modules.crawler.service.job.CrawlOneDatasourceJob;
 import fr.cnes.regards.modules.crawler.service.service.parallel.EsBulkParallelSaver;
 import fr.cnes.regards.modules.crawler.service.service.parallel.EsBulkSaveService;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
@@ -79,6 +82,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -146,6 +150,9 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     private EsBulkSaveService esBulkSaveService;
 
     @Autowired
+    private JobInfoService jobInfoService;
+
+    @Autowired
     private IndexService indexService;
 
     @Autowired
@@ -188,7 +195,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                        .stream()
                        .filter(id -> !pluginService.exists(id))
                        .map(id -> this.planDatasourceDataObjectsDeletion(currentTenant, id))
-                       .forEach(dsIngestionRepos::deleteById);
+                       .forEach(this::deleteDatasourceIngestion);
 
         // For previously ingested datasources, compute next planned ingestion date
         pluginConfs.forEach(pluginConf -> {
@@ -202,8 +209,10 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
 
     /**
      * Find all ready datasources to be ingested and mark them as "STARTED" in a transaction
+     *
+     * @return datasourceIngestion that just have been marked as STARTED
      */
-    public List<String> startAllReadyDatasourceIngestion() {
+    public List<DatasourceIngestion> startAllReadyDatasourceIngestion() {
         List<DatasourceIngestion> allDatasourceIngestionReady = dsIngestionRepos.findAllReady(OffsetDateTime.now()
                                                                                                             .withOffsetSameInstant(
                                                                                                                 ZoneOffset.UTC));
@@ -215,7 +224,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             datasourceIngestion.setStatus(IngestionStatus.STARTED);
         }
         allDatasourceIngestionReady = dsIngestionRepos.saveAll(allDatasourceIngestionReady);
-        return allDatasourceIngestionReady.stream().map(DatasourceIngestion::getId).toList();
+        return allDatasourceIngestionReady;
     }
 
     public void setInactive(String datasourceId, String cause) {
@@ -226,6 +235,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             dsIngestion.setStackTrace(cause);
             dsIngestion.setNextPlannedIngestDate(null);
             datasourceIngestionStatusService.sendNotificationSummary(dsIngestionRepos.save(dsIngestion));
+            stopDatasourceIngestionJob(dsIngestion);
         } else {
             LOGGER.warn("Unable to find datasource with id {} to set status to inactive", datasourceId);
         }
@@ -374,6 +384,21 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         }
     }
 
+    /**
+     * Instantiate a crawl job for the given datasourceIngestion, and save its jobId into the datasourceIngestion
+     */
+    public void createCrawlJob(DatasourceIngestion datasourceIngestion) {
+        String dsId = datasourceIngestion.getId();
+        LOGGER.info("Creating crawl job for datasource with id {}", dsId);
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false,
+                                                                    0,
+                                                                    CrawlOneDatasourceJob.buildJobParameters(dsId),
+                                                                    null,
+                                                                    CrawlOneDatasourceJob.class.getName()));
+        datasourceIngestion.setJobId(jobInfo.getId());
+        dsIngestionRepos.save(datasourceIngestion);
+    }
+
     private record DatasourceIdAndErrorCause(String id,
                                              String cause) {
         // NOSONAR
@@ -385,83 +410,82 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         throws ModuleException, NotFinishedException, FirstFindException {
         String tenant = runtimeTenantResolver.getTenant();
         Optional<DatasourceIngestion> odsi = dsIngestionRepos.findById(datasourceIngestionId);
-        if (odsi.isPresent()) {
-            DatasourceIngestion dsi = odsi.get();
-            PluginConfiguration pluginConf = pluginService.getPluginConfiguration(datasourceIngestionId);
-            OffsetDateTime lastUpdateDate = dsi.getLastIngestDate();
-            IDataSourcePlugin dsPlugin;
-            try {
-                dsPlugin = pluginService.getPlugin(pluginConf.getBusinessId());
-            } catch (NotAvailablePluginConfigurationException e) {
-                throw new InactiveDatasourceException(e);
-            }
-
-            BulkSaveLightResult saveResult;
-            OffsetDateTime ingestionStart = OffsetDateTime.now();
-            Long datasourceId = pluginConf.getId();
-            indexService.createIndexAndAliasIfNeeded(tenant);
-            // i decided not to put a cache here because attribute can be updated... even if it is minor updates it can
-            // be taken into account by mappings. In case crawling seem to be slower because of this we can always add one
-            // but it should be reset with attribute updates
-            //lets find the model attributes so that we can have mappings for this model and try to put them.
-            String modelName = dsPlugin.getModelName();
-            indexService.configureMappings(tenant, modelName);
-            saveResult = readDatasource(new IngestionParameters(lastUpdateDate,
-                                                                tenant,
-                                                                dsPlugin,
-                                                                datasourceId,
-                                                                ingestionStart), dsi);
-
-            // Only update dataset if new docs are indexed
-            if (saveResult.getSavedDocsCount() > 0) {
-                // In case Dataset associated with datasourceId already exists (or had been created between datasource creation
-                // and its ingestion), we must search for it and do as it has been updated (to update all associated data
-                // objects which have a lastUpdate date >= now)
-                SimpleSearchKey<Dataset> searchKey = new SimpleSearchKey<>(EntityType.DATASET.toString(),
-                                                                           Dataset.class);
-                String alias = indexAliasResolver.resolveAliasName(tenant);
-                searchKey.setSearchIndex(alias);
-                searchKey.setCrs(projectGeoSettings.getCrs());
-                Set<Dataset> datasetsToUpdate = new HashSet<>();
-                esRepos.searchAll(searchKey,
-                                  datasetsToUpdate::add,
-                                  ICriterion.eq("plgConfDataSource.id", datasourceId));
-                if (!datasetsToUpdate.isEmpty()) {
-                    sendMessage("Start updating datasets associated to datasource...", datasourceIngestionId);
-                    try {
-                        // Update entities associated to dataset for each entity updated previously,
-                        // So search for entities with last_update > (ingestionStart - 1s)
-                        // And for each updated entity set last_update = OffsetDateTime.now()
-                        // criteria used to detect which products have been recently updated in current crawling
-                        OffsetDateTime minLastUpdateCriteria = ingestionStart.withNano(0).minusSeconds(1);
-                        entityIndexerService.updateDatasets(tenant,
-                                                            datasetsToUpdate,
-                                                            minLastUpdateCriteria,
-                                                            OffsetDateTime.now(),
-                                                            true,
-                                                            datasourceIngestionId,
-                                                            true);
-                        // skipDissociationStep is set to true because this method only upserts dataObjects,
-                        // and dissociation step is needed only when dataset is updated
-                    } catch (ModuleException e) {
-                        sendMessage(String.format("Error updating datasets associated to datasource. Cause : %s.",
-                                                  e.getMessage()), datasourceIngestionId);
-                    }
-                    sendMessage("...End updating datasets.", datasourceIngestionId);
-                }
-            } else {
-                sendMessage("No new data indexed. Dataset update skipped.", datasourceIngestionId);
-            }
-
-            return Optional.of(new IngestionResult(ingestionStart,
-                                                   saveResult.getSavedDocsCount(),
-                                                   saveResult.getInErrorDocsCount(),
-                                                   dsi.getCursor().getCurrentLastEntityDate(),
-                                                   dsi.getCursor().getPreviousLastEntityDate(),
-                                                   dsi.getCursor().getCurrentLastId(),
-                                                   dsi.getCursor().getPreviousLastId()));
+        if (odsi.isEmpty()) {
+            // This can append when datasource has been deleted between the crawl job creation and its execution
+            LOGGER.warn("Unable to find datasource with id {} to ingest", datasourceIngestionId);
+            return Optional.empty();
         }
-        return Optional.empty();
+        DatasourceIngestion dsi = odsi.get();
+        PluginConfiguration pluginConf = pluginService.getPluginConfiguration(datasourceIngestionId);
+        OffsetDateTime lastUpdateDate = dsi.getLastIngestDate();
+        IDataSourcePlugin dsPlugin;
+        try {
+            dsPlugin = pluginService.getPlugin(pluginConf.getBusinessId());
+        } catch (NotAvailablePluginConfigurationException e) {
+            throw new InactiveDatasourceException(e);
+        }
+
+        BulkSaveLightResult saveResult;
+        OffsetDateTime ingestionStart = OffsetDateTime.now();
+        Long datasourceId = pluginConf.getId();
+        indexService.createIndexAndAliasIfNeeded(tenant);
+        // i decided not to put a cache here because attribute can be updated... even if it is minor updates it can
+        // be taken into account by mappings. In case crawling seem to be slower because of this we can always add one
+        // but it should be reset with attribute updates
+        //lets find the model attributes so that we can have mappings for this model and try to put them.
+        String modelName = dsPlugin.getModelName();
+        indexService.configureMappings(tenant, modelName);
+        saveResult = readDatasource(new IngestionParameters(lastUpdateDate,
+                                                            tenant,
+                                                            dsPlugin,
+                                                            datasourceId,
+                                                            ingestionStart), dsi);
+
+        // Only update dataset if new docs are indexed
+        if (saveResult.getSavedDocsCount() > 0) {
+            // In case Dataset associated with datasourceId already exists (or had been created between datasource creation
+            // and its ingestion), we must search for it and do as it has been updated (to update all associated data
+            // objects which have a lastUpdate date >= now)
+            SimpleSearchKey<Dataset> searchKey = new SimpleSearchKey<>(EntityType.DATASET.toString(), Dataset.class);
+            String alias = indexAliasResolver.resolveAliasName(tenant);
+            searchKey.setSearchIndex(alias);
+            searchKey.setCrs(projectGeoSettings.getCrs());
+            Set<Dataset> datasetsToUpdate = new HashSet<>();
+            esRepos.searchAll(searchKey, datasetsToUpdate::add, ICriterion.eq("plgConfDataSource.id", datasourceId));
+            if (!datasetsToUpdate.isEmpty()) {
+                sendMessage("Start updating datasets associated to datasource...", datasourceIngestionId);
+                try {
+                    // Update entities associated to dataset for each entity updated previously,
+                    // So search for entities with last_update > (ingestionStart - 1s)
+                    // And for each updated entity set last_update = OffsetDateTime.now()
+                    // criteria used to detect which products have been recently updated in current crawling
+                    OffsetDateTime minLastUpdateCriteria = ingestionStart.withNano(0).minusSeconds(1);
+                    entityIndexerService.updateDatasets(tenant,
+                                                        datasetsToUpdate,
+                                                        minLastUpdateCriteria,
+                                                        OffsetDateTime.now(),
+                                                        true,
+                                                        datasourceIngestionId,
+                                                        true);
+                    // skipDissociationStep is set to true because this method only upserts dataObjects,
+                    // and dissociation step is needed only when dataset is updated
+                } catch (ModuleException e) {
+                    sendMessage(String.format("Error updating datasets associated to datasource. Cause : %s.",
+                                              e.getMessage()), datasourceIngestionId);
+                }
+                sendMessage("...End updating datasets.", datasourceIngestionId);
+            }
+        } else {
+            sendMessage("No new data indexed. Dataset update skipped.", datasourceIngestionId);
+        }
+
+        return Optional.of(new IngestionResult(ingestionStart,
+                                               saveResult.getSavedDocsCount(),
+                                               saveResult.getInErrorDocsCount(),
+                                               dsi.getCursor().getCurrentLastEntityDate(),
+                                               dsi.getCursor().getPreviousLastEntityDate(),
+                                               dsi.getCursor().getCurrentLastId(),
+                                               dsi.getCursor().getPreviousLastId()));
     }
 
     @Override
@@ -471,7 +495,10 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
 
     @Override
     public void deleteDatasourceIngestion(String id) {
-        dsIngestionRepos.deleteById(id);
+        dsIngestionRepos.findById(id).ifPresent(datasourceIngestion -> {
+            stopDatasourceIngestionJob(datasourceIngestion);
+            dsIngestionRepos.deleteById(id);
+        });
     }
 
     @Override
@@ -565,6 +592,11 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             availableRecordsCount = doReadSyncAndIndexAsync(ingestionParameters, dsi, bulkManager);
             cursor = dsi.getCursor();
             while (cursor.hasNext()) {
+                // This method is called inside a job, so we can check if the thread has been interrupted to stop processing
+                if (Thread.currentThread().isInterrupted()) {
+                    LOGGER.info("Datasource ingestion is interrupted");
+                    throw new CancellationException("Datasource ingestion is interrupted");
+                }
                 cursor.next(ingestionParameters.dsPlugin().getCrawlingCursorMode());
                 isFirstFind = false;
                 sendMessage(String.format("  Searching page of %d records from datasource...", cursor.getSize()),
@@ -719,5 +751,17 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         sendMessage(String.format("  ...%d objects effectively indexed.", bulkSaveResult.getSavedDocsCount()),
                     datasourceIngestionId);
         return bulkSaveResult;
+    }
+
+    /**
+     * Stop the job associated to given datasource ingestion if any
+     */
+    private void stopDatasourceIngestionJob(DatasourceIngestion datasourceIngestion) {
+        if (datasourceIngestion.getJobId() == null) {
+            LOGGER.debug("Datasource ingestion with id {} is not linked to any job, cannot be deleted",
+                         datasourceIngestion.getId());
+        } else {
+            jobInfoService.stopJob(datasourceIngestion.getJobId());
+        }
     }
 }

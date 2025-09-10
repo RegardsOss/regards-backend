@@ -57,7 +57,7 @@ public class IndexAliasResolver {
      * Builds the alias name from a given tenant (e.g. "tenant" -> "tenant_alias")
      * The suffix comes from the constant ALIAS_SUFFIX in {@link fr.cnes.regards.modules.indexer.dao.EsRepository}
      */
-    public String resolveAliasName(String tenant) {
+    public static String resolveAliasName(String tenant) {
         return tenant + ALIAS_SUFFIX;
     }
 

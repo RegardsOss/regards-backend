@@ -40,7 +40,7 @@ public class EsThreadPoolConfiguration {
      * IMPORTANT WARNING : Ensure that the Hikari connection pool size is STRICTLY GREATER than this value to avoid connection starvation.
      * Otherwise, rs-dam may enter in deadlock state, with all threads waiting for a connection from the pool, and no thread available to release a connection.
      */
-    @Value("${regards.elasticsearch.threadpool.size:5}")
+    @Value("${regards.elasticsearch.threadpool.size:3}")
     private int threadPoolSize;
 
     /**

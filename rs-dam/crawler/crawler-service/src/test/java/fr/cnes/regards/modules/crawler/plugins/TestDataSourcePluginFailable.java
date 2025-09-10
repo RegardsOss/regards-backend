@@ -56,9 +56,31 @@ public class TestDataSourcePluginFailable implements IDataSourcePlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestDataSourcePluginFailable.class);
 
+    public static OffsetDateTime REFERENCE_DATE = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+
     private static boolean activateDifferentDate = false;
 
-    public static OffsetDateTime REFERENCE_DATE = OffsetDateTime.of(2020, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+    private static long findAllSimulationTimingMs = 20;
+
+    private static int findAllCpt = 0;
+
+    private static int totalDataObjectsToCreate = 0;
+
+    private static DatasourceIngestionService datasourceIngestionService;
+
+    private static int dataObjectBulkSize = 0;
+
+    private static final List<Integer> bulkToFail = new ArrayList<>();
+
+    private static List<Integer> saveCallToFail = new ArrayList<>();
+
+    public static void configureFailAtSaveCalls(int... i) {
+        saveCallToFail = Arrays.stream(i).boxed().collect(Collectors.toList());
+    }
+
+    public static int getFindAllCpt() {
+        return findAllCpt;
+    }
 
     public static void configureActivateDifferentDate() {
         activateDifferentDate = true;
@@ -68,34 +90,8 @@ public class TestDataSourcePluginFailable implements IDataSourcePlugin {
         findAllCpt = i;
     }
 
-    @Override
-    public String getModelName() {
-        return "model";
-    }
-
-    @Override
-    public int getRefreshRate() {
-        return 0;
-    }
-
-    private static int findAllCpt = 0;
-
-    public static int totalDataObjectsToCreate = 0;
-
-    private static DatasourceIngestionService datasourceIngestionService;
-
-    public static int dataObjectBulkSize = 0;
-
-    public static List<Integer> bulkToFail = new ArrayList<>();
-
-    public static List<Integer> saveCallToFail = new ArrayList<>();
-
-    public static void configureFailAtSaveCalls(int... i) {
-        saveCallToFail = Arrays.stream(i).boxed().collect(Collectors.toList());
-    }
-
-    public static int getFindAllCpt() {
-        return findAllCpt;
+    public static void setFindAllTimingMs(int i) {
+        findAllSimulationTimingMs = i;
     }
 
     /**
@@ -144,10 +140,11 @@ public class TestDataSourcePluginFailable implements IDataSourcePlugin {
         TestDataSourcePluginFailable.dataObjectBulkSize = dataObjectBulkSize;
         TestDataSourcePluginFailable.totalDataObjectsToCreate = totalDataObjectsToCreate;
         TestDataSourcePluginFailable.datasourceIngestionService = datasourceIngestionService;
-        findAllCpt = 0;
-        bulkToFail.clear();
-        saveCallToFail.clear();
-        activateDifferentDate = false;
+        TestDataSourcePluginFailable.findAllCpt = 0;
+        TestDataSourcePluginFailable.bulkToFail.clear();
+        TestDataSourcePluginFailable.saveCallToFail.clear();
+        TestDataSourcePluginFailable.activateDifferentDate = false;
+        TestDataSourcePluginFailable.findAllSimulationTimingMs = 20;
     }
 
     public static void configureFailAtFindAllCall(int i) {
@@ -165,7 +162,7 @@ public class TestDataSourcePluginFailable implements IDataSourcePlugin {
                                           + findAllCpt);
         }
         try {
-            Thread.sleep(20); // micro delay to simulate a "real" findAll call
+            Thread.sleep(findAllSimulationTimingMs); // delay to simulate a "real" findAll call
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -183,6 +180,16 @@ public class TestDataSourcePluginFailable implements IDataSourcePlugin {
             cursor.setCurrentLastEntityDate(REFERENCE_DATE.plusHours(findAllCpt - 1));
         }
         return dataObjectsRes;
+    }
+
+    @Override
+    public String getModelName() {
+        return "model";
+    }
+
+    @Override
+    public int getRefreshRate() {
+        return 0;
     }
 
     /**

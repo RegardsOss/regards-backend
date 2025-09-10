@@ -21,6 +21,10 @@ package fr.cnes.regards.modules.crawler.test;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -34,8 +38,11 @@ import fr.cnes.regards.modules.crawler.service.service.CrawlerCreatorService;
 import fr.cnes.regards.modules.crawler.service.service.DatasourceIngestionService;
 import fr.cnes.regards.modules.crawler.service.service.IDatasourceIngesterService;
 import fr.cnes.regards.modules.crawler.service.service.IndexService;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.service.datasources.IDataSourceService;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.ModelService;
 import org.awaitility.Awaitility;
@@ -57,18 +64,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author tguillou
  */
-@ActiveProfiles({ "indexer-service", "noscheduler" })
-@TestPropertySource(locations = { "classpath:test-crawler-it.properties" },
-                    properties = { "regards.tenant=crawler_it",
-                                   "es.thread.pool.size=10",
-                                   "spring.jpa.properties.hibernate.default_schema=crawler_it" })
+@ActiveProfiles({ "crawler-it", "noscheduler", "testAmqp" })
+@TestPropertySource(locations = { "classpath:test-crawler-it.properties" }, properties = { "regards.tenant=crawler_it",
+                                                                                           // need to enable amqp to stop job event handler
+                                                                                           "regards.amqp.enabled=true",
+                                                                                           "regards.elasticsearch.threadpool.size=10",
+                                                                                           // due to multiple autoconfiguration, multiple mock or no-mock are created (OpenSearchService for example).
+                                                                                           // This option allow beans to override previous bean.
+                                                                                           "spring.main.allow-bean-definition-overriding=true",
+                                                                                           "spring.jpa.properties.hibernate.default_schema=crawler_it" })
 class CrawlerIT extends AbstractRegardsServiceIT {
 
     private static final String TENANT = "crawler_it";
 
     private static final String INDEX = TENANT;
 
-    private static final String ALIAS = "crawler_it_alias=è";
+    private static final String ALIAS = "crawler_it_alias";
 
     private static final String MODEL_NAME = "model";
 
@@ -99,7 +110,13 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     private IJobService jobService;
 
     @Autowired
+    private IJobInfoService jobInfoService;
+
+    @Autowired
     private IDatasourceIngesterService datasourceIngesterService;
+
+    @Autowired
+    private IJobInfoRepository jobInfoRepository;
 
     @Autowired
     private IndexService indexService;
@@ -119,6 +136,9 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         initIndex();
         createModel();
         createDataSource();
+        jobInfoService.cleanDeadJobs();
+        jobInfoRepository.findAll().forEach(jobInfo -> jobInfoService.stopJob(jobInfo.getId()));
+        jobInfoRepository.deleteAll(); // clean previous jobs
     }
 
     private void createModel() throws ModuleException {
@@ -150,9 +170,14 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be FINISHED without any problem
-        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(1000);
         assertEquals(20, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.FINISHED, datasourceIngestion.getStatus());
+        SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
+        searchKey.setSearchIndex(ALIAS);
+        List<DataObject> content = esRepository.search(searchKey, 25, ICriterion.all()).getContent();
+        // THEN 20 data object has been crawled
+        Assertions.assertEquals(20, content.size());
     }
 
     @Test
@@ -164,7 +189,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         // WHEN launch the ingestion
         crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be FINISHED without any problem
-        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(200);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(20);
         assertEquals(250, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.FINISHED, datasourceIngestion.getStatus());
     }
@@ -181,6 +206,10 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         assertEquals(5, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.NOT_FINISHED, datasourceIngestion.getStatus());
         assertEquals(1, datasourceIngestion.getCursor().getPosition());
+        // job should be marked as SUCCEEDED because the error is managed by the ingestion process.
+        // Only not managed error lead to job error
+        JobInfo job = jobInfoRepository.findCompleteById(datasourceIngestion.getJobId());
+        assertEquals(JobStatus.SUCCEEDED, job.getStatus().getStatus());
     }
 
     @Test
@@ -205,8 +234,8 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(3); // Even if task is long, it should be taken into account
         // WHEN launch the ingestion
         crawlerCreatorService.manageCrawlingForAllTenants();
-        // THEN the ingestion should saved 15 objects, first 3 bulks of 5 objects are ok even if the 3rd one is long
-        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
+        // THEN the ingestion should save 15 objects, first 3 bulks of 5 objects are ok even if the 3rd one is long
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(15);
         assertEquals(15, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.NOT_FINISHED, datasourceIngestion.getStatus());
         assertEquals(3, datasourceIngestion.getCursor().getPosition());
@@ -426,7 +455,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
     }
 
     @Test
-    void restartNominal() throws ModuleException {
+    void nominalRestart() throws ModuleException {
         // GIVEN a datasource that successfully finish
         TestDataSourcePluginFailable.configureIngestion(5, 100, datasourceIngestionRunnerService);
         TestDataSourcePluginFailable.configureActivateDifferentDate();
@@ -467,6 +496,39 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         assertEquals(0, datasourceIngestion.getCursor().getPosition());
         assertEquals(TestDataSourcePluginFailable.REFERENCE_DATE.plusHours(20).atZoneSameInstant(ZoneOffset.UTC),
                      datasourceIngestion.getCursor().getLastEntityDate().atZoneSameInstant(ZoneOffset.UTC));
+    }
+
+    @Test
+    void testJobWellAborted() throws InterruptedException {
+        // WARNING : an optimisticLockException can be raised, because the job can update the ingestion status after the ingestion deletion,
+        // but it's not a problem
+        // GIVEN a datasource
+        TestDataSourcePluginFailable.configureIngestion(5, 10, datasourceIngestionRunnerService);
+        // GIVEN find all slow to let us time to kill the job (2 find all to do)
+        TestDataSourcePluginFailable.setFindAllTimingMs(5000);
+        TestDataSourcePluginFailable.configureLongTaskAtSaveCalls(1, 2);
+        // WHEN launch the ingestion
+        crawlerCreatorService.manageCrawlingForAllTenants();
+        List<DatasourceIngestion> allDatasources = datasourceIngestionRepository.findAll();
+        Assertions.assertEquals(1, allDatasources.size());
+        DatasourceIngestion datasourceIngestion = allDatasources.get(0);
+        // WHEN delete ingestion
+        datasourceIngestionRunnerService.deleteDatasourceIngestion(PLUGIN_BUSINESS_ID);
+        // THEN the job is ABORTED
+        Awaitility.await().pollInterval(500, TimeUnit.MILLISECONDS).atMost(4, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(TENANT);
+            // jobStatus should be ABORTED, but it can be SUCCEEDED if the job has been able to finish before been killed
+            // (this appends when datasource ingestion is remove from BD, but the job has just started,
+            // and so job finish instantly after, before receiving ABORTION event)
+            return jobInfoService.retrieveJob(datasourceIngestion.getJobId()).getStatus().getStatus().isFinished();
+        });
+        allDatasources = datasourceIngestionRepository.findAll();
+        SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
+        searchKey.setSearchIndex(ALIAS);
+        List<DataObject> content = esRepository.search(searchKey, 10, ICriterion.all()).getContent();
+        // THEN Nothing have been crawled because job has been killed
+        Assertions.assertEquals(0, content.size());
+        Assertions.assertEquals(0, allDatasources.size());
     }
 
     private DatasourceIngestion waitForCrawlingTermination(int atMostSeconds) {

@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Datasource ingestion entity. Indicates the status of the last and current datsource ingestion.
@@ -84,6 +85,15 @@ public class DatasourceIngestion {
      */
     @Column(columnDefinition = "text")
     private String stackTrace;
+
+    /**
+     * Acts as a weak reference (non-foreign key) to {@code t_job_info} table.
+     * <p>
+     * ID of the current ingestion job. This value is not reset when the ingestion is finished (to keep track of the
+     * last job).
+     */
+    @Column(name = "job_id", nullable = true)
+    private UUID jobId;
 
     public DatasourceIngestion() {
         super();
@@ -239,5 +249,13 @@ public class DatasourceIngestion {
         }
         cursor.setLastId(lastId);
         cursor.setPreviousLastId(previousLastId);
+    }
+
+    public UUID getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(UUID jobId) {
+        this.jobId = jobId;
     }
 }

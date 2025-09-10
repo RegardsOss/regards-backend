@@ -19,21 +19,21 @@
 -->
 <configuration>
 
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
-			by default -->
-		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
-			</pattern>
-		</encoder>
-	</appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder
+                by default -->
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
 
-	<logger name="fr.cnes.regards.framework" level="INFO" />
-	<logger name="fr.cnes.regards.modules.dam" level="debug" />
-	<logger name="fr.cnes.regards.modules.crawler.service" level="INFO"/>
-	<logger name="fr.cnes.regards.modules.indexer" level="trace" />
+    <logger name="fr.cnes.regards.framework" level="INFO"/>
+    <logger name="fr.cnes.regards.modules.dam" level="debug"/>
+    <logger name="fr.cnes.regards.modules.crawler.service" level="trace"/>
+    <logger name="fr.cnes.regards.modules.indexer" level="trace"/>
 
-	<root level="error">
-		<appender-ref ref="STDOUT" />
-	</root>
+    <root level="error">
+        <appender-ref ref="STDOUT"/>
+    </root>
 </configuration>
