@@ -113,9 +113,9 @@ public class DataObjectMetadata {
     }
 
     /**
-     * Retrieve a map of { group -> data access}. data access is a true boolean if at least one associated dataset
-     * grants
-     * data access, false otherwise
+     * Retrieve a map of { group -> data access}.
+     * data access is a true boolean if at least one associated dataset grants data access,
+     * false otherwise
      *
      * @return {@link Map} bteween group name and associated Access
      */

@@ -126,7 +126,7 @@ public class DataAccessRightService {
     }
 
     /**
-     * Check if the current logged in ser as access to the given file
+     * Check if the current logged in user has access to the given file
      */
     public AccessStatus checkFileAccess(AbstractEntity<?> entity, String fileChecksum)
         throws AccessRightFilterException, ExecutionException {
@@ -134,7 +134,7 @@ public class DataAccessRightService {
     }
 
     /**
-     * Check if the current logged in ser as access to the given entity
+     * Check if the current logged in user has access to the given entity
      */
     public AccessStatus checkContentAccess(AbstractEntity<?> entity)
         throws AccessRightFilterException, ExecutionException {

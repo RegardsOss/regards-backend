@@ -50,7 +50,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MimeType;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -92,12 +91,15 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     private final IOrderRepository orderRepository;
 
+    // private field is assigned in constructor but never accessed
     private final IStorageRestClient storageClient;
 
+    // private field is assigned in constructor but never accessed
     private final IAuthenticationResolver authResolver;
 
     private final IProcessingEventSender processingEventSender;
 
+    // private field is assigned in constructor but never accessed
     private final IPublisher publisher;
 
     private final OrderResponseService orderResponseService;
@@ -137,19 +139,12 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         this.self = orderDataFileService;
         this.filesTasksRepository = filesTasksRepository;
         this.orderRepository = orderRepository;
-        this.storageClient = storageClient;
-        this.authResolver = authResolver;
+        this.storageClient = storageClient; // never accessed
+        this.authResolver = authResolver; // never accessed
         this.processingEventSender = processingEventSender;
-        this.publisher = publisher;
+        this.publisher = publisher; // never accessed
         this.orderResponseService = orderResponseService;
         this.orderDownloadService = orderDownloadService;
-    }
-
-    private static MediaType asMediaType(MimeType mimeType) {
-        if (mimeType instanceof MediaType mediaType) {
-            return mediaType;
-        }
-        return new MediaType(mimeType.getType(), mimeType.getSubtype(), mimeType.getParameters());
     }
 
     @Override
@@ -257,13 +252,13 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     @Override
     public OrderDataFile find(Long orderId, UniformResourceName aipId, String checksum) throws NoSuchElementException {
-        Optional<OrderDataFile> dataFileOpt = orderDataFileRepository.findFirstByChecksumAndIpIdAndOrderId(checksum,
-                                                                                                           aipId,
-                                                                                                           orderId);
-        if (dataFileOpt.isEmpty()) {
-            throw new NoSuchElementException();
-        }
-        return dataFileOpt.get();
+        return orderDataFileRepository.findFirstByChecksumAndIpIdAndOrderId(checksum, aipId, orderId)
+                                      .orElseThrow(() -> new NoSuchElementException(String.format("checksum: %s, "
+                                                                                                  + "aipId: %s, "
+                                                                                                  + "orderId: %s",
+                                                                                                  checksum,
+                                                                                                  aipId,
+                                                                                                  orderId)));
     }
 
     @Override
@@ -326,7 +321,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             headers.setContentLength(dataFile.getFilesize());
         }
         if (dataFile.getMimeType() != null) {
-            headers.setContentType(asMediaType(dataFile.getMimeType()));
+            headers.setContentType(MediaType.asMediaType(dataFile.getMimeType()));
         }
         InputStream stream;
         try {

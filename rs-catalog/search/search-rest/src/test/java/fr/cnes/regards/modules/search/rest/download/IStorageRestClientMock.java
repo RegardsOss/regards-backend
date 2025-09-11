@@ -16,6 +16,7 @@ import fr.cnes.regards.modules.filecatalog.client.listener.IStorageFileListener;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
 import fr.cnes.regards.modules.search.rest.FakeFileFactory;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
+import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import org.mockito.ArgumentMatchers;
 import org.springframework.context.annotation.Primary;
@@ -27,11 +28,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
 
-import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -57,20 +57,21 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
 
     private void mockFileDownload(StorageDownloadStatus downloadStatus) {
         if (downloadStatus == StorageDownloadStatus.HTTP_ERROR) {
-            when(storageClient.downloadFile(validFiles(),
-                                            any())).thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST,
-                                                                                           "http error"));
+            when(storageClient.downloadFile(validFiles(), anyBoolean())).thenThrow(new HttpServerErrorException(
+                HttpStatus.BAD_REQUEST,
+                "http error"));
         } else if (downloadStatus == StorageDownloadStatus.FAILURE) {
-            when(storageClient.downloadFile(validFiles(), any())).thenReturn(storageResponse(HttpStatus.NOT_FOUND,
-                                                                                             "errors.",
-                                                                                             null));
+            when(storageClient.downloadFile(validFiles(),
+                                            anyBoolean())).thenReturn(storageResponse(HttpStatus.NOT_FOUND,
+                                                                                      "errors.",
+                                                                                      null));
         } else {
             // Can't inline because response is mocked (can't mock during mock creation)
             Response invalidResponse = invalidStorageResponse();
-            when(storageClient.downloadFile(eq(files.invalidFile()), any())).thenReturn(invalidResponse);
-            when(storageClient.downloadFile(validFiles(), any())).thenReturn(storageResponse(HttpStatus.OK,
-                                                                                             "content",
-                                                                                             donwloadFileDefaultHeaders()));
+            when(storageClient.downloadFile(eq(files.invalidFile()), anyBoolean())).thenReturn(invalidResponse);
+            when(storageClient.downloadFile(validFiles(), anyBoolean())).thenReturn(storageResponse(HttpStatus.OK,
+                                                                                                    "content",
+                                                                                                    donwloadFileDefaultHeaders()));
 
         }
     }
@@ -169,7 +170,7 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     @Override
-    public Response downloadFile(String checksum, Boolean isContentInline) {
+    public Response downloadFile(String checksum, boolean isContentInline) {
         return storageClient.downloadFile(checksum, isContentInline);
     }
 
@@ -188,7 +189,8 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
     }
 
     @Override
-    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(@Valid FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
+    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(
+        @Valid FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
         return null;
     }
 

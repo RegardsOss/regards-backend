@@ -28,7 +28,7 @@ import java.util.Set;
 public class StorageRestClientMock implements IStorageRestClient {
 
     @Override
-    public Response downloadFile(String checksum, Boolean isContentInline) {
+    public Response downloadFile(String checksum, boolean isContentInline) {
         return null;
     }
 
@@ -62,7 +62,8 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(@Valid FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
+    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(
+        @Valid FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
         return null;
     }
 

@@ -2,9 +2,9 @@ package fr.cnes.regards.modules.access.services.rest.user.mock;
 
 import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FileAvailabilityStatusDto;
 import fr.cnes.regards.modules.fileaccess.dto.availability.FilesAvailabilityRequestDto;
-import fr.cnes.regards.modules.fileaccess.dto.FileReferenceDto;
 import fr.cnes.regards.modules.fileaccess.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.fileaccess.dto.quota.UserCurrentQuotasDto;
 import fr.cnes.regards.modules.filecatalog.dto.StorageLocationDto;
@@ -106,7 +106,7 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public Response downloadFile(String checksum, Boolean isContentInline) {
+    public Response downloadFile(String checksum, boolean isContentInline) {
         return null;
     }
 
@@ -126,7 +126,8 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(@Valid FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
+    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(
+        @Valid FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
         return null;
     }
 

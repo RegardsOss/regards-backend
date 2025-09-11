@@ -47,6 +47,7 @@ public interface IStorageDownloaderRestClient extends IStorageDownloadQuotaRestC
                     path = FILE_PATH + DOWNLOAD_PATH,
                     produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     Response downloadFile(@PathVariable("checksum") String checksum,
-                          @RequestParam(name = "isContentInline", required = false) Boolean isContentInline);
+                          @RequestParam(name = "isContentInline", required = false, defaultValue = "false")
+                          boolean isContentInline);
 
 }

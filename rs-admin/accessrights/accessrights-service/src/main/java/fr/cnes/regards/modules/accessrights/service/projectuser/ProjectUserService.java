@@ -138,13 +138,10 @@ public class ProjectUserService implements IProjectUserService {
 
     @Override
     public ProjectUser retrieveUser(Long userId) throws EntityNotFoundException {
-        Optional<ProjectUser> userOpt = projectUserRepository.findById(userId);
-        // Check found
-        if (!userOpt.isPresent()) {
-            throw new EntityNotFoundException(userId.toString(), ProjectUser.class);
-        }
+        final ProjectUser user = projectUserRepository.findById(userId)
+                                                      .orElseThrow(() -> new EntityNotFoundException(userId.toString(),
+                                                                                                     ProjectUser.class));
         // Filter out hidden meta data
-        ProjectUser user = userOpt.get();
         user.setMetadata(user.getMetadata().stream().filter(KEEP_VISIBLE_META_DATA).collect(Collectors.toSet()));
         return user;
     }
