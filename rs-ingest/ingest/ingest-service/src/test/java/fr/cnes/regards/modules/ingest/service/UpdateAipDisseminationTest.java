@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo;
+import fr.cnes.regards.modules.ingest.dto.DisseminationInfo;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPDisseminationInfo;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;

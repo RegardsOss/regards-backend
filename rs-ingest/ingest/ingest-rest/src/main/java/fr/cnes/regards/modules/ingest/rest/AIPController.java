@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.swagger.autoconfigure.PageableQueryParam;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
+import fr.cnes.regards.modules.ingest.dto.AIPEntityLightRawDto;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.dissemination.AIPDisseminationRequestDto;
@@ -51,8 +51,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.data.web.SlicedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.SlicedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -70,7 +72,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH)
-public class AIPController implements IResourceController<AIPEntityLight> {
+public class AIPController implements IResourceController<AIPEntityLightRawDto> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
@@ -142,6 +144,11 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     private static final String AIP_DISSEMINATION_PATH = "/dissemination";
 
     /**
+     * Controller path to retrieve a slice of AIP
+     */
+    private static final String SLICE_PATH = "/slice";
+
+    /**
      * {@link IResourceService} instance
      */
     @Autowired
@@ -165,14 +172,34 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     @Operation(summary = "Get AIPs", description = "Return a page of AIPs matching criterias.")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All AIPs were retrieved.") })
     @ResourceAccess(description = "Endpoint to retrieve all AIPs matching criterias", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedModel<EntityModel<AIPEntityLight>>> searchAIPs(
+    public ResponseEntity<PagedModel<EntityModel<AIPEntityLightRawDto>>> searchAIPs(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
                                                               content = @Content(schema = @Schema(implementation = SearchAIPsParameters.class)))
         @Parameter(description = "Filter criterias for AIPs") @RequestBody SearchAIPsParameters filters,
         @PageableQueryParam @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        @Parameter(hidden = true) PagedResourcesAssembler<AIPEntityLight> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<AIPEntityLightRawDto> assembler) {
 
         return new ResponseEntity<>(toPagedResources(aipService.findLightByFilters(filters, pageable), assembler),
+                                    HttpStatus.OK);
+    }
+
+    /**
+     * Retrieve a slice of AIPs metadata according to the given filters
+     *
+     * @return a slice of aip metadata respecting the constraints
+     */
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = SLICE_PATH)
+    @Operation(summary = "Get AIPs", description = "Return a slice of AIPs matching criterias.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All AIPs were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve all AIPs matching criterias", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<SlicedModel<EntityModel<AIPEntityLightRawDto>>> searchAIPsSlice(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+                                                              content = @Content(schema = @Schema(implementation = SearchAIPsParameters.class)))
+        @Parameter(description = "Filter criterias for AIPs") @RequestBody SearchAIPsParameters filters,
+        @PageableQueryParam @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        @Parameter(hidden = true) SlicedResourcesAssembler<AIPEntityLightRawDto> assembler) {
+
+        return new ResponseEntity<>(toSlicedResources(aipService.findLightSliceByFilters(filters, pageable), assembler),
                                     HttpStatus.OK);
     }
 
@@ -262,8 +289,8 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     }
 
     @Override
-    public EntityModel<AIPEntityLight> toResource(AIPEntityLight element, Object... extras) {
-        EntityModel<AIPEntityLight> resource = resourceService.toResource(element);
+    public EntityModel<AIPEntityLightRawDto> toResource(AIPEntityLightRawDto element, Object... extras) {
+        EntityModel<AIPEntityLightRawDto> resource = resourceService.toResource(element);
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "createDisseminationRequest",

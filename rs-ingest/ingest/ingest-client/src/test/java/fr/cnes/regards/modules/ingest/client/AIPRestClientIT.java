@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.dto.AIPEntityLightDto;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import org.junit.Assert;
@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.SlicedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
@@ -75,7 +76,14 @@ public class AIPRestClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void searchAips() {
-        ResponseEntity<PagedModel<EntityModel<AIPEntity>>> response = client.searchAIPs(new SearchAIPsParameters().withStatesIncluded(
+        ResponseEntity<PagedModel<EntityModel<AIPEntityLightDto>>> response = client.searchAIPs(new SearchAIPsParameters().withStatesIncluded(
+            List.of(AIPState.STORED)), 0, 100, Sort.unsorted());
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    public void searchAipsSlice() {
+        ResponseEntity<SlicedModel<EntityModel<AIPEntityLightDto>>> response = client.searchAIPsSlice(new SearchAIPsParameters().withStatesIncluded(
             List.of(AIPState.STORED)), 0, 100, Sort.unsorted());
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
     }

@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.LastAIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.AIPEntityLightRawDto;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
 import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
@@ -44,17 +45,15 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -85,6 +84,9 @@ public class AIPService implements IAIPService {
 
     @Autowired
     private IAIPRepository aipRepository;
+
+    @Autowired
+    private AIPSliceRepository aipSliceRepository;
 
     @Autowired
     private ILastAIPRepository lastAipRepository;
@@ -209,14 +211,25 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Page<AIPEntityLight> findLightByFilters(SearchAIPsParameters filters, Pageable pageable) {
+    public Page<AIPEntityLightRawDto> findLightByFilters(SearchAIPsParameters filters, Pageable pageable) {
         long start = System.currentTimeMillis();
 
         Page<AIPEntityLight> response = aipLigthRepository.findAll(new AIPLightSpecificationsBuilder().withParameters(
             filters).build(), pageable);
-
+        List<AIPEntityLightRawDto> dtos = response.getContent().stream().map(AIPEntityLight::toRawDto).toList();
         LOGGER.debug("{} AIPS found in  {}ms", response.getSize(), System.currentTimeMillis() - start);
-        return response;
+        return new PageImpl<>(dtos, pageable, response.getTotalElements());
+    }
+
+    @Override
+    public Slice<AIPEntityLightRawDto> findLightSliceByFilters(SearchAIPsParameters filters, Pageable pageable) {
+        long start = System.currentTimeMillis();
+
+        Slice<AIPEntityLight> response = aipSliceRepository.findMore(new AIPLightSpecificationsBuilder().withParameters(
+            filters).build(), pageable);
+        List<AIPEntityLightRawDto> dtos = response.getContent().stream().map(AIPEntityLight::toRawDto).toList();
+        LOGGER.debug("{} AIPS found in  {}ms", response.getSize(), System.currentTimeMillis() - start);
+        return new SliceImpl<>(dtos, PageRequest.of(0, pageable.getPageSize()), response.hasNext());
     }
 
     @Override

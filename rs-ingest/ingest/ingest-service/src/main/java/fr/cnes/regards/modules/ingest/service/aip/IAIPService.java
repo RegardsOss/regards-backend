@@ -18,20 +18,21 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.dto.AIPEntityLightRawDto;
 import fr.cnes.regards.modules.ingest.dto.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.domain.Slice;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -92,7 +93,14 @@ public interface IAIPService {
      *
      * @return page of light AIPs
      */
-    Page<AIPEntityLight> findLightByFilters(SearchAIPsParameters filters, Pageable pageable);
+    Page<AIPEntityLightRawDto> findLightByFilters(SearchAIPsParameters filters, Pageable pageable);
+
+    /**
+     * Retrieve a slice of {@link AIPEntityLightRawDto}s matching filters.
+     *
+     * @return slice of light AIPs
+     */
+    Slice<AIPEntityLightRawDto> findLightSliceByFilters(SearchAIPsParameters filters, Pageable pageable);
 
     /**
      * Retrieve all tags used by a set of AIPS matching provided filters

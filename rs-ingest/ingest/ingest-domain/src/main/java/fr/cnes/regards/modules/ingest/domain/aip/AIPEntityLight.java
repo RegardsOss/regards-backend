@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.domain.aip;
 
+import com.google.gson.JsonParser;
+import fr.cnes.regards.modules.ingest.dto.AIPEntityLightRawDto;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Light version of {@link AIPEntity}. Does not contains SIP information.
@@ -30,4 +34,36 @@ import jakarta.persistence.Table;
 @Table(name = "t_aip")
 public class AIPEntityLight extends AbstractAIPEntity {
 
+    @NotNull(message = "RAW JSON AIP is required")
+    @Column(columnDefinition = "jsonb", name = "rawaip", nullable = false)
+    private String aip;
+
+    public String getAip() {
+        return aip;
+    }
+
+    public void setAip(String aip) {
+        this.aip = aip;
+    }
+
+    public AIPEntityLightRawDto toRawDto() {
+        return new AIPEntityLightRawDto(JsonParser.parseString(this.getAip()).getAsJsonObject(),
+                                        this.getAipId(),
+                                        this.getCategories(),
+                                        this.getCreationDate(),
+                                        this.getDisseminationInfos(),
+                                        this.getDisseminationStatus(),
+                                        this.getId(),
+                                        this.getIpType(),
+                                        this.isLast(),
+                                        this.getLastUpdate(),
+                                        this.getOriginUrn(),
+                                        this.getProviderId(),
+                                        this.getSession(),
+                                        this.getSessionOwner(),
+                                        this.getState(),
+                                        this.getStorages(),
+                                        this.getTags(),
+                                        this.getVersion());
+    }
 }

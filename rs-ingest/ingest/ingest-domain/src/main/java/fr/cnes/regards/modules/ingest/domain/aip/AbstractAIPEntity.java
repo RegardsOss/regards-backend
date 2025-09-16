@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
+import fr.cnes.regards.modules.ingest.dto.DisseminationInfo;
 import fr.cnes.regards.modules.ingest.dto.DisseminationStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -49,7 +50,6 @@ import java.util.Set;
  * @author Sébastien Binda
  */
 @MappedSuperclass
-
 public abstract class AbstractAIPEntity extends AbstractOAISEntity {
 
     @Id
@@ -68,11 +68,6 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
     @NotNull(message = "AIP state is required")
     @Enumerated(EnumType.STRING)
     private AIPState state;
-
-    @NotNull(message = "RAW JSON AIP is required")
-    @Column(columnDefinition = "jsonb", name = "rawaip", nullable = false)
-    @Type(JsonBinaryType.class)
-    private AIPDto aip;
 
     /**
      * Storage lists used by this AIP to store its files
@@ -95,7 +90,7 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
     @Column(name = "dissemination_infos", columnDefinition = "jsonb")
     @Type(value = JsonBinaryType.class,
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-                                    value = "fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo") })
+                                    value = "fr.cnes.regards.modules.ingest.dto.DisseminationInfo") })
     private List<DisseminationInfo> disseminationInfos;
 
     @NotNull
@@ -113,14 +108,6 @@ public abstract class AbstractAIPEntity extends AbstractOAISEntity {
 
     public void setState(AIPState state) {
         this.state = state;
-    }
-
-    public AIPDto getAip() {
-        return aip;
-    }
-
-    public void setAip(AIPDto aip) {
-        this.aip = aip;
     }
 
     public String getAipId() {

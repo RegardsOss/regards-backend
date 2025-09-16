@@ -18,11 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.domain.aip;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name = "t_aip",
@@ -52,6 +54,11 @@ public class AIPEntity extends AbstractAIPEntity {
     @JoinColumn(name = "sip_id", foreignKey = @ForeignKey(name = "fk_sip"))
     private SIPEntity sip;
 
+    @NotNull(message = "JSON AIP is required")
+    @Column(columnDefinition = "jsonb", name = "rawaip", nullable = false)
+    @Type(JsonBinaryType.class)
+    private AIPDto aip;
+
     public SIPEntity getSip() {
         return sip;
     }
@@ -73,4 +80,11 @@ public class AIPEntity extends AbstractAIPEntity {
         return aipEntity;
     }
 
+    public AIPDto getAip() {
+        return aip;
+    }
+
+    public void setAip(AIPDto aip) {
+        this.aip = aip;
+    }
 }

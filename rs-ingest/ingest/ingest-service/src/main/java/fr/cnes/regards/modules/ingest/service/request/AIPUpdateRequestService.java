@@ -115,7 +115,7 @@ public class AIPUpdateRequestService {
         List<AbstractRequest> requests = new ArrayList<>();
         // Test if there is some AIPs referenced by some running requests
         // Create the list of AIP id (and not aipId!)
-        List<Long> runningAIPIds = runningRequests.stream().map(wr -> wr.getAip().getId()).collect(Collectors.toList());
+        List<Long> runningAIPIds = runningRequests.stream().map(wr -> wr.getAip().getId()).toList();
         for (AIPEntity aip : aips) {
             // Create the request as BLOCKED if there is already a running request
             boolean isPending = runningAIPIds.contains(aip.getId());

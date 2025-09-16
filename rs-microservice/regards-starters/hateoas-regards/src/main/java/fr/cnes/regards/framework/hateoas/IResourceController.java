@@ -20,9 +20,12 @@ package fr.cnes.regards.framework.hateoas;
 
 import com.google.common.base.Preconditions;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.data.web.SlicedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.SlicedModel;
 
 import java.util.Collection;
 import java.util.List;
@@ -72,5 +75,22 @@ public interface IResourceController<T> {
         final PagedModel<EntityModel<T>> pageResources = assembler.toModel(elements);
         pageResources.forEach(resource -> resource.add(toResource(resource.getContent(), extras).getLinks()));
         return pageResources;
+    }
+
+    /**
+     * Convert a slice of elements to a slice of {@link EntityModel}
+     *
+     * @param elements  slice of elements to convert
+     * @param assembler SlicedResourcesAssembler to convert elements
+     * @param extras    Extra URL path parameters for links
+     * @return a slice of {@link EntityModel}
+     */
+    default SlicedModel<EntityModel<T>> toSlicedResources(final Slice<T> elements,
+                                                          final SlicedResourcesAssembler<T> assembler,
+                                                          final Object... extras) {
+        Preconditions.checkNotNull(elements);
+        final SlicedModel<EntityModel<T>> slicedResources = assembler.toModel(elements);
+        slicedResources.forEach(resource -> resource.add(toResource(resource.getContent(), extras).getLinks()));
+        return slicedResources;
     }
 }

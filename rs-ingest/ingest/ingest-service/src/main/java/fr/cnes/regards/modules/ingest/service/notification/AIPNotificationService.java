@@ -31,7 +31,6 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.DisseminationInfo;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.IngestErrorType;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
@@ -43,6 +42,7 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import fr.cnes.regards.modules.ingest.dto.DisseminationInfo;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
