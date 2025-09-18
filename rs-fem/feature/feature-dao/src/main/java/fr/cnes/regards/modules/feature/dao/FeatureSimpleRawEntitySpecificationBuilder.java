@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
+import fr.cnes.regards.modules.feature.domain.FeatureSimpleRawEntity;
 
 /**
- * Specification builder for {@link FeatureSimpleEntity} using
+ * Specification builder for {@link FeatureSimpleRawEntity} using
  * {@link AbstractFeatureSimpleEntitySpecificationBuilder}
  *
  * @author Thibaud Michaudel
  */
-public class FeatureSimpleEntitySpecificationBuilder
-    extends AbstractFeatureSimpleEntitySpecificationBuilder<FeatureSimpleEntity> {
+public class FeatureSimpleRawEntitySpecificationBuilder
+    extends AbstractFeatureSimpleEntitySpecificationBuilder<FeatureSimpleRawEntity> {
 
 }

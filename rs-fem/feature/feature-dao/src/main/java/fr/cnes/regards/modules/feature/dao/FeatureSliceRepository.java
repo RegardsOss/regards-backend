@@ -14,12 +14,12 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
-package fr.cnes.regards.modules.ingest.dao;
+package fr.cnes.regards.modules.feature.dao;
 
 import fr.cnes.regards.framework.jpa.utils.SliceRepositoryUtils;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
+import fr.cnes.regards.modules.feature.domain.FeatureSimpleRawEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Pageable;
@@ -28,21 +28,21 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 /**
- * Custom repository for AIP slices using specifications because the default jpa repository doesn't support the
- * combined usage of slices and specifications.
+ * Custom repository for Feature slices using specifications because the default jpa repository doesn't support the
+ * combined usage of slices and specifications
  *
- * @author Thibaud Michaudel
- **/
+ * @author tguillou
+ */
 @Repository
-public class AIPSliceRepository {
+public class FeatureSliceRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
 
     /**
-     * Finds a slice of {@link AIPEntityLight} entities based on the provided specification and slice size.
+     * Finds a slice of {@link FeatureSimpleRawEntity} entities based on the provided specification and slice size.
      */
-    public Slice<AIPEntityLight> findMore(Specification<AIPEntityLight> spec, Pageable pageable) {
-        return SliceRepositoryUtils.findSlice(entityManager, AIPEntityLight.class, spec, pageable);
+    public Slice<FeatureSimpleRawEntity> findMore(Specification<FeatureSimpleRawEntity> spec, Pageable pageable) {
+        return SliceRepositoryUtils.findSlice(entityManager, FeatureSimpleRawEntity.class, spec, pageable);
     }
 }

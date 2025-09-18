@@ -70,7 +70,7 @@ public class FeatureController implements IResourceController<RequestInfo<?>> {
 
     /**
      * Create a list of {@link FeatureCreationRequest} from a list of {@link Feature} stored in a {@link FeatureCreationCollection}
-     * and return a {@link RequestInfo} full of request ids and occured errors
+     * and return a {@link RequestInfo} full of request ids and occurred errors
      *
      * @param collection {@link FeatureUpdateCollection} it contain all {@link Feature} to handle
      * @return {@link RequestInfo}
