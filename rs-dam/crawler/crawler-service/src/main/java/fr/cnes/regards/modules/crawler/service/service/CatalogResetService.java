@@ -73,15 +73,16 @@ public class CatalogResetService implements ICatalogResetService {
     @Override
     public void resetCatalog() throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
-
-        // Delete given data object from Elasticsearch
-        entityIndexerService.deleteIndexNRecreateEntities(tenant);
-
-        // Clear all datasources ingestion
+        entityIndexerService.createBuildingIndexAndCreateEntities(tenant);
+        // Clear all building datasources ingestion
         List<DatasourceIngestion> datasources = datasourceIngesterService.getDatasourceIngestions();
-        if ((datasources != null) && !datasources.isEmpty()) {
-            datasources.forEach(ds -> datasourceIngesterService.deleteDatasourceIngestion(ds.getId()));
-        }
+        datasources.forEach(ds -> {
+            LOGGER.info("Datasource Ingestion id : {}", ds.getId());
+            if (ds.isBuilding()) {
+                LOGGER.info("Datasource Ingestion id {} is for builing index, let's delete it", ds.getId());
+                datasourceIngesterService.deleteDatasourceIngestion(ds.getId());
+            }
+        });
     }
 
 }

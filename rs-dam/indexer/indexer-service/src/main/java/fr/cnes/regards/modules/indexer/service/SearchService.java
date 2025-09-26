@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.indexer.service;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
@@ -26,7 +25,6 @@ import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.indexer.domain.*;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
@@ -46,14 +44,15 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * Service for searching data objects in ES
+ * Requests should only be done to the ES alias, no use of the EsIndexAlias entity
+ */
 @Service
 public class SearchService implements ISearchService {
 
     @Autowired
-    private IEsRepository repository;
-
-    @Autowired
-    private IRuntimeTenantResolver tenantResolver;
+    private EsRepositoryFacade esRepositoryFacade;
 
     @Autowired
     private IndexAliasResolver indexAliasResolver;
@@ -79,9 +78,9 @@ public class SearchService implements ISearchService {
                 throw new IllegalArgumentException();
         }
         if (urn.isLast()) {
-            return (T) repository.getByVirtualId(urn.getEntityType().toString(), urn.toString(), clazz);
+            return (T) esRepositoryFacade.getByVirtualId(urn.getEntityType().toString(), urn.toString(), clazz);
         } else {
-            return (T) repository.get(urn.getEntityType().toString(), urn.toString(), clazz);
+            return (T) esRepositoryFacade.get(urn.getEntityType().toString(), urn.toString(), clazz);
         }
     }
 
@@ -100,7 +99,7 @@ public class SearchService implements ISearchService {
                                                       Map<String, FacetType> facetsMap) {
         addProjectInfos(searchKey);
 
-        return repository.search(searchKey, pageRequest, criterion, facetsMap);
+        return esRepositoryFacade.search(searchKey, pageRequest, criterion, facetsMap);
     }
 
     @Override
@@ -110,6 +109,7 @@ public class SearchService implements ISearchService {
                                                          ICriterion searchResultCriterion,
                                                          Map<String, FacetType> facetsMap) {
         addProjectInfos(searchKey);
+
         // Create a new SearchKey to search on asked type but to only retrieve tags of found results
         SearchKey<S, String[]> tagSearchKey = new SearchKey<>(searchKey.getSearchTypeMap(), String[].class);
         addProjectInfos(tagSearchKey);
@@ -123,23 +123,25 @@ public class SearchService implements ISearchService {
                                                                                    searchKey.getResultClass()));
         addProjectInfos(outputSearchKey);
         // Retrieve objects with matching URN from ES Repository
-        Function<Set<String>, Page<T>> toAskEntityFct = inputObjects -> repository.search(outputSearchKey,
-                                                                                          pageRequest,
-                                                                                          ICriterion.and(ICriterion.in(
-                                                                                                             StaticProperties.IP_ID,
-                                                                                                             StringMatchType.KEYWORD,
-                                                                                                             inputObjects.stream()
-                                                                                                                         .map(String.class::cast)
-                                                                                                                         .toArray(
-                                                                                                                             String[]::new)),
-                                                                                                         searchResultCriterion));
-        return repository.search(tagSearchKey,
-                                 criterion,
-                                 StaticProperties.FEATURE_TAGS,
-                                 askedTypePredicate,
-                                 toAskEntityFct,
-                                 facetsMap,
-                                 pageRequest);
+        Function<Set<String>, Page<T>> toAskEntityFct = inputObjects -> esRepositoryFacade.search(outputSearchKey,
+                                                                                                  pageRequest,
+                                                                                                  ICriterion.and(
+                                                                                                      ICriterion.in(
+                                                                                                          StaticProperties.IP_ID,
+                                                                                                          StringMatchType.KEYWORD,
+                                                                                                          inputObjects.stream()
+                                                                                                                      .map(
+                                                                                                                          String.class::cast)
+                                                                                                                      .toArray(
+                                                                                                                          String[]::new)),
+                                                                                                      searchResultCriterion));
+        return esRepositoryFacade.search(tagSearchKey,
+                                         criterion,
+                                         StaticProperties.FEATURE_TAGS,
+                                         askedTypePredicate,
+                                         toAskEntityFct,
+                                         facetsMap,
+                                         pageRequest);
     }
 
     @Override
@@ -148,7 +150,7 @@ public class SearchService implements ISearchService {
                                                             Object value,
                                                             String... fields) {
         addProjectInfos(searchKey);
-        return repository.multiFieldsSearch(searchKey, pageRequest, value, fields);
+        return esRepositoryFacade.multiFieldsSearch(searchKey, pageRequest, value, fields);
     }
 
     @Override
@@ -167,12 +169,12 @@ public class SearchService implements ISearchService {
         DocFilesSummary summary = new DocFilesSummary();
         // Adjust criterion to search for internal data
         ICriterion internalCrit = ICriterion.and(criterion.copy(), ICriterion.eq("internal", true));
-        repository.computeInternalDataFilesSummary(searchKey,
-                                                   internalCrit,
-                                                   discriminantProperty,
-                                                   discriminentPropertyInclude,
-                                                   summary,
-                                                   fileTypes);
+        esRepositoryFacade.computeInternalDataFilesSummary(searchKey,
+                                                           internalCrit,
+                                                           discriminantProperty,
+                                                           discriminentPropertyInclude,
+                                                           summary,
+                                                           fileTypes);
         // Adjust criterion to search for external data (=> internal is false and all at least one searched file type
         // has an uri starting with http or https
         ICriterion filterUriCrit = ICriterion.or(Arrays.stream(fileTypes)
@@ -184,12 +186,12 @@ public class SearchService implements ISearchService {
                                                                                           StringMatchType.KEYWORD))
                                                        .collect(Collectors.toList()));
         ICriterion externalCrit = ICriterion.and(criterion.copy(), ICriterion.eq("internal", false), filterUriCrit);
-        repository.computeExternalDataFilesSummary(searchKey,
-                                                   externalCrit,
-                                                   discriminantProperty,
-                                                   discriminentPropertyInclude,
-                                                   summary,
-                                                   fileTypes);
+        esRepositoryFacade.computeExternalDataFilesSummary(searchKey,
+                                                           externalCrit,
+                                                           discriminantProperty,
+                                                           discriminentPropertyInclude,
+                                                           summary,
+                                                           fileTypes);
         return summary;
     }
 
@@ -199,7 +201,7 @@ public class SearchService implements ISearchService {
                                                                      String attName,
                                                                      int maxCount) {
         addProjectInfos(searchKey);
-        SortedSet<String> values = repository.uniqueAlphaSorted(searchKey, criterion, attName, maxCount);
+        SortedSet<String> values = esRepositoryFacade.uniqueAlphaSorted(searchKey, criterion, attName, maxCount);
         return values.stream().limit(maxCount).collect(Collectors.toList());
     }
 
@@ -208,7 +210,7 @@ public class SearchService implements ISearchService {
                                                                ICriterion criterion,
                                                                Collection<QueryableAttribute> attributes) {
         addProjectInfos(searchKey);
-        return repository.getAggregations(searchKey, criterion, attributes);
+        return esRepositoryFacade.getAggregations(searchKey, criterion, attributes);
     }
 
     @Override
@@ -217,7 +219,7 @@ public class SearchService implements ISearchService {
                                                                   Collection<AggregationBuilder> aggregationBuilders,
                                                                   int limit) {
         addProjectInfos(searchKey);
-        return repository.getAggregationsFor(searchKey, criterion, aggregationBuilders, limit);
+        return esRepositoryFacade.getAggregationsFor(searchKey, criterion, aggregationBuilders, limit);
     }
 
     @Override
@@ -226,6 +228,6 @@ public class SearchService implements ISearchService {
             // As record is not strictly immutable, mutate current search key referenced object.
             addProjectInfos(entry.getValue().searchKey());
         }
-        return repository.getMultiAggregationsFor(searchRequests);
+        return esRepositoryFacade.getMultiAggregationsFor(searchRequests);
     }
 }

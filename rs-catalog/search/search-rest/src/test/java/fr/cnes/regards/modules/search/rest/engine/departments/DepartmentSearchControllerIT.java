@@ -128,9 +128,8 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         dataSetRepo.deleteAll();
         modelRepo.deleteAll();
         attrModelRepo.deleteAll();
-        esRepo.deleteAll(getDefaultTenant());
-
         prepareProject();
+        esRepo.deleteAll(getDefaultTenant());
 
         // - Import models
         Model departmentModel = modelService.importModel(this.getClass().getResourceAsStream("model-Departement.xml"));

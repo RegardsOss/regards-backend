@@ -62,8 +62,7 @@ public class DatasourceEventHandler implements IHandler<DatasourceEvent> {
         if ((event.getType() == DatasourceEventType.DELETED) && (event.getDatasourceId() != null)) {
             runtimeTenantResolver.forceTenant(wrapper.getTenant());
             try {
-                entityIndexerService.deleteDataObjectsFromDatasource(indexAliasResolver.resolveAliasName(wrapper.getTenant()),
-                                                                     event.getDatasourceId());
+                entityIndexerService.deleteDataObjectsFromDatasource(wrapper.getTenant(), event.getDatasourceId());
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

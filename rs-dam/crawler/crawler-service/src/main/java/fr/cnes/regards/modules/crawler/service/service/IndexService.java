@@ -22,7 +22,8 @@ import com.google.common.base.Strings;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.indexer.dao.CreateIndexConfiguration;
-import fr.cnes.regards.modules.indexer.dao.EsRepository;
+import fr.cnes.regards.modules.indexer.domain.EsIndexAlias;
+import fr.cnes.regards.modules.indexer.service.EsRepositoryFacade;
 import fr.cnes.regards.modules.indexer.service.IMappingService;
 import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import fr.cnes.regards.modules.indexer.service.IndexAliasService;
@@ -44,7 +45,7 @@ import java.util.List;
 public class IndexService {
 
     @Autowired
-    private EsRepository esRepos;
+    private EsRepositoryFacade esRepositoryFacade;
 
     @Autowired
     private IMappingService esMappingService;
@@ -63,9 +64,12 @@ public class IndexService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexService.class);
 
-    public void configureMappings(String tenant, String modelName) {
+    /**
+     * @param index must be the name of the real index (not alias name)
+     */
+    public void configureMappings(String index, String modelName) {
         List<ModelAttrAssoc> modelAttributes = modelAttrAssocService.getModelAttrAssocs(modelName);
-        esMappingService.configureMappings(tenant, modelAttributes);
+        esMappingService.configureMappings(index, modelAttributes);
     }
 
     /**
@@ -77,17 +81,21 @@ public class IndexService {
      * If the index is created, the alias is also created or updated to ensure
      * that all queries go through the alias rather than the raw index.</p>
      *
-     * @param tenant the tenant identifier used as the index name
+     * @param tenant   the tenant identifier used as the index name
+     * @param building true if the index to create is a building index, in case of reindexation
      * @return {@code true} if the index was created, {@code false} if it already existed
      */
-    public boolean createIndexAndAliasIfNeeded(String tenant) {
-        if (esRepos.indexExists(tenant)) {
+    public boolean createIndexAndAliasIfNeeded(String tenant, boolean building) {
+        if (esRepositoryFacade.indexExists(tenant)) {
             return false;
         }
         CreateIndexConfiguration configuration = new CreateIndexConfiguration(damSettingsService.getIndexNumberOfShards(),
                                                                               damSettingsService.getIndexNumberOfReplicas());
-        boolean created = esRepos.createIndex(tenant, configuration);
-        createOrUpdateAlias(tenant);
+        boolean created = esRepositoryFacade.createIndex(tenant, configuration);
+
+        if (!building) {
+            createOrUpdateAlias(tenant);
+        }
         return created;
     }
 
@@ -108,11 +116,11 @@ public class IndexService {
      * @throws IllegalStateException if the alias exists but no current index is resolved for the tenant
      */
     public void createOrUpdateAlias(String tenant) {
-        String aliasName = indexAliasResolver.resolveAliasName(tenant);
+        String aliasName = IndexAliasResolver.resolveAliasName(tenant);
 
         //If alias does not exist, it is created here
-        if (!esRepos.aliasExists(aliasName)) {
-            if (esRepos.createAlias(tenant, aliasName)) {
+        if (!esRepositoryFacade.aliasExists(aliasName)) {
+            if (esRepositoryFacade.createAlias(tenant, aliasName)) {
                 indexAliasService.saveOrUpdate(aliasName, tenant);
                 LOGGER.info("Alias [{}] created on index [{}]", aliasName, tenant);
             } else {
@@ -143,9 +151,9 @@ public class IndexService {
 
         //The correct index mapped by the alias is the one in the entity. If the alias already exists but with a bad
         // mapped index, we need to change its index
-        String aliasPointsTo = esRepos.getSingleIndexPointedByAlias(aliasName);
+        String aliasPointsTo = esRepositoryFacade.getSingleIndexPointedByAlias(aliasName);
         if (!targetIndex.equals(aliasPointsTo)) {
-            boolean switched = esRepos.switchAlias(aliasPointsTo, targetIndex, aliasName);
+            boolean switched = esRepositoryFacade.switchAlias(aliasPointsTo, targetIndex, aliasName);
             if (switched) {
                 LOGGER.info("Alias [{}] switched from [{}] to [{}]", aliasName, aliasPointsTo, targetIndex);
             } else {
@@ -155,16 +163,40 @@ public class IndexService {
     }
 
     /**
+     * If a tenant already has a building index, we delete it
+     */
+    public void deleteBuildingIndexIfAlreadyExists(String tenant) {
+        indexAliasResolver.resolveBuildingIndex(tenant).ifPresent(idx -> esRepositoryFacade.deleteIndexOrAlias(idx));
+    }
+
+    /**
+     * Promotes the tenant’s <em>building</em> index to become the current index behind its search alias.
+     * Remove the old index
+     * Update the {@link EsIndexAlias} entity to remove the index from the
+     * building column
+     */
+    public void updateAliasWithBuildingIndex(String tenant) {
+        indexAliasResolver.resolveBuildingIndex(tenant).ifPresent(buildingIndex -> {
+            LOGGER.info("replace {} index with {}", indexAliasResolver.resolveCurrentIndex(tenant), buildingIndex);
+            String aliasName = IndexAliasResolver.resolveAliasName(tenant);
+            String oldIndex = indexAliasResolver.resolveCurrentIndex(tenant);
+            esRepositoryFacade.switchAlias(oldIndex, buildingIndex, aliasName);
+            indexAliasService.saveOrUpdate(aliasName, buildingIndex);
+            indexAliasService.clearBuilding(aliasName);
+            esRepositoryFacade.deleteIndexOrAlias(oldIndex);
+        });
+    }
+
+    /**
      * Delete index if it exists
      *
      * @param tenant concerned tenant
      * @return true if a deletion has been done
      */
     public boolean deleteIndex(String tenant) {
-        if (!esRepos.indexExists(tenant)) {
+        if (!esRepositoryFacade.indexExists(tenant)) {
             return false;
         }
-        return esRepos.deleteIndex(tenant);
+        return esRepositoryFacade.deleteIndexOrAlias(tenant);
     }
-
 }

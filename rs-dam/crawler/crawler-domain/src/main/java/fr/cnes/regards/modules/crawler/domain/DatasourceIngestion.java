@@ -20,6 +20,8 @@ import java.util.UUID;
 @Table(name = "t_datasource_ingestion")
 public class DatasourceIngestion {
 
+    public static final String BUILDING_INDEX_SUFFIX = "_building";
+
     /**
      * Id is datasource id (see table pluginConf businnessId)
      */
@@ -81,6 +83,13 @@ public class DatasourceIngestion {
     private CrawlingCursor cursor;
 
     /**
+     * Whether the dataSource is for the index currently in "building" state
+     * Default to false
+     */
+    @Column(name = "building", nullable = false)
+    private boolean building = false;
+
+    /**
      * When status is ERROR, the exception stack trace
      */
     @Column(columnDefinition = "text")
@@ -105,9 +114,18 @@ public class DatasourceIngestion {
     }
 
     public DatasourceIngestion(PluginConfiguration pluginConfiguration, OffsetDateTime nextPlannedIngestDate) {
-        this(pluginConfiguration.getBusinessId());
+        this(pluginConfiguration, nextPlannedIngestDate, false);
+    }
+
+    public DatasourceIngestion(PluginConfiguration pluginConfiguration,
+                               OffsetDateTime nextPlannedIngestDate,
+                               boolean building) {
+        this.id = building ?
+            pluginConfiguration.getBusinessId() + BUILDING_INDEX_SUFFIX :
+            pluginConfiguration.getBusinessId();
         this.nextPlannedIngestDate = nextPlannedIngestDate;
-        this.label = pluginConfiguration.getLabel();
+        this.label = building ? pluginConfiguration.getLabel() + BUILDING_INDEX_SUFFIX : pluginConfiguration.getLabel();
+        this.building = building;
     }
 
     public String getId() {
@@ -195,6 +213,14 @@ public class DatasourceIngestion {
 
     public void setCursor(CrawlingCursor cursor) {
         this.cursor = cursor;
+    }
+
+    public boolean isBuilding() {
+        return building;
+    }
+
+    public void setBuilding(boolean building) {
+        this.building = building;
     }
 
     @Override

@@ -126,7 +126,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> !esRepository.indexExists(TENANT));
         indexService.deleteIndex(ALIAS);
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> !esRepository.aliasExists(ALIAS));
-        indexService.createIndexAndAliasIfNeeded(TENANT);
+        indexService.createIndexAndAliasIfNeeded(TENANT, false);
     }
 
     @BeforeEach
@@ -461,7 +461,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         TestDataSourcePluginFailable.configureActivateDifferentDate();
         // WHEN launch the ingestion
         crawlerCreatorService.manageCrawlingForAllTenants();
-        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(20);
         assertEquals(100, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.FINISHED, datasourceIngestion.getStatus());
         // THEN cursor position must be set to the last cursor position ( 0 because the date determinate the position)

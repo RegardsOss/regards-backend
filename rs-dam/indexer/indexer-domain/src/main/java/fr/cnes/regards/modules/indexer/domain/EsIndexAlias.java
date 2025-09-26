@@ -55,6 +55,10 @@ public class EsIndexAlias {
     @Column(name = "building_index")
     private String building;
 
+    // Attribute to handle concurrency with optimistic lock
+    @Version
+    private Long version;
+
     public EsIndexAlias() {
     }
 

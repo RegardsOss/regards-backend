@@ -66,6 +66,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-dao</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-dao</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>jpa-multitenant-regards-starter</artifactId>
             <scope>test</scope>

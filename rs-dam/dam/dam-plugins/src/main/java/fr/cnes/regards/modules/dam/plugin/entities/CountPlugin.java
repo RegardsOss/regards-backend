@@ -22,13 +22,12 @@ import com.google.common.base.Strings;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.service.EsRepositoryFacade;
 import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
 import fr.cnes.regards.modules.model.domain.ComputationPlugin;
@@ -56,10 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CountPlugin implements IComputedAttribute<Dataset, Long> {
 
     @Autowired
-    private IEsRepository esRepo;
-
-    @Autowired
-    private IRuntimeTenantResolver tenantResolver;
+    private EsRepositoryFacade esRepoFacade;
 
     @Autowired
     private IndexAliasResolver indexAliasResolver;
@@ -111,7 +107,7 @@ public class CountPlugin implements IComputedAttribute<Dataset, Long> {
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
         searchKey.setSearchIndex(indexAliasResolver.resolveAliasName());
         searchKey.setCrs(projectGeoSettings.getCrs());
-        count = esRepo.count(searchKey, dataset.getSubsettingClause());
+        count = esRepoFacade.count(searchKey, dataset.getSubsettingClause());
     }
 
     @Override

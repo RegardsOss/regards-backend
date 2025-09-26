@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.indexer.dao;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.dao.converter.LinkedHashMapToSort;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
@@ -27,6 +26,7 @@ import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import jakarta.annotation.Nullable;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.springframework.data.domain.Page;
@@ -73,16 +73,14 @@ public interface IEsRepository {
     boolean createIndex(String index, CreateIndexConfiguration configuration);
 
     /**
-     * @see #putMappings(String, Set)
-     */
-    default boolean putMappings(String index, AttributeDescription... mappings) {
-        return putMappings(index, Sets.newHashSet(mappings));
-    }
-
-    /**
      * Add mappings for the given index
      */
     boolean putMappings(String index, Set<AttributeDescription> mappings);
+
+    /**
+     * Get mappings from the given index
+     */
+    Map<String, Object> getMappings(String index);
 
     /**
      * Create an alias for an index
@@ -225,7 +223,12 @@ public interface IEsRepository {
      * @param <T>     document type
      * @return found document or null
      */
-    <T extends IIndexable> T get(Optional<String> index, String docType, String docId, Class<T> clazz);
+    @Deprecated
+    default <T extends IIndexable> T get(Optional<String> index, String docType, String docId, Class<T> clazz) {
+        return get(index.orElse(null), docType, docId, clazz);
+    }
+
+    <T extends IIndexable> T get(@Nullable String index, String docType, String docId, Class<T> clazz);
 
     default <T extends IIndexable> T get(String docType, String docId, Class<T> clazz) {
         return get(Optional.empty(), docType, docId, clazz);
@@ -241,8 +244,14 @@ public interface IEsRepository {
      * @param <T>      document type
      * @return found document of same type as document or null
      */
+    @Deprecated
     @SuppressWarnings("unchecked")
     default <T extends IIndexable> T get(final Optional<String> index, final T document) {
+        return (T) get(index.orElse(null), document);
+    }
+
+    @SuppressWarnings("unchecked")
+    default <T extends IIndexable> T get(@Nullable String index, final T document) {
         return (T) get(index, document.getType(), document.getDocId(), document.getClass());
     }
 
@@ -272,17 +281,6 @@ public interface IEsRepository {
      * @return number of deleted elements
      */
     long deleteByQuery(String index, ICriterion criterion);
-
-    /**
-     * Same as {@link #delete(String, String, String)} using docId and type of provided document
-     *
-     * @param index    index
-     * @param document IIndexable object specifying docId and type
-     * @return true if document no more exists, false otherwise
-     */
-    default boolean delete(final String index, final IIndexable document) {
-        return delete(index, document.getType(), document.getDocId());
-    }
 
     /**
      * Searching first page of elements from index giving page size with facets.

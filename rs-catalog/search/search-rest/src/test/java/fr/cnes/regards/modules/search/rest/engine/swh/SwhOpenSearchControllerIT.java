@@ -134,9 +134,8 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         dataSetRepo.deleteAll();
         modelRepo.deleteAll();
         attrModelRepo.deleteAll();
-        esRepo.deleteAll(getDefaultTenant());
-
         prepareProject();
+        esRepo.deleteAll(getDefaultTenant());
 
         // - Import models
         Model dataModel = modelService.importModel(this.getClass().getResourceAsStream("model-SWH_Data.xml"));

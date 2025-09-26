@@ -25,9 +25,9 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.service.EsRepositoryFacade;
 import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
 import fr.cnes.regards.modules.model.domain.IComputedAttribute;
@@ -63,7 +63,7 @@ public abstract class AbstractDataObjectComputePlugin<R> implements IComputedAtt
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
-    protected IEsRepository esRepo;
+    protected EsRepositoryFacade esRepositoryFacade;
 
     @Autowired
     protected IRuntimeTenantResolver tenantResolver;
@@ -149,7 +149,7 @@ public abstract class AbstractDataObjectComputePlugin<R> implements IComputedAtt
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
         searchKey.setSearchIndex(indexAliasResolver.resolveAliasName());
         searchKey.setCrs(projectGeoSettings.getCrs());
-        esRepo.searchAll(searchKey, this.doCompute(), dataset.getSubsettingClause());
+        esRepositoryFacade.searchAll(searchKey, this.doCompute(), dataset.getSubsettingClause());
         log.debug("Attribute {} computed for Dataset {}. Result: {}",
                   parameterAttribute.getFullJsonPath(),
                   dataset.getIpId().toString(),

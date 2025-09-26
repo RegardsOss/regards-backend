@@ -24,9 +24,14 @@ package fr.cnes.regards.modules.indexer.service;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.indexer.domain.EsIndexAlias;
+import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static fr.cnes.regards.modules.indexer.dao.EsRepository.ALIAS_SUFFIX;
 
@@ -37,9 +42,20 @@ import static fr.cnes.regards.modules.indexer.dao.EsRepository.ALIAS_SUFFIX;
 @Component
 public class IndexAliasResolver {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(IndexAliasResolver.class);
+
     private final IRuntimeTenantResolver tenantResolver;
 
     private final IndexAliasService indexAliasService;
+
+    /**
+     * Validates any string that:
+     * <ul>
+     *   <li>Starts with any text (including empty),</li>
+     *   <li>May optionally end with an underscore followed by a number (_<number>).</li>
+     * </ul>
+     */
+    private static final Pattern SUFFIX_PATTERN = Pattern.compile("^(.*?)(?:_(\\d+))?$");
 
     public IndexAliasResolver(IRuntimeTenantResolver tenantResolver, IndexAliasService indexAliasService) {
         this.tenantResolver = tenantResolver;
@@ -67,9 +83,6 @@ public class IndexAliasResolver {
     public String resolveCurrentIndex(String tenant) {
         String alias = resolveAliasName(tenant);
         EsIndexAlias aliasEntry = indexAliasService.getByAlias(alias);
-        if (aliasEntry == null) {
-            throw new IllegalStateException("No alias configured for tenant: " + tenant);
-        }
         return aliasEntry.getCurrent();
     }
 
@@ -80,6 +93,25 @@ public class IndexAliasResolver {
         String alias = resolveAliasName(tenant);
         EsIndexAlias aliasEntry = indexAliasService.getByAlias(alias);
         return Optional.ofNullable(aliasEntry).map(EsIndexAlias::getBuilding);
+    }
+
+    /**
+     * Increments an index name by appending or increasing a numeric suffix.
+     */
+    public String resolveNextIndexName(String tenant) {
+        String indexName = resolveBuildingIndex(tenant).orElse(resolveCurrentIndex(tenant));
+        if (Strings.isBlank(indexName)) {
+            throw new IllegalStateException("Index name cannot be null or empty for tenant: " + tenant);
+        }
+        Matcher matcher = SUFFIX_PATTERN.matcher(indexName);
+        if (matcher.matches()) {
+            String baseName = matcher.group(1);
+            String numberPart = matcher.group(2);
+            //If the index name has a numeric suffix, the number is incremented, otherwise it is initialized to 1
+            int nextNumber = (numberPart != null) ? Integer.parseInt(numberPart) + 1 : 1;
+            return baseName + "_" + nextNumber;
+        }
+        return indexName + "_1";
     }
 
 }

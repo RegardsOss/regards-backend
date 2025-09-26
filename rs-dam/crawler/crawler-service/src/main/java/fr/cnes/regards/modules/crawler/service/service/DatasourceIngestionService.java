@@ -58,11 +58,11 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveLightResult;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
+import fr.cnes.regards.modules.indexer.service.EsRepositoryFacade;
 import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelService;
@@ -104,11 +104,13 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                                                                                         .append(DateTimeFormatter.ISO_LOCAL_TIME)
                                                                                         .toFormatter();
 
+    public static final String BUILDING_INDEX_SUFFIX = "_building";
+
     /**
      * Only used to delete all data objects from a removed datasource
      */
     @Autowired
-    private IEsRepository esRepos;
+    private EsRepositoryFacade esRepositoryFacade;
 
     @Autowired
     private IDatasourceIngestionRepository dsIngestionRepos;
@@ -183,26 +185,51 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                                                              .toList();
 
         // Add DatasourceIngestion for unmanaged datasource with immediate next planned ingestion date
-        pluginConfs.stream()
-                   .filter(pluginConf -> !dsIngestionRepos.existsById(pluginConf.getBusinessId()))
-                   .map(pluginConf -> dsIngestionRepos.save(new DatasourceIngestion(pluginConf,
-                                                                                    OffsetDateTime.now()
-                                                                                                  .withOffsetSameInstant(
-                                                                                                      ZoneOffset.UTC))))
-                   .forEach(dsIngestion -> dsIngestionsMap.put(dsIngestion.getId(), dsIngestion));
+        pluginConfs.forEach(cfg -> {
+            String id = cfg.getBusinessId();
+            if (!dsIngestionRepos.existsById(id)) {
+                DatasourceIngestion ds = dsIngestionRepos.save(new DatasourceIngestion(cfg,
+                                                                                       OffsetDateTime.now()
+                                                                                                     .withOffsetSameInstant(
+                                                                                                         ZoneOffset.UTC)));
+                dsIngestionsMap.put(ds.getId(), ds);
+            }
+
+            //If there is a building index for this tenant, then we have to add datasourceIngestions dedicated to the
+            // building index
+            if (indexAliasResolver.resolveBuildingIndex(currentTenant).isPresent()) {
+                String buildingId = id + BUILDING_INDEX_SUFFIX;
+                if (!dsIngestionRepos.existsById(buildingId)) {
+                    DatasourceIngestion ds = dsIngestionRepos.save(new DatasourceIngestion(cfg,
+                                                                                           OffsetDateTime.now()
+                                                                                                         .withOffsetSameInstant(
+                                                                                                             ZoneOffset.UTC),
+                                                                                           true));
+                    dsIngestionsMap.put(ds.getId(), ds);
+                }
+            }
+
+        });
+
         // Remove DatasourceIngestion for removed datasources and plan data objects deletion from Elasticsearch
-        dsIngestionsMap.keySet()
-                       .stream()
-                       .filter(id -> !pluginService.exists(id))
-                       .map(id -> this.planDatasourceDataObjectsDeletion(currentTenant, id))
-                       .forEach(this::deleteDatasourceIngestion);
+        List<String> idsToDelete = dsIngestionsMap.keySet()
+                                                  .stream()
+                                                  .filter(id -> !pluginService.exists(getPluginId(id)))
+                                                  .toList();
+
+        idsToDelete.stream()
+                   .map(id -> this.planDatasourceDataObjectsDeletion(currentTenant, id))
+                   .forEach(this::deleteDatasourceIngestion);
+
+        // Keep the map in tune with reality
+        idsToDelete.forEach(dsIngestionsMap::remove);
 
         // For previously ingested datasources, compute next planned ingestion date
-        pluginConfs.forEach(pluginConf -> {
+        dsIngestionsMap.values().forEach(ds -> {
             try {
-                updatePlannedDate(dsIngestionsMap.get(pluginConf.getBusinessId()));
+                updatePlannedDate(ds);
             } catch (RuntimeException | ModuleException e) {
-                LOGGER.error("Cannot compute next ingestion planned date", e);
+                LOGGER.error("Cannot compute next ingestion planned date for {}", ds.getId(), e);
             }
         });
     }
@@ -326,11 +353,10 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         deletionThreadPoolExecutor.submit(() -> {
             try {
                 LOGGER.info("Removing all data objects associated to data source {}...", dataSourceId);
-                String alias = indexAliasResolver.resolveAliasName(tenant);
-                long deletedCount = esRepos.deleteByQuery(alias,
-                                                          ICriterion.eq("dataSourceId",
-                                                                        dataSourceId,
-                                                                        StringMatchType.KEYWORD));
+                long deletedCount = esRepositoryFacade.deleteByQueryOnAliasAndBuildingIndex(tenant,
+                                                                                            ICriterion.eq("dataSourceId",
+                                                                                                          dataSourceId,
+                                                                                                          StringMatchType.KEYWORD));
                 LOGGER.info("...{} data objects removed.", deletedCount);
             } catch (RsRuntimeException e) {
                 LOGGER.error("...Cannot remove data objects associated to data source", e);
@@ -349,7 +375,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     @Transactional(noRollbackFor = { ModuleException.class, NotAvailablePluginConfigurationException.class })
     public void updatePlannedDate(DatasourceIngestion dsIngestion)
         throws ModuleException, NotAvailablePluginConfigurationException {
-        int refreshRate = ((IDataSourcePlugin) pluginService.getPlugin(dsIngestion.getId())).getRefreshRate();
+        int refreshRate = ((IDataSourcePlugin) pluginService.getPlugin(getPluginId(dsIngestion.getId()))).getRefreshRate();
         // Take into account ONLY data source with null nextPlannedIngestDate
         if (dsIngestion.getNextPlannedIngestDate() == null) {
             switch (dsIngestion.getStatus()) {
@@ -416,7 +442,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             return Optional.empty();
         }
         DatasourceIngestion dsi = odsi.get();
-        PluginConfiguration pluginConf = pluginService.getPluginConfiguration(datasourceIngestionId);
+        PluginConfiguration pluginConf = pluginService.getPluginConfiguration(getPluginId(datasourceIngestionId));
         OffsetDateTime lastUpdateDate = dsi.getLastIngestDate();
         IDataSourcePlugin dsPlugin;
         try {
@@ -428,13 +454,20 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         BulkSaveLightResult saveResult;
         OffsetDateTime ingestionStart = OffsetDateTime.now();
         Long datasourceId = pluginConf.getId();
-        indexService.createIndexAndAliasIfNeeded(tenant);
+        indexService.createIndexAndAliasIfNeeded(tenant, false);
         // i decided not to put a cache here because attribute can be updated... even if it is minor updates it can
         // be taken into account by mappings. In case crawling seem to be slower because of this we can always add one
         // but it should be reset with attribute updates
         //lets find the model attributes so that we can have mappings for this model and try to put them.
         String modelName = dsPlugin.getModelName();
-        indexService.configureMappings(tenant, modelName);
+
+        //We need to get the name of the real index (not the alias) in order to configure its mapping
+        String indexName = dsi.isBuilding() ?
+            indexAliasResolver.resolveBuildingIndex(tenant)
+                              .orElseThrow(() -> new IllegalStateException("No building index found for tenant "
+                                                                           + tenant)) :
+            indexAliasResolver.resolveCurrentIndex(tenant);
+        indexService.configureMappings(indexName, modelName);
         saveResult = readDatasource(new IngestionParameters(lastUpdateDate,
                                                             tenant,
                                                             dsPlugin,
@@ -447,11 +480,12 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             // and its ingestion), we must search for it and do as it has been updated (to update all associated data
             // objects which have a lastUpdate date >= now)
             SimpleSearchKey<Dataset> searchKey = new SimpleSearchKey<>(EntityType.DATASET.toString(), Dataset.class);
-            String alias = indexAliasResolver.resolveAliasName(tenant);
-            searchKey.setSearchIndex(alias);
+            searchKey.setSearchIndex(indexName);
             searchKey.setCrs(projectGeoSettings.getCrs());
             Set<Dataset> datasetsToUpdate = new HashSet<>();
-            esRepos.searchAll(searchKey, datasetsToUpdate::add, ICriterion.eq("plgConfDataSource.id", datasourceId));
+            esRepositoryFacade.searchAll(searchKey,
+                                         datasetsToUpdate::add,
+                                         ICriterion.eq("plgConfDataSource.id", datasourceId));
             if (!datasetsToUpdate.isEmpty()) {
                 sendMessage("Start updating datasets associated to datasource...", datasourceIngestionId);
                 try {
@@ -466,6 +500,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                                                         OffsetDateTime.now(),
                                                         true,
                                                         datasourceIngestionId,
+                                                        dsi.isBuilding(),
                                                         true);
                     // skipDissociationStep is set to true because this method only upserts dataObjects,
                     // and dissociation step is needed only when dataset is updated
@@ -512,7 +547,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     public void scheduleNowDatasourceIngestionFromDate(String datasourceIngestionId, OffsetDateTime fromDate)
         throws ModuleException {
         DatasourceIngestion dsi = getDatasourceIngestionOrThrowIfRunning(datasourceIngestionId);
-        PluginConfiguration pluginConf = pluginService.getPluginConfiguration(datasourceIngestionId);
+        PluginConfiguration pluginConf = pluginService.getPluginConfiguration(getPluginId(datasourceIngestionId));
         IDataSourcePlugin dsPlugin;
         try {
             dsPlugin = pluginService.getPlugin(pluginConf.getBusinessId());
@@ -734,14 +769,16 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
      */
     public BulkSaveResult createOrUpdateDataObjects(IngestionParameters ingestionParameters,
                                                     String datasourceIngestionId,
-                                                    List<DataObject> dataObjects) throws ModuleException {
+                                                    List<DataObject> dataObjects,
+                                                    boolean concernABuildingIndex) throws ModuleException {
         sendMessage(String.format("  Indexing %d objects...", dataObjects.size()), datasourceIngestionId);
 
         BulkSaveResult bulkSaveResult = entityIndexerService.upsertDataObjects(ingestionParameters.tenant(),
                                                                                ingestionParameters.datasourceId(),
                                                                                ingestionParameters.ingestionStart(),
                                                                                dataObjects,
-                                                                               datasourceIngestionId);
+                                                                               datasourceIngestionId,
+                                                                               concernABuildingIndex);
         if (bulkSaveResult.getInErrorDocsCount() > 0) {
             sendMessage(String.format("  ...%d objects cannot be saved:%n%s",
                                       bulkSaveResult.getInErrorDocsCount(),
@@ -763,5 +800,15 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         } else {
             jobInfoService.stopJob(datasourceIngestion.getJobId());
         }
+    }
+
+    /**
+     * Return plugin ID of a {@link DatasourceIngestion} from the DatasourceIngestion ID
+     */
+    private String getPluginId(String id) {
+        // is it a building index ?
+        return id != null && id.endsWith(BUILDING_INDEX_SUFFIX) ?
+            // then remove suffix
+            id.substring(0, id.length() - BUILDING_INDEX_SUFFIX.length()) : id;
     }
 }

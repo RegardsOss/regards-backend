@@ -24,9 +24,11 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.crawler.service.service.CatalogResetService;
 import fr.cnes.regards.modules.crawler.service.service.IEntityIndexerService;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +41,8 @@ public class IndexController {
 
     public static final String TYPE_MAPPING = "/index";
 
+    public static final String INDEX_BUILDING = "/index/building";
+
     public static final String UPDATE_DATASETS = "/update/datasets";
 
     public static final String UPDATE_COLLECTIONS = "/update/collections";
@@ -48,6 +52,9 @@ public class IndexController {
 
     @Autowired
     private CatalogResetService catalogResetService;
+
+    @Autowired
+    private IndexAliasResolver indexAliasResolver;
 
     /**
      * Current tenant resolver
@@ -91,6 +98,16 @@ public class IndexController {
         String tenant = runtimeTenantResolver.getTenant();
         entityIndexerService.updateAllCollections(tenant, OffsetDateTime.now());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * Return true if there is a building index for the tenant
+     */
+    @GetMapping(INDEX_BUILDING)
+    @ResourceAccess(description = "indicates whether a building index exists", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Boolean> hasBuilding() {
+        String tenant = runtimeTenantResolver.getTenant();
+        return ResponseEntity.ok(indexAliasResolver.resolveBuildingIndex(tenant).isPresent());
     }
 
 }

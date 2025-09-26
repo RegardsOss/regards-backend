@@ -38,4 +38,5 @@ public interface ICatalogResetService {
      * Delete existing indexes, recreate entities and clear all datasource ingestions
      */
     void resetCatalog() throws ModuleException;
+
 }

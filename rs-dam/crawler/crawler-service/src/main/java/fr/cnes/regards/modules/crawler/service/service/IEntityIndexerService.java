@@ -49,12 +49,10 @@ public interface IEntityIndexerService {
      * @param updateDate                    current update date (usually now)
      * @param forceAssociatedEntitiesUpdate if true, force associated entities update (usually data objects for dataset)
      */
-    default void updateEntityIntoEs(String tenant,
-                                    UniformResourceName ipId,
-                                    OffsetDateTime updateDate,
-                                    boolean forceAssociatedEntitiesUpdate) throws ModuleException {
-        this.updateEntityIntoEs(tenant, ipId, null, updateDate, forceAssociatedEntitiesUpdate, null, false);
-    }
+    void updateEntityIntoEs(String tenant,
+                            UniformResourceName ipId,
+                            OffsetDateTime updateDate,
+                            boolean forceAssociatedEntitiesUpdate) throws ModuleException;
 
     /**
      * Manage computed attributes computation
@@ -81,6 +79,7 @@ public interface IEntityIndexerService {
                             OffsetDateTime updateDate,
                             boolean forceAssociatedEntitiesUpdate,
                             String dsiId,
+                            boolean buildingIndex,
                             boolean isNewIndex) throws ModuleException;
 
     /**
@@ -90,6 +89,7 @@ public interface IEntityIndexerService {
      * @param updateDate             update date saved inside data objects
      * @param forceDataObjectsUpdate true to force all associated data objects update
      * @param dsiId                  datasetIngestion id   @throws ModuleException
+     * @param buildingIndex          True if the datasource ingestion is for a building index.
      * @param skipDissociationStep   if true, skip the dissociation step (step needed only if dataset has been updated)
      *                               the dissociation step is the step where all data objects which do not match the dataset subsetting clause anymore are detached to the dataset
      */
@@ -99,6 +99,7 @@ public interface IEntityIndexerService {
                         OffsetDateTime updateDate,
                         boolean forceDataObjectsUpdate,
                         String dsiId,
+                        boolean buildingIndex,
                         boolean skipDissociationStep) throws ModuleException;
 
     /**
@@ -125,7 +126,8 @@ public interface IEntityIndexerService {
                                      Long datasourceId,
                                      OffsetDateTime now,
                                      List<DataObject> objects,
-                                     String datasourceIngestionId) throws ModuleException;
+                                     String datasourceIngestionId,
+                                     boolean buildingIndex) throws ModuleException;
 
     /**
      * Delete given data object from Elasticsearch
@@ -142,18 +144,16 @@ public interface IEntityIndexerService {
      *
      * @param tenant concerned tenant
      * @param ipIds  id of data to delete
-     * @return URN of all concerned datasets
      */
-    Set<UniformResourceName> deleteDataObjectsAndUpdate(String tenant, Set<String> ipIds);
+    void deleteDataObjectsAndUpdate(String tenant, Set<String> ipIds);
 
     /**
      * Delete given data object from Elasticsearch
      *
      * @param tenant       concerned tenant
      * @param datasourceId id of datasource
-     * @return number of deleted objects
      */
-    long deleteDataObjectsFromDatasource(String tenant, Long datasourceId);
+    void deleteDataObjectsFromDatasource(String tenant, Long datasourceId);
 
     /**
      * Create a notification for admin
@@ -166,7 +166,7 @@ public interface IEntityIndexerService {
     /**
      * Delete index and recreate entities
      */
-    void deleteIndexNRecreateEntities(String tenant) throws ModuleException;
+    void createBuildingIndexAndCreateEntities(String tenant) throws ModuleException;
 
     /**
      * Schedule {@link fr.cnes.regards.modules.crawler.service.job.UpdateEntityIntoEsJob}s for each {@link EntityEventRequest}
@@ -198,4 +198,5 @@ public interface IEntityIndexerService {
      * Set isRunning status to FAILED for the given {@link EntityEventRequest} id so it can not be processed again
      */
     void failedEntityUpdateRequests(Long requestId);
+
 }

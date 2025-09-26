@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.indexer.service;
 
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,12 +37,12 @@ import java.util.Collection;
 public class IndexerService implements IIndexerService {
 
     @Autowired
-    private IEsRepository repository;
+    private EsRepositoryFacade esRepositoryFacade;
 
     @Override
     public boolean createIndex(String pIndex) {
-        if (!repository.indexExists(pIndex)) {
-            boolean created = repository.createIndex(pIndex);
+        if (!esRepositoryFacade.indexExists(pIndex)) {
+            boolean created = esRepositoryFacade.createIndex(pIndex);
             if (created) {
                 String[] types = Arrays.stream(EntityType.values())
                                        .map(EntityType::toString)
@@ -56,39 +55,30 @@ public class IndexerService implements IIndexerService {
 
     @Override
     public boolean deleteIndex(String pIndex) {
-        if (repository.indexExists(pIndex)) {
-            return repository.deleteIndex(pIndex);
+        if (esRepositoryFacade.indexExists(pIndex)) {
+            return esRepositoryFacade.deleteIndexOrAlias(pIndex);
         }
         return true;
     }
 
     @Override
     public boolean indexExists(String pIndex) {
-        return repository.indexExists(pIndex);
+        return esRepositoryFacade.indexExists(pIndex);
     }
 
     @Override
     public boolean saveEntity(String pIndex, IIndexable pEntity) {
-        return repository.save(pIndex, pEntity);
+        return esRepositoryFacade.saveToIndexOrAlias(pIndex, pEntity);
     }
 
     @Override
     public void refresh(String pIndex) {
-        repository.refresh(pIndex);
-    }
-
-    @Override
-    public BulkSaveResult saveBulkEntities(String pIndex, IIndexable... pEntities) {
-        return repository.saveBulk(pIndex, pEntities);
+        esRepositoryFacade.refreshIndex(pIndex);
     }
 
     @Override
     public BulkSaveResult saveBulkEntities(String pIndex, Collection<? extends IIndexable> pEntities) {
-        return repository.saveBulk(pIndex, pEntities);
+        return esRepositoryFacade.saveBulkToIndexOrAlias(pIndex, pEntities);
     }
 
-    @Override
-    public boolean deleteEntity(String pIndex, IIndexable pEntity) {
-        return repository.delete(pIndex, pEntity);
-    }
 }

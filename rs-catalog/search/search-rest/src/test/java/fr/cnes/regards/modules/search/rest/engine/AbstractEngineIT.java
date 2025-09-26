@@ -228,7 +228,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     GsonBuilder builder = new GsonBuilder();
 
     protected void initIndex(String index) {
-        String aliasName = indexAliasResolver.resolveAliasName(index);
+        String aliasName = IndexAliasResolver.resolveAliasName(index);
 
         if (esRepository.indexExists(index)) {
             esRepository.deleteIndex(index);

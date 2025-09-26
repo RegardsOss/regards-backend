@@ -61,9 +61,6 @@ public interface IIndexerService {
      */
     void refresh(String index);
 
-    BulkSaveResult saveBulkEntities(String index, IIndexable... entities);
-
     BulkSaveResult saveBulkEntities(String index, Collection<? extends IIndexable> entities);
 
-    boolean deleteEntity(String index, IIndexable entity);
 }

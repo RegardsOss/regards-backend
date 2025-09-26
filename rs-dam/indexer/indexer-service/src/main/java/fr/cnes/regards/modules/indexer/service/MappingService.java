@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.indexer.service;
 
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
@@ -23,10 +22,10 @@ import java.util.stream.Collectors;
 public class MappingService implements IMappingService {
 
     @Autowired
-    private IEsRepository esRepos;
+    private EsRepositoryFacade esRepositoryFacade;
 
     @Override
-    public void configureMappings(String tenant, List<ModelAttrAssoc> modelAttributes) {
+    public void configureMappings(String index, List<ModelAttrAssoc> modelAttributes) {
         if (!modelAttributes.isEmpty()) {
             Set<AttributeDescription> mappings = new HashSet<>();
             for (ModelAttrAssoc modelAttribute : modelAttributes) {
@@ -71,7 +70,7 @@ public class MappingService implements IMappingService {
                 }
             }
             // now lets put the mappings into ES
-            esRepos.putMappings(tenant, mappings);
+            esRepositoryFacade.putMappingsToOneIndex(index, mappings);
         }
     }
 }

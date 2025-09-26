@@ -31,7 +31,6 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.LongProperty;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -74,13 +73,13 @@ public class LongSumComputePlugin extends AbstractDataObjectComputePlugin<Long> 
         super.result = 0L;
     }
 
-    private void doSum(Optional<IProperty<?>> propertyOpt) {
-        if (propertyOpt.isPresent()) {
-            Long value = ((Number) propertyOpt.get().getValue()).longValue();
-            if (value != null) {
-                super.result += value;
-            }
-        }
+    private void doSum(DataObject object) {
+        long value = extractProperty(object).map(IProperty::getValue)
+                                            .filter(Number.class::isInstance)
+                                            .map(Number.class::cast)
+                                            .map(Number::longValue)
+                                            .orElse(0L);
+        super.result += value;
     }
 
     /**
@@ -94,9 +93,9 @@ public class LongSumComputePlugin extends AbstractDataObjectComputePlugin<Long> 
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
         searchKey.setSearchIndex(indexAliasResolver.resolveAliasName());
         searchKey.setCrs(projectGeoSettings.getCrs());
-        Double doubleResult = esRepo.sum(searchKey,
-                                         dataset.getSubsettingClause(),
-                                         parameterAttribute.getFullJsonPath());
+        Double doubleResult = esRepositoryFacade.sum(searchKey,
+                                                     dataset.getSubsettingClause(),
+                                                     parameterAttribute.getFullJsonPath());
         result = doubleResult.longValue();
         log.debug("Attribute {} computed for Dataset {}. Result: {}",
                   parameterAttribute.getFullJsonPath(),
@@ -107,7 +106,7 @@ public class LongSumComputePlugin extends AbstractDataObjectComputePlugin<Long> 
     @Override
     protected Consumer<DataObject> doCompute() {
         super.result = 0L;
-        return object -> doSum(extractProperty(object));
+        return this::doSum;
     }
 
 }

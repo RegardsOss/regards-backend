@@ -94,9 +94,9 @@ public class IntSumComputePlugin extends AbstractDataObjectComputePlugin<Integer
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
         searchKey.setSearchIndex(indexAliasResolver.resolveAliasName());
         searchKey.setCrs(projectGeoSettings.getCrs());
-        Double doubleResult = esRepo.sum(searchKey,
-                                         dataset.getSubsettingClause(),
-                                         parameterAttribute.getFullJsonPath());
+        Double doubleResult = esRepositoryFacade.sum(searchKey,
+                                                     dataset.getSubsettingClause(),
+                                                     parameterAttribute.getFullJsonPath());
         result = doubleResult.intValue();
         log.debug("Attribute {} computed for Dataset {}. Result: {}",
                   parameterAttribute.getFullJsonPath(),

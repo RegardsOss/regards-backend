@@ -64,6 +64,7 @@ import fr.cnes.regards.modules.indexer.domain.spatial.ILocalizable;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
+import jakarta.annotation.Nullable;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
@@ -82,6 +83,8 @@ import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasA
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest.AliasActions.Type;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
+import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
@@ -107,6 +110,8 @@ import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.cluster.metadata.AliasMetadata;
+import org.elasticsearch.cluster.metadata.MappingMetadata;
+import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.core.TimeValue;
@@ -423,11 +428,24 @@ public class EsRepository implements IEsRepository {
     }
 
     /**
-     * If you think this method is horrible and completely useless (and bordel line) look at next method...
+     * If you think this method is horrible and completely useless (and borderline) look at next method...
      */
     @SuppressWarnings("unchecked")
     private static Map<String, Object> toMap(Object o) {
         return (Map<String, Object>) o;
+    }
+
+    private static Object mapAndGet(Object o, String key, String... keys) {
+        Map<String, Object> map = toMap(o);
+        Object value = map.get(key);
+        for (String k : keys) {
+            if (value == null) {
+                return null;
+            }
+            map = toMap(value);
+            value = map.get(k);
+        }
+        return value;
     }
 
     /**
@@ -440,21 +458,14 @@ public class EsRepository implements IEsRepository {
         String lastPathAttName = attribute.contains(".") ?
             attribute.substring(attribute.lastIndexOf('.') + 1) :
             attribute;
-        try {
-            // Extract types mapping from the ES mapping response
-            Iterator<Object> i = map.values().iterator();
-            if (i.hasNext()) {
-                Map<String, Object> allTypesMapping = toMap(toMap(i.next()).get("mappings"));
-                // Check if the given attribute is present in the mappings, then return true if it is a "text" attribute
-                if (allTypesMapping.containsKey(attribute)) {
-                    return toMap(toMap(toMap(allTypesMapping.get(attribute)).get(MAPPING)).get(lastPathAttName)).get(
-                        "type").equals("text");
-                }
-            }
-            return false;
-        } catch (NullPointerException e) { // NOSONAR (better catch a NPE than testing all imbricated maps)
-            return false;
+
+        // Extract types mapping from the ES mapping response
+        Iterator<Object> i = map.values().iterator();
+        if (i.hasNext()) {
+            Object value = mapAndGet(i.next(), "mappings", attribute, MAPPING, lastPathAttName, "type");
+            return Objects.equals(value, "text");
         }
+        return false;
     }
 
     @Override
@@ -463,7 +474,7 @@ public class EsRepository implements IEsRepository {
         try {
             client.close();
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -476,6 +487,8 @@ public class EsRepository implements IEsRepository {
     @Override
     public boolean createIndex(String index, CreateIndexConfiguration configuration) {
         try {
+
+            LOGGER.info("index creation for index {}", index);
             CreateIndexRequest request = new CreateIndexRequest(index.toLowerCase());
 
             // settings (define shards number)
@@ -491,7 +504,7 @@ public class EsRepository implements IEsRepository {
             CreateIndexResponse response = client.indices().create(request, RequestOptions.DEFAULT);
             return response.isAcknowledged();
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -599,7 +612,38 @@ public class EsRepository implements IEsRepository {
             AcknowledgedResponse putMappingResponse = client.indices().putMapping(request, RequestOptions.DEFAULT);
             return putMappingResponse.isAcknowledged();
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
+            throw new RsRuntimeException(e);
+        }
+    }
+
+    @Override
+    public Map<String, Object> getMappings(String indexOrAlias) {
+        try {
+            GetMappingsRequest request = new GetMappingsRequest().indices(indexOrAlias.toLowerCase());
+            GetMappingsResponse response = client.indices().getMapping(request, RequestOptions.DEFAULT);
+
+            ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetadata>> all = response.getMappings();
+            if (all == null || all.isEmpty()) {
+                LOGGER.warn("No mapping found for {}", indexOrAlias);
+                return Collections.emptyMap();
+            }
+            ImmutableOpenMap<String, MappingMetadata> idx = all.get(indexOrAlias.toLowerCase());
+
+            if (idx == null || idx.isEmpty()) {
+                throw new IllegalStateException("No mapping found for index or alias: " + indexOrAlias);
+            }
+
+            MappingMetadata md = idx.iterator().next().value;
+
+            if (md == null) {
+                LOGGER.warn("No mapping content for {}", indexOrAlias);
+                return Collections.emptyMap();
+            }
+
+            return md.getSourceAsMap();
+        } catch (IOException e) {
+            LOGGER.error("Error while retrieving mapping for {}: {}", indexOrAlias, e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -611,6 +655,7 @@ public class EsRepository implements IEsRepository {
     @Override
     public boolean createAlias(String index, String aliasName) {
         try {
+            LOGGER.info("Alias creation {} for index {}", aliasName, index);
             IndicesAliasesRequest request = new IndicesAliasesRequest();
             AliasActions createAliasAction = new AliasActions(Type.ADD).index(index.toLowerCase())
                                                                        .alias(aliasName.toLowerCase());
@@ -618,7 +663,7 @@ public class EsRepository implements IEsRepository {
             AcknowledgedResponse response = client.indices().updateAliases(request, RequestOptions.DEFAULT);
             return response.isAcknowledged();
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -644,7 +689,7 @@ public class EsRepository implements IEsRepository {
             AcknowledgedResponse response = client.indices().putSettings(request, RequestOptions.DEFAULT);
             return response.isAcknowledged();
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
 
@@ -661,7 +706,7 @@ public class EsRepository implements IEsRepository {
             AcknowledgedResponse response = client.indices().putSettings(request, RequestOptions.DEFAULT);
             return response.isAcknowledged();
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
 
@@ -673,7 +718,7 @@ public class EsRepository implements IEsRepository {
             GetIndexRequest request = new GetIndexRequest(name.toLowerCase());
             return client.indices().exists(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -726,10 +771,10 @@ public class EsRepository implements IEsRepository {
             if (e.status() == RestStatus.NOT_FOUND) {
                 throw new IndexNotFoundException(index.toLowerCase());
             }
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -753,7 +798,7 @@ public class EsRepository implements IEsRepository {
                 return ((Number) map.get("deleted")).longValue();
             }
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -770,7 +815,7 @@ public class EsRepository implements IEsRepository {
             RefreshRequest request = Requests.refreshRequest(index.toLowerCase());
             client.indices().refresh(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -795,9 +840,9 @@ public class EsRepository implements IEsRepository {
     }
 
     @Override
-    public <T extends IIndexable> T get(Optional<String> aliasName, String type, String id, Class<T> clazz) {
+    public <T extends IIndexable> T get(@Nullable String index, String type, String id, Class<T> clazz) {
 
-        GetRequest request = new GetRequest(getAlias(aliasName).toLowerCase(), id);
+        GetRequest request = new GetRequest(getIndexOrBuildAliasName(index).toLowerCase(), id);
 
         try {
             GetResponse response = client.get(request, RequestOptions.DEFAULT);
@@ -807,7 +852,7 @@ public class EsRepository implements IEsRepository {
             String sourceAsString = response.getSourceAsString();
             return deserializeHitsStrategy.deserializeJson(sourceAsString, clazz);
         } catch (final JsonSyntaxException | IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -818,7 +863,7 @@ public class EsRepository implements IEsRepository {
                                                    Class<? extends IIndexable> clazz) {
         // use search0
         SimpleSearchKey<T> searchKey = new SimpleSearchKey(docType, clazz);
-        searchKey.setSearchIndex(getAlias(Optional.empty()));
+        searchKey.setSearchIndex(getIndexOrBuildAliasName(null));
         ICriterion virtualIdCrit = ICriterion.eq("feature.virtualId", virtualId, StringMatchType.KEYWORD);
         return search0(searchKey, PageRequest.of(0, 1), virtualIdCrit, null).getContent().get(0);
     }
@@ -830,7 +875,7 @@ public class EsRepository implements IEsRepository {
             DeleteResponse response = client.delete(request, RequestOptions.DEFAULT);
             return (response.getResult() == Result.DELETED) || (response.getResult() == Result.NOT_FOUND);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -851,7 +896,7 @@ public class EsRepository implements IEsRepository {
                                                   RequestOptions.DEFAULT);
             return response.getResult() == Result.CREATED; // Else UPDATED
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -903,13 +948,10 @@ public class EsRepository implements IEsRepository {
                         DataObjectFeature docFeature = (((DataObject) document).getFeature());
                         result.addSavedDoc(itemResponse.getId(),
                                            itemResponse.getResponse().getResult(),
-                                           Optional.ofNullable(docFeature.getSession()),
-                                           Optional.ofNullable(docFeature.getSessionOwner()));
+                                           docFeature.getSession(),
+                                           docFeature.getSessionOwner());
                     } else {
-                        result.addSavedDoc(itemResponse.getId(),
-                                           itemResponse.getResponse().getResult(),
-                                           Optional.empty(),
-                                           Optional.empty());
+                        result.addSavedDoc(itemResponse.getId(), itemResponse.getResponse().getResult(), null, null);
                     }
                 }
             }
@@ -917,7 +959,7 @@ public class EsRepository implements IEsRepository {
             this.refresh(index);
             return result;
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -961,13 +1003,10 @@ public class EsRepository implements IEsRepository {
                         DataObjectFeature docFeature = (((DataObject) document).getFeature());
                         result.addSavedDoc(itemResponse.getId(),
                                            itemResponse.getResponse().getResult(),
-                                           Optional.ofNullable(docFeature.getSession()),
-                                           Optional.ofNullable(docFeature.getSessionOwner()));
+                                           docFeature.getSession(),
+                                           docFeature.getSessionOwner());
                     } else {
-                        result.addSavedDoc(itemResponse.getId(),
-                                           itemResponse.getResponse().getResult(),
-                                           Optional.empty(),
-                                           Optional.empty());
+                        result.addSavedDoc(itemResponse.getId(), itemResponse.getResponse().getResult(), null, null);
                     }
                 }
             }
@@ -975,7 +1014,7 @@ public class EsRepository implements IEsRepository {
             this.refresh(index);
             return result;
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -991,8 +1030,8 @@ public class EsRepository implements IEsRepository {
             DataObjectFeature docFeature = (((DataObject) document).getFeature());
             result.addInErrorDoc(itemResponse.getId(),
                                  itemResponse.getFailure().getCause(),
-                                 Optional.ofNullable(docFeature.getSession()),
-                                 Optional.ofNullable(docFeature.getSessionOwner()));
+                                 docFeature.getSession(),
+                                 docFeature.getSessionOwner());
             if (itemResponse.getFailure().getMessage().contains(IMapping.GEO_SHAPE_ATTRIBUTE)) {
                 if (errorBuffer != null) {
                     // Save the failling geometry in the log
@@ -1024,10 +1063,7 @@ public class EsRepository implements IEsRepository {
                 }
             }
         } else {
-            result.addInErrorDoc(itemResponse.getId(),
-                                 itemResponse.getFailure().getCause(),
-                                 Optional.empty(),
-                                 Optional.empty());
+            result.addInErrorDoc(itemResponse.getId(), itemResponse.getFailure().getCause(), null, null);
         }
         String msg = String.format("Document of type %s and id %s with label %s cannot be saved",
                                    documents[0].getClass(),
@@ -1087,7 +1123,7 @@ public class EsRepository implements IEsRepository {
             }
             // loop.
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -1145,7 +1181,7 @@ public class EsRepository implements IEsRepository {
                                            facetsMap);
             return new Tuple<>(uniqueValues, facets);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             throw new RsRuntimeException(e);
         }
     }
@@ -1921,13 +1957,9 @@ public class EsRepository implements IEsRepository {
                     String lastPathAtt = attribute.contains(".") ?
                         attribute.substring(attribute.lastIndexOf('.') + 1) :
                         attribute;
-                    // BEWARE : instead of map.get(index) on the innermost map value retrieval, we use directly
-                    // map.values().iterator().next() to get value associated to singleton element whatever the key is
-                    // Indeed, because of Elasticsearch version 6 single type update, some indices are retrieved through
+                    // BEWARE: Elasticsearch version 6 single type update, some indices are retrieved through
                     // an alias. Asking an alias mapping returned a block with index name, not alias name
-                    return toMap(toMap(toMap(toMap(toMap(toMap(map.values().iterator().next()).get("mappings"))).get(
-                        attribute)).get(MAPPING)).get(lastPathAtt)).get("type").equals("text");
-
+                    return isTextMapping(map, attribute);
                 }
             }
         } catch (ResponseException e) {
@@ -1963,7 +1995,7 @@ public class EsRepository implements IEsRepository {
                                                          index + "/_mapping/field/" + Joiner.on(",")
                                                                                             .join(ascSortMap.keySet())));
         } catch (ResponseException e) {
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.error("{}", e.getMessage(), e);
             if (e.getMessage().contains(INDEX_NOT_FOUND_EXCEPTION)) {
                 throw new ESIndexNotFoundRuntimeException();
             }
@@ -2743,14 +2775,16 @@ public class EsRepository implements IEsRepository {
     }
 
     /**
-     * Returns given alias if present or retrieves it from RunTimeTenantResolver
+     * Returns given index if present or retrieves the alias name from RunTimeTenantResolver
      *
      * @return String aliasName
      * @throws RsRuntimeException if no alias is found
      */
-    private String getAlias(Optional<String> aliasName) {
-        if (aliasName.isPresent()) {
-            return aliasName.get();
+    private String getIndexOrBuildAliasName(String indexName) {
+        // If index name is present, we simply return it
+        // If not, we need to build the alias name from the tenant name
+        if (indexName != null) {
+            return indexName;
         } else if (tenantResolver != null && tenantResolver.getTenant() != null) {
             return tenantResolver.getTenant() + ALIAS_SUFFIX;
         } else {

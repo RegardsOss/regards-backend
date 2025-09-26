@@ -22,12 +22,14 @@
  */
 package fr.cnes.regards.modules.crawler.service.service;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.indexer.dao.EsRepository;
+import fr.cnes.regards.modules.indexer.service.EsRepositoryFacade;
+import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
@@ -38,24 +40,36 @@ import org.springframework.stereotype.Component;
  * @author mnguyen
  */
 @Component
-public class AliasInitializer implements ApplicationListener<ApplicationReadyEvent> {
-
-    @Autowired
-    private ITenantResolver tenantResolver;
-
-    @Autowired
-    private EsRepository esRepos;
-
-    @Autowired
-    private IndexService indexService;
+public class AliasInitializer implements ApplicationListener<ApplicationStartedEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationListener.class);
 
+    private final ITenantResolver tenantResolver;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    private final EsRepositoryFacade esRepositoryFacade;
+
+    private final IndexService indexService;
+
+    public AliasInitializer(ITenantResolver tenantResolver,
+                            IRuntimeTenantResolver runtimeTenantResolver,
+                            EsRepositoryFacade esRepositoryFacade,
+                            IndexService indexService) {
+        this.tenantResolver = tenantResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.esRepositoryFacade = esRepositoryFacade;
+        this.indexService = indexService;
+    }
+
     @Override
-    public void onApplicationEvent(ApplicationReadyEvent event) {
+    public void onApplicationEvent(ApplicationStartedEvent event) {
         LOGGER.info("Index service started, check if aliases exist");
         for (String tenant : tenantResolver.getAllTenants()) {
-            if (esRepos.indexExists(tenant) && !esRepos.aliasExists(tenant)) {
+            runtimeTenantResolver.forceTenant(tenant);
+            LOGGER.info("Tenant is forced to: [{}]", tenant);
+            if (esRepositoryFacade.indexExists(tenant)
+                && !esRepositoryFacade.aliasExists(IndexAliasResolver.resolveAliasName(tenant))) {
                 LOGGER.info("Creating alias for tenant [{}]", tenant);
                 indexService.createOrUpdateAlias(tenant);
             }

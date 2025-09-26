@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.crawler.service.service.parallel;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionResult;
 import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
@@ -124,8 +126,9 @@ public class EsBulkParallelSaver {
                 esBulkSaveService.setTenant(ingestionParameters.tenant());
                 return datasourceIngestionService.createOrUpdateDataObjects(ingestionParameters,
                                                                             datasourceIngestion.getId(),
-                                                                            dataObjects);
-            } catch (Exception e) {
+                                                                            dataObjects,
+                                                                            datasourceIngestion.isBuilding());
+            } catch (ModuleException e) {
                 LOGGER.error("Error while creating or merging data objects", e);
                 storeErrorIfNeeded(currentCursor, e);
                 throw e;

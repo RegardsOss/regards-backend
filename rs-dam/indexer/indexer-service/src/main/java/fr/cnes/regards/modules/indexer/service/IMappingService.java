@@ -9,5 +9,5 @@ import java.util.List;
  */
 public interface IMappingService {
 
-    void configureMappings(String tenant, List<ModelAttrAssoc> modelAttributes);
+    void configureMappings(String index, List<ModelAttrAssoc> modelAttributes);
 }

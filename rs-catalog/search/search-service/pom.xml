@@ -132,6 +132,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-dao</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-dao</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>

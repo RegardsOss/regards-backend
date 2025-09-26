@@ -31,7 +31,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepLight;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -67,7 +66,6 @@ import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
 import fr.cnes.regards.modules.dam.service.entities.IEntitiesService;
 import fr.cnes.regards.modules.dam.service.entities.visitor.AttributeBuilderVisitor;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.scripts.UpdateGroupsAndDatasetAssociationEsScript;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
@@ -76,7 +74,9 @@ import fr.cnes.regards.modules.indexer.domain.builders.GeoPointBuilder;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
+import fr.cnes.regards.modules.indexer.service.EsRepositoryFacade;
 import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
+import fr.cnes.regards.modules.indexer.service.IndexAliasService;
 import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
@@ -98,9 +98,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
@@ -146,7 +144,7 @@ public class EntityIndexerService implements IEntityIndexerService {
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    protected IEsRepository esRepos;
+    protected EsRepositoryFacade esRepoFacade;
 
     @Autowired
     protected IPluginService pluginService;
@@ -221,6 +219,9 @@ public class EntityIndexerService implements IEntityIndexerService {
     @Autowired
     private IAuthenticationResolver authResolver;
 
+    @Autowired
+    private IndexAliasService indexAliasService;
+
     private static List<String> toErrors(Errors errorsObject) {
         List<String> errors = new ArrayList<>(errorsObject.getErrorCount());
         for (ObjectError objError : errorsObject.getAllErrors()) {
@@ -243,6 +244,18 @@ public class EntityIndexerService implements IEntityIndexerService {
         return errors;
     }
 
+    @Override
+    public void updateEntityIntoEs(String tenant,
+                                   UniformResourceName ipId,
+                                   OffsetDateTime updateDate,
+                                   boolean forceAssociatedEntitiesUpdate) throws ModuleException {
+        this.updateEntityIntoEs(tenant, ipId, null, updateDate, forceAssociatedEntitiesUpdate, null, false, false);
+        // If there is a building index, we have to update the entity into this buildingt index too
+        if (indexAliasResolver.resolveBuildingIndex(tenant).isPresent()) {
+            this.updateEntityIntoEs(tenant, ipId, null, updateDate, forceAssociatedEntitiesUpdate, null, true, false);
+        }
+    }
+
     /**
      * Load given entity from database and update Elasticsearch
      *
@@ -252,7 +265,7 @@ public class EntityIndexerService implements IEntityIndexerService {
      *                                      into account
      * @param updateDate                    update date saved inside data objects
      * @param forceAssociatedEntitiesUpdate for dataset entity, force associated entities (ie data objects) update
-     * @param dsiId                         DataSourceIngestion identifier
+     * @param datasourceIngestionId         DataSourceIngestion identifier
      * @param skipDissociationStep          if true, skip the dissociation step (step needed only if dataset has been updated)
      *                                      the dissociation step is the step where all data objects which do not match the dataset subsetting clause anymore are detached to the dataset
      */
@@ -262,24 +275,30 @@ public class EntityIndexerService implements IEntityIndexerService {
                                    OffsetDateTime minLastUpdateCriteria,
                                    OffsetDateTime updateDate,
                                    boolean forceAssociatedEntitiesUpdate,
-                                   String dsiId,
+                                   String datasourceIngestionId,
+                                   boolean buildingIndex,
                                    boolean skipDissociationStep) throws ModuleException {
         LOGGER.info("Updating {}", ipId.toString());
+        String indexOrAlias = getIndexOrAliasName(tenant, buildingIndex);
+
+        String realIndex = buildingIndex ? indexOrAlias : indexAliasResolver.resolveCurrentIndex(tenant);
         runtimeTenantResolver.forceTenant(tenant);
-        String alias = indexAliasResolver.resolveAliasName(tenant);
+        // String alias = indexAliasResolver.resolveAliasName(tenant);
         AbstractEntity<?> entity = entitiesService.loadWithRelations(ipId);
         // If entity does no more exist in database, it must be deleted from ES
         if (entity == null) {
             LOGGER.debug("Entity is null !!");
             if (ipId.getEntityType() == EntityType.DATASET) {
-                sendDataSourceMessage(String.format("    Dataset with IP_ID %s no more exists...", ipId), dsiId);
-                manageDatasetDelete(alias, ipId.toString(), dsiId);
+                sendDataSourceMessage(String.format("    Dataset with IP_ID %s no more exists...", ipId),
+                                      datasourceIngestionId);
+                manageDatasetDelete(indexOrAlias, ipId.toString(), datasourceIngestionId);
             }
-            esRepos.delete(alias, ipId.getEntityType().toString(), ipId.toString());
-            sendDataSourceMessage(String.format("    ...Dataset with IP_ID %s de-indexed.", ipId), dsiId);
+            esRepoFacade.deleteFromIndexOrAlias(indexOrAlias, ipId.getEntityType().toString(), ipId.toString());
+            sendDataSourceMessage(String.format("    ...Dataset with IP_ID %s de-indexed.", ipId),
+                                  datasourceIngestionId);
         } else { // entity has been created or updated, it must be saved into ES
-            indexService.createIndexAndAliasIfNeeded(tenant);
-            indexService.configureMappings(tenant, entity.getModel().getName());
+            indexService.createIndexAndAliasIfNeeded(realIndex, buildingIndex);
+            indexService.configureMappings(realIndex, entity.getModel().getName());
             ICriterion savedSubsettingClause = null;
             // Remove parameters of dataset datasource to avoid expose security values
             if (entity instanceof Dataset dataset) {
@@ -313,11 +332,12 @@ public class EntityIndexerService implements IEntityIndexerService {
             boolean needAssociatedDataObjectsUpdate = (minLastUpdateCriteria != null) || forceAssociatedEntitiesUpdate;
             // A dataset change may need associated data objects update
             if (!needAssociatedDataObjectsUpdate && (entity instanceof Dataset dataset)) {
+                //TODO: if build, sur le building index, sinon alias
                 needAssociatedDataObjectsUpdate = needAssociatedDataObjectsUpdate(dataset,
-                                                                                  esRepos.get(Optional.of(alias),
-                                                                                              dataset));
+                                                                                  esRepoFacade.get(indexOrAlias,
+                                                                                                   dataset));
             }
-            boolean created = esRepos.save(alias, entity);
+            boolean created = esRepoFacade.saveToIndexOrAlias(indexOrAlias, entity);
             LOGGER.debug("Elasticsearch saving result : {}", created);
             if ((entity instanceof Dataset) && needAssociatedDataObjectsUpdate) {
                 // Subsetting clause is needed by many things
@@ -331,7 +351,8 @@ public class EntityIndexerService implements IEntityIndexerService {
                 updateAssociatedDataObjectsOfDataset((Dataset) entity,
                                                      minLastUpdateCriteria,
                                                      updateDate,
-                                                     dsiId,
+                                                     datasourceIngestionId,
+                                                     buildingIndex,
                                                      skipDissociationStep);
             } else {
                 LOGGER.info("Avoid dataset entity {} - {} data objects association calculation into elasticsearch. "
@@ -395,10 +416,10 @@ public class EntityIndexerService implements IEntityIndexerService {
     /**
      * Search and update associated dataset data objects (ie remove dataset IpId from tags)
      *
-     * @param alias concerned alias
-     * @param ipId  dataset identifier
+     * @param indexOrAlias concerned alias or index name
+     * @param ipId         dataset identifier
      */
-    private void manageDatasetDelete(String alias, String ipId, String dsiId) throws ModuleException {
+    private void manageDatasetDelete(String indexOrAlias, String ipId, String dsiId) throws ModuleException {
         // Search all DataObjects tagging this Dataset (only DataObjects because all other entities are already managed
         // with the system Postgres/RabbitMQ)
         sendDataSourceMessage(String.format("      Searching for all data objects tagging dataset IP_ID %s", ipId),
@@ -408,6 +429,7 @@ public class EntityIndexerService implements IEntityIndexerService {
 
         Set<DataObject> toSaveObjects = new HashSet<>();
         OffsetDateTime updateDate = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
+
         // Function to update an object (tags, groups, lastUpdate, ...)
         Consumer<DataObject> updateDataObject = object -> {
             object.removeTags(Collections.singletonList(ipId));
@@ -423,29 +445,31 @@ public class EntityIndexerService implements IEntityIndexerService {
             toSaveObjects.add(object);
             if (toSaveObjects.size() == maxBulkSize) {
                 try {
-                    esRepos.saveBulk(alias, toSaveObjects);
+                    esRepoFacade.saveBulkToIndexOrAlias(indexOrAlias, toSaveObjects);
                     objectsCount.addAndGet(toSaveObjects.size());
                     toSaveObjects.clear();
                 } catch (ElasticsearchException e) {
-                    LOGGER.error(e.getMessage(), e);
+                    LOGGER.error("{}", e.getMessage(), e);
                 }
             }
         };
         // Apply updateTag function to all tagging objects
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
-        addProjectInfos(alias, searchKey);
+        addProjectInfos(indexOrAlias, searchKey);
         try {
-            esRepos.searchAll(searchKey, updateDataObject, taggingObjectsCrit);
+            esRepoFacade.searchAll(searchKey, updateDataObject, taggingObjectsCrit);
             // Bulk save remaining objects to save
             if (!toSaveObjects.isEmpty()) {
-                esRepos.saveBulk(alias, toSaveObjects);
+                esRepoFacade.saveBulkToIndexOrAlias(indexOrAlias, toSaveObjects);
                 objectsCount.addAndGet(toSaveObjects.size());
             }
-            sendDataSourceMessage(String.format("      ...Removed dataset IP_ID from %d data objects tags.",
-                                                objectsCount.get()), dsiId);
+
         } catch (ElasticsearchException e) {
-            throw new ModuleException(e);
+            throw new RsRuntimeException(e);
         }
+        sendDataSourceMessage(String.format("      ...Removed dataset IP_ID from %d data objects tags.",
+                                            objectsCount.get()), dsiId);
+
     }
 
     /**
@@ -461,24 +485,26 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                       OffsetDateTime minLastUpdateCriteria,
                                                       OffsetDateTime updateDate,
                                                       String datasourceIngestionId,
+                                                      boolean buildingIndex,
                                                       boolean skipDissociationStep) throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
-        String alias = indexAliasResolver.resolveAliasName(tenant);
+        String indexOrAlias = getIndexOrAliasName(tenant, buildingIndex);
         sendDataSourceMessage(String.format(
             "      Updating dataset %s indexation and all its associated data objects...",
             dataset.getLabel()), datasourceIngestionId);
         sendDataSourceMessage(String.format("        Searching for dataset %s associated data objects...",
                                             dataset.getLabel()), datasourceIngestionId);
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
-        addProjectInfos(alias, searchKey);
+        addProjectInfos(indexOrAlias, searchKey);
 
         ExecutorService executor = Executors.newFixedThreadPool(1);
 
         // Create a callable which bulk save into ES a set of data objects
         SaveDataObjectsCallable saveDataObjectsCallable = new SaveDataObjectsCallable(runtimeTenantResolver,
                                                                                       indexAliasResolver,
-                                                                                      esRepos,
+                                                                                      esRepoFacade,
                                                                                       tenant,
+                                                                                      indexOrAlias,
                                                                                       dataset.getId());
         // Remove association between dataobjects and dataset for all dataobjects which does not match the dataset filter anymore.
         if (!skipDissociationStep) {
@@ -506,7 +532,7 @@ public class EntityIndexerService implements IEntityIndexerService {
 
         // Update dataset access groups for dynamic plugin access rights
         try {
-            manageDatasetUpdateFilteredAccessRights(alias,
+            manageDatasetUpdateFilteredAccessRights(indexOrAlias,
                                                     dataset,
                                                     updateDate,
                                                     executor,
@@ -524,13 +550,13 @@ public class EntityIndexerService implements IEntityIndexerService {
         computeComputedAttributes(dataset, datasourceIngestionId, tenant);
 
         prepareDatasetForEs(dataset);
-        esRepos.save(alias, dataset);
+        esRepoFacade.saveToIndexOrAlias(indexOrAlias, dataset);
         LOGGER.info("Dataset {} updated", dataset.getId());
         sendDataSourceMessage("      ...Dataset indexation updated.", datasourceIngestionId);
     }
 
-    private void addProjectInfos(String alias, SimpleSearchKey<DataObject> searchKey) {
-        searchKey.setSearchIndex(alias);
+    private void addProjectInfos(String aliasOrIndex, SimpleSearchKey<DataObject> searchKey) {
+        searchKey.setSearchIndex(aliasOrIndex);
         searchKey.setCrs(projectGeoSettings.getCrs());
     }
 
@@ -660,7 +686,10 @@ public class EntityIndexerService implements IEntityIndexerService {
         params.put("groups", gson.fromJson(gson.toJson(groups), GROUPS_TYPE_GSON));
         params.put("updateDate", updateDate);
 
-        esRepos.updateByQuery(searchKey, subsettingCrit, UpdateGroupsAndDatasetAssociationEsScript.ID, params);
+        esRepoFacade.updateByQueryInOneIndex(searchKey,
+                                             subsettingCrit,
+                                             UpdateGroupsAndDatasetAssociationEsScript.ID,
+                                             params);
     }
 
     /**
@@ -700,7 +729,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                                                              groupName,
                                                                                              maxBulkSize);
         try {
-            esRepos.searchAll(searchKey, dataObjectAssocUpdater, subsettingCrit);
+            esRepoFacade.searchAll(searchKey, dataObjectAssocUpdater, subsettingCrit);
             // Saving remaining objects...
             dataObjectAssocUpdater.finalSave();
             sendDataSourceMessage(String.format("          ...%d data objects group <%s> association saved.",
@@ -750,7 +779,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                                                    executor,
                                                                                    maxBulkSize);
         try {
-            esRepos.searchAll(searchKey, dataObjectAssocRemover, oldAssociatedObjectsCrit);
+            esRepoFacade.searchAll(searchKey, dataObjectAssocRemover, oldAssociatedObjectsCrit);
             // Saving remaining objects...
             dataObjectAssocRemover.finalSave();
             sendDataSourceMessage(String.format("          ...%d data objects dataset association removed.",
@@ -802,7 +831,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                                                                              groupName,
                                                                                              maxBulkSize);
         try {
-            esRepos.searchAll(searchKey, dataObjectAssocRemover, oldAssociatedObjectsCrit);
+            esRepoFacade.searchAll(searchKey, dataObjectAssocRemover, oldAssociatedObjectsCrit);
         } catch (ElasticsearchException e) {
             throw new ModuleException(e);
         }
@@ -855,6 +884,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                OffsetDateTime updateDate,
                                boolean forceDataObjectsUpdate,
                                String dsiId,
+                               boolean buildingIndex,
                                boolean skipDissociationStep) throws ModuleException {
         for (Dataset dataset : datasets) {
             LOGGER.info("Updating dataset {} ...", dataset.getLabel());
@@ -865,6 +895,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                updateDate,
                                forceDataObjectsUpdate,
                                dsiId,
+                               buildingIndex,
                                skipDissociationStep);
             sendDataSourceMessage(String.format("  ...Dataset %s updated.", dataset.getLabel()), dsiId);
             LOGGER.info("Dataset {} updated.", dataset.getLabel());
@@ -877,19 +908,14 @@ public class EntityIndexerService implements IEntityIndexerService {
     }
 
     @Override
-    public void deleteIndexNRecreateEntities(String tenant) throws ModuleException {
-        //1. Delete existing index (it will also delete the alias)
-        indexService.deleteIndex(tenant);
-        // get all sessions to notify
-        Pageable pageToRequest = PageRequest.of(0, sessionStepBulkSize, Sort.by(Sort.Order.asc("source")));
-        Page<ISessionStepLight> pageSessionStep;
-        do {
-            pageSessionStep = this.sessionStepRepository.findBy(pageToRequest);
-            sessionNotifier.notifyGlobalIndexDeletion(pageSessionStep.getContent());
-            pageToRequest = pageSessionStep.nextPageable();
-        } while (pageSessionStep.hasNext());
-        //2. Then re-create all entities
-        boolean isNewIndex = indexService.createIndexAndAliasIfNeeded(tenant);
+    public void createBuildingIndexAndCreateEntities(String tenant) throws ModuleException {
+        String aliasName = IndexAliasResolver.resolveAliasName(tenant);
+        indexService.deleteBuildingIndexIfAlreadyExists(tenant);
+
+        String newIndexName = indexAliasResolver.resolveNextIndexName(tenant);
+        boolean isNewIndex = indexService.createIndexAndAliasIfNeeded(newIndexName, true);
+        indexAliasService.setBuilding(aliasName, newIndexName);
+
         OffsetDateTime updateDate = OffsetDateTime.now();
         updateAllDatasets(tenant, updateDate, isNewIndex);
         updateAllCollections(tenant, updateDate);
@@ -1045,21 +1071,21 @@ public class EntityIndexerService implements IEntityIndexerService {
             // Add data object in error into summary result
             bulkSaveResult.addInErrorDoc(dataObject.getDocId(),
                                          new EntityInvalidException(msg),
-                                         Optional.ofNullable(dataObject.getFeature().getSession()),
-                                         Optional.ofNullable(dataObject.getFeature().getSessionOwner()));
+                                         dataObject.getFeature().getSession(),
+                                         dataObject.getFeature().getSessionOwner());
         }
     }
 
     @Override
     public BulkSaveResult upsertDataObjects(String tenant,
                                             Long datasourceId,
-                                            OffsetDateTime now,
+                                            OffsetDateTime creationDate,
                                             List<DataObject> objects,
-                                            String datasourceIngestionId) throws ModuleException {
+                                            String datasourceIngestionId,
+                                            boolean buildingIndex) throws ModuleException {
         StringBuilder buf = new StringBuilder();
         BulkSaveResult bulkSaveResult = new BulkSaveResult();
         // For all objects, it is necessary to set datasourceId, creation date AND to validate them
-        OffsetDateTime creationDate = now;
         Set<DataObject> toSaveObjects = new HashSet<>();
         for (DataObject dataObject : objects) {
             // Lets handle virtual_id here
@@ -1078,10 +1104,33 @@ public class EntityIndexerService implements IEntityIndexerService {
             // Validate data object
             validateDataObject(toSaveObjects, dataObject, bulkSaveResult, buf, datasourceId);
         }
+
+        String indexOrAlias = getIndexOrAliasName(tenant, buildingIndex);
         try {
-            esRepos.upsert(indexAliasResolver.resolveAliasName(tenant), bulkSaveResult, toSaveObjects, buf);
+            esRepoFacade.upsertToIndexOrAlias(indexOrAlias, bulkSaveResult, toSaveObjects, buf);
+
+            LOGGER.debug("Upsert DONE: tenant={}, index or alias={}, total to save={}, saved docs={}, docs in "
+                         + "errors={}",
+                         tenant,
+                         indexOrAlias,
+                         toSaveObjects.size(),
+                         bulkSaveResult.getSavedDocsCount(),
+                         bulkSaveResult.getInErrorDocsCount());
         } catch (ElasticsearchException e) {
-            throw new ModuleException(e);
+            LOGGER.error("Upsert FAILED: tenant={}, index or alias={}, total to save={}, saved docs={}, docs in "
+                         + "errors={}",
+                         tenant,
+                         indexOrAlias,
+                         toSaveObjects.size(),
+                         bulkSaveResult.getSavedDocsCount(),
+                         bulkSaveResult.getInErrorDocsCount());
+            throw new ModuleException(String.format("Upsert FAILED (tenant=%s, index or alias=%s, "
+                                                    + "total to save=%d, saved docs=%d, docs inerrors=%d): ",
+                                                    tenant,
+                                                    indexOrAlias,
+                                                    toSaveObjects.size(),
+                                                    bulkSaveResult.getSavedDocsCount(),
+                                                    bulkSaveResult.getInErrorDocsCount()), e);
         } finally {
             publishEventsAndManageErrors(tenant, datasourceIngestionId, buf, bulkSaveResult);
         }
@@ -1184,8 +1233,8 @@ public class EntityIndexerService implements IEntityIndexerService {
         // Add data object in error into summary result
         bulkSaveResult.addInErrorDoc(dataObject.getDocId(),
                                      new EntityInvalidException(msg),
-                                     Optional.ofNullable(dataObject.getFeature().getSession()),
-                                     Optional.ofNullable(dataObject.getFeature().getSessionOwner()));
+                                     dataObject.getFeature().getSession(),
+                                     dataObject.getFeature().getSessionOwner());
     }
 
     private Function<JtsSpatialContextFactory, JtsSpatialContextFactory> makeFactory(boolean geo) {
@@ -1241,34 +1290,37 @@ public class EntityIndexerService implements IEntityIndexerService {
     }
 
     @Override
-    public boolean deleteDataObject(String alias, String ipId) {
+    public boolean deleteDataObject(String index, String ipId) {
         // get object deleted
-        DataObject obj = esRepos.get(Optional.of(alias), EntityType.DATA.toString(), ipId, DataObject.class);
+        DataObject obj = esRepoFacade.get(index, EntityType.DATA.toString(), ipId, DataObject.class);
         // decrement the related session
         if (obj != null && obj.getFeature() != null) {
             sessionNotifier.notifyIndexDeletion(obj.getFeature().getSessionOwner(), obj.getFeature().getSession());
         }
         // delete object
-        return esRepos.delete(alias, EntityType.DATA.toString(), ipId);
+        return esRepoFacade.deleteFromIndexOrAlias(index, EntityType.DATA.toString(), ipId);
     }
 
     @Override
-    public long deleteDataObjectsFromDatasource(String alias, Long datasourceId) {
-        return esRepos.deleteByDatasource(alias, datasourceId);
+    public void deleteDataObjectsFromDatasource(String tenant, Long datasourceId) {
+        esRepoFacade.deleteByDatasourceInAliasAndBuildingIndex(tenant, datasourceId);
     }
 
     @Override
-    public Set<UniformResourceName> deleteDataObjectsAndUpdate(String tenant, Set<String> ipIds) {
+    public void deleteDataObjectsAndUpdate(String tenant, Set<String> ipIds) {
+        esRepoFacade.runOnAliasAndBuildingIndex(tenant,
+                                                index -> deleteDataObjectsAndUpdateInOneIndex(tenant, index, ipIds));
+    }
+
+    private void deleteDataObjectsAndUpdateInOneIndex(String tenant, String index, Set<String> ipIds) {
         Set<UniformResourceName> allDatasetUrns = new HashSet<>();
 
-        // Warning: deletion by document ID using an alias is only supported for aliases mapped to a single index
-        String alias = indexAliasResolver.resolveAliasName(tenant);
-
-        LOGGER.info("Deleting {} data object(s) for index {}", ipIds.size(), alias);
+        //TODO: probleme, a refaire
+        LOGGER.info("Deleting {} data object(s) for tenant {}", ipIds.size(), index);
         // Delete data and collect datasets to update
         for (String ipId : ipIds) {
             try {
-                Set<String> tags = deleteDataObjectReturningTags(alias, ipId);
+                Set<String> tags = deleteDataObjectReturningTags(index, ipId);
                 // Extract datasets from tags
                 allDatasetUrns.addAll(extractDatasetsFromTags(tags));
             } catch (RsRuntimeException e) {
@@ -1279,31 +1331,31 @@ public class EntityIndexerService implements IEntityIndexerService {
 
         if (!allDatasetUrns.isEmpty()) {
             // Make change available
-            esRepos.refresh(alias);
-            updateDatasetComputedProperties(alias, allDatasetUrns);
+            esRepoFacade.refreshIndex(index);
+            updateDatasetComputedProperties(tenant, index, allDatasetUrns);
         }
-
-        return allDatasetUrns;
     }
 
     /**
      * Delete given data object from Elasticsearch
      *
-     * @param index concerned index
-     * @param ipId  id of Data object
+     * @param ipId id of Data object
      * @return if data object properly deleted, return tags else null
      */
-    private Set<String> deleteDataObjectReturningTags(String alias, String ipId) {
+    private Set<String> deleteDataObjectReturningTags(String index, String ipId) {
         // get object deleted
         LOGGER.debug("[DELETE] Loading data to delete : {}", ipId);
-        DataObject obj = esRepos.get(Optional.of(alias), EntityType.DATA.toString(), ipId, DataObject.class);
+        DataObject obj = esRepoFacade.get(index, EntityType.DATA.toString(), ipId, DataObject.class);
         // decrement the related session
-        if (obj != null && obj.getFeature() != null) {
-            sessionNotifier.notifyIndexDeletion(obj.getFeature().getSessionOwner(), obj.getFeature().getSession());
+        final DataObjectFeature feature = obj == null ? null : obj.getFeature();
+        if (feature != null) {
+            sessionNotifier.notifyIndexDeletion(feature.getSessionOwner(), feature.getSession());
         }
         // delete object
         LOGGER.debug("[DELETE] Deleting data {}", ipId);
-        return esRepos.delete(alias, EntityType.DATA.toString(), ipId) && obj != null ? obj.getTags() : null;
+        return esRepoFacade.deleteFromIndexOrAlias(index, EntityType.DATA.toString(), ipId) && obj != null ?
+            obj.getTags() :
+            null;
     }
 
     private Set<UniformResourceName> extractDatasetsFromTags(Set<String> tags) {
@@ -1329,10 +1381,10 @@ public class EntityIndexerService implements IEntityIndexerService {
     /**
      * Update computed properties on specified datasets
      *
-     * @param tenant      concerned tenant
+     * @param index       concerned index
      * @param datasetURNs list of dataset to update
      */
-    private void updateDatasetComputedProperties(String tenant, Set<UniformResourceName> datasetURNs) {
+    private void updateDatasetComputedProperties(String tenant, String index, Set<UniformResourceName> datasetURNs) {
         // Update datasets
         if (!datasetURNs.isEmpty()) {
             try {
@@ -1342,7 +1394,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                     try {
                         computeComputedAttributes(dataset, null, tenant);
                         prepareDatasetForEs(dataset);
-                        esRepos.save(indexAliasResolver.resolveAliasName(tenant), dataset);
+                        esRepoFacade.saveToIndexOrAlias(index, dataset);
                         LOGGER.info("Dataset {} computed properties updated", dataset.getId());
                     } catch (ModuleException e) {
                         LOGGER.error("Dataset {} computed properties cannot be updated!", dataset.getId(), e);
@@ -1357,13 +1409,39 @@ public class EntityIndexerService implements IEntityIndexerService {
     @Override
     public void updateAllDatasets(String tenant, OffsetDateTime updateDate, boolean skipDissociationStep)
         throws ModuleException {
-        self.updateDatasets(tenant, datasetService.findAll(), null, updateDate, true, null, skipDissociationStep);
+        self.updateDatasets(tenant,
+                            datasetService.findAll(),
+                            null,
+                            updateDate,
+                            true,
+                            null,
+                            false,
+                            skipDissociationStep);
+
+        // If there is a building index, we have to update the datasets into this building index too
+        if (indexAliasResolver.resolveBuildingIndex(tenant).isPresent()) {
+            self.updateDatasets(tenant,
+                                datasetService.findAll(),
+                                null,
+                                updateDate,
+                                true,
+                                null,
+                                true,
+                                skipDissociationStep);
+        }
+
     }
 
     @Override
     public void updateAllCollections(String tenant, OffsetDateTime updateDate) throws ModuleException {
         for (fr.cnes.regards.modules.dam.domain.entities.Collection col : collectionService.findAll()) {
-            updateEntityIntoEs(tenant, col.getIpId(), null, updateDate, false, null, false);
+            updateEntityIntoEs(tenant, col.getIpId(), null, updateDate, false, null, false, false);
+
+            // If there is a building index, we have to update the collections into this buildingt index too
+            if (indexAliasResolver.resolveBuildingIndex(tenant).isPresent()) {
+                updateEntityIntoEs(tenant, col.getIpId(), null, updateDate, false, null, true, false);
+
+            }
         }
     }
 
@@ -1386,4 +1464,16 @@ public class EntityIndexerService implements IEntityIndexerService {
                                       boolean dataAccessRight) {
 
     }
+
+    /**
+     * Resolves the Elasticsearch index or alias name if the request is is a for a building index or not
+     */
+    private String getIndexOrAliasName(String tenant, boolean buildingIndex) {
+        return buildingIndex ?
+            indexAliasResolver.resolveBuildingIndex(tenant)
+                              .orElseThrow(() -> new IllegalStateException("No building index found for tenant "
+                                                                           + tenant)) :
+            IndexAliasResolver.resolveAliasName(tenant);
+    }
+
 }

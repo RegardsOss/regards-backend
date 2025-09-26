@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.crawler.service.consumer;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.indexer.service.EsRepositoryFacade;
 import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +32,17 @@ public class SaveDataObjectsCallable implements Callable<Void> {
     /**
      * Elasticsearch repository
      */
-    private final IEsRepository esRepos;
+    private final EsRepositoryFacade esRepoFacade;
 
     /**
      * Current tenant
      */
     private final String tenant;
+
+    /**
+     * Index or alias name in which we save the data objects
+     */
+    private final String indexOrAlias;
 
     /**
      * Set of objects to save
@@ -51,13 +56,15 @@ public class SaveDataObjectsCallable implements Callable<Void> {
 
     public SaveDataObjectsCallable(IRuntimeTenantResolver runtimeTenantResolver,
                                    IndexAliasResolver indexAliasResolver,
-                                   IEsRepository esRepos,
+                                   EsRepositoryFacade esRepoFacade,
                                    String tenant,
+                                   String indexOrAlias,
                                    long datasetId) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.indexAliasResolver = indexAliasResolver;
-        this.esRepos = esRepos;
+        this.esRepoFacade = esRepoFacade;
         this.tenant = tenant;
+        this.indexOrAlias = indexOrAlias;
         this.datasetId = datasetId;
     }
 
@@ -75,7 +82,7 @@ public class SaveDataObjectsCallable implements Callable<Void> {
         if ((set != null) && !set.isEmpty()) {
             LOGGER.info("Saving {} data objects (dataset {})...", set.size(), datasetId);
             runtimeTenantResolver.forceTenant(tenant);
-            esRepos.saveBulk(indexAliasResolver.resolveAliasName(tenant), set);
+            esRepoFacade.saveBulkToIndexOrAlias(indexOrAlias, set);
             LOGGER.info("...data objects saved");
         }
         return null;

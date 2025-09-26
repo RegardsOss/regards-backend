@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.indexer.dao;
 
+import jakarta.annotation.Nullable;
 import org.elasticsearch.action.DocWriteResponse.Result;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -66,27 +66,17 @@ public class BulkSaveResult {
      */
     public void addSavedDoc(String docId,
                             Result docResultType,
-                            Optional<String> session,
-                            Optional<String> sessionOwner) {
+                            @Nullable String session,
+                            @Nullable String sessionOwner) {
         // Add document to the current bulk save result
         savedDocIds.add(docId);
-        // Only notify sessions for newly created documents. Updated ones should not be notified
-        // If session and sessionOwner are provided add it to the dispatched map by session owner too.
-        if ((docResultType == Result.CREATED) && session.isPresent() && sessionOwner.isPresent()) {
-            ConcurrentMap<String, Long> savedDocForSessionOwner = savedDocPerSessionOwner.get(sessionOwner.get());
-            if (savedDocForSessionOwner == null) {
-                ConcurrentMap<String, Long> value = new ConcurrentHashMap<>();
-                value.put(session.get(), 1L);
-                savedDocPerSessionOwner.put(sessionOwner.get(), value);
-            } else {
-                Long savedDocForSession = savedDocForSessionOwner.get(session.get());
-                if (savedDocForSession == null) {
-                    savedDocForSessionOwner.put(session.get(), 1L);
-                } else {
-                    savedDocForSessionOwner.put(session.get(), savedDocForSession + 1);
-                }
-            }
+
+        if (docResultType != Result.CREATED || session == null || sessionOwner == null) {
+            return;
         }
+        // Only notify sessions for newly created documents. Updated ones should not be notified
+        // Since session and sessionOwner are provided, add them to the dispatched map by session owner too.
+        putSessionAndOwner(savedDocPerSessionOwner, session, sessionOwner);
     }
 
     /**
@@ -97,26 +87,34 @@ public class BulkSaveResult {
      */
     public void addInErrorDoc(String docId,
                               Exception exception,
-                              Optional<String> session,
-                              Optional<String> sessionOwner) {
+                              @Nullable String session,
+                              @Nullable String sessionOwner) {
         // Add document to the current bulk save result
         inErrorDocsMap.put(docId, exception);
-        // If session and sessionOwner are provided add it to the dispatched map by session owner too.
-        if (session.isPresent() && sessionOwner.isPresent()) {
-            ConcurrentMap<String, Long> inErrorDocForSessionOwner = inErrorDocPerSessionOwner.get(sessionOwner.get());
-            if (inErrorDocForSessionOwner == null) {
-                ConcurrentMap<String, Long> value = new ConcurrentHashMap<>();
-                value.put(session.get(), 1L);
-                inErrorDocPerSessionOwner.put(sessionOwner.get(), value);
-            } else {
-                Long inErrorDocForSession = inErrorDocForSessionOwner.get(session.get());
-                if (inErrorDocForSession == null) {
-                    inErrorDocForSessionOwner.put(session.get(), 1L);
-                } else {
-                    inErrorDocForSessionOwner.put(session.get(), inErrorDocForSession + 1);
-                }
-            }
+
+        // nothing else to be added if session or owner are missing.
+        if (session == null || sessionOwner == null) {
+            return;
         }
+
+        // Since session and sessionOwner are provided, add them to the dispatched map by session owner too.
+        putSessionAndOwner(inErrorDocPerSessionOwner, session, sessionOwner);
+    }
+
+    /**
+     * Put the given session and owner to the given map.
+     *
+     * @param docPerSessionOwner Map by session owner of a Map of counter by session.
+     * @param session            the session
+     * @param sessionOwner       the owner
+     */
+    private void putSessionAndOwner(ConcurrentMap<String, ConcurrentMap<String, Long>> docPerSessionOwner,
+                                    String session,
+                                    String sessionOwner) {
+        ConcurrentMap<String, Long> docForSessionOwner = docPerSessionOwner.computeIfAbsent(sessionOwner,
+                                                                                            (owner) -> new ConcurrentHashMap<>());
+        long savedDocForSession = docForSessionOwner.getOrDefault(session, 0L);
+        docForSessionOwner.put(session, savedDocForSession + 1L);
     }
 
     public int getSavedDocsCount() {

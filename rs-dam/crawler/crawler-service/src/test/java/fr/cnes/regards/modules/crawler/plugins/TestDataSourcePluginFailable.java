@@ -128,7 +128,8 @@ public class TestDataSourcePluginFailable implements IDataSourcePlugin {
                    .when(datasourceIngestionService)
                    .createOrUpdateDataObjects(Mockito.any(IngestionParameters.class),
                                               Mockito.anyString(),
-                                              Mockito.anyList());
+                                              Mockito.anyList(),
+                                              Mockito.anyBoolean());
         } catch (Exception e) {
             throw new RuntimeException("Error configuring long task at calls", e);
         }

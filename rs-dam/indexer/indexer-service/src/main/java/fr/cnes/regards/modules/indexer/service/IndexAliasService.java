@@ -69,4 +69,28 @@ public class IndexAliasService {
         // Called when alias is removed or refresh is needed
     }
 
+    /**
+     * Sets the building index for the given alias (or clears it if buildingIndex is null).
+     * <p>
+     * If the alias does not exist, an IllegalStateException is thrown.
+     */
+    @CachePut(cacheNames = "esIndexAliases", key = "#aliasName")
+    @MultitenantTransactional
+    public EsIndexAlias setBuilding(String aliasName, String buildingIndex) {
+        return repository.findByAlias(aliasName).map(existing -> {
+            existing.setBuilding(buildingIndex);
+            return repository.save(existing);
+        }).orElseThrow(() -> new IllegalStateException("Alias '" + aliasName + "' does not exist"));
+
+    }
+
+    /**
+     * Clears the building index for the given alias, if present.
+     */
+    @CachePut(cacheNames = "esIndexAliases", key = "#aliasName")
+    @MultitenantTransactional
+    public EsIndexAlias clearBuilding(String aliasName) {
+        return setBuilding(aliasName, null);
+    }
+
 }

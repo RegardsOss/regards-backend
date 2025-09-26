@@ -39,7 +39,6 @@ import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.agent.service.handlers.SessionAgentHandlerService;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
-import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
@@ -67,16 +66,20 @@ import fr.cnes.regards.modules.dam.service.dataaccess.IAccessRightService;
 import fr.cnes.regards.modules.dam.service.datasources.IDataSourceService;
 import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.indexer.domain.EsIndexAlias;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
-import fr.cnes.regards.modules.indexer.service.ISearchService;
-import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
-import fr.cnes.regards.modules.indexer.service.IndexAliasService;
-import fr.cnes.regards.modules.indexer.service.Searches;
+import fr.cnes.regards.modules.indexer.service.*;
+import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
 import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
+import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import fr.cnes.regards.modules.model.service.IAttributeModelService;
+import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 import fr.cnes.regards.modules.model.service.IModelService;
 import org.apache.commons.collections4.IterableUtils;
 import org.junit.After;
@@ -96,6 +99,8 @@ import org.springframework.test.context.TestPropertySource;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -122,10 +127,16 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     private final List<DataObject> objects = Lists.newArrayList();
 
     @Autowired
-    private IEsRepository esRepository;
+    private EsRepositoryFacade esRepositoryFacade;
 
     @Autowired
     private IModelService modelService;
+
+    @Autowired
+    private IAttributeModelService attributeModelService;
+
+    @Autowired
+    private IModelAttrAssocService modelAttributeService;
 
     @Autowired
     private IDatasetService datasetService;
@@ -167,6 +178,9 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     private IModelRepository modelRepo;
 
     @Autowired
+    private IAttributeModelRepository attRepo;
+
+    @Autowired
     private IPluginConfigurationRepository pluginRepo;
 
     @Autowired
@@ -183,9 +197,6 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
     @Autowired
     private AgentSnapshotService agentSnapshotService;
-
-    //    @Autowired
-    //    private Gson gson;
 
     private Dataset dataset;
 
@@ -217,24 +228,38 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
     private AccessRight ar4;
 
+    private AttributeModel attributeModel;
+
     @Autowired
     private IPluginService pluginService;
 
     private void initIndex(String index) {
 
-        String aliasName = indexAliasResolver.resolveAliasName(index);
-        if (esRepository.indexExists(index)) {
-            esRepository.deleteIndex(index);
+        String aliasName = IndexAliasResolver.resolveAliasName(index);
+
+        indexAliasResolver.resolveBuildingIndex(index).ifPresent(buildingIndex -> {
+            indexAliasService.clearBuilding(aliasName);
+            if (esRepositoryFacade.indexExists(buildingIndex)) {
+                esRepositoryFacade.deleteIndexOrAlias(buildingIndex);
+            }
+        });
+
+        if (esRepositoryFacade.indexExists(index)) {
+            esRepositoryFacade.deleteIndexOrAlias(index);
         }
-        esRepository.createIndex(index);
-        if (!esRepository.aliasExists(aliasName)) {
-            esRepository.createAlias(index, aliasName);
+        esRepositoryFacade.createIndex(index);
+        if (!esRepositoryFacade.aliasExists(aliasName)) {
+            esRepositoryFacade.createAlias(index, aliasName);
             indexAliasService.saveOrUpdate(aliasName, index);
         }
     }
 
     @After
-    public void clear() {
+    public void clear() throws ModuleException {
+        if (dsModel != null && attributeModel != null) {
+            modelAttributeService.unbindAttributeFromModel(dsModel.getName(), attributeModel.getId());
+        }
+        attRepo.deleteAll();
         arRepo.deleteAll();
         agRepo.deleteAll();
         dsRepo.deleteAll();
@@ -252,6 +277,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         Mockito.clearInvocations(publisher);
         initIndex(TENANT);
         createModels();
+        addAttributesToDsModel();
         datasource = createDataSource();
         dataset = createDataset("dataset1", datasource);
         group1 = createGroup("group1");
@@ -263,12 +289,12 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         objects.add(createObject("DO2", "DataObject 2"));
         objects.add(createObject("DO3", "DataObject 3"));
         dataAccessPlugin = createDataAccessPlugin();
-        indexerService.upsertDataObjects(TENANT, datasource.getId(), REFERENCE_DATE.minusDays(1), objects, "");
+        indexerService.upsertDataObjects(TENANT, datasource.getId(), REFERENCE_DATE.minusDays(1), objects, "", false);
         List<DataObject> otherObj = Lists.newArrayList();
         otherObj.add(createObject("DO4", "DataObject 4"));
         otherObj.add(createObject("DO5", "DataObject 5"));
         otherObj.add(createObject("DO6", "DataObject 6"));
-        indexerService.upsertDataObjects(TENANT, datasource.getId(), REFERENCE_DATE.minusDays(10), otherObj, "");
+        indexerService.upsertDataObjects(TENANT, datasource.getId(), REFERENCE_DATE.minusDays(10), otherObj, "", false);
         objects.addAll(otherObj);
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), REFERENCE_DATE, false);
     }
@@ -280,6 +306,16 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     private void createModels() throws ModuleException {
         model = createModel(EntityType.DATA, "DO_MODEL");
         dsModel = createModel(EntityType.DATASET, "DS_MODEL");
+    }
+
+    private void addAttributesToDsModel() throws ModuleException {
+        attributeModel = new AttributeModelBuilder("test_att_string",
+                                                   PropertyType.STRING,
+                                                   "ForTests").setNoRestriction().build();
+        attributeModelService.addAttribute(attributeModel, false);
+        ModelAttrAssoc modAtt = new ModelAttrAssoc();
+        modAtt.setAttribute(attributeModel);
+        modelAttributeService.bindAttributeToModel(dsModel.getName(), modAtt);
     }
 
     private Dataset createDataset(String label, PluginConfiguration datasource) throws ModuleException {
@@ -667,7 +703,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                                          datasource.getId(),
                                          REFERENCE_DATE.minusDays(1),
                                          Lists.newArrayList(taggedWithLatest),
-                                         "");
+                                         "",
+                                         false);
         Page<AbstractEntity> taggedWithVirtualId = searchService.search(searchKey,
                                                                         100,
                                                                         ICriterion.contains("tags",
@@ -768,7 +805,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                                          datasource.getId(),
                                          REFERENCE_DATE.minusDays(1),
                                          Lists.newArrayList(taggedWithLatest),
-                                         "");
+                                         "",
+                                         false);
 
         Page<AbstractEntity> taggedWithVirtualId = searchService.search(searchKey,
                                                                         100,
@@ -816,7 +854,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         Mockito.clearInvocations(publisher);
 
         // delete object
-        indexerService.deleteDataObject(indexAliasResolver.resolveAliasName(TENANT), objectId.toString());
+        indexerService.deleteDataObject(TENANT, objectId.toString());
 
         // check the deletion of the first object and event sent
         Assert.assertNull("Object should have been deleted", searchService.get(objectId));
@@ -838,43 +876,42 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     }
 
     @Test
-    @Purpose("Check a reset event was sent following a deleteIndexNRecreateEntities")
-    public void deleteIndexNRecreateEntitiesTest() throws ModuleException {
-        // --- PREPARE TEST ---
-        // Generate the process of creating sessionSteps manually
-        // first save steps to database by capturing them
-        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        List<StepPropertyUpdateRequestEvent> stepEventsInit = argumentCaptor.getAllValues()
-                                                                            .stream()
-                                                                            .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
-                                                                            .map(event -> (StepPropertyUpdateRequestEvent) event)
-                                                                            .collect(Collectors.toList());
-        Set<String> sources = stepHandlerService.createStepRequests(stepEventsInit);
-        stepHandlerService.createMissingSnapshotProcesses(sources);
-        // then generate sessionSteps from steps
-        agentSnapshotService.generateSessionStep(new SnapshotProcess(SESSION_OWNER, null, null), OffsetDateTime.now());
+    public void createBuildingIndexAndCreateEntitiesTest() throws ModuleException {
 
-        // --- DELETE AND RECREATE ENTITIES ---
-        Mockito.clearInvocations(publisher);
-        indexerService.deleteIndexNRecreateEntities(TENANT);
-        // check step events were sent to reset all session step properties following the deletion of entities
-        ArgumentCaptor<List<? extends ISubscribable>> argumentCaptor2 = ArgumentCaptor.forClass(List.class);
-        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor2.capture());
-        List<List<StepPropertyUpdateRequestEvent>> stepEvents = argumentCaptor2.getAllValues()
-                                                                               .stream()
-                                                                               .filter(eventList -> !eventList.isEmpty()
-                                                                                                    && eventList.get(0) instanceof StepPropertyUpdateRequestEvent)
-                                                                               .map(eventList -> (List<StepPropertyUpdateRequestEvent>) eventList)
-                                                                               .collect(Collectors.toList());
-        Assert.assertTrue("Step list should contains one event. Check if stepEventList was correctly sent",
-                          !stepEvents.isEmpty() && stepEvents.get(0).size() == 1);
-        checkStepEvent(stepEvents.get(0).get(0),
-                       SessionNotifierPropertyEnum.RESET.getName(),
-                       "0",
-                       StepPropertyEventTypeEnum.VALUE,
-                       SESSION_OWNER,
-                       SESSION);
+        // Given
+        runtimeTenantResolver.forceTenant(TENANT);
+
+        //When
+        indexerService.createBuildingIndexAndCreateEntities(TENANT);
+
+        //Then
+        Optional<String> optBuilding = indexAliasResolver.resolveBuildingIndex(TENANT);
+        Assert.assertTrue("A building index should be set after creation", optBuilding.isPresent());
+        String buildingIndex = optBuilding.get();
+
+        Assert.assertTrue("Building index must exist in Elasticsearch", esRepositoryFacade.indexExists(buildingIndex));
+
+        String aliasName = IndexAliasResolver.resolveAliasName(TENANT);
+        EsIndexAlias aliasEntry = indexAliasService.getByAlias(aliasName);
+        Assert.assertNotNull(aliasEntry);
+        Assert.assertEquals(buildingIndex, aliasEntry.getBuilding());
+
+        Map<String, Object> mapping = esRepositoryFacade.getMappingFromIndexOrAlias(buildingIndex);
+        Assert.assertNotNull(mapping);
+        Assert.assertNotNull(extractNestedAttributesProperties(mapping).get("test_att_string"));
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> extractNestedAttributesProperties(Map<String, Object> mapping) {
+        Map<String, Object> props = mapping;
+        final String[] keys = { "properties", "feature", "properties", "properties", "properties" };
+        for (String key : keys) {
+            props = (Map<String, Object>) props.get(key);
+            if (props == null) {
+                return null;
+            }
+        }
+        return props;
     }
 
     @Test
@@ -884,7 +921,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // now this is an upsert, all new tags must be present
         indexerService.upsertDataObjects(TENANT, datasource.getId(), REFERENCE_DATE.minusYears(10),
                                          // creation date change must be ignored
-                                         List.of(dataObject), "");
+                                         List.of(dataObject), "", false);
         AbstractEntity<?> d01 = searchObjectWithId("DO1");
         // compare date with toInstant to ensure both timestamps are compared in UTC
         // Elasticsearch stores date-time values with microsecond precision
@@ -909,7 +946,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                                                                       REFERENCE_DATE.minusYears(10),
                                                                       // creation date change must be ignored
                                                                       List.of(dataObject),
-                                                                      "");
+                                                                      "",
+                                                                      false);
         System.err.println(dataObjects.getDetailedErrorMsg());
         System.err.println(dataObjects.getInErrorDocCause(dataObject.getDocId()));
         Assertions.assertEquals(1, dataObjects.getSavedDocsCount());
@@ -934,7 +972,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                                          datasource.getId(),
                                          REFERENCE_DATE.minusYears(10),
                                          List.of(dataObject),
-                                         "");
+                                         "",
+                                         false);
         d01 = searchObjectWithId(dataObject.getProviderId());
         Assertions.assertEquals(4, d01.getTags().size());
         Assertions.assertTrue(d01.getTags().contains("tag1"));
