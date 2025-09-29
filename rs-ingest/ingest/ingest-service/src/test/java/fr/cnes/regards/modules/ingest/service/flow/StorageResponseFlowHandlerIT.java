@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.flow;
 
-import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -43,7 +42,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 
@@ -63,7 +61,7 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceIT {
 
     public static final String MD5_ALGORITHM = "MD5";
 
-    private static final List<String> CATEGORIES = Lists.newArrayList("TEST_CAT");
+    private static final String CATEGORY = "TEST_CAT";
 
     private static final String TARGET_STORAGE_ID = "DISK";
 
@@ -94,7 +92,7 @@ public class StorageResponseFlowHandlerIT extends IngestMultitenantServiceIT {
         long start = System.currentTimeMillis();
         for (int i = 0; i < NB_SIPS; i++) {
             SIPDto sip = create(i, null);
-            publishSIPEvent(sip, TARGET_STORAGE_ID, "session", "sessionOwner", CATEGORIES);
+            publishSIPEvent(sip, TARGET_STORAGE_ID, "session", "sessionOwner", CATEGORY);
         }
         // Wait
         ingestServiceTest.waitForIngestion(NB_SIPS, NB_SIPS * 1000, getDefaultTenant());

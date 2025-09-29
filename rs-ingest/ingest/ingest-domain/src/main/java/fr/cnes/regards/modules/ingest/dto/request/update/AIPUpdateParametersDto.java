@@ -21,12 +21,13 @@ package fr.cnes.regards.modules.ingest.dto.request.update;
 import fr.cnes.regards.modules.ingest.dto.DisseminationInfo;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Object containing some AIP criteria and a list of tags, categories and location to add or remove from these AIPs
+ * Object containing some AIP criteria and a list of tags, category and location to add or remove from these AIPs
  *
  * @author Léo Mieulet
  */
@@ -51,6 +52,7 @@ public class AIPUpdateParametersDto {
     /**
      * Categories to add on each AIPs
      */
+    @Size(max = 1)
     private List<String> addCategories;
 
     /**

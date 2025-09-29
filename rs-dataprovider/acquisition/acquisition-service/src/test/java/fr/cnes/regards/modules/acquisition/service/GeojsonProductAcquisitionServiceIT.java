@@ -111,7 +111,7 @@ public class GeojsonProductAcquisitionServiceIT extends AbstractMultitenantServi
 
     public AcquisitionProcessingChain createProcessingChain() throws ModuleException {
 
-        // Pathes
+        // Paths
         Path dataPath = Paths.get("src", "test", "resources", "data", "plugins", "geojson");
 
         // Create a processing chain
@@ -121,7 +121,6 @@ public class GeojsonProductAcquisitionServiceIT extends AbstractMultitenantServi
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
         processingChain.setPeriodicity("0 * * * * *");
-        processingChain.setCategories(Sets.newLinkedHashSet());
 
         // RAW DATA file infos
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
@@ -218,25 +217,25 @@ public class GeojsonProductAcquisitionServiceIT extends AbstractMultitenantServi
                 AcquisitionFileState.IN_PROGRESS,
                 fileInfo,
                 PageRequest.of(0, 1));
-            Assert.assertTrue(inProgressFiles.getTotalElements() == 0);
+            Assert.assertEquals(0, inProgressFiles.getTotalElements());
 
             Page<AcquisitionFile> validFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.VALID,
                                                                                                     fileInfo,
                                                                                                     PageRequest.of(0,
                                                                                                                    1));
-            Assert.assertTrue(validFiles.getTotalElements() == 0);
+            Assert.assertEquals(0, validFiles.getTotalElements());
 
             Page<AcquisitionFile> acquiredFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(
                 AcquisitionFileState.ACQUIRED,
                 fileInfo,
                 PageRequest.of(0, 1));
-            Assert.assertTrue(acquiredFiles.getTotalElements() == 1);
+            Assert.assertEquals(1, acquiredFiles.getTotalElements());
         }
 
         // Find product scheduled
         long scheduled = productService.countByProcessingChainAndSipStateIn(processingChain,
-                                                                            Arrays.asList(ProductSIPState.SCHEDULED));
-        Assert.assertTrue(scheduled == 1);
+                                                                            List.of(ProductSIPState.SCHEDULED));
+        Assert.assertEquals(1, scheduled);
 
         // Run the job synchronously
         SIPGenerationJob genJob = new SIPGenerationJob();
@@ -254,8 +253,8 @@ public class GeojsonProductAcquisitionServiceIT extends AbstractMultitenantServi
 
         // Find product to submitted
         long submitted = productService.countByProcessingChainAndSipStateIn(processingChain,
-                                                                            Arrays.asList(ProductSIPState.SUBMITTED));
-        Assert.assertTrue(submitted == 1);
+                                                                            List.of(ProductSIPState.SUBMITTED));
+        Assert.assertEquals(1, submitted);
 
     }
 }

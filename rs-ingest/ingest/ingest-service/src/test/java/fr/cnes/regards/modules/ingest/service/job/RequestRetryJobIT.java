@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
@@ -76,7 +75,7 @@ import java.util.concurrent.TimeUnit;
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class RequestRetryJobIT extends IngestMultitenantServiceIT {
 
-    private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
+    private static final String CATEGORY_0 = "CATEGORY";
 
     private static final String STORAGE_0 = "fake";
 
@@ -132,7 +131,7 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
         sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));
         sip4.setSessionOwner(SESSION_OWNER_0);
         sip4.setSession(SESSION_0);
-        sip4.setCategories(org.assertj.core.util.Sets.newLinkedHashSet("CATEGORIES"));
+        sip4.setCategory("CATEGORY");
         sip4.setState(SIPState.INGESTED);
         sip4.setVersion(2);
         sip4.setChecksum("123456789032");
@@ -168,7 +167,7 @@ public class RequestRetryJobIT extends IngestMultitenantServiceIT {
                                     SESSION_0,
                                     null,
                                     IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                    Sets.newHashSet(CATEGORIES_0),
+                                    CATEGORY_0,
                                     null,
                                     null,
                                     new StorageDto(STORAGE_0));

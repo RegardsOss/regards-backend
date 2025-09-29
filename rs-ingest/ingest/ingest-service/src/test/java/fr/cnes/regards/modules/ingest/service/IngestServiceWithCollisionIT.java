@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
@@ -91,7 +90,7 @@ public class IngestServiceWithCollisionIT extends IngestMultitenantServiceIT {
                                                            SESSION,
                                                            null,
                                                            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                           Sets.newHashSet("CAT"),
+                                                           "CAT",
                                                            null,
                                                            null,
                                                            new StorageDto("disk"));

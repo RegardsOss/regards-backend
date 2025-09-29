@@ -5,7 +5,7 @@
     "sessionOwner": "validation",
     "session": "REGARDS-2252",
     "ingestChain": "DefaultProcessingChain",
-    "categories": [],
+    "category": null,
     "storages": [
       {
         "pluginBusinessId": "LOCAL-ALL",

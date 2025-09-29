@@ -28,9 +28,9 @@ public class AbstractAIPUpdateTaskTypeTest {
 
     @Test
     public void testOrder() {
-        Assert.assertEquals(0, AIPUpdateTaskType.ADD_CATEGORY.getOrder(AIPUpdateTaskType.ADD_TAG));
+        Assert.assertEquals(0, AIPUpdateTaskType.ADD_TAG.getOrder(AIPUpdateTaskType.ADD_TAG));
         Assert.assertEquals(0, AIPUpdateTaskType.REMOVE_FILE_LOCATION.getOrder(AIPUpdateTaskType.REMOVE_FILE_LOCATION));
-        Assert.assertEquals(1, AIPUpdateTaskType.ADD_CATEGORY.getOrder(AIPUpdateTaskType.ADD_FILE_LOCATION));
-        Assert.assertEquals(-1, AIPUpdateTaskType.ADD_FILE_LOCATION.getOrder(AIPUpdateTaskType.REMOVE_CATEGORY));
+        Assert.assertEquals(1, AIPUpdateTaskType.ADD_TAG.getOrder(AIPUpdateTaskType.ADD_FILE_LOCATION));
+        Assert.assertEquals(-1, AIPUpdateTaskType.ADD_FILE_LOCATION.getOrder(AIPUpdateTaskType.ADD_TAG));
     }
 }

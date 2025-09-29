@@ -30,11 +30,10 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,18 +51,15 @@ import java.util.*;
                     locations = { "classpath:application-test.properties" })
 public class SessionNotifierIT extends AbstractMultitenantServiceIT {
 
-    @Autowired
-    private SessionNotifier sessionNotifier;
+    private static final String SESSION_OWNER = "NASA";
 
-    private static String sessionOwner = "NASA";
+    private static final String SESSION = "session d'ingestion";
 
-    private static String session = "session d'ingestion";
+    private static final String INGEST_CHAIN = "ingest chain";
 
-    private static String ingestChain = "ingest chain";
+    private static final String PROVIDER_ID = "provider 1";
 
-    private static String providerId = "provider 1";
-
-    private static Set<String> categories = Sets.newLinkedHashSet("CAT 1", "CAT 2");
+    private static final String CATEGORY = "CAT 1";
 
     private static SIPEntity sipEntity;
 
@@ -73,18 +69,21 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
 
     private final ArrayList<AIPEntity> aips = new ArrayList<>();
 
+    @Autowired
+    private SessionNotifier sessionNotifier;
+
     private IngestRequest ingestRequest;
 
     @Before
     public void init() {
         sipEntity = SIPEntity.build(getDefaultTenant(),
-                                    IngestMetadata.build(sessionOwner,
-                                                         session,
+                                    IngestMetadata.build(SESSION_OWNER,
+                                                         SESSION,
                                                          null,
-                                                         ingestChain,
-                                                         categories,
+                                                         INGEST_CHAIN,
+                                                         CATEGORY,
                                                          StorageMetadata.build("AWS", "/dir1/dir2/", new HashSet<>())),
-                                    SIPDto.build(EntityType.DATA, providerId),
+                                    SIPDto.build(EntityType.DATA, PROVIDER_ID),
                                     1,
                                     SIPState.INGESTED);
         aipEntity1 = createAIPEntity();
@@ -95,8 +94,8 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
 
         // init ingest request
         ingestRequest = new IngestRequest(UUID.randomUUID().toString());
-        ingestRequest.setSessionOwner(sessionOwner);
-        ingestRequest.setSession(session);
+        ingestRequest.setSessionOwner(SESSION_OWNER);
+        ingestRequest.setSession(SESSION);
         ingestRequest.setAips(aips);
     }
 
@@ -109,7 +108,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
                                                                                     getDefaultTenant(),
                                                                                     1),
                                             Optional.ofNullable(sipEntity.getSipIdUrn()),
-                                            providerId,
+                                            PROVIDER_ID,
                                             sipEntity.getVersion()));
     }
 
@@ -133,7 +132,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
     @Test
     public void testGenerationStart() {
         // launch tests
-        sessionNotifier.incrementRequestCount(sessionOwner, session, 1);
+        sessionNotifier.incrementRequestCount(SESSION_OWNER, SESSION, 1);
         sessionNotifier.incrementProductGenerationPending(ingestRequest);
         // check results
         Map<String, Long> result = getResultUsingNotifs(getPublishedEvents(2, StepPropertyUpdateRequestEvent.class));
@@ -143,7 +142,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
 
     @Test
     public void testGenerationSuccess() {
-        sessionNotifier.incrementRequestCount(sessionOwner, session, 1);
+        sessionNotifier.incrementRequestCount(SESSION_OWNER, SESSION, 1);
         sessionNotifier.incrementProductGenerationPending(ingestRequest);
         sessionNotifier.decrementProductGenerationPending(ingestRequest);
         sessionNotifier.incrementProductStoreSuccess(ingestRequest);
@@ -156,7 +155,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
 
     @Test
     public void testGenerationFail() {
-        sessionNotifier.incrementRequestCount(sessionOwner, session, 1);
+        sessionNotifier.incrementRequestCount(SESSION_OWNER, SESSION, 1);
         sessionNotifier.incrementProductGenerationPending(ingestRequest);
         sessionNotifier.decrementProductGenerationPending(ingestRequest);
         sessionNotifier.incrementProductGenerationError(ingestRequest);
@@ -169,7 +168,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
 
     @Test
     public void testStoreFail() {
-        sessionNotifier.incrementRequestCount(sessionOwner, session, 1);
+        sessionNotifier.incrementRequestCount(SESSION_OWNER, SESSION, 1);
         sessionNotifier.incrementProductGenerationPending(ingestRequest);
         sessionNotifier.decrementProductGenerationPending(ingestRequest);
         sessionNotifier.incrementProductStorePending(ingestRequest);
@@ -184,7 +183,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
 
     @Test
     public void testStoreSucceed() {
-        sessionNotifier.incrementRequestCount(sessionOwner, session, 1);
+        sessionNotifier.incrementRequestCount(SESSION_OWNER, SESSION, 1);
         sessionNotifier.incrementProductGenerationPending(ingestRequest);
         sessionNotifier.decrementProductGenerationPending(ingestRequest);
         sessionNotifier.incrementProductStorePending(ingestRequest);
@@ -201,7 +200,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
 
     @Test
     public void testDeletion() {
-        sessionNotifier.incrementRequestCount(sessionOwner, session, 1);
+        sessionNotifier.incrementRequestCount(SESSION_OWNER, SESSION, 1);
         sessionNotifier.incrementProductGenerationPending(ingestRequest);
         sessionNotifier.decrementProductGenerationPending(ingestRequest);
         sessionNotifier.incrementProductStorePending(ingestRequest);
@@ -210,7 +209,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         aipEntity1.setState(AIPState.STORED);
         aipEntity2.setState(AIPState.STORED);
         sipEntity.setState(SIPState.STORED);
-        sessionNotifier.productDeleted(sessionOwner, session, aips);
+        sessionNotifier.productDeleted(SESSION_OWNER, SESSION, aips);
 
         Map<String, Long> result = getResultUsingNotifs(getPublishedEvents(8, StepPropertyUpdateRequestEvent.class));
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));

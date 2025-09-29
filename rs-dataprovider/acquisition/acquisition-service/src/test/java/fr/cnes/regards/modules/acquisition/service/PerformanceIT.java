@@ -162,7 +162,6 @@ public class PerformanceIT extends AbstractMultitenantServiceIT {
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
         processingChain.setPeriodicity("0 * * * * *");
-        processingChain.setCategories(Sets.newLinkedHashSet());
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();

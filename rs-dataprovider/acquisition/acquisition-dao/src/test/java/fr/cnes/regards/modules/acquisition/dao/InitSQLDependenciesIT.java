@@ -27,7 +27,7 @@ import org.springframework.test.context.TestPropertySource;
  *
  * @author Marc Sordi
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=public" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=init_sql_dependencies_it" })
 public class InitSQLDependenciesIT extends AbstractDaoIT {
 
     @Test

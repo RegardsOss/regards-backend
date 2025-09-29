@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoIT;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoIT;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.SIPState;
@@ -32,21 +31,12 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
 import java.time.OffsetDateTime;
-import java.util.Set;
 import java.util.UUID;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:ingest_dao" })
 public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
 
-    private static final Set<String> CATEGORIES = Sets.newHashSet("CATEGORY");
-
-    @BeforeTransaction
-    public void beforeTransaction() {
-        injectDefaultToken();
-    }
-
-    @Autowired
-    protected ISIPRepository sipRepository;
+    private static final String CATEGORY = "CATEGORY";
 
     protected static final String PROCESSING_CHAIN = "processing";
 
@@ -56,7 +46,15 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
 
     protected static final String SESSION = "session";
 
+    @Autowired
+    protected ISIPRepository sipRepository;
+
     protected SIPEntity sip1;
+
+    @BeforeTransaction
+    public void beforeTransaction() {
+        injectDefaultToken();
+    }
 
     @Before
     public void init() {
@@ -71,7 +69,7 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
         sip1.setLastUpdate(OffsetDateTime.now());
         sip1.setSessionOwner(SESSION_OWNER);
         sip1.setSession(SESSION);
-        sip1.setCategories(CATEGORIES);
+        sip1.setCategory(CATEGORY);
         sip1.setState(SIPState.INGESTED);
         sip1.setVersion(1);
         sip1.setChecksum("1234567890");
@@ -88,7 +86,7 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
         sip2.setLastUpdate(OffsetDateTime.now().minusHours(6));
         sip2.setSessionOwner(SESSION_OWNER);
         sip2.setSession(SESSION);
-        sip2.setCategories(CATEGORIES);
+        sip2.setCategory(CATEGORY);
         sip2.setState(SIPState.INGESTED);
         sip2.setVersion(1);
         sip2.setChecksum("12345678902");
@@ -105,7 +103,7 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
         sip3.setLastUpdate(OffsetDateTime.now().minusHours(6));
         sip3.setSessionOwner(SESSION_OWNER);
         sip3.setSession(SESSION);
-        sip3.setCategories(CATEGORIES);
+        sip3.setCategory(CATEGORY);
         sip3.setState(SIPState.INGESTED);
         sip3.setVersion(1);
         sip3.setChecksum("12345678903");
@@ -123,7 +121,7 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
         sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));
         sip4.setSessionOwner(SESSION_OWNER);
         sip4.setSession(SESSION);
-        sip4.setCategories(CATEGORIES);
+        sip4.setCategory(CATEGORY);
         sip4.setState(SIPState.INGESTED);
         sip4.setVersion(2);
         sip4.setChecksum("123456789032");

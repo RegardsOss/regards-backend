@@ -42,8 +42,8 @@ public class AIPEntityLightRawDto {
             example = "URN:AIP:DATA:IAS:fe9714af-5aca-316b-80c7-874847e918d2:V1")
     private final String aipId;
 
-    @Schema(description = "The list of categories associated to the AIP.")
-    private final Set<String> categories;
+    @Schema(description = "The category associated to the AIP.")
+    private final String category;
 
     @Schema(description = "The creation date of the AIP.")
     private final OffsetDateTime creationDate;
@@ -92,7 +92,7 @@ public class AIPEntityLightRawDto {
 
     public AIPEntityLightRawDto(JsonObject aip,
                                 String aipId,
-                                Set<String> categories,
+                                String category,
                                 OffsetDateTime creationDate,
                                 List<DisseminationInfo> disseminationInfos,
                                 DisseminationStatus disseminationStatus,
@@ -110,7 +110,7 @@ public class AIPEntityLightRawDto {
                                 Integer version) {
         this.aip = aip;
         this.aipId = aipId;
-        this.categories = categories;
+        this.category = category;
         this.creationDate = creationDate;
         this.disseminationInfos = disseminationInfos;
         this.disseminationStatus = disseminationStatus;
@@ -136,8 +136,8 @@ public class AIPEntityLightRawDto {
         return aipId;
     }
 
-    public Set<String> getCategories() {
-        return categories;
+    public String getCategory() {
+        return category;
     }
 
     public OffsetDateTime getCreationDate() {

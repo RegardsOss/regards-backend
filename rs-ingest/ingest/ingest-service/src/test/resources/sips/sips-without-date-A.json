@@ -5,9 +5,7 @@
     "sessionOwner": "validation",
     "session": "testALot",
     "ingestChain": "DefaultProcessingChain",
-    "categories": [
-      "CAT_01"
-    ],
+    "category": "CAT_01",
     "storages": [
       {
         "pluginBusinessId": "Local",

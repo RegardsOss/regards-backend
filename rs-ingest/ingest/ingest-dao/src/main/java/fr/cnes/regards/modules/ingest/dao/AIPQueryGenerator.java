@@ -62,7 +62,7 @@ public class AIPQueryGenerator {
      * Return an SQL query that retrieve all categories used by a set of entities
      */
     public static NativeSelectQuery searchAipCategoriesUsingSQL(SearchAIPsParameters filters) {
-        NativeSelectQuery query = new NativeSelectQuery("distinct jsonb_array_elements_text(categories)", FROM_AIP);
+        NativeSelectQuery query = new NativeSelectQuery("distinct category", FROM_AIP);
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
         return generatePredicates(query, filters);
     }
@@ -109,7 +109,7 @@ public class AIPQueryGenerator {
             query = getDisjunctionPredicate("tags", query, filters.getTags().getValues());
         }
         if (filters.getCategories() != null) {
-            query = getDisjunctionPredicate("categories", query, filters.getCategories().getValues());
+            query.addOneOfString("category", filters.getCategories());
         }
         if (filters.getStorages() != null) {
             query = getDisjunctionPredicate("storages", query, filters.getStorages().getValues());

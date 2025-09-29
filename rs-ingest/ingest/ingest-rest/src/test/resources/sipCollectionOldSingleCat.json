@@ -2,10 +2,12 @@
   "type": "FeatureCollection",
   "metadata": {
     "sessionOwner": "sampleSessionOwner",
-    "session": "sampleSession",
+    "session": "sampleSessionOldFormat",
     "ingestChain": "DefaultProcessingChain",
     "versioningMode": "INC_VERSION",
-    "category": "CAT",
+    "categories": [
+      "CAT"
+    ],
     "storages": [
       {
         "pluginBusinessId": "disk",

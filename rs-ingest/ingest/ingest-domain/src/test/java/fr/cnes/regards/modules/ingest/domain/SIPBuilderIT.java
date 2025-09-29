@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
@@ -42,7 +41,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Test building, serializing and deserializing SIP feature.
@@ -59,8 +57,6 @@ public class SIPBuilderIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPBuilderIT.class);
 
     private static final String CATEGORY = "category";
-
-    private static final Set<String> CATEGORIES = Sets.newHashSet(CATEGORY);
 
     @Autowired
     private Gson gson;
@@ -83,7 +79,7 @@ public class SIPBuilderIT {
                                                                              session,
                                                                              null,
                                                                              ingestChain,
-                                                                             CATEGORIES,
+                                                                             CATEGORY,
                                                                              null,
                                                                              null,
                                                                              new StorageDto("test")));
@@ -104,16 +100,16 @@ public class SIPBuilderIT {
 
         // Read SIPs
         SIPCollection sips = gson.fromJson(collectionString, SIPCollection.class);
-        Assert.assertTrue(sips.getFeatures().size() == 1);
+        Assert.assertEquals(1, sips.getFeatures().size());
         Assert.assertTrue(sips.getFeatures().get(0) instanceof SIPDto);
 
         SIPDto one = sips.getFeatures().get(0);
-        Assert.assertTrue(providerId.equals(one.getId()));
+        Assert.assertEquals(providerId, one.getId());
         Assert.assertNotNull(one.getProperties());
 
         List<ContentInformationDto> cisOne = one.getProperties().getContentInformations();
         Assert.assertNotNull(cisOne);
-        Assert.assertTrue(cisOne.size() == 1);
+        Assert.assertEquals(1, cisOne.size());
 
         ContentInformationDto ciOne = cisOne.iterator().next();
         Assert.assertNotNull(ciOne);

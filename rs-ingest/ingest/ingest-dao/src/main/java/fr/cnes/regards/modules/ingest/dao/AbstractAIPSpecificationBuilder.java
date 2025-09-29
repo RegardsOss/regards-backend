@@ -45,7 +45,7 @@ public abstract class AbstractAIPSpecificationBuilder<T>
 
         add(isJsonbArrayContainingOneOfElement("storages", parameters.getStorages()));//jsonb
 
-        add(isJsonbArrayContainingOneOfElement("categories", parameters.getCategories()));//jsonb
+        add(useValuesRestriction("category", parameters.getCategories()));//jsonb
 
         add(isJsonbArrayContainingOneOfElement("tags", parameters.getTags()));//jsonb
 

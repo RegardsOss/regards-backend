@@ -40,10 +40,7 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 
 import java.time.OffsetDateTime;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Define a product acquisition chain
@@ -133,12 +130,8 @@ public class AcquisitionProcessingChain {
                                     value = "fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider") })
     private List<StorageMetadataProvider> storages;
 
-    @Valid
-    @NotNull(message = "Categories are required")
-    @Column(columnDefinition = "jsonb")
-    @Type(value = JsonBinaryType.class,
-          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private Set<String> categories;
+    @Column(name = "category", length = 128)
+    private String category;
 
     @Column(name = "versioning_mode")
     @Enumerated(EnumType.STRING)
@@ -308,12 +301,12 @@ public class AcquisitionProcessingChain {
         this.storages = storages;
     }
 
-    public Set<String> getCategories() {
-        return categories;
+    public String getCategory() {
+        return category;
     }
 
-    public void setCategories(Set<String> categories) {
-        this.categories = categories;
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public PluginConfiguration getProductPluginConf() {
@@ -393,20 +386,19 @@ public class AcquisitionProcessingChain {
         if (!getGenerateSipPluginConf().equals(that.getGenerateSipPluginConf())) {
             return false;
         }
-        return getPostProcessSipPluginConf() != null ?
+        return getPostProcessSipPluginConf().isPresent() ?
             getPostProcessSipPluginConf().equals(that.getPostProcessSipPluginConf()) :
-            that.getPostProcessSipPluginConf() == null;
+            that.getPostProcessSipPluginConf().isEmpty();
     }
 
     @Override
     public int hashCode() {
-        int result = getLabel().hashCode();
-        result = 31 * result + getIngestChain().hashCode();
-        result = 31 * result + getFileInfos().hashCode();
-        result = 31 * result + getValidationPluginConf().hashCode();
-        result = 31 * result + getProductPluginConf().hashCode();
-        result = 31 * result + getGenerateSipPluginConf().hashCode();
-        result = 31 * result + (getPostProcessSipPluginConf() != null ? getPostProcessSipPluginConf().hashCode() : 0);
-        return result;
+        return Objects.hash(getLabel(),
+                            getIngestChain(),
+                            getFileInfos(),
+                            getValidationPluginConf(),
+                            getProductPluginConf().hashCode(),
+                            getGenerateSipPluginConf(),
+                            getPostProcessSipPluginConf());
     }
 }

@@ -112,7 +112,7 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
         processingChain.setPeriodicity("0 * * * * *");
-        processingChain.setCategories(Sets.newLinkedHashSet());
+        processingChain.setCategory(null);
 
         // RAW DATA file infos
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
@@ -356,19 +356,19 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
                     AcquisitionFileState.IN_PROGRESS,
                     fileInfo,
                     PageRequest.of(0, 1));
-                Assert.assertTrue(inProgressFiles.getTotalElements() == 0);
+                Assert.assertEquals(0, inProgressFiles.getTotalElements());
 
                 Page<AcquisitionFile> validFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(
                     AcquisitionFileState.VALID,
                     fileInfo,
                     PageRequest.of(0, 1));
-                Assert.assertTrue(validFiles.getTotalElements() == 0);
+                Assert.assertEquals(0, validFiles.getTotalElements());
 
                 Page<AcquisitionFile> acquiredFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(
                     AcquisitionFileState.ACQUIRED,
                     fileInfo,
                     PageRequest.of(0, 1));
-                Assert.assertTrue(acquiredFiles.getTotalElements() == 1);
+                Assert.assertEquals(1, acquiredFiles.getTotalElements());
             }
         }
     }

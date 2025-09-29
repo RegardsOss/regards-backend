@@ -52,7 +52,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -67,7 +67,7 @@ import java.util.List;
 public class AcquisitionFileServiceIT extends AbstractMultitenantServiceIT {
 
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionServiceIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionFileServiceIT.class);
 
     @Autowired
     private IAcquisitionProcessingService processingService;
@@ -106,7 +106,6 @@ public class AcquisitionFileServiceIT extends AbstractMultitenantServiceIT {
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
         processingChain.setPeriodicity("0 * * * * *");
-        processingChain.setCategories(org.assertj.core.util.Sets.newLinkedHashSet());
 
         List<StorageMetadataProvider> storages = new ArrayList<>();
         storages.add(StorageMetadataProvider.build("AWS", "/path/to/file", new HashSet<>()));
@@ -205,37 +204,39 @@ public class AcquisitionFileServiceIT extends AbstractMultitenantServiceIT {
     }
 
     @Test
-    public void testCountFilesforProcessingChain() {
-        Assert.assertTrue(fileService.countByChain(processingChain) == AcquisitionFileState.values().length);
+    public void testCountFilesForProcessingChain() {
+        Assert.assertEquals(AcquisitionFileState.values().length, fileService.countByChain(processingChain));
         for (AcquisitionFileState fileState : AcquisitionFileState.values()) {
-            Assert.assertTrue(fileService.countByChainAndStateIn(processingChain, Arrays.asList(fileState)) == 1);
+            Assert.assertEquals(1,
+                                fileService.countByChainAndStateIn(processingChain,
+                                                                   Collections.singletonList(fileState)));
         }
     }
 
     @Test
     public void testSearchFiles() {
         Page<AcquisitionFile> results = fileService.search("file", null, null, null, null, PageRequest.of(0, 100));
-        Assert.assertTrue(results.getNumberOfElements() == (AcquisitionFileState.values().length * 2));
+        Assert.assertEquals((AcquisitionFileState.values().length * 2), results.getNumberOfElements());
 
         results = fileService.search("/other", null, null, null, null, PageRequest.of(0, 100));
-        Assert.assertTrue(results.getNumberOfElements() == 0);
+        Assert.assertEquals(0, results.getNumberOfElements());
 
         results = fileService.search("file1", null, null, processingChain.getId(), null, PageRequest.of(0, 100));
-        Assert.assertTrue(results.getNumberOfElements() == 1);
+        Assert.assertEquals(1, results.getNumberOfElements());
 
         results = fileService.search(null, null, null, processingChain.getId(), null, PageRequest.of(0, 100));
-        Assert.assertTrue(results.getNumberOfElements() == AcquisitionFileState.values().length);
+        Assert.assertEquals(AcquisitionFileState.values().length, results.getNumberOfElements());
 
         results = fileService.search(null, null, null, processingChain2.getId(), null, PageRequest.of(0, 100));
-        Assert.assertTrue(results.getNumberOfElements() == AcquisitionFileState.values().length);
+        Assert.assertEquals(AcquisitionFileState.values().length, results.getNumberOfElements());
 
         results = fileService.search("file",
-                                     Arrays.asList(AcquisitionFileState.ACQUIRED),
+                                     List.of(AcquisitionFileState.ACQUIRED),
                                      product.getId(),
                                      processingChain.getId(),
                                      OffsetDateTime.now().minusDays(1),
                                      PageRequest.of(0, 100));
-        Assert.assertTrue(results.getNumberOfElements() == 1);
+        Assert.assertEquals(1, results.getNumberOfElements());
     }
 
 }

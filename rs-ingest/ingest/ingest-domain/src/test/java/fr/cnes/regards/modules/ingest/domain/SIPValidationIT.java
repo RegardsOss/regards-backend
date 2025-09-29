@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.oais.dto.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
@@ -222,7 +221,7 @@ public class SIPValidationIT {
                                                            "session",
                                                            null,
                                                            "ingestChain",
-                                                           Sets.newHashSet("cat 1"),
+                                                           "cat 1",
                                                            null,
                                                            null,
                                                            new StorageDto("test"));

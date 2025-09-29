@@ -18,14 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.service.job.step;
 
-import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.dto.InformationPackageMapDto;
+import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.job.AIPEntityUpdateWrapper;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateCategoryTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTagTask;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -36,22 +40,23 @@ import java.util.List;
  */
 public class UpdateAIPSimpleProperty implements IUpdateStep {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateAIPSimpleProperty.class);
+
     @Override
     public AIPEntityUpdateWrapper run(AIPEntityUpdateWrapper aipWrapper, AbstractAIPUpdateTask updateTask)
         throws ModuleException {
         AIPUpdateTaskType taskType = updateTask.getType();
-        switch (taskType) {
-            case ADD_CATEGORY:
-            case REMOVE_CATEGORY:
+        return switch (taskType) {
+            case ADD_CATEGORY, REMOVE_CATEGORY -> {
                 AIPUpdateCategoryTask updateCategoryTask = (AIPUpdateCategoryTask) updateTask;
-                return handleCategory(aipWrapper, updateCategoryTask);
-            case ADD_TAG:
-            case REMOVE_TAG:
+                yield handleCategory(aipWrapper, updateCategoryTask);
+            }
+            case ADD_TAG, REMOVE_TAG -> {
                 AIPUpdateTagTask updateTagTask = (AIPUpdateTagTask) updateTask;
-                return handleTag(aipWrapper, updateTagTask);
-            default:
-                throw new ModuleException(String.format("Unexpected type of update request : %s", taskType));
-        }
+                yield handleTag(aipWrapper, updateTagTask);
+            }
+            default -> throw new ModuleException(String.format("Unexpected type of update request : %s", taskType));
+        };
     }
 
     private AIPEntityUpdateWrapper handleTag(AIPEntityUpdateWrapper aipWrapper, AIPUpdateTagTask updateTask) {
@@ -64,7 +69,7 @@ public class UpdateAIPSimpleProperty implements IUpdateStep {
             aip.getTags().addAll(tags);
         } else {
             aip.getAip().withoutContextTags(tagsArray);
-            aip.getTags().removeAll(tags);
+            tags.forEach(aip.getTags()::remove);
         }
         // Update the wrapper pristine flag if the list changed
         if (tagSize != aip.getTags().size()) {
@@ -73,19 +78,62 @@ public class UpdateAIPSimpleProperty implements IUpdateStep {
         return aipWrapper;
     }
 
-    private AIPEntityUpdateWrapper handleCategory(AIPEntityUpdateWrapper aipWrapper, AIPUpdateCategoryTask updateTask) {
-        AIPEntity aip = aipWrapper.getAip();
-        List<String> categories = updateTask.getCategories();
-        int categorySize = aip.getCategories().size();
-        if (AIPUpdateTaskType.ADD_CATEGORY == updateTask.getType()) {
-            aip.getCategories().addAll(categories);
-        } else {
-            aip.getCategories().removeAll(categories);
+    private AIPEntityUpdateWrapper handleCategory(AIPEntityUpdateWrapper aipWrapper, AIPUpdateCategoryTask updateTask)
+        throws ModuleException {
+
+        final AIPEntity aip = aipWrapper.getAip();
+        String oldCategory = aip.getCategory();
+        if (oldCategory != null && oldCategory.isBlank()) {
+            oldCategory = null;
         }
-        // Update the wrapper pristine flag if the list changed
-        if (categorySize != aip.getCategories().size()) {
+        if (CollectionUtils.isEmpty(updateTask.getCategories())) {
+            // There's nothing to do actually
+            return aipWrapper;
+        }
+
+        if (AIPUpdateTaskType.ADD_CATEGORY == updateTask.getType()) {
+            return handleAddCategory(aipWrapper, updateTask, oldCategory, aip);
+        } else {
+            return handleRemoveCategory(aipWrapper, updateTask, oldCategory, aip);
+        }
+    }
+
+    private static AIPEntityUpdateWrapper handleAddCategory(AIPEntityUpdateWrapper aipWrapper,
+                                                            AIPUpdateCategoryTask updateTask,
+                                                            String oldCategory,
+                                                            AIPEntity aip) throws ModuleException {
+        if (updateTask.getCategories().size() > 1) {
+            // Can't add several categories
+            String msg = "Add category: the 'categories' parameter contains more than one element.";
+            LOGGER.error(msg);
+            throw new ModuleException(msg);
+        }
+        String newCategory = updateTask.getCategories().get(0);
+        // Adding a category that is already there is a no-op
+        if (!newCategory.equals(oldCategory)) {
+            if (oldCategory != null) {
+                // Can't add a category while there's already an existing one
+                String msg = String.format("Add category: cannot add category %s, the feature already has a category. "
+                                           + "Remove the existing category before adding a new one", newCategory);
+                LOGGER.error(msg);
+                throw new ModuleException(msg);
+            }
+            aip.setCategory(newCategory);
             aipWrapper.markAsUpdated(true);
         }
         return aipWrapper;
     }
+
+    private static AIPEntityUpdateWrapper handleRemoveCategory(AIPEntityUpdateWrapper aipWrapper,
+                                                               AIPUpdateCategoryTask updateTask,
+                                                               String oldCategory,
+                                                               AIPEntity aip) {
+        // Removing a category that is not already present is a no-op
+        if (oldCategory != null && updateTask.getCategories().contains(oldCategory)) {
+            aip.setCategory(null);
+            aipWrapper.markAsUpdated(true);
+        }
+        return aipWrapper;
+    }
+
 }

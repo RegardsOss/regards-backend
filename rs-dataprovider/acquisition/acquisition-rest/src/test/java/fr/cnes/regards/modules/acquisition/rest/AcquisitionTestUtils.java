@@ -50,7 +50,7 @@ public class AcquisitionTestUtils {
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
         processingChain.setPeriodicity("0 * * * * *");
-        processingChain.setCategories(Sets.newLinkedHashSet());
+        processingChain.setCategory(null);
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();

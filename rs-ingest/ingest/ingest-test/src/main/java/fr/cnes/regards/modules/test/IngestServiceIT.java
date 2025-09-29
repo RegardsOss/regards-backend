@@ -32,11 +32,7 @@ import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.modules.ingest.dao.*;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
-import fr.cnes.regards.modules.ingest.dto.AIPState;
-import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.StorageDto;
-import fr.cnes.regards.modules.ingest.dto.VersioningMode;
+import fr.cnes.regards.modules.ingest.dto.*;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
@@ -251,7 +247,7 @@ public class IngestServiceIT {
                                                 String storage,
                                                 String session,
                                                 String sessionOwner,
-                                                List<String> categories,
+                                                String category,
                                                 Optional<String> chainLabel,
                                                 VersioningMode versioningMode) {
         // Create event
@@ -261,7 +257,7 @@ public class IngestServiceIT {
                                                       session,
                                                       null,
                                                       IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                      Sets.newHashSet(categories),
+                                                      category,
                                                       null,
                                                       null,
                                                       storagesMeta);

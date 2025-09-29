@@ -288,6 +288,14 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                           .value("Optional.")));
+
+        params.add(constrainedFields.withPath("category", "category", "Category")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
         return params;
     }
 

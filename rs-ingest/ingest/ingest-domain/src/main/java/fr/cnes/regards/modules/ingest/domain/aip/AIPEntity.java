@@ -33,7 +33,7 @@ import org.hibernate.annotations.Type;
                    @Index(name = "idx_aip_provider_id", columnList = "provider_id"),
                    @Index(name = "idx_aip_storage", columnList = "storages"),
                    @Index(name = "idx_aip_tags", columnList = "tags"),
-                   @Index(name = "idx_aip_categories", columnList = "categories"),
+                   @Index(name = "idx_aip_category", columnList = "category"),
                    @Index(name = "idx_aip_sip_id", columnList = "sip_id"),
                    @Index(name = "idx_aip_state", columnList = "state"),
                    @Index(name = "idx_aipid", columnList = "aip_id"),
@@ -75,7 +75,7 @@ public class AIPEntity extends AbstractAIPEntity {
         aipEntity.setProviderId(sip.getProviderId());
         aipEntity.setSessionOwner(sip.getSessionOwner());
         aipEntity.setSession(sip.getSession());
-        aipEntity.setCategories(sip.getCategories());
+        aipEntity.setCategory(sip.getCategory());
         aipEntity.setVersion(aip.getVersion());
         return aipEntity;
     }

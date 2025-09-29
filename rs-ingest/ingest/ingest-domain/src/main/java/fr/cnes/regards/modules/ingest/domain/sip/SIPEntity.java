@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
 import fr.cnes.regards.modules.ingest.dto.SIPState;
 import jakarta.persistence.*;
@@ -189,7 +189,7 @@ public class SIPEntity extends AbstractOAISEntity {
         // Extract from IngestMetadata
         sipEntity.setSession(metadata.getSession());
         sipEntity.setSessionOwner(metadata.getSessionOwner());
-        sipEntity.setCategories(metadata.getCategories());
+        sipEntity.setCategory(metadata.getCategory());
 
         sipEntity.setVersion(version);
         // Extracted from SIP for search purpose

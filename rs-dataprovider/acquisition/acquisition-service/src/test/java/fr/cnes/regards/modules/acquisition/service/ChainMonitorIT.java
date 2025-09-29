@@ -62,13 +62,13 @@ public class ChainMonitorIT extends DataproviderMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChainMonitorIT.class);
 
-    private Path rootPath = Paths.get("src", "test", "resources", "startstop");
+    private final Path rootPath = Paths.get("src", "test", "resources", "startstop");
 
-    private Path fakePath = rootPath.resolve("fake").toAbsolutePath();
+    private final Path fakePath = rootPath.resolve("fake").toAbsolutePath();
 
-    private Path imagePath = rootPath.resolve("images").toAbsolutePath();
+    private final Path imagePath = rootPath.resolve("images").toAbsolutePath();
 
-    private Path blockerPath = rootPath.resolve("blocker").toAbsolutePath();
+    private final Path blockerPath = rootPath.resolve("blocker").toAbsolutePath();
 
     @Autowired
     private EntityManager entityManager;
@@ -135,7 +135,6 @@ public class ChainMonitorIT extends DataproviderMultitenantServiceIT {
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
         processingChain.setPeriodicity("0 * * * * *");
-        processingChain.setCategories(Sets.newLinkedHashSet());
 
         // Acquisition file info
         PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, "Scan plugin", null);

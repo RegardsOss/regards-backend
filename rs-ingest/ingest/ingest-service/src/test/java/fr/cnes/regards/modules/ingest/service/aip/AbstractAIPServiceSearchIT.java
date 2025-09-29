@@ -53,9 +53,13 @@ public abstract class AbstractAIPServiceSearchIT extends IngestMultitenantServic
 
     protected static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
 
-    protected static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
-
     protected static final List<String> CATEGORIES_2 = Lists.newArrayList("CATEGORY", "CATEGORY2");
+
+    private static final String CATEGORY_0 = "CATEGORY";
+
+    private static final String CATEGORY_1 = "CATEGORY1";
+
+    private static final String CATEGORY_2 = "CATEGORY2";
 
     protected static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
 
@@ -94,43 +98,43 @@ public abstract class AbstractAIPServiceSearchIT extends IngestMultitenantServic
                                                                        STORAGE_0,
                                                                        SESSION_0,
                                                                        SESSION_OWNER_0,
-                                                                       CATEGORIES_0),
+                                                                       CATEGORY_0),
                                                         createSipEvent("AIPServiceSearchIT 2",
                                                                        TAG_0,
                                                                        STORAGE_0,
                                                                        SESSION_0,
                                                                        SESSION_OWNER_1,
-                                                                       CATEGORIES_1),
+                                                                       CATEGORY_1),
                                                         createSipEvent("AIPServiceSearchIT 3",
                                                                        TAG_1,
                                                                        STORAGE_1,
                                                                        SESSION_0,
                                                                        SESSION_OWNER_0,
-                                                                       CATEGORIES_0),
+                                                                       CATEGORY_0),
                                                         createSipEvent("AIPServiceSearchIT 4",
                                                                        TAG_1,
                                                                        STORAGE_1,
                                                                        SESSION_1,
                                                                        SESSION_OWNER_1,
-                                                                       CATEGORIES_1),
+                                                                       CATEGORY_1),
                                                         createSipEvent("AIPServiceSearchIT 5",
                                                                        TAG_1,
                                                                        STORAGE_2,
                                                                        SESSION_1,
                                                                        SESSION_OWNER_1,
-                                                                       CATEGORIES_2),
+                                                                       CATEGORY_2),
                                                         createSipEvent("AIPServiceSearchIT 6",
                                                                        TAG_0,
                                                                        STORAGE_2,
                                                                        SESSION_1,
                                                                        SESSION_OWNER_0,
-                                                                       CATEGORIES_0),
+                                                                       CATEGORY_0),
                                                         createSipEvent("AIPServiceSearchIT 7",
                                                                        TAG_2,
                                                                        STORAGE_0,
                                                                        SESSION_1,
                                                                        SESSION_OWNER_0,
-                                                                       CATEGORIES_0));
+                                                                       CATEGORY_0));
         int nbSIP = sipEvents.size();
 
         ingestRequestFlowHandler.handleBatch(sipEvents);
@@ -159,13 +163,22 @@ public abstract class AbstractAIPServiceSearchIT extends IngestMultitenantServic
         SearchAIPsParameters searchAIPsParameters = new SearchAIPsParameters().withCategoriesIncluded(CATEGORIES_0);
         // When
         Object results = findByFilters(searchAIPsParameters);
+        // Then
+        Assert.assertEquals(4, getTotalElements(results));
+    }
 
+    @Test
+    public void test_search_AIPS_with_categories_among_multiples() {
+        // Given
+        SearchAIPsParameters searchAIPsParameters = new SearchAIPsParameters().withCategoriesIncluded(CATEGORIES_2);
+        // When
+        Object results = findByFilters(searchAIPsParameters);
         // Then
         Assert.assertEquals(5, getTotalElements(results));
     }
 
     @Test
-    public void test_search_AIPS_with_categroies_storages() {
+    public void test_search_AIPS_with_categories_storages() {
         // Given
         SearchAIPsParameters searchAIPsParameters = new SearchAIPsParameters().withCategoriesIncluded(CATEGORIES_0)
                                                                               .withStoragesIncluded(List.of(STORAGE_1));

@@ -6,9 +6,7 @@
     "session": "testALot",
     "submissionDate": "2023-02-01T08:08:08Z",
     "ingestChain": "DefaultProcessingChain",
-    "categories": [
-      "CAT_01"
-    ],
+    "category": "CAT_01",
     "storages": [
       {
         "pluginBusinessId": "Local",

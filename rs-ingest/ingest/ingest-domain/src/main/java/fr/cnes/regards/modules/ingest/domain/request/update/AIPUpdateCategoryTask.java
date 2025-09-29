@@ -18,17 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
-import java.util.List;
-
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-import org.hibernate.type.SqlTypes;
-
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+
+import java.util.List;
 
 /**
  * @author Léo Mieulet
@@ -40,6 +37,8 @@ public class AIPUpdateCategoryTask extends AbstractAIPUpdateTask {
     @Column(columnDefinition = "jsonb", name = "payload")
     @Type(value = JsonBinaryType.class,
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    // This is a list because AIPs used to support multiple categories. Moreover it is still possible to specify
+    // multiple categories to remove (with the idea that only one of them will actually be removed)
     private List<String> categories;
 
     public List<String> getCategories() {

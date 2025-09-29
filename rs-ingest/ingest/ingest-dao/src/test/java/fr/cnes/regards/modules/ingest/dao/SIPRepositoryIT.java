@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Test class to verify search with criterion of {@link SIPEntity} entities.
@@ -226,6 +227,45 @@ public class SIPRepositoryIT extends AbstractSIPRepositoryIT {
                                                                    null,
                                                                    page));
         Assert.assertEquals(3, res.size());
+
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null,
+                                                                   null,
+                                                                   SESSION_OWNER,
+                                                                   SESSION,
+                                                                   null,
+                                                                   null,
+                                                                   null,
+                                                                   true,
+                                                                   null,
+                                                                   Set.of("CATEGORY"),
+                                                                   page));
+        Assert.assertEquals(4, res.size());
+
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null,
+                                                                   null,
+                                                                   SESSION_OWNER,
+                                                                   SESSION,
+                                                                   null,
+                                                                   null,
+                                                                   null,
+                                                                   false,
+                                                                   null,
+                                                                   Set.of(),
+                                                                   page));
+        Assert.assertEquals(4, res.size());
+
+        res = sipRepository.findAll(SIPEntitySpecifications.search(null,
+                                                                   null,
+                                                                   SESSION_OWNER,
+                                                                   SESSION,
+                                                                   null,
+                                                                   null,
+                                                                   null,
+                                                                   false,
+                                                                   null,
+                                                                   Set.of("CATEGORY", "CATEGORY2"),
+                                                                   page));
+        Assert.assertEquals(4, res.size());
     }
 
 }

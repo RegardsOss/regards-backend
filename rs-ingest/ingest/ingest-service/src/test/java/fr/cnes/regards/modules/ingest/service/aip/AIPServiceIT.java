@@ -67,9 +67,13 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
 
-    private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
-
     private static final List<String> CATEGORIES_2 = Lists.newArrayList("CATEGORY", "CATEGORY2");
+
+    private static final String CATEGORY_0 = "CATEGORY";
+
+    private static final String CATEGORY_1 = "CATEGORY1";
+
+    private static final String CATEGORY_2 = "CATEGORY2";
 
     public static final String TEST_TAG = "toto";
 
@@ -113,7 +117,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
     public void testDownloadAIPFile() throws ModuleException, IOException, NoSuchAlgorithmException {
         storageClient.setBehavior(true, true);
 
-        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
         ingestServiceTest.waitForIngestion(1, 20000, getDefaultTenant());
 
         Page<AIPEntity> results = aipService.findByFilters(new SearchAIPsParameters(), PageRequest.of(0, 100));
@@ -158,15 +162,15 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         // Given
         storageClient.setBehavior(true, true);
         long nbSIP = 7;
-        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("provider 2", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("provider 3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_2);
-        publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create("provider 2", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create("provider 3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORY_2);
+        publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORY_0);
         SIPDto sip = create("provider 7", TAG_2);
         sip.withAdditionalProvenanceInformation(ORIGIN_URN_ADDITIONAL_INFORMATION, TEST_ORIGIN_URN);
-        publishSIPEvent(sip, STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(sip, STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORY_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
 
@@ -189,7 +193,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         results = aipService.findByFilters(new SearchAIPsParameters().withCategoriesIncluded(CATEGORIES_0),
                                            PageRequest.of(0, 100));
         // Then
-        Assert.assertEquals(5, results.getTotalElements());
+        Assert.assertEquals(4, results.getTotalElements());
 
         // When
         results = aipService.findByFilters(new SearchAIPsParameters().withStoragesIncluded(List.of(STORAGE_1,
@@ -271,13 +275,13 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
     public void testOtherSearchEndpoints() throws InterruptedException {
         storageClient.setBehavior(true, true);
         long nbSIP = 7;
-        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("provider 2", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("provider 3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_2);
-        publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create("provider 2", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create("provider 3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORY_2);
+        publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORY_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
 
@@ -286,10 +290,8 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
 
         SearchAIPsParameters filters = new SearchAIPsParameters().withStatesIncluded(List.of(AIPState.STORED))
                                                                  .withTagsIncluded(TAG_0);
+        // Test tags
         List<String> results = aipService.findTags(filters);
-        Assert.assertEquals(3, results.size());
-        // Tests categories
-        results = aipService.findCategories(filters);
         Assert.assertEquals(3, results.size());
         // Tests storages
         results = aipService.findStorages(filters);
@@ -357,15 +359,15 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         // Given
         storageClient.setBehavior(true, true);
         long nbSIP = 7;
-        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("provider 2", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("provider 3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_2);
-        publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create("provider 2", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create("provider 3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORY_2);
+        publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORY_0);
         SIPDto sip = create("provider 7", TAG_2);
         sip.withAdditionalProvenanceInformation(ORIGIN_URN_ADDITIONAL_INFORMATION, TEST_ORIGIN_URN);
-        publishSIPEvent(sip, STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(sip, STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORY_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
 

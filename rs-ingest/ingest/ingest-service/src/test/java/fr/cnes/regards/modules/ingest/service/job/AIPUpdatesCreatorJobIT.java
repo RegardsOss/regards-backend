@@ -65,18 +65,11 @@ import java.util.concurrent.TimeUnit;
 public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
 
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateRunnerJobIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJobIT.class);
 
-    @Autowired
-    private StorageClientMock storageClient;
+    private static final String CATEGORY_0 = "CATEGORY";
 
-    @Autowired
-    private IAIPUpdateRequestRepository aipUpdateRequestRepository;
-
-    @Autowired
-    private IAIPService aipService;
-
-    private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
+    private static final String CATEGORY_1 = "CATEGORY1";
 
     private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
 
@@ -107,41 +100,26 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
     private static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
 
     @Autowired
+    private StorageClientMock storageClient;
+
+    @Autowired
+    private IAIPUpdateRequestRepository aipUpdateRequestRepository;
+
+    @Autowired
+    private IAIPService aipService;
+
+    @Autowired
     private IngestRequestSchedulerService ingestRequestSchedulerService;
 
     public void initData() {
 
         long nbSIP = 6;
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0),
-                        STORAGE_1,
-                        SESSION_0,
-                        SESSION_OWNER_0,
-                        CATEGORIES_0);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0),
-                        STORAGE_1,
-                        SESSION_0,
-                        SESSION_OWNER_1,
-                        CATEGORIES_1);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1),
-                        STORAGE_1,
-                        SESSION_0,
-                        SESSION_OWNER_0,
-                        CATEGORIES_0);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1),
-                        STORAGE_1,
-                        SESSION_1,
-                        SESSION_OWNER_1,
-                        CATEGORIES_1);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1),
-                        STORAGE_2,
-                        SESSION_1,
-                        SESSION_OWNER_1,
-                        CATEGORIES_0);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0),
-                        STORAGE_2,
-                        SESSION_1,
-                        SESSION_OWNER_0,
-                        CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORY_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORY_0);
 
         waitSipCount(nbSIP);
 

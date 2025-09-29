@@ -40,9 +40,9 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
 import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
@@ -79,11 +79,11 @@ import java.util.*;
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
 
-    private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
+    private static final String CATEGORY_0 = "CATEGORY";
 
-    private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
+    private static final String CATEGORY_1 = "CATEGORY1";
 
-    private static final List<String> CATEGORIES_2 = Lists.newArrayList("CATEGORY", "CATEGORY2");
+    private static final String CATEGORY_2 = "CATEGORY2";
 
     private static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
 
@@ -145,13 +145,13 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         LOGGER.info("=========================> BEGIN INIT DATA FOR TESTS <=====================");
         storageClient.setBehavior(true, true);
         long nbSIP = 7;
-        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("provider 2", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("provider 3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORIES_1);
-        publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORIES_2);
-        publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
-        publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create("provider 2", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create("provider 3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORY_2);
+        publishSIPEvent(create("provider 6", TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORY_0);
 
         waitSipCount(nbSIP);
         ingestRequestSchedulerService.scheduleRequests();
@@ -160,7 +160,7 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
                                                       SESSION_0,
                                                       null,
                                                       IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                      Sets.newHashSet(CATEGORIES_0),
+                                                      CATEGORY_0,
                                                       null,
                                                       null,
                                                       new StorageDto(STORAGE_0));
@@ -345,7 +345,7 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
         sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));
         sip4.setSessionOwner("SESSION_OWNER");
         sip4.setSession("SESSION");
-        sip4.setCategories(org.assertj.core.util.Sets.newLinkedHashSet("CATEGORIES"));
+        sip4.setCategory("CATEGORIES");
         sip4.setState(SIPState.INGESTED);
         sip4.setVersion(2);
         sip4.setChecksum("123456789032");
@@ -381,7 +381,7 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
                                                                                "SESSION",
                                                                                OffsetDateTime.now(),
                                                                                "ingestChain",
-                                                                               new HashSet<>(),
+                                                                               null,
                                                                                StorageMetadata.build("RAS")),
                                                           InternalRequestState.ERROR,
                                                           IngestRequestStep.LOCAL_SCHEDULED,

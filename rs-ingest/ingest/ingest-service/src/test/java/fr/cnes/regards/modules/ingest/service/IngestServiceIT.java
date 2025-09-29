@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -97,7 +96,7 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
                                                            SESSION,
                                                            null,
                                                            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                           Sets.newHashSet("CAT"),
+                                                           "CAT",
                                                            null,
                                                            null,
                                                            new StorageDto("disk"));
@@ -121,7 +120,7 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
                                                            SESSION,
                                                            null,
                                                            CHAIN_PP_LABEL,
-                                                           Sets.newHashSet("CAT"),
+                                                           "CAT",
                                                            null,
                                                            null,
                                                            new StorageDto("disk"));
@@ -158,7 +157,7 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
                                                            SESSION,
                                                            null,
                                                            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                           Sets.newHashSet("CAT"),
+                                                           "CAT",
                                                            null,
                                                            null,
                                                            new StorageDto("disk"));

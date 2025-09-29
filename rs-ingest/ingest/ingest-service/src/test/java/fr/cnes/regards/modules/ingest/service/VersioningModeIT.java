@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2025 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Lists;
@@ -23,6 +41,7 @@ import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestDeletionService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import jakarta.persistence.criteria.Predicate;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,8 +52,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-
-import jakarta.persistence.criteria.Predicate;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -62,7 +79,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
 
     public static final String SESSION_0 = OffsetDateTime.now().toString();
 
-    private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
+    private static final String CATEGORY_0 = "CATEGORY";
 
     private static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
 
@@ -117,7 +134,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
         storageClient.setBehavior(true, true);
 
         // lets submit the first SIP
-        publishSIPEvent(create(PROVIDER_ID, TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create(PROVIDER_ID, TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
         ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED, getDefaultTenant());
         // lets check that first SIP version is the latest
         SIPEntity[] sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
@@ -150,7 +167,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                .incrementProductStoreSuccess(Mockito.any(IngestRequest.class));
 
         // lets submit the second SIP with different TAGS so it is accepted by system
-        publishSIPEvent(create(PROVIDER_ID, TAG_1), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create(PROVIDER_ID, TAG_1), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED, getDefaultTenant());
         // lets check that second SIP version is the latest
         sips = sipRepository.findAllByProviderIdOrderByVersionAsc(PROVIDER_ID).toArray(new SIPEntity[0]);
@@ -217,7 +234,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
-                        CATEGORIES_0,
+                        CATEGORY_0,
                         Optional.empty(),
                         VersioningMode.REPLACE);
         ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED, getDefaultTenant());
@@ -256,7 +273,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
-                        CATEGORIES_0,
+                        CATEGORY_0,
                         Optional.empty(),
                         VersioningMode.REPLACE);
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED, getDefaultTenant());
@@ -327,7 +344,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
-                        CATEGORIES_0,
+                        CATEGORY_0,
                         Optional.empty(),
                         VersioningMode.INC_VERSION);
         ingestServiceTest.waitForAIP(4, 20_000, AIPState.STORED, getDefaultTenant());
@@ -342,7 +359,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
-                        CATEGORIES_0,
+                        CATEGORY_0,
                         Optional.empty(),
                         VersioningMode.REPLACE);
 
@@ -423,7 +440,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
-                        CATEGORIES_0,
+                        CATEGORY_0,
                         Optional.empty(),
                         VersioningMode.IGNORE);
         ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED, getDefaultTenant());
@@ -462,7 +479,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
-                        CATEGORIES_0,
+                        CATEGORY_0,
                         Optional.empty(),
                         VersioningMode.IGNORE);
         ingestServiceTest.waitForIngestRequest(1, 20_000, InternalRequestState.IGNORED, getDefaultTenant());
@@ -515,7 +532,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
-                        CATEGORIES_0,
+                        CATEGORY_0,
                         Optional.empty(),
                         VersioningMode.MANUAL);
         ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED, getDefaultTenant());
@@ -554,7 +571,7 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
                         Lists.newArrayList(STORAGE_0),
                         SESSION_0,
                         SESSION_OWNER_0,
-                        CATEGORIES_0,
+                        CATEGORY_0,
                         Optional.empty(),
                         VersioningMode.MANUAL);
         ingestServiceTest.waitForIngestRequest(1,
@@ -787,12 +804,12 @@ public class VersioningModeIT extends IngestMultitenantServiceIT {
         Assertions.assertEquals(0, lastAIPRepository.count());
 
         // lets submit the first SIP V1
-        publishSIPEvent(create(PROVIDER_ID, TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create(PROVIDER_ID, TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
         ingestServiceTest.waitForAIP(1, 20000, AIPState.STORED, getDefaultTenant());
         Assertions.assertEquals(1, lastAIPRepository.count());
 
         // lets submit a V2 with different TAGS so it is accepted by system
-        publishSIPEvent(create(PROVIDER_ID, TAG_1), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
+        publishSIPEvent(create(PROVIDER_ID, TAG_1), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
         ingestServiceTest.waitForAIP(2, 20000, AIPState.STORED, getDefaultTenant());
         Assertions.assertEquals(1, lastAIPRepository.count());
 

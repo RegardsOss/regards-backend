@@ -23,8 +23,9 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Size;
+
 import java.time.OffsetDateTime;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class IngestMetadataDto {
     @Schema(description = "Name of the sip submission session owner.", example = "Jean")
     private String sessionOwner;
 
-    @Schema(description = "Name of the sip submission session.",example = "Submissions of 2024-08-01")
+    @Schema(description = "Name of the sip submission session.", example = "Submissions of 2024-08-01")
     private String session;
 
     @Schema(description = "Ingest chain label to be used to process SIPs.", example = "DefaultIngestChain")
@@ -56,7 +57,15 @@ public class IngestMetadataDto {
     @Schema(description = "Request submission date.", example = "2024-08-01 01:00:00")
     private OffsetDateTime submissionDate;
 
-    @ArraySchema(schema = @Schema(description = "Category to add to generated AIP or empty.", example = "January-2024"))
+    @Size(max = 128)
+    @Schema(description = "Category associated with the generated AIP. May be empty.", example = "SATELLITE_LAMBDA")
+    private String category;
+
+    // Keep for backward compatibility with old format in SIP
+    @ArraySchema(schema = @Schema(description = "Deprecated, use `category` instead. For backward compatibility, a "
+                                                + "single-value list is accepted provided that `category` is not also"
+                                                + " specified."))
+    @Size(max = 1)
     private Set<String> categories;
 
     @Schema(description = "Replace error requests with same providerId.", example = "false")
@@ -66,6 +75,46 @@ public class IngestMetadataDto {
     @Schema(description = "Name of the data model from rs-dam service to validate SIP. If null no validation is done.",
             example = "DataModel01")
     private String model;
+
+    public IngestMetadataDto() {
+
+    }
+
+    public IngestMetadataDto(String sessionOwner,
+                             String session,
+                             @Nullable OffsetDateTime submissionDate,
+                             String ingestChain,
+                             @Nullable String category,
+                             @Nullable VersioningMode versioningMode,
+                             @Nullable String model,
+                             StorageDto storages) {
+        this(sessionOwner,
+             session,
+             submissionDate,
+             ingestChain,
+             category,
+             versioningMode,
+             model,
+             Collections.singletonList(storages));
+    }
+
+    public IngestMetadataDto(String sessionOwner,
+                             String session,
+                             @Nullable OffsetDateTime submissionDate,
+                             String ingestChain,
+                             @Nullable String category,
+                             @Nullable VersioningMode versioningMode,
+                             @Nullable String model,
+                             List<StorageDto> storages) {
+        this.sessionOwner = sessionOwner;
+        this.session = session;
+        this.ingestChain = ingestChain;
+        this.versioningMode = versioningMode;
+        this.storages = storages;
+        this.submissionDate = submissionDate;
+        this.category = category;
+        this.model = model;
+    }
 
     public String getSessionOwner() {
         return sessionOwner;
@@ -115,6 +164,14 @@ public class IngestMetadataDto {
         this.submissionDate = submissionDate;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     public Set<String> getCategories() {
         return categories;
     }
@@ -139,46 +196,6 @@ public class IngestMetadataDto {
         this.model = model;
     }
 
-    public IngestMetadataDto() {
-
-    }
-
-    public IngestMetadataDto(String sessionOwner,
-                             String session,
-                             @Nullable OffsetDateTime submissionDate,
-                             String ingestChain,
-                             Set<String> categories,
-                             @Nullable VersioningMode versioningMode,
-                             @Nullable String model,
-                             StorageDto storages) {
-        this(sessionOwner,
-             session,
-             submissionDate,
-             ingestChain,
-             categories,
-             versioningMode,
-             model,
-             Arrays.asList(storages));
-    }
-
-    public IngestMetadataDto(String sessionOwner,
-                             String session,
-                             @Nullable OffsetDateTime submissionDate,
-                             String ingestChain,
-                             Set<String> categories,
-                             @Nullable VersioningMode versioningMode,
-                             @Nullable String model,
-                             List<StorageDto> storages) {
-        this.sessionOwner = sessionOwner;
-        this.session = session;
-        this.ingestChain = ingestChain;
-        this.versioningMode = versioningMode;
-        this.storages = storages;
-        this.submissionDate = submissionDate;
-        this.categories = categories;
-        this.model = model;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -194,6 +211,7 @@ public class IngestMetadataDto {
                && Objects.equals(versioningMode, that.versioningMode)
                && Objects.equals(storages, that.storages)
                && Objects.equals(submissionDate, that.submissionDate)
+               && Objects.equals(category, that.category)
                && Objects.equals(categories, that.categories)
                && Objects.equals(replaceErrors, that.replaceErrors)
                && Objects.equals(model, that.model);
@@ -207,6 +225,7 @@ public class IngestMetadataDto {
                             versioningMode,
                             storages,
                             submissionDate,
+                            category,
                             categories,
                             replaceErrors,
                             model);
@@ -231,6 +250,8 @@ public class IngestMetadataDto {
                + storages
                + ", submissionDate="
                + submissionDate
+               + ", category="
+               + category
                + ", categories="
                + categories
                + ", replaceErrors="

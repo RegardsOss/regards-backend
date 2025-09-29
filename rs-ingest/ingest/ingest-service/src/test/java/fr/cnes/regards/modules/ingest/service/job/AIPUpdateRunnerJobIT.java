@@ -76,13 +76,15 @@ import java.util.stream.Collectors;
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJobIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdateRunnerJobIT.class);
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY", "CATEGORY00", "CATEGORY01");
 
-    private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
-
     private static final List<String> CATEGORIES_2 = Lists.newArrayList("CATEGORY2");
+
+    private static final String CATEGORY_0 = "CATEGORY";
+
+    private static final String CATEGORY_1 = "CATEGORY1";
 
     private static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
 
@@ -143,39 +145,19 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
     public void initData() throws InterruptedException {
 
         long nbSIP = 6;
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0),
-                        STORAGE_1,
-                        SESSION_0,
-                        SESSION_OWNER_0,
-                        CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
         publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1),
                         Lists.newArrayList(STORAGE_2, STORAGE_3),
                         SESSION_0,
                         SESSION_OWNER_0,
-                        Lists.newArrayList(CATEGORIES_0),
+                        CATEGORY_0,
                         Optional.empty());
 
         // useless entities for this test
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0),
-                        STORAGE_2,
-                        SESSION_1,
-                        SESSION_OWNER_0,
-                        CATEGORIES_0);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0),
-                        STORAGE_1,
-                        SESSION_0,
-                        SESSION_OWNER_1,
-                        CATEGORIES_1);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1),
-                        STORAGE_1,
-                        SESSION_1,
-                        SESSION_OWNER_1,
-                        CATEGORIES_1);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1),
-                        STORAGE_2,
-                        SESSION_1,
-                        SESSION_OWNER_1,
-                        CATEGORIES_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORY_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
 
@@ -208,11 +190,11 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
                                                                                                   null));
 
         for (AIPEntity aip : aipsContent) {
-            LOGGER.info("Intial AIP {}/{} tags : {}, categories : {}, storages : {}",
+            LOGGER.info("Initial AIP {}/{} tags : {}, category : {}, storages : {}",
                         aip.getProviderId(),
                         aip.getState(),
                         aip.getTags(),
-                        aip.getCategories(),
+                        aip.getCategory(),
                         aip.getStorages());
             aip.setDisseminationInfos(disseminationInfo);
             aipService.save(aip);
@@ -264,9 +246,13 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(new SearchAIPsParameters().withSession(SESSION_0)
                                                                                                  .withSessionOwner(
                                                                                                      SESSION_OWNER_0),
+                                                                       // added tags
                                                                        TAG_2,
+                                                                       // removed tags
                                                                        TAG_3,
+                                                                       // added categories
                                                                        CATEGORIES_2,
+                                                                       // removed categories
                                                                        CATEGORIES_0,
                                                                        Lists.newArrayList(STORAGE_3),
                                                                        disseminationInfos));
@@ -285,15 +271,14 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         for (AIPEntity aip : aipsContent) {
             Assert.assertEquals(3, aip.getTags().size());
             // TAG_3 are not existing anymore on entities
-            Assert.assertFalse(aip.getTags().stream().anyMatch(tag -> TAG_3.contains(tag)));
-            Assert.assertEquals(1, aip.getCategories().size());
-            // Only one category remaining
-            Assert.assertEquals(CATEGORIES_2.get(0), aip.getCategories().iterator().next());
+            Assert.assertFalse(aip.getTags().stream().anyMatch(TAG_3::contains));
+            // CATEGORY_0 has been replaced with CATEGORY_2
+            Assert.assertEquals("CATEGORY2", aip.getCategory());
             // No more STORAGE_3
             Assert.assertFalse(aip.getStorages().contains(STORAGE_3));
 
             // Dissemination infos are updated
-            Assert.assertEquals(aip.getDisseminationInfos().size(), 3);
+            Assert.assertEquals(3, aip.getDisseminationInfos().size());
             DisseminationInfo disseminationInfo0 = aip.getDisseminationInfos()
                                                       .stream()
                                                       .filter(aipInfo -> aipInfo.getLabel().equals(LABEL_0))

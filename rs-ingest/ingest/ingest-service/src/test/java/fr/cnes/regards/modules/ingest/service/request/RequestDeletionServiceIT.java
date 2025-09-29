@@ -51,7 +51,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author Stephane Cortine
@@ -146,7 +149,7 @@ public class RequestDeletionServiceIT extends AbstractMultitenantServiceIT {
         sipEntity.setLastUpdate(OffsetDateTime.now().minusHours(6));
         sipEntity.setSessionOwner("SESSION_OWNER");
         sipEntity.setSession("SESSION");
-        sipEntity.setCategories(org.assertj.core.util.Sets.newLinkedHashSet("CATEGORIES"));
+        sipEntity.setCategory("CATEGORY");
         sipEntity.setState(SIPState.INGESTED);
         sipEntity.setVersion(1);
         sipEntity.setChecksum("123456789032" + sipId);
@@ -171,7 +174,7 @@ public class RequestDeletionServiceIT extends AbstractMultitenantServiceIT {
                                                                                "SESSION",
                                                                                OffsetDateTime.now(),
                                                                                "ingestChain",
-                                                                               new HashSet<>(),
+                                                                               null,
                                                                                StorageMetadata.build("RAS")),
                                                           InternalRequestState.ERROR,
                                                           IngestRequestStep.LOCAL_SCHEDULED,

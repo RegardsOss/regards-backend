@@ -299,19 +299,15 @@ public class AipDisseminationIT extends IngestMultitenantServiceIT {
 
     private void createAIPs(int numberOfAips) {
         IntStream.range(0, numberOfAips)
-                 .forEach(i -> createAIP("providerId" + i, Set.of(), "sessionOwner", SESSION_NAME, "storage"));
+                 .forEach(i -> createAIP("providerId" + i, null, "sessionOwner", SESSION_NAME, "storage"));
     }
 
-    private void createAIP(String providerId,
-                           Set<String> categories,
-                           String sessionOwner,
-                           String session,
-                           String storage) {
+    private void createAIP(String providerId, String category, String sessionOwner, String session, String storage) {
         IngestMetadata ingestMetadata = IngestMetadata.build(sessionOwner,
                                                              session,
                                                              OffsetDateTime.now(),
                                                              IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                             categories,
+                                                             category,
                                                              VersioningMode.IGNORE,
                                                              "model",
                                                              StorageMetadata.build(storage));

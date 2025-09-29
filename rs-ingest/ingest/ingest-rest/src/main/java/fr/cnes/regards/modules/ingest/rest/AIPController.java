@@ -247,8 +247,8 @@ public class AIPController implements IResourceController<AIPEntityLightRawDto> 
     @RequestMapping(value = CATEGORIES_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Search categories used by aips", role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<String>> retrieveAIPCategories(@Valid @RequestBody SearchAIPsParameters filters) {
-        List<String> aipTags = aipService.findCategories(filters);
-        return new ResponseEntity<>(aipTags, HttpStatus.OK);
+        List<String> aipCategories = aipService.findCategories(filters);
+        return new ResponseEntity<>(aipCategories, HttpStatus.OK);
     }
 
     @RequestMapping(value = AIPStorageService.AIP_DOWNLOAD_PATH,

@@ -75,7 +75,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -109,7 +108,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
     private static final StorageDto STORAGE_METADATA = new StorageDto("disk");
 
-    private static final HashSet<String> CATEGORIES = Sets.newHashSet("cat 1");
+    private static final String CATEGORY = "cat 1";
 
     @Autowired
     private IIngestProcessingChainRepository processingChainRepository;
@@ -197,7 +196,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                                                            SESSION,
                                                            null,
                                                            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                           CATEGORIES,
+                                                           CATEGORY,
                                                            null,
                                                            null,
                                                            STORAGE_METADATA);
@@ -294,7 +293,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                                                            SESSION,
                                                            null,
                                                            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                           CATEGORIES,
+                                                           CATEGORY,
                                                            null,
                                                            null,
                                                            STORAGE_METADATA);
@@ -384,7 +383,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                                                            SESSION,
                                                            null,
                                                            PROCESSING_CHAIN_TEST,
-                                                           CATEGORIES,
+                                                           CATEGORY,
                                                            null,
                                                            null,
                                                            STORAGE_METADATA);
@@ -490,7 +489,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                                                            SESSION,
                                                            null,
                                                            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                           CATEGORIES,
+                                                           CATEGORY,
                                                            null,
                                                            null,
                                                            STORAGE_METADATA);

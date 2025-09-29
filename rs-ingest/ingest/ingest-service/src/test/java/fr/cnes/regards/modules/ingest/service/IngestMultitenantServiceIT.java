@@ -202,14 +202,14 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                                                    String storage,
                                                    String session,
                                                    String sessionOwner,
-                                                   List<String> categories) {
+                                                   String category) {
 
         SIPDto sip = create(providerId, tags);
         return ingestServiceTest.createSipEvent(sip,
                                                 storage,
                                                 session,
                                                 sessionOwner,
-                                                categories,
+                                                category,
                                                 Optional.empty(),
                                                 VersioningMode.INC_VERSION);
     }
@@ -260,19 +260,15 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         return ingestProcessingService.createNewChain(newChain);
     }
 
-    protected void publishSIPEvent(SIPDto sip,
-                                   String storage,
-                                   String session,
-                                   String sessionOwner,
-                                   List<String> categories) {
-        publishSIPEvent(sip, Lists.newArrayList(storage), session, sessionOwner, categories, Optional.empty());
+    protected void publishSIPEvent(SIPDto sip, String storage, String session, String sessionOwner, String category) {
+        publishSIPEvent(sip, Lists.newArrayList(storage), session, sessionOwner, category, Optional.empty());
     }
 
     protected void handleSipEventsWithoutAmqp(Collection<SIPDto> sips,
                                               List<String> storages,
                                               String session,
                                               String sessionOwner,
-                                              List<String> categories,
+                                              String category,
                                               Optional<String> chainLabel) {
 
         List<StorageDto> storagesMeta = storages.stream().map(StorageDto::new).collect(Collectors.toList());
@@ -280,7 +276,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                                                       session,
                                                       null,
                                                       chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
-                                                      Sets.newHashSet(categories),
+                                                      category,
                                                       VersioningMode.INC_VERSION,
                                                       null,
                                                       storagesMeta);
@@ -296,26 +292,26 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                                    List<String> storages,
                                    String session,
                                    String sessionOwner,
-                                   List<String> categories,
+                                   String category,
                                    Optional<String> chainLabel) {
-        publishSIPEvent(sip, storages, session, sessionOwner, categories, chainLabel, null);
+        publishSIPEvent(sip, storages, session, sessionOwner, category, chainLabel, null);
     }
 
     protected void publishSIPEvent(SIPDto sip,
                                    List<String> storages,
                                    String session,
                                    String sessionOwner,
-                                   List<String> categories,
+                                   String category,
                                    Optional<String> chainLabel,
                                    VersioningMode versioningMode) {
-        publishSIPEvent(Sets.newHashSet(sip), storages, session, sessionOwner, categories, chainLabel, versioningMode);
+        publishSIPEvent(Sets.newHashSet(sip), storages, session, sessionOwner, category, chainLabel, versioningMode);
     }
 
     protected void publishSIPEvent(Collection<SIPDto> sips,
                                    List<String> storages,
                                    String session,
                                    String sessionOwner,
-                                   List<String> categories,
+                                   String category,
                                    Optional<String> chainLabel,
                                    VersioningMode versioningMode) {
         // Create event
@@ -324,7 +320,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                                                       session,
                                                       null,
                                                       chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
-                                                      Sets.newHashSet(categories),
+                                                      category,
                                                       versioningMode,
                                                       null,
                                                       storagesMeta);
@@ -342,7 +338,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                             getRandomStorage().get(0),
                             getRandomSession(),
                             getRandomSessionOwner(),
-                            getRandomCategories());
+                            getRandomCategory());
         }
         if (schedulerService != null) {
             waitSipCount(nbSIP);

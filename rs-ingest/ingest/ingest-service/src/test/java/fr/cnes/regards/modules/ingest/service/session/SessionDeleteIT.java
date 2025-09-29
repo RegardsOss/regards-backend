@@ -137,21 +137,9 @@ public class SessionDeleteIT extends IngestMultitenantServiceIT {
     private void initData() {
         long nbSIP = 3;
         storageClient.setBehavior(true, true);
-        publishSIPEvent(create("1", Lists.newArrayList("TAG_0")),
-                        "STORAGE_1",
-                        SESSION_1,
-                        SOURCE_1,
-                        Lists.newArrayList("CATEGORIES_0"));
-        publishSIPEvent(create("1", Lists.newArrayList("TAG_0")),
-                        "STORAGE_1",
-                        SESSION_2,
-                        SOURCE_1,
-                        Lists.newArrayList("CATEGORIES_0"));
-        publishSIPEvent(create("2", Lists.newArrayList("TAG_0")),
-                        "STORAGE_1",
-                        SESSION_1,
-                        SOURCE_2,
-                        Lists.newArrayList("CATEGORIES_0"));
+        publishSIPEvent(create("1", Lists.newArrayList("TAG_0")), "STORAGE_1", SESSION_1, SOURCE_1, "CATEGORY_0");
+        publishSIPEvent(create("1", Lists.newArrayList("TAG_0")), "STORAGE_1", SESSION_2, SOURCE_1, "CATEGORY_0");
+        publishSIPEvent(create("2", Lists.newArrayList("TAG_0")), "STORAGE_1", SESSION_1, SOURCE_2, "CATEGORY_0");
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
         long wait = FIVE_SECONDS * 3;

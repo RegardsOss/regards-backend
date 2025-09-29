@@ -21,9 +21,6 @@ package fr.cnes.regards.modules.acquisition.service;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
-import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
-import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -32,6 +29,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
@@ -53,8 +53,8 @@ import fr.cnes.regards.modules.ingest.client.IIngestClient;
 import fr.cnes.regards.modules.ingest.client.IngestClientException;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.dto.ISipState;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.StorageDto;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -198,7 +198,7 @@ public class ProductService implements IProductService {
                                                                  product.getSession(),
                                                                  null,
                                                                  product.getProcessingChain().getIngestChain(),
-                                                                 acquisitionChain.getCategories(),
+                                                                 acquisitionChain.getCategory(),
                                                                  product.getProcessingChain().getVersioningMode(),
                                                                  null,
                                                                  storageList);
@@ -236,7 +236,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Optional<Product> searchProduct(String productName) throws ModuleException {
+    public Optional<Product> searchProduct(String productName) {
         return Optional.ofNullable(productRepository.findByProductName(productName));
     }
 
@@ -861,16 +861,16 @@ public class ProductService implements IProductService {
                                             Optional<String> sessionToRetry) {
 
         Page<Product> products;
-        if (!sessionToRetry.isPresent()) {
+        if (sessionToRetry.isEmpty()) {
             products = productRepository.findByProcessingChainAndSipStateInOrderByIdAsc(processingChain,
-                                                                                        Arrays.asList(ProductSIPState.GENERATION_ERROR,
-                                                                                                      ProductSIPState.INGESTION_FAILED),
+                                                                                        List.of(ProductSIPState.GENERATION_ERROR,
+                                                                                                ProductSIPState.INGESTION_FAILED),
                                                                                         PageRequest.of(0,
                                                                                                        bulkAcquisitionLimit));
         } else {
             products = productRepository.findByProcessingChainAndSessionAndSipStateInOrderByIdAsc(processingChain,
                                                                                                   sessionToRetry.get(),
-                                                                                                  Arrays.asList(
+                                                                                                  List.of(
                                                                                                       ProductSIPState.GENERATION_ERROR,
                                                                                                       ProductSIPState.INGESTION_FAILED),
                                                                                                   PageRequest.of(0,

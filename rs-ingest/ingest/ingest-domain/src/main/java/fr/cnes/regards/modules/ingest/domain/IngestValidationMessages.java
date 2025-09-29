@@ -35,8 +35,6 @@ public final class IngestValidationMessages {
 
     public static final String MISSING_STORAGE_METADATA = "Storage metadata is required";
 
-    public static final String MISSING_CATEGORIES = "Categories are required";
-
     public static final String MISSING_VERSIONING_MODE = "Request versioning mode is required";
 
     // Common validation messages

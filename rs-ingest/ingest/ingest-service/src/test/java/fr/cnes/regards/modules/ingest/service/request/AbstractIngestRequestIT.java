@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.oais.dto.aip.AIPDto;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
@@ -31,8 +30,8 @@ import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -89,7 +88,7 @@ public abstract class AbstractIngestRequestIT extends AbstractMultitenantService
                                                          "session",
                                                          null,
                                                          "ingestChain",
-                                                         Sets.newHashSet(),
+                                                         null,
                                                          StorageMetadata.build("storage")),
                                     sip,
                                     1,

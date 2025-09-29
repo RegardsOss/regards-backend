@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.ingest.service.scheduler;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobService;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.SipDeletionSchedulerRepository;
@@ -45,7 +45,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.IntStream;
 
@@ -61,7 +60,7 @@ public class SipBodyDeletionSchedulerIT extends IngestMultitenantServiceIT {
 
     protected static final String SESSION = "session";
 
-    private static final Set<String> CATEGORIES = Sets.newHashSet("CATEGORY");
+    private static final String CATEGORY = "CATEGORY";
 
     private static final int NUMBER_OF_SIP = 4;
 
@@ -96,7 +95,7 @@ public class SipBodyDeletionSchedulerIT extends IngestMultitenantServiceIT {
         sip.setLastUpdate(REFERENCE_DATE.minusDays(number));
         sip.setSessionOwner(SESSION_OWNER);
         sip.setSession(SESSION);
-        sip.setCategories(CATEGORIES);
+        sip.setCategory(CATEGORY);
         sip.setState(SIPState.STORED);
         sip.setVersion(1);
         sip.setChecksum("1234567890" + number);
@@ -141,7 +140,7 @@ public class SipBodyDeletionSchedulerIT extends IngestMultitenantServiceIT {
         // lowerDate is excluded, and upperDate included
         int nbrSipUpdated = sipService.cleanOldRawSip(lowerDate, upperDate);
         // Then
-        Assert.assertEquals(nbrSipUpdated, 2);
+        Assert.assertEquals(2, nbrSipUpdated);
         List<SIPEntity> all = sipRepository.findAllByOrderByLastUpdateAsc();
         // First element is the older (lastUpdate = REFERENCE_DATE -3),
         // his lastUpdate is equals to lower bound date, which is EXCLUDED of the query
@@ -240,6 +239,6 @@ public class SipBodyDeletionSchedulerIT extends IngestMultitenantServiceIT {
         // Then
         Assert.assertNull("A job should be created", jobInfo);
         List<SIPEntity> all = sipRepository.findAllByOrderByLastUpdateAsc();
-        Assert.assertEquals(NUMBER_OF_SIP, all.stream().count());
+        Assert.assertEquals(NUMBER_OF_SIP, all.size());
     }
 }

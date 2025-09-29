@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
-
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -35,6 +29,11 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+
+import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * Define common attributes between SIPEntity and AIPEntity
@@ -52,10 +51,8 @@ public abstract class AbstractOAISEntity {
     @Column(length = 128, name = "session_name", nullable = false)
     private String session;
 
-    @Column(columnDefinition = "jsonb", nullable = false)
-    @Type(value = JsonBinaryType.class,
-          parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
-    private Set<String> categories;
+    @Column(name = "category", length = 128)
+    private String category;
 
     /**
      * The provider identifier is provided by the user along the SIP, with no guaranty of uniqueness,
@@ -138,12 +135,12 @@ public abstract class AbstractOAISEntity {
         this.session = session;
     }
 
-    public Set<String> getCategories() {
-        return categories;
+    public String getCategory() {
+        return category;
     }
 
-    public void setCategories(Set<String> categories) {
-        this.categories = categories;
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public EntityType getIpType() {

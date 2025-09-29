@@ -49,7 +49,7 @@ public class AIPEntityLight extends AbstractAIPEntity {
     public AIPEntityLightRawDto toRawDto() {
         return new AIPEntityLightRawDto(JsonParser.parseString(this.getAip()).getAsJsonObject(),
                                         this.getAipId(),
-                                        this.getCategories(),
+                                        this.getCategory(),
                                         this.getCreationDate(),
                                         this.getDisseminationInfos(),
                                         this.getDisseminationStatus(),

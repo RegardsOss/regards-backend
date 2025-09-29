@@ -51,13 +51,9 @@ public class TestData {
                                                                          "ASI",
                                                                          "CSA");
 
-    public static List<String> getRandomCategories() {
-        List randomCategories = Lists.newArrayList();
-        int nbCategories = ThreadLocalRandom.current().nextInt(1, 6);
-        for (int i = 0; i <= nbCategories; i++) {
-            randomCategories.add("CATEGORY" + "_" + String.format("%04d", i));
-        }
-        return randomCategories;
+    public static String getRandomCategory() {
+        int random = ThreadLocalRandom.current().nextInt(1, 6);
+        return "CATEGORY_" + String.format("%04d", random);
     }
 
     public static List<String> getRandomTags() {

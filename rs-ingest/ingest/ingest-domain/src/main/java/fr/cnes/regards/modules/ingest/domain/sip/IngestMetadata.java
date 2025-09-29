@@ -87,6 +87,9 @@ public class IngestMetadata {
     @Column(length = 128, name = "model")
     private String model;
 
+    @Column(length = 128)
+    private String category;
+
     @Column(columnDefinition = "jsonb", nullable = false)
     @Type(value = JsonBinaryType.class,
           parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
@@ -148,6 +151,14 @@ public class IngestMetadata {
         this.categories = categories;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     public OffsetDateTime getSubmissionDate() {
         return submissionDate;
     }
@@ -169,7 +180,7 @@ public class IngestMetadata {
      *
      * @param sessionOwner Owner of the session
      * @param session      session
-     * @param categories   category list
+     * @param category     category
      * @param ingestChain  ingest processing chain name
      * @param storages     storage metadata
      */
@@ -177,16 +188,9 @@ public class IngestMetadata {
                                        String session,
                                        OffsetDateTime submissionDate,
                                        String ingestChain,
-                                       Set<String> categories,
+                                       String category,
                                        StorageMetadata... storages) {
-        return build(sessionOwner,
-                     session,
-                     submissionDate,
-                     ingestChain,
-                     categories,
-                     VersioningMode.INC_VERSION,
-                     null,
-                     storages);
+        return build(sessionOwner, session, submissionDate, ingestChain, category, null, storages);
     }
 
     /**
@@ -194,7 +198,7 @@ public class IngestMetadata {
      *
      * @param sessionOwner Owner of the session
      * @param session      session
-     * @param categories   category list
+     * @param category     category
      * @param ingestChain  ingest processing chain name
      * @param model        the model to be used for DescriptiveInformation validation
      * @param storages     storage metadata
@@ -203,37 +207,17 @@ public class IngestMetadata {
                                        String session,
                                        OffsetDateTime submissionDate,
                                        String ingestChain,
-                                       Set<String> categories,
+                                       String category,
                                        String model,
                                        StorageMetadata... storages) {
         return build(sessionOwner,
                      session,
                      submissionDate,
                      ingestChain,
-                     categories,
+                     category,
                      VersioningMode.INC_VERSION,
                      model,
                      storages);
-    }
-
-    /**
-     * Build ingest metadata with no model
-     *
-     * @param sessionOwner   Owner of the session
-     * @param session        session
-     * @param categories     category list
-     * @param ingestChain    ingest processing chain name
-     * @param versioningMode versioning mode
-     * @param storages       storage metadata
-     */
-    public static IngestMetadata build(String sessionOwner,
-                                       String session,
-                                       OffsetDateTime submissionDate,
-                                       String ingestChain,
-                                       Set<String> categories,
-                                       VersioningMode versioningMode,
-                                       StorageMetadata... storages) {
-        return build(sessionOwner, session, submissionDate, ingestChain, categories, versioningMode, null, storages);
     }
 
     /**
@@ -241,7 +225,7 @@ public class IngestMetadata {
      *
      * @param sessionOwner   Owner of the session
      * @param session        session
-     * @param categories     category list
+     * @param category       category
      * @param ingestChain    ingest processing chain name
      * @param versioningMode versioning mode
      * @param model          the model to be used for DescriptiveInformation validation
@@ -251,7 +235,7 @@ public class IngestMetadata {
                                        String session,
                                        OffsetDateTime submissionDate,
                                        String ingestChain,
-                                       Set<String> categories,
+                                       String category,
                                        VersioningMode versioningMode,
                                        String model,
                                        StorageMetadata... storages) {
@@ -265,7 +249,7 @@ public class IngestMetadata {
         m.setSessionOwner(sessionOwner);
         m.setSession(session);
         m.setSubmissionDate(submissionDate);
-        m.setCategories(categories);
+        m.setCategory(category);
         m.setStorages(List.of(storages));
         m.setVersioningMode(versioningMode);
         m.setModel(model);

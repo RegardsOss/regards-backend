@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.geojson.GeoJsonFieldDescriptors;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.geojson.OaisFieldDescriptors;
@@ -42,6 +41,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.PayloadDocumentation;
@@ -58,7 +58,6 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Test SIP submission. Just test the REST layer with bean validation.
@@ -78,7 +77,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final String SESSION = "session";
 
-    private static final Set<String> CATEGORIES = Sets.newHashSet("CAT");
+    private static final String CATEGORY = "CAT";
 
     private static final StorageDto STORAGE_METADATA = new StorageDto("disk");
 
@@ -96,7 +95,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                  SESSION,
                                                                  null,
                                                                  IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                                 CATEGORIES,
+                                                                 CATEGORY,
                                                                  null,
                                                                  null,
                                                                  STORAGE_METADATA);
@@ -158,7 +157,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                  SESSION,
                                                                  null,
                                                                  IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                                 Sets.newHashSet("CAT"),
+                                                                 "CAT",
                                                                  null,
                                                                  null,
                                                                  STORAGE_METADATA);
@@ -248,7 +247,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                  SESSION,
                                                                  null,
                                                                  IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                                 Sets.newHashSet("CAT"),
+                                                                 "CAT",
                                                                  null,
                                                                  null,
                                                                  STORAGE_METADATA);
@@ -258,7 +257,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         SIPDto sip = SIPDto.build(EntityType.DATA, "SIP_001");
         sip.withDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "FAKE_ALGO", "4bb3363980381d42912d0a97b815696b");
         sip.withSyntax("FITS(FlexibleImageTransport)",
-                       "http://www.iana.org/assignments/media-types/application/fits",
+                       "https://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         collection.add(sip.registerContentInformation());
 
@@ -266,7 +265,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sip = SIPDto.build(EntityType.DATA, "SIP_002");
         sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vsdfdsfd");
         sip.withSyntax("FITS(FlexibleImageTransport)",
-                       "http://www.iana.org/assignments/media-types/application/fits",
+                       "https://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         collection.add(sip.registerContentInformation());
 
@@ -295,6 +294,70 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                  filePath,
                                  requestBuilderCustomizer,
                                  "Should be able to import valid SIP collection");
+    }
+
+    @Test
+    @Purpose("Ingest valid SIPs with multipart request in the old format (list of categories with a single category, "
+             + "converted to a single string field for retro-compatibility)")
+    public void importValidSipsOldFormat() {
+        // Given
+        final Path filePath = Paths.get("src", "test", "resources", "sipCollectionOldSingleCat.json");
+
+        // Then: Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.expectIsEmpty("denied");
+
+        documentFileRequestParameters(requestBuilderCustomizer);
+
+        // When
+        performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH,
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import valid SIP collection with the old format containing a "
+                                 + "single category");
+    }
+
+    @Test
+    @Purpose("Ingest invalid SIPs with multipart request in the old format (list of categories with several "
+             + "categories)")
+    public void importInvalidSipsOldFormat() {
+        // Given
+        final Path filePath = Paths.get("src", "test", "resources", "invalidSipCollectionOldSeveralCat.json");
+
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        requestBuilderCustomizer.expectToHaveToString("messages",
+                                                      "[\"[Size] size must be between 0 and 1 at categories: rejected "
+                                                      + "value [[CAT2, CAT1]].\"]");
+
+        documentFileRequestParameters(requestBuilderCustomizer);
+
+        // When
+        performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH,
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should not be able to import invalid SIP collection with several categories");
+    }
+
+    @Test
+    @Purpose("Ingest invalid SIPs with multipart request with both category formats (list of categories with single "
+             + "category AND single category field)")
+    public void importInvalidSipsBothFormats() {
+        // Given
+        final Path filePath = Paths.get("src", "test", "resources", "invalidSipCollectionBothCat.json");
+
+        // Define expectations
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.expectToHaveToString("denied",
+                                                      "{JA2_VPF_AXVCNE20081204_095500_20081204_215527_20081205_002323=[error.duplicated.property.categories] Property 'categories' and property 'category' cannot be used together. Only one of them can be present. Property 'categories' is deprecated, use property 'category' instead'. at categories: rejected value [null].}");
+
+        documentFileRequestParameters(requestBuilderCustomizer);
+
+        // When
+        performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH,
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should not be able to import invalid SIP collection with several categories");
     }
 
     private void documentFileRequestParameters(RequestBuilderCustomizer requestBuilderCustomizer) {
@@ -349,7 +412,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                            "b463726cfbb52d47e432bedf08edbec3",
                            Long.valueOf(12345));
         sip.withSyntax("FITS(FlexibleImageTransport)",
-                       "http://www.iana.org/assignments/media-types/application/fits",
+                       "https://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         sip.registerContentInformation();
 
@@ -375,7 +438,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                            OffsetDateTime.parse("2014-02-13T12:25:36+01:00",
                                                                 DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         sip.withProvenanceInformationEvent("update",
-                                           "new calibratiopn parameter 0.001",
+                                           "new calibration parameter 0.001",
                                            OffsetDateTime.parse("2014-02-19T13:31:17+01:00",
                                                                 DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         sip.withFacility("CNES");
@@ -388,7 +451,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sip.withAdditionalProvenanceInformation("key-ref-3", "additional value 3");
         sip.withReferenceInformation("ivoa", "ivo://XXXXX-YYYYYY");
         sip.withReferenceInformation("doi", "https://doi.org/10.1007/s00223-003-0070-0");
-        sip.withReferenceInformation("ark", "http://example.org/ark:/13030/654xz321/s3/f8.05v.tiff");
+        sip.withReferenceInformation("ark", "https://example.org/ark:/13030/654xz321/s3/f8.05v.tiff");
         sip.withFixityInformation("key-fixity-1", "fixity value 1");
         sip.withFixityInformation("key-fixity-2", "fixity value 2");
         sip.withAccessRightInformation("licence",
@@ -403,7 +466,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     //
     //        SIP sip = SIP.build(EntityType.DATA, providerId, Lists.newArrayList("CAT2"));
     //        sip.withDataObject(DataType.RAWDATA, Paths.get(fileName), "3464e3f9a1dad119712c32e2290cbdf8");
-    //        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+    //        sip.withSyntax("FITS(FlexibleImageTransport)", "https://www.iana.org/assignments/media-types/application/fits",
     //                       MediaType.valueOf("application/fits"));
     //        sip.registerContentInformation();
     //

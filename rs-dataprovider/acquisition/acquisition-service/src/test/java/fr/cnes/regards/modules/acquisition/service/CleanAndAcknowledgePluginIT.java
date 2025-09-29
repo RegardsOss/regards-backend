@@ -36,12 +36,10 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
@@ -58,7 +56,6 @@ import static org.mockito.Mockito.mock;
  * @author Thomas GUILLOU
  **/
 @ActiveProfiles({ "test", "nojobs", "noscheduler" })
-@RunWith(SpringRunner.class)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=clean_acknowledge_test" })
 public class CleanAndAcknowledgePluginIT extends AbstractRegardsTransactionalIT {
 
@@ -108,7 +105,6 @@ public class CleanAndAcknowledgePluginIT extends AbstractRegardsTransactionalIT 
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
         processingChain.setPeriodicity("0 * * * * *");
-        processingChain.setCategories(org.assertj.core.util.Sets.newLinkedHashSet());
 
         List<StorageMetadataProvider> storages = new ArrayList<>();
         storages.add(StorageMetadataProvider.build("HELLO", "/other/path/to/file", new HashSet<>()));

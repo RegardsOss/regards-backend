@@ -96,7 +96,7 @@ public class ConcurrentIngestIT extends IngestMultitenantServiceIT {
     @Test
     public void ingest_concurrent_versions_without_submission_date() throws EntityInvalidException {
         // Ingest a sip collection A then a sip collection B
-        // B sips are ew versions of A sips
+        // B sips are new versions of A sips
         // In the first scheduling, only the 2 A sips should be processed
         // Unblock the blocked requests, then do another scheduling, both the 2 A sips and the 2 B sips are no processed
         testConcurrency("sips/sips-without-date-A.json", "sips/sips-without-date-B.json");

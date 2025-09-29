@@ -32,26 +32,23 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.chain.step.InternalInitialStep;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
+import jakarta.annotation.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import software.amazon.awssdk.utils.Md5Utils;
 
-import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,7 +56,6 @@ import java.util.UUID;
 /**
  * @author Sébastien Binda
  **/
-@RunWith(SpringRunner.class)
 @Profile({ "nojob", "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_initial_step" },
                     locations = { "classpath:application-test.properties" })
@@ -155,7 +151,7 @@ public class InternalInitialStepTest extends IngestMultitenantServiceIT {
                                                        "session",
                                                        OffsetDateTime.now(),
                                                        "chain",
-                                                       new HashSet<>(),
+                                                       null,
                                                        "model",
                                                        StorageMetadata.build("Local"));
         metadata.setReplaceErrors(replaceErrors);
@@ -183,7 +179,6 @@ public class InternalInitialStepTest extends IngestMultitenantServiceIT {
         aipEntity.setSession(sipEntity.getSession());
         aipEntity.setSessionOwner(sipEntity.getSessionOwner());
         aipEntity.setSip(sipEntity);
-        aipEntity.setCategories(new HashSet<>());
         return aipRepository.save(aipEntity);
     }
 

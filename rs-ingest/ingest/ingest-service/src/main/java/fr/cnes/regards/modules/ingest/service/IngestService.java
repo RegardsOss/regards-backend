@@ -22,14 +22,15 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
-import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
-import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
-import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
+import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
+import fr.cnes.regards.framework.oais.dto.InformationPackageProperties;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.domain.mapper.IIngestMetadataMapper;
@@ -45,13 +46,14 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
-
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
@@ -64,7 +66,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Ingest management service
@@ -164,6 +165,29 @@ public class IngestService implements IIngestService {
                                                            sip.getProperties().getDescriptiveInformation(),
                                                            SIPDto.class.getName()));
         }
+
+        // Validate list of categories or only category
+        if (!CollectionUtils.isEmpty(ingestMetadata.getCategories())) {
+            if (StringUtils.isNotBlank(ingestMetadata.getCategory())) {
+                // Both 'category' field and 'categories' list defined: error
+                errors.rejectValue("categories",
+                                   "error.duplicated.property.categories",
+                                   "Property 'categories' and property 'category' cannot be used together."
+                                   + " Only one of them can be present. Property 'categories' is deprecated, "
+                                   + "use property 'category' instead'.");
+            } else if (ingestMetadata.getCategories().size() > 1) {
+                // More than one category defined: error
+                errors.rejectValue("categories",
+                                   "error.format.property.categories",
+                                   "Property 'categories' cannot contain more than one element. "
+                                   + "Property 'categories' is deprecated, use property 'category' instead'.");
+            } else {
+                // Single category in 'categories' list: convert it to single 'category' field
+                ingestMetadata.setCategory(ingestMetadata.getCategories().iterator().next());
+                ingestMetadata.setCategories(null);
+            }
+        }
+
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
@@ -185,7 +209,7 @@ public class IngestService implements IIngestService {
             return null;
         }
 
-        // Check for each feature if storage locations are valide for feature files
+        // Check for each feature if storage locations are valid for feature files
         checkSipStorageLocations(sip, ingestMetadata, errors);
 
         // Save granted ingest request, versioning mode is being handled later
@@ -279,44 +303,52 @@ public class IngestService implements IIngestService {
     /**
      * Validate given SIP dataobjects to ensure storage location is configured for each needed {@link DataType} to store
      */
-    private void checkSipStorageLocations(SIPDto sip, IngestMetadata ingestMetadata, Errors errors) {
+    private void checkSipStorageLocations(@Nullable SIPDto sip,
+                                          @Nullable IngestMetadata ingestMetadata,
+                                          Errors errors) {
         Assert.notNull(errors, "Errors should not be null");
-        if (((sip != null) & (sip.getProperties() != null))
-            && (sip.getProperties().getContentInformations() != null)
-            && (ingestMetadata != null)) {
-            Set<DataType> handleTypes = Sets.newHashSet();
-            ingestMetadata.getStorages().stream().map(StorageMetadata::getTargetTypes).forEach(t -> {
-                if (t.isEmpty()) {
-                    handleTypes.addAll(Sets.newHashSet(DataType.values()));
-                } else {
-                    handleTypes.addAll(t);
-                }
-            });
-            for (ContentInformationDto ci : sip.getProperties().getContentInformations()) {
-                Double height = ci.getRepresentationInformation().getSyntax().getHeight();
-                Double width = ci.getRepresentationInformation().getSyntax().getWidth();
-                OAISDataObjectDto dobj = ci.getDataObject();
-                DataType regardsDataType = dobj.getRegardsDataType();
-                // If file needed to be stored check that the data type is well configured
-                if (dobj.getLocations().stream().anyMatch(l -> l.getStorage() == null) && !handleTypes.contains(
-                    regardsDataType)) {
-                    errors.reject("NOT_HANDLED_STORAGE_DATA_TYPE",
-                                  String.format(
-                                      "Data type %s to store is not associated to a configured storage location",
-                                      regardsDataType.toString()));
-                }
-                // add check on quicklook or thumbnail to assert that if they are to be referenced, height and width have been set
-                if ((regardsDataType == DataType.QUICKLOOK_HD) || (regardsDataType == DataType.QUICKLOOK_MD) || (
-                    regardsDataType
-                    == DataType.QUICKLOOK_SD) || (regardsDataType == DataType.THUMBNAIL)) {
-                    for (OAISDataObjectLocationDto location : dobj.getLocations()) {
-                        if (!Strings.isNullOrEmpty(location.getStorage()) && ((height == null) || (width == null))) {
-                            errors.reject("REFERENCED_IMAGE_WITHOUT_DIMENSION",
-                                          String.format(
-                                              "Both height and width must be set for images(%s in SIP: %s) that are being referenced!",
-                                              dobj.getFilename(),
-                                              sip.getId()));
-                        }
+        if (ingestMetadata == null) {
+            return;
+        }
+        List<ContentInformationDto> contentInformationDtos = Optional.ofNullable(sip)
+                                                                     .map(SIPDto::getProperties)
+                                                                     .map(InformationPackageProperties::getContentInformations)
+                                                                     .orElse(null);
+
+        if (CollectionUtils.isEmpty(contentInformationDtos)) {
+            return;
+        }
+        Set<DataType> handleTypes = Sets.newHashSet();
+        ingestMetadata.getStorages().stream().map(StorageMetadata::getTargetTypes).forEach(t -> {
+            if (t.isEmpty()) {
+                handleTypes.addAll(Sets.newHashSet(DataType.values()));
+            } else {
+                handleTypes.addAll(t);
+            }
+        });
+        for (ContentInformationDto ci : contentInformationDtos) {
+            Double height = ci.getRepresentationInformation().getSyntax().getHeight();
+            Double width = ci.getRepresentationInformation().getSyntax().getWidth();
+            OAISDataObjectDto dobj = ci.getDataObject();
+            DataType regardsDataType = dobj.getRegardsDataType();
+            // If file needed to be stored check that the data type is well configured
+            if (dobj.getLocations().stream().anyMatch(l -> l.getStorage() == null) && !handleTypes.contains(
+                regardsDataType)) {
+                errors.reject("NOT_HANDLED_STORAGE_DATA_TYPE",
+                              String.format("Data type %s to store is not associated to a configured storage location",
+                                            regardsDataType.toString()));
+            }
+            // add check on quicklook or thumbnail to assert that if they are to be referenced, height and width have been set
+            if ((regardsDataType == DataType.QUICKLOOK_HD) || (regardsDataType == DataType.QUICKLOOK_MD) || (
+                regardsDataType
+                == DataType.QUICKLOOK_SD) || (regardsDataType == DataType.THUMBNAIL)) {
+                for (OAISDataObjectLocationDto location : dobj.getLocations()) {
+                    if (!Strings.isNullOrEmpty(location.getStorage()) && ((height == null) || (width == null))) {
+                        errors.reject("REFERENCED_IMAGE_WITHOUT_DIMENSION",
+                                      String.format(
+                                          "Both height and width must be set for images(%s in SIP: %s) that are being referenced!",
+                                          dobj.getFilename(),
+                                          sip.getId()));
                     }
                 }
             }

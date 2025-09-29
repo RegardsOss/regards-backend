@@ -42,8 +42,8 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
@@ -56,7 +56,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author Léo Mieulet
@@ -103,7 +106,7 @@ public class RequestServiceScheduleIT extends AbstractIngestRequestIT {
         sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));
         sip4.setSessionOwner("SESSION_OWNER");
         sip4.setSession("SESSION");
-        sip4.setCategories(org.assertj.core.util.Sets.newLinkedHashSet("CATEGORIES"));
+        sip4.setCategory("CATEGORY");
         sip4.setState(SIPState.INGESTED);
         sip4.setVersion(2);
         sip4.setChecksum("123456789032");
@@ -145,7 +148,7 @@ public class RequestServiceScheduleIT extends AbstractIngestRequestIT {
                                                                                "SESSION",
                                                                                null,
                                                                                "ingestChain",
-                                                                               new HashSet<>(),
+                                                                               null,
                                                                                StorageMetadata.build("RAS")),
                                                           InternalRequestState.CREATED,
                                                           IngestRequestStep.LOCAL_SCHEDULED,

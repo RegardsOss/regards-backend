@@ -50,7 +50,10 @@ import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Optional;
 
 /**
  * @author Léo Mieulet
@@ -60,13 +63,13 @@ import java.util.*;
                     locations = { "classpath:application-test.properties" })
 public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
 
-    private static String sessionOwner = "NAASA";
+    private static final String sessionOwner = "NAASA";
 
-    private static String session = "session d'ingestion";
+    private static final String session = "session d'ingestion";
 
-    private static String ingestChain = "ingest chain";
+    private static final String ingestChain = "ingest chain";
 
-    private static String providerId = "provider 1";
+    private static final String providerId = "provider 1";
 
     private static final String FAKE_CHECKSUM_1 = "0123456789FAKE_CHECKSUM0123456789";
 
@@ -84,7 +87,7 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
 
     private static final String LOCATION_4 = "Cordillera de los Andes";
 
-    private static Set<String> categories = Sets.newHashSet("CAT 1", "CAT 2");
+    private static final String category = "CAT 1";
 
     private static SIPEntity sipEntity;
 
@@ -99,7 +102,7 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
                                                          session,
                                                          null,
                                                          ingestChain,
-                                                         categories,
+                                                         category,
                                                          StorageMetadata.build(LOCATION,
                                                                                "/dir1/dir2/",
                                                                                new HashSet<>()),

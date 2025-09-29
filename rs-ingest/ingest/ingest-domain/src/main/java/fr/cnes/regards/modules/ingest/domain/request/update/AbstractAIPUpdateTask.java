@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
@@ -74,15 +73,16 @@ public abstract class AbstractAIPUpdateTask {
 
     public static List<AbstractAIPUpdateTask> build(AIPUpdateParametersDto updateTaskDto) {
         List<AbstractAIPUpdateTask> result = new ArrayList<>();
-        if (updateTaskDto.getAddCategories() != null && !updateTaskDto.getAddCategories().isEmpty()) {
-            result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.ADD_CATEGORY,
-                                                   AIPUpdateState.READY,
-                                                   updateTaskDto.getAddCategories()));
-        }
+        // Remove category first to allow replacing category by removing and adding at the same time
         if (updateTaskDto.getRemoveCategories() != null && !updateTaskDto.getRemoveCategories().isEmpty()) {
             result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.REMOVE_CATEGORY,
                                                    AIPUpdateState.READY,
                                                    updateTaskDto.getRemoveCategories()));
+        }
+        if (updateTaskDto.getAddCategories() != null && !updateTaskDto.getAddCategories().isEmpty()) {
+            result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.ADD_CATEGORY,
+                                                   AIPUpdateState.READY,
+                                                   updateTaskDto.getAddCategories()));
         }
         if (updateTaskDto.getAddTags() != null && !updateTaskDto.getAddTags().isEmpty()) {
             result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.ADD_TAG,

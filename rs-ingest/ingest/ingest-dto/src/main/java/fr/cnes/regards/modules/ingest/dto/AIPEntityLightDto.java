@@ -37,7 +37,7 @@ public class AIPEntityLightDto {
 
     private final String aipId;
 
-    private final Set<String> categories;
+    private final String category;
 
     private final OffsetDateTime creationDate;
 
@@ -71,7 +71,7 @@ public class AIPEntityLightDto {
 
     public AIPEntityLightDto(AIPDto aip,
                              String aipId,
-                             Set<String> categories,
+                             String category,
                              OffsetDateTime creationDate,
                              List<DisseminationInfo> disseminationInfos,
                              DisseminationStatus disseminationStatus,
@@ -89,7 +89,7 @@ public class AIPEntityLightDto {
                              Integer version) {
         this.aip = aip;
         this.aipId = aipId;
-        this.categories = categories;
+        this.category = category;
         this.creationDate = creationDate;
         this.disseminationInfos = disseminationInfos;
         this.disseminationStatus = disseminationStatus;
@@ -115,8 +115,8 @@ public class AIPEntityLightDto {
         return aipId;
     }
 
-    public Set<String> getCategories() {
-        return categories;
+    public String getCategory() {
+        return category;
     }
 
     public OffsetDateTime getCreationDate() {
@@ -188,7 +188,7 @@ public class AIPEntityLightDto {
         return last == that.last
                && Objects.equals(aip, that.aip)
                && Objects.equals(aipId, that.aipId)
-               && Objects.equals(categories, that.categories)
+               && Objects.equals(category, that.category)
                && Objects.equals(creationDate, that.creationDate)
                && Objects.equals(disseminationInfos, that.disseminationInfos)
                && disseminationStatus == that.disseminationStatus
@@ -209,7 +209,7 @@ public class AIPEntityLightDto {
     public int hashCode() {
         return Objects.hash(aip,
                             aipId,
-                            categories,
+                            category,
                             creationDate,
                             disseminationInfos,
                             disseminationStatus,
@@ -235,8 +235,8 @@ public class AIPEntityLightDto {
                + ", aipId='"
                + aipId
                + '\''
-               + ", categories="
-               + categories
+               + ", category="
+               + category
                + ", creationDate="
                + creationDate
                + ", disseminationInfos="

@@ -19,11 +19,6 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
-import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
-import fr.cnes.regards.framework.oais.dto.RepresentationInformationDto;
-import fr.cnes.regards.framework.oais.dto.SyntaxDto;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -35,6 +30,11 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.dto.ContentInformationDto;
+import fr.cnes.regards.framework.oais.dto.OAISDataObjectLocationDto;
+import fr.cnes.regards.framework.oais.dto.RepresentationInformationDto;
+import fr.cnes.regards.framework.oais.dto.SyntaxDto;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.DataType;
@@ -72,7 +72,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -119,7 +118,7 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
                 acquisitionProcessingService.updateChain(c);
                 acquisitionProcessingService.deleteChain(c.getId());
             } catch (ModuleException e) {
-                e.printStackTrace();
+                LOGGER.error("{}", e.getMessage(), e);
             }
         });
     }
@@ -192,7 +191,7 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
             AcquisitionProcessingChainMode.MANUAL);
         // Then
         Assert.assertTrue(automaticChains.isEmpty());
-        Assert.assertTrue(!manualChains.isEmpty() && (manualChains.size() == 1));
+        Assert.assertEquals(1, manualChains.size());
     }
 
     @Test
@@ -269,7 +268,7 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
 
         Product product = createProduct(acquisitionProcessingService.createChain(acquisitionProcessingChain));
 
-        OffsetDateTime inactiveTime_heartbeat = OffsetDateTime.now().minus(5, ChronoUnit.MINUTES);
+        OffsetDateTime inactiveTime_heartbeat = OffsetDateTime.now().minusMinutes(5);
 
         JobInfo productAcquisitionJob = new JobInfo();
         productAcquisitionJob.setPriority(AcquisitionJobPriority.PRODUCT_ACQUISITION_JOB_PRIORITY);
@@ -331,7 +330,7 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
         processingChain.setPeriodicity("0 * * * * *");
-        processingChain.setCategories(Sets.newLinkedHashSet());
+        processingChain.setCategory(null);
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();

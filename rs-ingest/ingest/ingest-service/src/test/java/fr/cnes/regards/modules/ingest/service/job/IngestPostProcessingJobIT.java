@@ -69,25 +69,17 @@ public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
     @Autowired
     private StorageClientMock storageClient;
 
-    private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY", "CATEGORY00", "CATEGORY01");
+    private static final String CATEGORY_0 = "CATEGORY";
 
-    private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
-
-    private static final List<String> CATEGORIES_2 = Lists.newArrayList("CATEGORY2");
+    private static final String CATEGORY_1 = "CATEGORY1";
 
     private static final List<String> TAG_0 = Lists.newArrayList("toto", "tata");
 
     private static final List<String> TAG_1 = Lists.newArrayList("toto", "tutu");
 
-    private static final List<String> TAG_2 = Lists.newArrayList("plop", "ping");
-
-    private static final List<String> TAG_3 = Lists.newArrayList("toto");
-
     private static final String STORAGE_1 = "AWS";
 
     private static final String STORAGE_2 = "Azure";
-
-    private static final String STORAGE_3 = "Pentagon";
 
     private static final String SESSION_OWNER_0 = "NASA";
 
@@ -111,37 +103,37 @@ public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
                         Lists.newArrayList(STORAGE_1),
                         SESSION_0,
                         SESSION_OWNER_0,
-                        CATEGORIES_0,
+                        CATEGORY_0,
                         Optional.of(chain));
         publishSIPEvent(create("2", TAG_0),
                         Lists.newArrayList(STORAGE_1),
                         SESSION_0,
                         SESSION_OWNER_1,
-                        CATEGORIES_1,
+                        CATEGORY_1,
                         Optional.of(chain));
         publishSIPEvent(create("3", TAG_1),
                         Lists.newArrayList(STORAGE_1),
                         SESSION_0,
                         SESSION_OWNER_0,
-                        CATEGORIES_0,
+                        CATEGORY_0,
                         Optional.of(chain));
         publishSIPEvent(create("4", TAG_1),
                         Lists.newArrayList(STORAGE_1),
                         SESSION_1,
                         SESSION_OWNER_1,
-                        CATEGORIES_1,
+                        CATEGORY_1,
                         Optional.of(chain));
         publishSIPEvent(create("5", TAG_1),
                         Lists.newArrayList(STORAGE_2),
                         SESSION_1,
                         SESSION_OWNER_1,
-                        CATEGORIES_0,
+                        CATEGORY_0,
                         Optional.of(chain));
         publishSIPEvent(create("6", TAG_0),
                         Lists.newArrayList(STORAGE_2),
                         SESSION_1,
                         SESSION_OWNER_0,
-                        CATEGORIES_0,
+                        CATEGORY_0,
                         Optional.of(chain));
 
         // Wait

@@ -49,7 +49,7 @@ public class SIPEntityDto {
 
     private String session;
 
-    private Set<String> categories;
+    private String category;
 
     /**
      * The provider identifier is provided by the user along the AIP, with no guaranty of uniqueness,
@@ -131,12 +131,12 @@ public class SIPEntityDto {
         this.session = session;
     }
 
-    public Set<String> getCategories() {
-        return categories;
+    public String getCategory() {
+        return category;
     }
 
-    public void setCategories(Set<String> categories) {
-        this.categories = categories;
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getProviderId() {
@@ -208,8 +208,8 @@ public class SIPEntityDto {
                + ", session='"
                + session
                + '\''
-               + ", categories="
-               + categories
+               + ", category="
+               + category
                + ", providerId='"
                + providerId
                + '\''
@@ -243,7 +243,7 @@ public class SIPEntityDto {
                && Objects.equals(sip, that.sip)
                && Objects.equals(sessionOwner, that.sessionOwner)
                && Objects.equals(session, that.session)
-               && Objects.equals(categories, that.categories)
+               && Objects.equals(category, that.category)
                && Objects.equals(providerId, that.providerId)
                && Objects.equals(version, that.version)
                && Objects.equals(tags, that.tags)
@@ -261,7 +261,7 @@ public class SIPEntityDto {
                             last,
                             sessionOwner,
                             session,
-                            categories,
+                            category,
                             providerId,
                             version,
                             tags,

@@ -68,11 +68,11 @@ public class AIPUpdateRequestServiceIT extends AbstractIngestRequestIT {
                                                                                                         aipEntity.getAipId()).toDto(),
                                                                                   null)));
         updateTasks.add(task);
-        AIPUpdateCategoryTask catTask = new AIPUpdateCategoryTask();
-        catTask.setType(AIPUpdateTaskType.ADD_CATEGORY);
-        catTask.setState(AIPUpdateState.READY);
-        catTask.setCategories(Lists.newArrayList("cat1", "cat2"));
-        updateTasks.add(catTask);
+        AIPUpdateTagTask tagTask = new AIPUpdateTagTask();
+        tagTask.setType(AIPUpdateTaskType.ADD_TAG);
+        tagTask.setState(AIPUpdateState.READY);
+        tagTask.setTags(Lists.newArrayList("tag1", "tag2"));
+        updateTasks.add(tagTask);
 
         Assert.assertEquals(0,
                             aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
@@ -99,13 +99,13 @@ public class AIPUpdateRequestServiceIT extends AbstractIngestRequestIT {
                                        Sets.newHashSet("someone"),
                                        simulatefileReference(checksum, aipEntity.getAipId()).toDto(),
                                        null)));
-        AIPUpdateCategoryTask catTask = new AIPUpdateCategoryTask();
-        catTask.setType(AIPUpdateTaskType.ADD_CATEGORY);
-        catTask.setState(AIPUpdateState.READY);
-        catTask.setCategories(Lists.newArrayList("cat1", "cat2"));
+        AIPUpdateTagTask tagTask = new AIPUpdateTagTask();
+        tagTask.setType(AIPUpdateTaskType.ADD_TAG);
+        tagTask.setState(AIPUpdateState.READY);
+        tagTask.setTags(Lists.newArrayList("tag1", "tag2"));
 
         updateTasks.add(task);
-        updateTasks.add(catTask);
+        updateTasks.add(tagTask);
 
         Assert.assertEquals(0,
                             aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))

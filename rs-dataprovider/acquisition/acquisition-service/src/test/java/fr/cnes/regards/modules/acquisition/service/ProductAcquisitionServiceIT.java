@@ -124,7 +124,6 @@ public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
         processingChain.setPeriodicity("0 * * * * *");
-        processingChain.setCategories(Sets.newLinkedHashSet());
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
@@ -213,7 +212,6 @@ public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
-        processingChain.setCategories(Sets.newHashSet());
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
@@ -337,16 +335,15 @@ public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
 
         // Find product to schedule
         long scheduled = productService.countByProcessingChainAndSipStateIn(processingChain,
-                                                                            Arrays.asList(ProductSIPState.SCHEDULED));
+                                                                            List.of(ProductSIPState.SCHEDULED));
         Assert.assertEquals(nbFiles, scheduled);
 
         Assert.assertEquals(nbFiles, fileService.countByChain(processingChain));
         Assert.assertEquals(nbFiles,
                             fileService.countByChainAndStateIn(processingChain,
-                                                               Arrays.asList(AcquisitionFileState.ACQUIRED)));
+                                                               List.of(AcquisitionFileState.ACQUIRED)));
         Assert.assertEquals(0,
-                            fileService.countByChainAndStateIn(processingChain,
-                                                               Arrays.asList(AcquisitionFileState.ERROR)));
+                            fileService.countByChainAndStateIn(processingChain, List.of(AcquisitionFileState.ERROR)));
 
         Page<AcquisitionProcessingChainMonitor> monitor = processingService.buildAcquisitionProcessingChainSummaries(
             null,
@@ -390,8 +387,7 @@ public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
         Map<String, Integer> callByProperty = new HashMap<>();
         for (ISubscribable event : grantedInfo.getAllValues()) {
             // We ignore all others types of events
-            if (event instanceof StepPropertyUpdateRequestEvent) {
-                StepPropertyUpdateRequestEvent monitoringEvent = (StepPropertyUpdateRequestEvent) event;
+            if (event instanceof StepPropertyUpdateRequestEvent monitoringEvent) {
                 String key = monitoringEvent.getStepProperty().getStepPropertyInfo().getProperty()
                              + "_"
                              + monitoringEvent.getType().toString();

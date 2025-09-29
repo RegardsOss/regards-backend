@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -71,7 +69,6 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.IntStream;
 
@@ -100,7 +97,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
             Mockito.when(service.getUri()).thenReturn(new URI("http://localhost:7777"));
 
             DiscoveryClient client = Mockito.mock(DiscoveryClient.class);
-            List<ServiceInstance> response = Lists.newArrayList();
+            List<ServiceInstance> response = new ArrayList<>();
             response.add(service);
             Mockito.when(client.getInstances(Mockito.anyString())).thenReturn(response);
             return client;
@@ -135,11 +132,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                null));
     }
 
-    public void createAIP(String providerId,
-                          Set<String> categories,
-                          String sessionOwner,
-                          String session,
-                          String storage) {
+    public void createAIP(String providerId, String category, String sessionOwner, String session, String storage) {
         SIPDto sip = SIPDto.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA,
                            Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"),
@@ -156,7 +149,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                       session,
                                                       null,
                                                       IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                      categories,
+                                                      category,
                                                       null,
                                                       null,
                                                       new StorageDto(storage));
@@ -173,7 +166,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     public void searchAIPs() {
 
         // Create AIP
-        createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), "ESA", OffsetDateTime.now().toString(), "NAS #1");
+        createAIP("my object #1", "CAT 1", "ESA", OffsetDateTime.now().toString(), "NAS #1");
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED, getDefaultTenant());
@@ -206,16 +199,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Retrieve AIPs thanks a providerId")
     public void testRetrieveAIPVersionHistory() {
         // Create AIP
-        createAIP("testRetrieveAIPVersionHistory",
-                  Sets.newHashSet("CAT 1", "CAT 2"),
-                  "ESA",
-                  OffsetDateTime.now().toString(),
-                  "NAS #1");
-        createAIP("testRetrieveAIPVersionHistory",
-                  Sets.newHashSet("CAT 3", "CAT 4"),
-                  "ESA",
-                  OffsetDateTime.now().toString(),
-                  "NAS #1");
+        createAIP("testRetrieveAIPVersionHistory", "CAT 1", "ESA", OffsetDateTime.now().toString(), "NAS #1");
+        createAIP("testRetrieveAIPVersionHistory", "CAT 2", "ESA", OffsetDateTime.now().toString(), "NAS #1");
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(2, 10000, SIPState.STORED, getDefaultTenant());
@@ -245,7 +230,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // Create AIP
         String session = OffsetDateTime.now().toString();
         String sessionOwner = "ESA";
-        createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
+        createAIP("my object #1", "CAT 1", sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED, getDefaultTenant());
@@ -269,41 +254,12 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    public void searchAIPCategories() {
-
-        // Create AIP
-        String session = OffsetDateTime.now().toString();
-        String sessionOwner = "ESA";
-        createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
-
-        // Wait for ingestion finished
-        ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED, getDefaultTenant());
-        ingestServiceTest.waitAllRequestsFinished(10000, getDefaultTenant());
-
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        // Add request parameters documentation
-        requestBuilderCustomizer.documentRequestBody(getSearchBodyDescriptors(""));
-
-        // Add response documentation
-        List<FieldDescriptor> fields = new ArrayList<>();
-        fields.add(new ConstrainedFields(List.class).withPath("[]", "List of categories").type(JSON_ARRAY_TYPE));
-        requestBuilderCustomizer.documentResponseBody(fields);
-
-        SearchAIPsParameters body = new SearchAIPsParameters().withSessionOwner(sessionOwner).withSession(session);
-
-        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.CATEGORIES_SEARCH_PATH,
-                           body,
-                           requestBuilderCustomizer,
-                           "Should retrieve AIP categories");
-    }
-
-    @Test
     public void searchAIPStorages() {
 
         // Create AIP
         String session = OffsetDateTime.now().toString();
         String sessionOwner = "ESA";
-        createAIP("my object #1", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
+        createAIP("my object #1", "CAT 1", sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED, getDefaultTenant());
@@ -332,7 +288,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // Create AIP
         String session = OffsetDateTime.now().toString();
         String sessionOwner = "ESA";
-        createAIP("my object #10", Sets.newHashSet("CAT 1", "CAT 2"), sessionOwner, session, "NAS #1");
+        createAIP("my object #10", "CAT 1", sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED, getDefaultTenant());
@@ -343,7 +299,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.documentRequestBody(documentUpdateAIPRequestParameters());
 
         AIPUpdateParametersDto body = AIPUpdateParametersDto.build(new SearchAIPsParameters().withSessionOwner(
-            sessionOwner).withSession(session), null, null, null, Lists.newArrayList("CAT 1"), null, null);
+            sessionOwner).withSession(session), null, null, null, List.of("CAT 1"), null, null);
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.AIP_UPDATE_PATH,
                            body,
@@ -357,7 +313,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         String category = "CAT 1";
         String session = OffsetDateTime.now().toString();
         String sessionOwner = "ESA";
-        createAIP("my object #11", Sets.newHashSet(category, "CAT 2"), sessionOwner, session, "NAS #1");
+        createAIP("my object #11", category, sessionOwner, session, "NAS #1");
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(1, 10000, SIPState.STORED, getDefaultTenant());
@@ -433,28 +389,6 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         String removeTags = "removeTags";
         params.add(constrainedFields.withPath(removeTags, removeTags, "A list of tags every entity won't have anymore")
-                                    .optional()
-                                    .type(List.class.getSimpleName())
-                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                          .value(List.class.getSimpleName()))
-                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                                          .value("Optional.")));
-
-        String addCategories = "addCategories";
-        params.add(constrainedFields.withPath(addCategories,
-                                              addCategories,
-                                              "A list of categories every entity will have")
-                                    .optional()
-                                    .type(List.class.getSimpleName())
-                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                          .value(List.class.getSimpleName()))
-                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                                          .value("Optional.")));
-
-        String removeCategories = "removeCategories";
-        params.add(constrainedFields.withPath(removeCategories,
-                                              removeCategories,
-                                              "A list of categories every entity won't have anymore")
                                     .optional()
                                     .type(List.class.getSimpleName())
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
@@ -578,7 +512,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_CATEGORIES,
                                               AIPController.REQUEST_PARAM_CATEGORIES,
-                                              "A list of categories every entity must have")
+                                              "A list of categories the entity must have, at least one")
                                     .optional()
                                     .type(List.class.getSimpleName())
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
@@ -660,8 +594,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         fields.add(constrainedFields.withPath(prefix + "storages", "storages", "List of storage")
                                     .type(JSON_ARRAY_TYPE));
 
-        fields.add(constrainedFields.withPath(prefix + "categories", "categories", "List of categories")
-                                    .type(JSON_ARRAY_TYPE));
+        fields.add(constrainedFields.withPath(prefix + "category", "category", "Category"));
 
         return fields;
     }

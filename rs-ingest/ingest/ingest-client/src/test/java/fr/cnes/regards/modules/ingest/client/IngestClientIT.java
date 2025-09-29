@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
@@ -111,7 +110,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
                                                            "session",
                                                            null,
                                                            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                                           Sets.newHashSet("cat 1"),
+                                                           "cat 1",
                                                            null,
                                                            null,
                                                            new StorageDto("disk"));

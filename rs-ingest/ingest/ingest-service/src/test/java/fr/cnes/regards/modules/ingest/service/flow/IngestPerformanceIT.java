@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.service.flow;
 
-import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
-import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.AIPState;
+import fr.cnes.regards.modules.ingest.dto.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
@@ -69,7 +68,9 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestPerformanceIT.class);
 
-    private static final List<String> CATEGORIES = Lists.newArrayList("CATEGORY");
+    private static final List<String> CATEGORIES = List.of("CATEGORY");
+
+    private static final String CATEGORY = "CATEGORY";
 
     private static final String PROVIDER_PREFIX = "provider";
 
@@ -121,7 +122,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
             for (long i = 0; i < maxloops; i++) {
                 SIPDto sip = create(PROVIDER_PREFIX + i, null);
                 // Create event
-                publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
+                publishSIPEvent(sip, "fake", session, "source", CATEGORY);
             }
         }
 
@@ -170,7 +171,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         for (long i = 0; i < nbStored; i++) {
             SIPDto sip = create(PROVIDER_PREFIX + i, null);
             // Create event
-            publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
+            publishSIPEvent(sip, "fake", session, "source", CATEGORY);
         }
         // 2. Wait
         ingestServiceTest.waitForIngestion(nbStored, nbStored * 10000, SIPState.STORED, getDefaultTenant());
@@ -229,7 +230,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         for (long i = 0; i < nbStored; i++) {
             SIPDto sip = create(PROVIDER_PREFIX + i, null);
             // Create event
-            publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
+            publishSIPEvent(sip, "fake", session, "source", CATEGORY);
         }
         // 2. Wait
         ingestServiceTest.waitForIngestion(nbStored, nbStored * 10000, SIPState.STORED, getDefaultTenant());
@@ -237,7 +238,8 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
 
         // 3. Ask for product updates
         AIPUpdateParametersDto updateDto = AIPUpdateParametersDto.build(new SearchAIPsParameters().withCategoriesIncluded(
-            List.of(CATEGORIES.get(0)))).withAddCategories(Lists.newArrayList("new_cat"));
+            List.of(CATEGORIES.get(0)))).withAddCategories(List.of("new_cat"));
+
         aipService.registerUpdatesCreator(updateDto);
         // 4. Ask for same product updates
         aipService.registerUpdatesCreator(updateDto);
@@ -276,7 +278,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         for (long i = 0; i < nbStored; i++) {
             SIPDto sip = create(PROVIDER_PREFIX + i, null);
             // Create event
-            publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
+            publishSIPEvent(sip, "fake", session, "source", CATEGORY);
         }
         // 2. Wait ingestion ends
         ingestServiceTest.waitForIngestion(nbStored, nbStored * 10000, SIPState.STORED, getDefaultTenant());
@@ -287,7 +289,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         for (long i = 0; i < nbErrors; i++) {
             SIPDto sip = create(PROVIDER_PREFIX + "_errors_" + i, null);
             // Create event
-            publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
+            publishSIPEvent(sip, "fake", session, "source", CATEGORY);
         }
         // 4. Wait errors done
         ingestServiceTest.waitForIngestRequest(nbErrors,
@@ -300,10 +302,10 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         for (long i = 0; i < (nbStored / 4); i++) {
             SIPDto sip = create(PROVIDER_PREFIX + "new" + i, null);
             // Create event
-            publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
+            publishSIPEvent(sip, "fake", session, "source", CATEGORY);
             nbStored++;
         }
-        LOGGER.info("===============> Ingestion sents !!");
+        LOGGER.info("===============> Ingestion sent !!");
 
         // 6. Ask for product deletion
         OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE);
@@ -311,22 +313,23 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
             dto.withProviderIdsIncluded(List.of(PROVIDER_PREFIX + i));
         }
         deletionService.registerOAISDeletionCreator(dto);
-        LOGGER.info("===============> Deletion sents !!");
+        LOGGER.info("===============> Deletion sent !!");
 
         // 7. Ask for new product without waiting ends of previous ingests
         for (long i = 0; i < (nbStored / 4); i++) {
             SIPDto sip = create(PROVIDER_PREFIX + "new" + i, null);
             // Create event
-            publishSIPEvent(sip, "fake", session, "source", CATEGORIES);
+            publishSIPEvent(sip, "fake", session, "source", CATEGORY);
             nbStored++;
         }
-        LOGGER.info("===============> Ingestion sents !!");
+        LOGGER.info("===============> Ingestion sent !!");
 
         // 8. Ask for products update
         AIPUpdateParametersDto updateDto = AIPUpdateParametersDto.build(new SearchAIPsParameters().withCategoriesIncluded(
-            List.of(CATEGORIES.get(0)))).withAddCategories(Lists.newArrayList("new_cat"));
+            List.of(CATEGORIES.get(0)))).withAddCategories(List.of("new_cat"));
+
         aipService.registerUpdatesCreator(updateDto);
-        LOGGER.info("===============> Update sents !!");
+        LOGGER.info("===============> Update sent !!");
 
         // 9. Wait for all deletion and ingestion ends
         ingestServiceTest.waitForIngestion(nbDeleted, 100000, SIPState.DELETED, getDefaultTenant());
@@ -343,7 +346,7 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
 
         String providerId = "requestError01";
         SIPDto sip = create(providerId, null);
-        publishSIPEvent(sip, "fake", "errorSession", "source", CATEGORIES);
+        publishSIPEvent(sip, "fake", "errorSession", "source", CATEGORY);
 
         // Wait
         ingestServiceTest.waitForAIP(1, 30_000, AIPState.GENERATED, getDefaultTenant());
@@ -355,6 +358,5 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
 
         // Wait
         ingestServiceTest.waitForIngestRequest(0, 30_000, null, getDefaultTenant());
-
     }
 }
