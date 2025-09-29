@@ -400,7 +400,7 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
         customizer.addParameter("token", "public_token");
         String atomUrl = "OpenSearchDescription/Url[@type='" + MediaType.APPLICATION_ATOM_XML_VALUE + "']";
-        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=65]").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=77]").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl
                                                       + "/Parameter[@name='illuminationAzimuthAngle' and @value='{eo:illuminationAzimuthAngle}']")
                                                .exists());

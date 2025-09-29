@@ -273,6 +273,18 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.xpath(geoJsonUrl).exists());
 
         // Check url parameters
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='_creationDate']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='_lastUpdate']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='id']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='virtualId']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='version']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='last']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='providerId']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='label']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='model']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='tags']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='rawdata']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='datasetModelNames']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='q']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='name_test']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet']").exists());
@@ -320,7 +332,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl
                                                       + "/Parameter[@name='sun_distance' and @maxInclusive='1.2048943598E11']")
                                                .exists());
-        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=25]").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=37]").exists());
 
         // Check date boundaries
         IProperty<?> startDate = mercury.getProperty("TimePeriod.startDate");

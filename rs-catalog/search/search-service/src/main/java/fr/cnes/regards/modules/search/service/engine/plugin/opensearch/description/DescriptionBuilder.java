@@ -424,6 +424,8 @@ public class DescriptionBuilder {
                                                       .map(ModelAttrAssoc::getAttribute)
                                                       .collect(Collectors.toList());
                 attributes = AbstractAttributeHelper.computeAttributes(attributes);
+                // Add static properties
+                attributes.addAll(finder.getStaticProperties());
                 // Return computed attributes without specific JSON ones that are not queriable.
                 return attributes.stream().filter(a -> a.getType() != PropertyType.JSON).collect(Collectors.toList());
             }

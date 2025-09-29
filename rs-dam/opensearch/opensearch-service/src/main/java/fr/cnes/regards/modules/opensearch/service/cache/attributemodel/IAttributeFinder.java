@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
@@ -69,10 +70,15 @@ public interface IAttributeFinder {
      * @param attribute {@link AttributeModel} to find smaller path name.
      * @return {@link String} smaller path name
      */
-    public String findName(AttributeModel attribute);
+    String findName(AttributeModel attribute);
+
+    /**
+     * Return the static {@link AttributeModel} defined by REGARDS.
+     */
+    Collection<AttributeModel> getStaticProperties();
 
     /**
      * Refresh finder cache for specified tenant
      */
-    public void refresh(String tenant);
+    void refresh(String tenant);
 }

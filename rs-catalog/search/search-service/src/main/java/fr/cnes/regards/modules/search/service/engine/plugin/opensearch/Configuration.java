@@ -30,9 +30,9 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "opensearch")
 public class Configuration {
 
-    private String queryParameterValue = "searchTerms";
+    private String queryParameterValue = "luceneQuery";
 
-    private String queryParameterTitle = "Free text search";
+    private String queryParameterTitle = "Lucene query search. This field allows you to perform searches using Lucene query syntax, providing more flexibility and capabilities than the standard OpenSearch syntax.";
 
     private String developer = "http://www.c-s.fr CS-SI Team";
 
