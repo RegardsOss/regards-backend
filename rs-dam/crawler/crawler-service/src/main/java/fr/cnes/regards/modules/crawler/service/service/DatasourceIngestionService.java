@@ -168,10 +168,11 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         String currentTenant = runtimeTenantResolver.getTenant();
         // First, check if all existing datasource plugins are managed
         // Find all current datasource ingestions
-        Map<String, DatasourceIngestion> dsIngestionsMap = dsIngestionRepos.findAll()
-                                                                           .stream()
-                                                                           .collect(Collectors.toMap(DatasourceIngestion::getId,
-                                                                                                     Function.identity()));
+        Map<String, DatasourceIngestion> dsIngestionMapbyId = dsIngestionRepos.findAll()
+                                                                              .stream()
+                                                                              .collect(Collectors.toMap(
+                                                                                  DatasourceIngestion::getId,
+                                                                                  Function.identity()));
 
         // Set all the data sources that couldn't previously be marked as error to this state
         List<DatasourceIdAndErrorCause> datasourcesToSetInError = new ArrayList<>(datasourcesBlockedInStarted);
@@ -187,45 +188,48 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         // Add DatasourceIngestion for unmanaged datasource with immediate next planned ingestion date
         pluginConfs.forEach(cfg -> {
             String id = cfg.getBusinessId();
-            if (!dsIngestionRepos.existsById(id)) {
+            if (!dsIngestionMapbyId.containsKey(id)) {
                 DatasourceIngestion ds = dsIngestionRepos.save(new DatasourceIngestion(cfg,
                                                                                        OffsetDateTime.now()
                                                                                                      .withOffsetSameInstant(
                                                                                                          ZoneOffset.UTC)));
-                dsIngestionsMap.put(ds.getId(), ds);
+                dsIngestionMapbyId.put(ds.getId(), ds);
             }
 
             //If there is a building index for this tenant, then we have to add datasourceIngestions dedicated to the
             // building index
             if (indexAliasResolver.resolveBuildingIndex(currentTenant).isPresent()) {
                 String buildingId = id + BUILDING_INDEX_SUFFIX;
-                if (!dsIngestionRepos.existsById(buildingId)) {
-                    DatasourceIngestion ds = dsIngestionRepos.save(new DatasourceIngestion(cfg,
-                                                                                           OffsetDateTime.now()
-                                                                                                         .withOffsetSameInstant(
-                                                                                                             ZoneOffset.UTC),
-                                                                                           true));
-                    dsIngestionsMap.put(ds.getId(), ds);
+                if (!dsIngestionMapbyId.containsKey(buildingId)) {
+                    DatasourceIngestion ds = dsIngestionRepos.save(new DatasourceIngestion(cfg, offsetNow(), true));
+                    dsIngestionMapbyId.put(ds.getId(), ds);
                 }
             }
-
         });
 
-        // Remove DatasourceIngestion for removed datasources and plan data objects deletion from Elasticsearch
-        List<String> idsToDelete = dsIngestionsMap.keySet()
-                                                  .stream()
-                                                  .filter(id -> !pluginService.exists(getPluginId(id)))
-                                                  .toList();
+        List<String> activePluginIds = pluginConfs.stream().map(PluginConfiguration::getBusinessId).toList();
+
+        //If the plugin for the datasource does not exist anymore, we have to remove the related DatasourceIngestions
+        List<String> idsToDelete = dsIngestionMapbyId.keySet()
+                                                     .stream()
+                                                     .filter(id -> !pluginService.exists(getPluginId(id)))
+                                                     .toList();
 
         idsToDelete.stream()
                    .map(id -> this.planDatasourceDataObjectsDeletion(currentTenant, id))
                    .forEach(this::deleteDatasourceIngestion);
 
+        List<String> idsInactive = dsIngestionMapbyId.keySet()
+                                                     .stream()
+                                                     .filter(id -> !activePluginIds.contains(getPluginId(id)))
+                                                     .toList();
+
         // Keep the map in tune with reality
-        idsToDelete.forEach(dsIngestionsMap::remove);
+        idsToDelete.forEach(dsIngestionMapbyId::remove);
+        idsInactive.forEach(dsIngestionMapbyId::remove);
 
         // For previously ingested datasources, compute next planned ingestion date
-        dsIngestionsMap.values().forEach(ds -> {
+        dsIngestionMapbyId.values().forEach(ds -> {
             try {
                 updatePlannedDate(ds);
             } catch (RuntimeException | ModuleException e) {
@@ -234,15 +238,17 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         });
     }
 
+    private static OffsetDateTime offsetNow() {
+        return OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
+    }
+
     /**
      * Find all ready datasources to be ingested and mark them as "STARTED" in a transaction
      *
      * @return datasourceIngestion that just have been marked as STARTED
      */
     public List<DatasourceIngestion> startAllReadyDatasourceIngestion() {
-        List<DatasourceIngestion> allDatasourceIngestionReady = dsIngestionRepos.findAllReady(OffsetDateTime.now()
-                                                                                                            .withOffsetSameInstant(
-                                                                                                                ZoneOffset.UTC));
+        List<DatasourceIngestion> allDatasourceIngestionReady = dsIngestionRepos.findAllReady(offsetNow());
         for (DatasourceIngestion datasourceIngestion : allDatasourceIngestionReady) {
             // Reinit old DatasourceIngestion properties
             datasourceIngestion.setStackTrace(null);
@@ -384,9 +390,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                     // may not have time to see the error
                     // NOT_FINISHED: last ingest hasn't finished because of Datasource or Elasticsearch, no need to
                     // relaunch now, it will probably fails again
-                    OffsetDateTime nextPlannedIngestDate = OffsetDateTime.now()
-                                                                         .withOffsetSameInstant(ZoneOffset.UTC)
-                                                                         .plusSeconds(refreshRate);
+                    OffsetDateTime nextPlannedIngestDate = offsetNow().plusSeconds(refreshRate);
                     dsIngestion.setNextPlannedIngestDate(nextPlannedIngestDate);
                     dsIngestionRepos.save(dsIngestion);
                 }
@@ -539,7 +543,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     @Override
     public void scheduleNowDatasourceIngestion(String datasourceIngestionId) throws ModuleException {
         DatasourceIngestion dsi = getDatasourceIngestionOrThrowIfRunning(datasourceIngestionId);
-        dsi.setNextPlannedIngestDate(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC));
+        dsi.setNextPlannedIngestDate(offsetNow());
         dsIngestionRepos.save(dsi);
     }
 
@@ -570,7 +574,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                 dsPlugin.getCrawlingCursorMode());
             throw new ModuleException("Cannot set date to crawl because the crawling mode is not from date.");
         }
-        dsi.setNextPlannedIngestDate(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC));
+        dsi.setNextPlannedIngestDate(offsetNow());
         dsIngestionRepos.save(dsi);
     }
 
@@ -596,9 +600,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
      * Send a message to IngesterService (or whoever want to listen to it) concerning given datasourceIngestionId
      */
     public void sendMessage(String message, String dsId) {
-        String msg = String.format("%s: %s",
-                                   ISO_TIME_UTC.format(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)),
-                                   message);
+        String msg = String.format("%s: %s", ISO_TIME_UTC.format(offsetNow()), message);
         eventPublisher.publishEvent(new DataSourceMessageEvent(this, runtimeTenantResolver.getTenant(), msg, dsId));
     }
 
