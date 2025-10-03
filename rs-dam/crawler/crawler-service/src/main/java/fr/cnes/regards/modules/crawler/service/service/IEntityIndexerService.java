@@ -70,7 +70,7 @@ public interface IEntityIndexerService {
      * @param lastUpdateDate                last ingestion update date
      * @param updateDate                    current update date (usually now)
      * @param forceAssociatedEntitiesUpdate if true, force associated entities update (usually data objects for dataset)
-     * @param dsiId                         {@link DatasourceIngestion} id
+     * @param datasourceIngestion           the {@link DatasourceIngestion} linked to this update (can be null)
      * @param isNewIndex                    indicates whether the elastic index where entities will be updated is new
      */
     void updateEntityIntoEs(String tenant,
@@ -78,7 +78,7 @@ public interface IEntityIndexerService {
                             OffsetDateTime lastUpdateDate,
                             OffsetDateTime updateDate,
                             boolean forceAssociatedEntitiesUpdate,
-                            String dsiId,
+                            DatasourceIngestion datasourceIngestion,
                             boolean buildingIndex,
                             boolean isNewIndex) throws ModuleException;
 
@@ -88,7 +88,7 @@ public interface IEntityIndexerService {
      * @param minLastUpdateCriteria  Take into account only more recent minLastUpdateCriteria than provided
      * @param updateDate             update date saved inside data objects
      * @param forceDataObjectsUpdate true to force all associated data objects update
-     * @param dsiId                  datasetIngestion id   @throws ModuleException
+     * @param datasourceIngestion    datasetIngestion linked to this update (can be null)
      * @param buildingIndex          True if the datasource ingestion is for a building index.
      * @param skipDissociationStep   if true, skip the dissociation step (step needed only if dataset has been updated)
      *                               the dissociation step is the step where all data objects which do not match the dataset subsetting clause anymore are detached to the dataset
@@ -98,7 +98,7 @@ public interface IEntityIndexerService {
                         OffsetDateTime minLastUpdateCriteria,
                         OffsetDateTime updateDate,
                         boolean forceDataObjectsUpdate,
-                        String dsiId,
+                        DatasourceIngestion datasourceIngestion,
                         boolean buildingIndex,
                         boolean skipDissociationStep) throws ModuleException;
 

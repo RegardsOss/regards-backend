@@ -63,14 +63,14 @@ public class FeatureEntityRawController implements IResourceController<FeatureEn
 
     public static final String PATH_DATA_FEATURE_RAW_OBJECT = "/admin/features/raw";
 
-    private final IFeatureService featureService;
-
-    private final IResourceService resourceService;
-
     /**
      * Controller path to retrieve a slice of features
      */
     private static final String SLICE_PATH = "/slice";
+
+    private final IFeatureService featureService;
+
+    private final IResourceService resourceService;
 
     public FeatureEntityRawController(IFeatureService featureService, IResourceService resourceService) {
         this.featureService = featureService;
@@ -112,9 +112,8 @@ public class FeatureEntityRawController implements IResourceController<FeatureEn
         SearchFeatureSimpleEntityParameters filters,
         @PageableQueryParam @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         @Parameter(hidden = true) SlicedResourcesAssembler<FeatureEntityRawDto> assembler) {
-
-        Slice<FeatureEntityRawDto> slice = featureService.findAllRawSlice(filters, pageable);
-        return new ResponseEntity<>(toSlicedResources(slice, assembler), HttpStatus.OK);
+        return new ResponseEntity<>(toSlicedResources(featureService.findAllRawSlice(filters, pageable), assembler),
+                                    HttpStatus.OK);
     }
 
     @Override

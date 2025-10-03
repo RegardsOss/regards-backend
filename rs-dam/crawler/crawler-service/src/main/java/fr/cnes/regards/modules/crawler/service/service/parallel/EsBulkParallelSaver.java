@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.crawler.service.service.parallel;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionResult;
 import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
@@ -125,11 +124,13 @@ public class EsBulkParallelSaver {
             try {
                 esBulkSaveService.setTenant(ingestionParameters.tenant());
                 return datasourceIngestionService.createOrUpdateDataObjects(ingestionParameters,
-                                                                            datasourceIngestion.getId(),
+                                                                            datasourceIngestion,
                                                                             dataObjects,
                                                                             datasourceIngestion.isBuilding());
             } catch (ModuleException e) {
-                LOGGER.error("Error while creating or merging data objects", e);
+                LOGGER.error("Error while creating or merging data objects for datasource {}",
+                             datasourceIngestion.getLabel(),
+                             e);
                 storeErrorIfNeeded(currentCursor, e);
                 throw e;
             }
@@ -162,7 +163,9 @@ public class EsBulkParallelSaver {
             } catch (CancellationException | InterruptedException | ExecutionException ex) {
                 // future.get() throw the task exception if any (encapsulated in ExecutionException)
                 storeErrorIfNeeded(task.cursor(), ex);
-                LOGGER.error("Error while waiting for future task completion", ex);
+                LOGGER.error("Error while waiting for future task completion for datasource {}",
+                             datasourceIngestion.getLabel(),
+                             ex);
                 break; // do not compute tasks that are after the first error
             }
         }
@@ -203,7 +206,7 @@ public class EsBulkParallelSaver {
      */
     @SuppressWarnings("java:S1166") // No need to rethrow exception here
     public BulkSaveLightResult waitAllResultsOrThrowIfAnyFail() throws FirstFindException, NotFinishedException {
-        LOGGER.info("Waiting for all results");
+        LOGGER.info("Waiting for all thread results for datasource {}", datasourceIngestion.getLabel());
         // 1. loop of get() -> wait for all futures to complete, and catch unexpected exceptions to set the first error
         for (EsBulkTaskInformation task : allAsyncTasks) {
             try {
@@ -211,7 +214,9 @@ public class EsBulkParallelSaver {
             } catch (CancellationException | InterruptedException | ExecutionException ex) {
                 // future.get() throw the task exception if any (encapsulated in ExecutionException)
                 storeErrorIfNeeded(task.cursor(), ex);
-                LOGGER.error("Error while waiting for future task completion", ex);
+                LOGGER.error("Error while waiting for future task completion for datasource {}",
+                             datasourceIngestion.getLabel(),
+                             ex);
             }
         }
         // 2. throw an exception if any error occurred during the bulk save operations.
@@ -227,6 +232,7 @@ public class EsBulkParallelSaver {
                 // do nothing, we already handled the error in the first loop
             }
         }
+        LOGGER.info("All thread results collected for datasource {}", datasourceIngestion.getLabel());
         return bulkSaveLightResult;
     }
 

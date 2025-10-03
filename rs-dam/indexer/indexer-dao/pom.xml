@@ -153,6 +153,10 @@
             <groupId>org.geotools</groupId>
             <artifactId>gt-metadata</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>metric-regards-starter</artifactId>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>

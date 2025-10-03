@@ -35,9 +35,7 @@ public class EsThreadPoolConfiguration {
 
     /**
      * Thread pool size for Elasticsearch bulk operations.
-     * Recommended: up to 5 client threads per Elasticsearch node.
-     * On the server side, the Elasticsearch thread pool usually has 2 to 4 threads per node, for 'write' operations.
-     * IMPORTANT WARNING : Ensure that the Hikari connection pool size is STRICTLY GREATER than this value to avoid connection starvation.
+     * IMPORTANT WARNING : Ensure that the Hikari connection pool size is STRICTLY GREATER than this value PLUS job pool size, to avoid connection starvation.
      * Otherwise, rs-dam may enter in deadlock state, with all threads waiting for a connection from the pool, and no thread available to release a connection.
      */
     @Value("${regards.elasticsearch.threadpool.size:3}")

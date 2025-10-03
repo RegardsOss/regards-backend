@@ -50,6 +50,7 @@ import fr.cnes.regards.modules.crawler.service.consumer.DataObjectGroupAssocUpda
 import fr.cnes.regards.modules.crawler.service.consumer.SaveDataObjectsCallable;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.job.UpdateEntityIntoEsJob;
+import fr.cnes.regards.modules.crawler.service.metric.IndexerMetricService;
 import fr.cnes.regards.modules.crawler.service.session.SessionNotifier;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.plugins.IDataObjectAccessFilterPlugin;
@@ -81,6 +82,7 @@ import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import io.micrometer.core.instrument.Timer;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.elasticsearch.ElasticsearchException;
@@ -192,12 +194,6 @@ public class EntityIndexerService implements IEntityIndexerService {
     @Autowired
     private SessionNotifier sessionNotifier;
 
-    @Value("${regards.crawler.max.bulk.size:10000}")
-    private Integer maxBulkSize;
-
-    @Value("${regards.crawler.max.session.step.size:10000}")
-    private int sessionStepBulkSize;
-
     @Autowired
     private Gson gson;
 
@@ -222,18 +218,27 @@ public class EntityIndexerService implements IEntityIndexerService {
     @Autowired
     private IndexAliasService indexAliasService;
 
+    @Autowired
+    public IndexerMetricService indexerMetricService;
+
+    @Value("${regards.crawler.max.bulk.size:10000}")
+    private Integer maxBulkSize;
+
+    @Value("${regards.crawler.max.session.step.size:10000}")
+    private int sessionStepBulkSize;
+
     private static List<String> toErrors(Errors errorsObject) {
         List<String> errors = new ArrayList<>(errorsObject.getErrorCount());
         for (ObjectError objError : errorsObject.getAllErrors()) {
-            if (objError instanceof FieldError) {
+            if (objError instanceof FieldError fieldError) {
                 String buf = "Field error in object "
                              + objError.getObjectName()
                              + " on field '"
-                             + ((FieldError) objError).getField()
+                             + fieldError.getField()
                              + "', rejected value '"
-                             + ((FieldError) objError).getRejectedValue()
+                             + fieldError.getRejectedValue()
                              + "': "
-                             + ((FieldError) objError).getField()
+                             + fieldError.getField()
                              + " "
                              + objError.getDefaultMessage();
                 errors.add(buf);
@@ -265,7 +270,7 @@ public class EntityIndexerService implements IEntityIndexerService {
      *                                      into account
      * @param updateDate                    update date saved inside data objects
      * @param forceAssociatedEntitiesUpdate for dataset entity, force associated entities (ie data objects) update
-     * @param datasourceIngestionId         DataSourceIngestion identifier
+     * @param datasourceIngestion           the {@link DatasourceIngestion} linked to this update (can be null)
      * @param skipDissociationStep          if true, skip the dissociation step (step needed only if dataset has been updated)
      *                                      the dissociation step is the step where all data objects which do not match the dataset subsetting clause anymore are detached to the dataset
      */
@@ -275,7 +280,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                                    OffsetDateTime minLastUpdateCriteria,
                                    OffsetDateTime updateDate,
                                    boolean forceAssociatedEntitiesUpdate,
-                                   String datasourceIngestionId,
+                                   DatasourceIngestion datasourceIngestion,
                                    boolean buildingIndex,
                                    boolean skipDissociationStep) throws ModuleException {
         LOGGER.info("Updating {}", ipId.toString());
@@ -283,19 +288,17 @@ public class EntityIndexerService implements IEntityIndexerService {
 
         String realIndex = buildingIndex ? indexOrAlias : indexAliasResolver.resolveCurrentIndex(tenant);
         runtimeTenantResolver.forceTenant(tenant);
-        // String alias = indexAliasResolver.resolveAliasName(tenant);
         AbstractEntity<?> entity = entitiesService.loadWithRelations(ipId);
         // If entity does no more exist in database, it must be deleted from ES
         if (entity == null) {
             LOGGER.debug("Entity is null !!");
             if (ipId.getEntityType() == EntityType.DATASET) {
                 sendDataSourceMessage(String.format("    Dataset with IP_ID %s no more exists...", ipId),
-                                      datasourceIngestionId);
-                manageDatasetDelete(indexOrAlias, ipId.toString(), datasourceIngestionId);
+                                      datasourceIngestion);
+                manageDatasetDelete(indexOrAlias, ipId.toString(), datasourceIngestion);
             }
             esRepoFacade.deleteFromIndexOrAlias(indexOrAlias, ipId.getEntityType().toString(), ipId.toString());
-            sendDataSourceMessage(String.format("    ...Dataset with IP_ID %s de-indexed.", ipId),
-                                  datasourceIngestionId);
+            sendDataSourceMessage(String.format("    ...Dataset with IP_ID %s de-indexed.", ipId), datasourceIngestion);
         } else { // entity has been created or updated, it must be saved into ES
             indexService.createIndexAndAliasIfNeeded(realIndex, buildingIndex);
             indexService.configureMappings(realIndex, entity.getModel().getName());
@@ -332,7 +335,6 @@ public class EntityIndexerService implements IEntityIndexerService {
             boolean needAssociatedDataObjectsUpdate = (minLastUpdateCriteria != null) || forceAssociatedEntitiesUpdate;
             // A dataset change may need associated data objects update
             if (!needAssociatedDataObjectsUpdate && (entity instanceof Dataset dataset)) {
-                //TODO: if build, sur le building index, sinon alias
                 needAssociatedDataObjectsUpdate = needAssociatedDataObjectsUpdate(dataset,
                                                                                   esRepoFacade.get(indexOrAlias,
                                                                                                    dataset));
@@ -351,7 +353,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                 updateAssociatedDataObjectsOfDataset((Dataset) entity,
                                                      minLastUpdateCriteria,
                                                      updateDate,
-                                                     datasourceIngestionId,
+                                                     datasourceIngestion,
                                                      buildingIndex,
                                                      skipDissociationStep);
             } else {
@@ -419,11 +421,12 @@ public class EntityIndexerService implements IEntityIndexerService {
      * @param indexOrAlias concerned alias or index name
      * @param ipId         dataset identifier
      */
-    private void manageDatasetDelete(String indexOrAlias, String ipId, String dsiId) throws ModuleException {
+    private void manageDatasetDelete(String indexOrAlias, String ipId, DatasourceIngestion datasourceIngestion)
+        throws ModuleException {
         // Search all DataObjects tagging this Dataset (only DataObjects because all other entities are already managed
         // with the system Postgres/RabbitMQ)
         sendDataSourceMessage(String.format("      Searching for all data objects tagging dataset IP_ID %s", ipId),
-                              dsiId);
+                              datasourceIngestion);
         AtomicInteger objectsCount = new AtomicInteger(0);
         ICriterion taggingObjectsCrit = ICriterion.eq("tags", ipId, StringMatchType.KEYWORD);
 
@@ -463,12 +466,11 @@ public class EntityIndexerService implements IEntityIndexerService {
                 esRepoFacade.saveBulkToIndexOrAlias(indexOrAlias, toSaveObjects);
                 objectsCount.addAndGet(toSaveObjects.size());
             }
-
         } catch (ElasticsearchException e) {
             throw new RsRuntimeException(e);
         }
         sendDataSourceMessage(String.format("      ...Removed dataset IP_ID from %d data objects tags.",
-                                            objectsCount.get()), dsiId);
+                                            objectsCount.get()), datasourceIngestion);
 
     }
 
@@ -476,7 +478,7 @@ public class EntityIndexerService implements IEntityIndexerService {
      * Search and update associated dataset data objects (ie add dataset IpId into tags)
      *
      * @param dataset               concerned dataset
-     * @param datasourceIngestionId {@link DatasourceIngestion} id
+     * @param datasourceIngestion   the {@link DatasourceIngestion} linked to this update (can be null)
      * @param minLastUpdateCriteria Take into account only more recent minLastUpdateCriteria than provided
      * @param updateDate            update date saved inside data objects
      * @param skipDissociationStep  if true, skip the dissociation step (step needed only if dataset has been updated)
@@ -484,9 +486,11 @@ public class EntityIndexerService implements IEntityIndexerService {
     private void updateAssociatedDataObjectsOfDataset(Dataset dataset,
                                                       OffsetDateTime minLastUpdateCriteria,
                                                       OffsetDateTime updateDate,
-                                                      String datasourceIngestionId,
+                                                      DatasourceIngestion datasourceIngestion,
                                                       boolean buildingIndex,
                                                       boolean skipDissociationStep) throws ModuleException {
+        String datasourceIngestionId = datasourceIngestion != null ? datasourceIngestion.getId() : null;
+        String crawlerName = datasourceIngestion != null ? datasourceIngestion.getLabel() : null;
         String tenant = runtimeTenantResolver.getTenant();
         String indexOrAlias = getIndexOrAliasName(tenant, buildingIndex);
         sendDataSourceMessage(String.format(
@@ -509,12 +513,17 @@ public class EntityIndexerService implements IEntityIndexerService {
         // Remove association between dataobjects and dataset for all dataobjects which does not match the dataset filter anymore.
         if (!skipDissociationStep) {
             try {
+                Timer.Sample timer = indexerMetricService.startNewTimer();
                 removeOldDatasetDataObjectsAssoc(dataset,
                                                  updateDate,
                                                  searchKey,
                                                  executor,
                                                  saveDataObjectsCallable,
                                                  datasourceIngestionId);
+                indexerMetricService.stopTimer(timer,
+                                               IndexerMetricService.INDEXER_REMOVE_DATA_OBJECTS_ASSOC,
+                                               crawlerName);
+
             } catch (ModuleException e) {
                 LOGGER.error(e.getMessage(), e);
                 sendDataSourceMessage(String.format("Error removing all dataset objects. Cause: %s.", e.getMessage()),
@@ -523,7 +532,9 @@ public class EntityIndexerService implements IEntityIndexerService {
         }
         // Associate dataset to all dataobjets. Associate groups of dataset to the dataobjets through metadata
         try {
+            Timer.Sample timer = indexerMetricService.startNewTimer();
             addOrUpdateDatasetDataObjectsAssoc(dataset, minLastUpdateCriteria, updateDate, searchKey);
+            indexerMetricService.stopTimer(timer, IndexerMetricService.INDEXER_MANAGE_ACCESS_RIGHTS, crawlerName);
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             sendDataSourceMessage(String.format("Error updating new dataset objects. Cause: %s.", e.getMessage()),
@@ -532,12 +543,16 @@ public class EntityIndexerService implements IEntityIndexerService {
 
         // Update dataset access groups for dynamic plugin access rights
         try {
+            Timer.Sample timer = indexerMetricService.startNewTimer();
             manageDatasetUpdateFilteredAccessRights(indexOrAlias,
                                                     dataset,
                                                     updateDate,
                                                     executor,
                                                     saveDataObjectsCallable,
                                                     datasourceIngestionId);
+            indexerMetricService.stopTimer(timer,
+                                           IndexerMetricService.INDEXER_MANAGE_ACCESS_RIGHT_WITH_FILTER,
+                                           crawlerName);
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             sendDataSourceMessage(String.format("Error updating dataset access rights. Cause: %s.", e.getMessage()),
@@ -547,7 +562,9 @@ public class EntityIndexerService implements IEntityIndexerService {
         // To remove thread used by executor
         executor.shutdown();
 
+        Timer.Sample timer = indexerMetricService.startNewTimer();
         computeComputedAttributes(dataset, datasourceIngestionId, tenant);
+        indexerMetricService.stopTimer(timer, IndexerMetricService.INDEXER_COMPUTED_ATTRIBUTES, crawlerName);
 
         prepareDatasetForEs(dataset);
         esRepoFacade.saveToIndexOrAlias(indexOrAlias, dataset);
@@ -883,21 +900,21 @@ public class EntityIndexerService implements IEntityIndexerService {
                                OffsetDateTime minLastUpdateCriteria,
                                OffsetDateTime updateDate,
                                boolean forceDataObjectsUpdate,
-                               String dsiId,
+                               DatasourceIngestion datasourceIngestion,
                                boolean buildingIndex,
                                boolean skipDissociationStep) throws ModuleException {
         for (Dataset dataset : datasets) {
             LOGGER.info("Updating dataset {} ...", dataset.getLabel());
-            sendDataSourceMessage(String.format("  Updating dataset %s...", dataset.getLabel()), dsiId);
+            sendDataSourceMessage(String.format("  Updating dataset %s...", dataset.getLabel()), datasourceIngestion);
             updateEntityIntoEs(tenant,
                                dataset.getIpId(),
                                minLastUpdateCriteria,
                                updateDate,
                                forceDataObjectsUpdate,
-                               dsiId,
+                               datasourceIngestion,
                                buildingIndex,
                                skipDissociationStep);
-            sendDataSourceMessage(String.format("  ...Dataset %s updated.", dataset.getLabel()), dsiId);
+            sendDataSourceMessage(String.format("  ...Dataset %s updated.", dataset.getLabel()), datasourceIngestion);
             LOGGER.info("Dataset {} updated.", dataset.getLabel());
         }
     }
@@ -1108,29 +1125,17 @@ public class EntityIndexerService implements IEntityIndexerService {
         String indexOrAlias = getIndexOrAliasName(tenant, buildingIndex);
         try {
             esRepoFacade.upsertToIndexOrAlias(indexOrAlias, bulkSaveResult, toSaveObjects, buf);
-
-            LOGGER.debug("Upsert DONE: tenant={}, index or alias={}, total to save={}, saved docs={}, docs in "
-                         + "errors={}",
-                         tenant,
-                         indexOrAlias,
-                         toSaveObjects.size(),
-                         bulkSaveResult.getSavedDocsCount(),
-                         bulkSaveResult.getInErrorDocsCount());
         } catch (ElasticsearchException e) {
-            LOGGER.error("Upsert FAILED: tenant={}, index or alias={}, total to save={}, saved docs={}, docs in "
-                         + "errors={}",
-                         tenant,
-                         indexOrAlias,
-                         toSaveObjects.size(),
-                         bulkSaveResult.getSavedDocsCount(),
-                         bulkSaveResult.getInErrorDocsCount());
-            throw new ModuleException(String.format("Upsert FAILED (tenant=%s, index or alias=%s, "
-                                                    + "total to save=%d, saved docs=%d, docs inerrors=%d): ",
-                                                    tenant,
-                                                    indexOrAlias,
-                                                    toSaveObjects.size(),
-                                                    bulkSaveResult.getSavedDocsCount(),
-                                                    bulkSaveResult.getInErrorDocsCount()), e);
+            String errorMsg = String.format("Upsert FAILED (tenant=%s, index or alias=%s, "
+                                            + "total to save=%d, saved docs=%d, docs in errors=%d): ",
+                                            tenant,
+                                            indexOrAlias,
+                                            toSaveObjects.size(),
+                                            bulkSaveResult.getSavedDocsCount(),
+                                            bulkSaveResult.getInErrorDocsCount());
+
+            LOGGER.error(errorMsg);
+            throw new ModuleException(errorMsg, e);
         } finally {
             publishEventsAndManageErrors(tenant, datasourceIngestionId, buf, bulkSaveResult);
         }
@@ -1315,8 +1320,10 @@ public class EntityIndexerService implements IEntityIndexerService {
     private void deleteDataObjectsAndUpdateInOneIndex(String tenant, String index, Set<String> ipIds) {
         Set<UniformResourceName> allDatasetUrns = new HashSet<>();
 
-        //TODO: probleme, a refaire
-        LOGGER.info("Deleting {} data object(s) for tenant {}", ipIds.size(), index);
+        // Warning: deletion by document ID using an alias is only supported for aliases mapped to a single index
+        String alias = IndexAliasResolver.resolveAliasName(tenant);
+
+        LOGGER.info("Deleting {} data object(s) for index {}", ipIds.size(), alias);
         // Delete data and collect datasets to update
         for (String ipId : ipIds) {
             try {
@@ -1324,8 +1331,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                 // Extract datasets from tags
                 allDatasetUrns.addAll(extractDatasetsFromTags(tags));
             } catch (RsRuntimeException e) {
-                String msg = String.format("Cannot delete feature (%s)", ipId);
-                LOGGER.error(msg, e);
+                LOGGER.error("Cannot delete feature ({})", ipId, e);
             }
         }
 
@@ -1339,7 +1345,8 @@ public class EntityIndexerService implements IEntityIndexerService {
     /**
      * Delete given data object from Elasticsearch
      *
-     * @param ipId id of Data object
+     * @param index concerned elastic index
+     * @param ipId  id of Data object
      * @return if data object properly deleted, return tags else null
      */
     private Set<String> deleteDataObjectReturningTags(String index, String ipId) {
@@ -1456,6 +1463,17 @@ public class EntityIndexerService implements IEntityIndexerService {
                                        ISO_TIME_UTC.format(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)),
                                        message);
             eventPublisher.publishEvent(new DataSourceMessageEvent(this, runtimeTenantResolver.getTenant(), msg, dsId));
+        }
+    }
+
+    /**
+     * Send a message to IngesterService (or whoever want to listen to it) concerning given datasourceIngestion
+     *
+     * @param datasourceIngestion {@link DatasourceIngestion} id
+     */
+    public void sendDataSourceMessage(String message, DatasourceIngestion datasourceIngestion) {
+        if (datasourceIngestion != null) {
+            sendDataSourceMessage(message, datasourceIngestion.getId());
         }
     }
 

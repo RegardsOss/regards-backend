@@ -31,7 +31,7 @@ import java.util.Map;
  *
  * @author mnguyen0
  */
-public class AbstractMetricService {
+public abstract class AbstractMetricService {
 
     protected MeterRegistry registry;
 
