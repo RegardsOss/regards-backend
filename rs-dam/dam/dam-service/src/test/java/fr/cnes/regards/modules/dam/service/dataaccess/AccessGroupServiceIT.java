@@ -27,9 +27,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -51,6 +54,9 @@ public class AccessGroupServiceIT extends AbstractRegardsServiceTransactionalIT 
 
     @Autowired
     private IAccessGroupService accessGroupService;
+
+    @MockBean
+    private ExecutorService executor;
 
     @Before
     public void init() {

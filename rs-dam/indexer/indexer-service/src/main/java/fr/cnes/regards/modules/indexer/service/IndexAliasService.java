@@ -22,10 +22,13 @@ package fr.cnes.regards.modules.indexer.service;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.indexer.dao.IEsIndexAliasRepository;
 import fr.cnes.regards.modules.indexer.domain.EsIndexAlias;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 /**
  * Service responsible for managing catalog index alias
@@ -33,6 +36,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class IndexAliasService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IndexAliasService.class);
 
     private final IEsIndexAliasRepository repository;
 
@@ -91,6 +96,22 @@ public class IndexAliasService {
     @MultitenantTransactional
     public EsIndexAlias clearBuilding(String aliasName) {
         return setBuilding(aliasName, null);
+    }
+
+    /**
+     * Sets the building index as the current index and clears the building reference.
+     */
+    @CachePut(cacheNames = "esIndexAliases", key = "#aliasName")
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
+    public EsIndexAlias updateCurrentAndClearBuilding(String aliasName, String newIndex) {
+        EsIndexAlias esIndexAlias = repository.findByAlias(aliasName).orElseThrow();
+        esIndexAlias.setCurrent(newIndex);
+        esIndexAlias.setBuilding(null);
+        EsIndexAlias saved = repository.save(esIndexAlias);
+        // The flush forces the update to be executed immediately, so the caller can catch errors and compensate the ES
+        // alias switch
+        repository.flush();
+        return saved;
     }
 
 }

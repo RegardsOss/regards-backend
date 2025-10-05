@@ -60,11 +60,14 @@ public class CatalogResetService implements ICatalogResetService {
     private IDatasourceIngesterService datasourceIngesterService;
 
     @Autowired
+    private DatasourceIngestionService dsIngestionService;
+
+    @Autowired
     private IAuthenticationResolver authResolver;
 
     @Override
     public void scheduleCatalogReset() {
-        // Schedule request retry job
+        // Schedule request reset job
         JobInfo jobInfo = new JobInfo(false, 1, null, authResolver.getUser(), CatalogResetJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} job with id {}", CatalogResetJob.class.getName(), jobInfo.getId());
@@ -73,16 +76,17 @@ public class CatalogResetService implements ICatalogResetService {
     @Override
     public void resetCatalog() throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
-        entityIndexerService.createBuildingIndexAndCreateEntities(tenant);
         // Clear all building datasources ingestion
         List<DatasourceIngestion> datasources = datasourceIngesterService.getDatasourceIngestions();
         datasources.forEach(ds -> {
             LOGGER.info("Datasource Ingestion id : {}", ds.getId());
             if (ds.isBuilding()) {
-                LOGGER.info("Datasource Ingestion id {} is for builing index, let's delete it", ds.getId());
+                LOGGER.info("Datasource Ingestion id {} is for building index, let's delete it", ds.getId());
                 datasourceIngesterService.deleteDatasourceIngestion(ds.getId());
             }
         });
+        entityIndexerService.createBuildingIndexAndCreateEntities(tenant);
+        dsIngestionService.updateAndCleanTenantDatasourceIngestions();
     }
 
 }

@@ -223,6 +223,23 @@ public class DatasourceIngestion {
         this.building = building;
     }
 
+    public DatasourceIngestion clone(String newId, String newLabel, boolean newBuilding) {
+        DatasourceIngestion datasourceIngestionClone = new DatasourceIngestion(newId);
+        datasourceIngestionClone.label = newLabel;
+        datasourceIngestionClone.building = newBuilding;
+        datasourceIngestionClone.lastIngestDate = this.lastIngestDate;
+        datasourceIngestionClone.nextPlannedIngestDate = this.nextPlannedIngestDate;
+        datasourceIngestionClone.status = this.status;
+        datasourceIngestionClone.statusDate = this.statusDate;
+        datasourceIngestionClone.duration = this.duration;
+        datasourceIngestionClone.savedObjectsCount = this.savedObjectsCount;
+        datasourceIngestionClone.inErrorObjectsCount = this.inErrorObjectsCount;
+        datasourceIngestionClone.stackTrace = this.stackTrace;
+        datasourceIngestionClone.jobId = this.jobId;
+        datasourceIngestionClone.cursor = (this.cursor == null) ? null : this.cursor.clone();
+        return datasourceIngestionClone;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

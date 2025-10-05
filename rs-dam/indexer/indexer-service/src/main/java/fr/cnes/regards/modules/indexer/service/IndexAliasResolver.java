@@ -17,9 +17,6 @@
  * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
 
-/**
- *
- */
 package fr.cnes.regards.modules.indexer.service;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -30,8 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static fr.cnes.regards.modules.indexer.dao.EsRepository.ALIAS_SUFFIX;
 
@@ -47,15 +42,6 @@ public class IndexAliasResolver {
     private final IRuntimeTenantResolver tenantResolver;
 
     private final IndexAliasService indexAliasService;
-
-    /**
-     * Validates any string that:
-     * <ul>
-     *   <li>Starts with any text (including empty),</li>
-     *   <li>May optionally end with an underscore followed by a number (_<number>).</li>
-     * </ul>
-     */
-    private static final Pattern SUFFIX_PATTERN = Pattern.compile("^(.*?)(?:_(\\d+))?$");
 
     public IndexAliasResolver(IRuntimeTenantResolver tenantResolver, IndexAliasService indexAliasService) {
         this.tenantResolver = tenantResolver;
@@ -96,22 +82,83 @@ public class IndexAliasResolver {
     }
 
     /**
-     * Increments an index name by appending or increasing a numeric suffix.
+     * Increments an index name by appending a short hash of the tenant and appending or increasing a numeric suffix.
+     * Example1: if current index is {@code tenantA}, the next will be {@code tenantA_ab12cd_2}.
+     * Example2: if current index is {@code tenantA_ab12cd_1}, the next will be {@code tenantA_ab12cd_2}.
      */
     public String resolveNextIndexName(String tenant) {
         String indexName = resolveBuildingIndex(tenant).orElse(resolveCurrentIndex(tenant));
         if (Strings.isBlank(indexName)) {
             throw new IllegalStateException("Index name cannot be null or empty for tenant: " + tenant);
         }
-        Matcher matcher = SUFFIX_PATTERN.matcher(indexName);
-        if (matcher.matches()) {
-            String baseName = matcher.group(1);
-            String numberPart = matcher.group(2);
-            //If the index name has a numeric suffix, the number is incremented, otherwise it is initialized to 1
-            int nextNumber = (numberPart != null) ? Integer.parseInt(numberPart) + 1 : 1;
-            return baseName + "_" + nextNumber;
+        Optional<ParsedBuildingIndex> parsed = parseIndex(indexName);
+        if (parsed.isPresent()) {
+            ParsedBuildingIndex p = parsed.get();
+            return p.tenant() + "_" + p.hash() + "_" + (p.number() + 1);
         }
-        return indexName + "_1";
+        // First case, we initialize it
+        return buildIndexName(tenant, shortHash(tenant), 1);
     }
 
+    /**
+     * Try to interpret indexName as: tenant + "_" + hash + "_" + number
+     */
+    private Optional<ParsedBuildingIndex> parseIndex(String indexName) {
+        // Find the last underscore, separates number part
+        int lastUnderscore = indexName.lastIndexOf('_');
+        if (lastUnderscore < 0 || lastUnderscore == indexName.length() - 1) {
+            return Optional.empty();
+        }
+        String numPart = indexName.substring(lastUnderscore + 1);
+
+        // Find the second-to-last underscore, separates hash part and tenant part
+        int secondLastUnderscore = indexName.lastIndexOf('_', lastUnderscore - 1);
+        if (secondLastUnderscore < 0 || secondLastUnderscore == lastUnderscore - 1) {
+            return Optional.empty();
+        }
+        String hashPart = indexName.substring(secondLastUnderscore + 1, lastUnderscore);
+        String tenant = indexName.substring(0, secondLastUnderscore);
+
+        // Check 1: numPart must be a valid positive integer
+        int number;
+        try {
+            if (numPart.isEmpty()) {
+                return Optional.empty();
+            }
+            number = Integer.parseInt(numPart);
+            if (number < 1) {
+                return Optional.empty();
+            }
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+
+        // Check 2: hashPart must match the first 6 hex chars
+        if (hashPart.length() != 6) {
+            return Optional.empty();
+        }
+        String expected = shortHash(tenant);
+        if (!expected.equalsIgnoreCase(hashPart)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new ParsedBuildingIndex(tenant, hashPart.toLowerCase(), number));
+    }
+
+    /**
+     * Compute hash of the input and return the first 6 hex chars
+     */
+    public static String shortHash(String tenant) {
+        return String.format("%06x", tenant.hashCode() & 0xFFFFFF);
+    }
+
+    private record ParsedBuildingIndex(String tenant,
+                                       String hash,
+                                       int number) {
+
+    }
+
+    public static String buildIndexName(String tenant, String hash, int i) {
+        return tenant + "_" + hash + "_" + i;
+    }
 }

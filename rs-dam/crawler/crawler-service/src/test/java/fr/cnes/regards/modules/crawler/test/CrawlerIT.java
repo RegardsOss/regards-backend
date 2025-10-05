@@ -18,39 +18,19 @@
  */
 package fr.cnes.regards.modules.crawler.test;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.jobs.service.IJobService;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.crawler.dao.IDatasourceIngestionRepository;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionStatus;
 import fr.cnes.regards.modules.crawler.plugins.TestDataSourcePluginFailable;
-import fr.cnes.regards.modules.crawler.service.service.CrawlerCreatorService;
-import fr.cnes.regards.modules.crawler.service.service.DatasourceIngestionService;
-import fr.cnes.regards.modules.crawler.service.service.IDatasourceIngesterService;
-import fr.cnes.regards.modules.crawler.service.service.IndexService;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.dam.service.datasources.IDataSourceService;
-import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.model.domain.Model;
-import fr.cnes.regards.modules.model.service.ModelService;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -73,94 +53,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
                                                                                            // This option allow beans to override previous bean.
                                                                                            "spring.main.allow-bean-definition-overriding=true",
                                                                                            "spring.jpa.properties.hibernate.default_schema=crawler_it" })
-class CrawlerIT extends AbstractRegardsServiceIT {
+class CrawlerIT extends AbstractCrawlerIT {
 
-    private static final String TENANT = "crawler_it";
-
-    private static final String INDEX = TENANT;
-
-    private static final String ALIAS = "crawler_it_alias";
-
-    private static final String MODEL_NAME = "model";
-
-    private static final String PLUGIN_BUSINESS_ID = "test-datasource-failable-crawler-it";
-
-    @Autowired
-    private IEsRepository esRepository;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private IDataSourceService datasourceService;
-
-    @SpyBean
-    private DatasourceIngestionService datasourceIngestionRunnerService;
-
-    @Autowired
-    private CrawlerCreatorService crawlerCreatorService;
-
-    @Autowired
-    private ModelService modelService;
-
-    @Autowired
-    private IDatasourceIngestionRepository datasourceIngestionRepository;
-
-    @Autowired
-    private IJobService jobService;
-
-    @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
-    private IDatasourceIngesterService datasourceIngesterService;
-
-    @Autowired
-    private IJobInfoRepository jobInfoRepository;
-
-    @Autowired
-    private IndexService indexService;
-
-    private void initIndex() {
-        indexService.deleteIndex(TENANT);
-        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> !esRepository.indexExists(TENANT));
-        indexService.deleteIndex(ALIAS);
-        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> !esRepository.aliasExists(ALIAS));
-        indexService.createIndexAndAliasIfNeeded(TENANT, false);
+    @Override
+    protected String tenant() {
+        return "crawler_it";
     }
 
-    @BeforeEach
-    void setUp() throws ModuleException {
-        datasourceIngestionRepository.deleteAll(); // make sure that we start with no ingestion records
-        runtimeTenantResolver.forceTenant(TENANT);
-        initIndex();
-        createModel();
-        createDataSource();
-        jobInfoService.cleanDeadJobs();
-        jobInfoRepository.findAll().forEach(jobInfo -> jobInfoService.stopJob(jobInfo.getId()));
-        jobInfoRepository.deleteAll(); // clean previous jobs
+    @Override
+    protected String alias() {
+        return "crawler_it_alias";
     }
 
-    private void createModel() throws ModuleException {
-        try {
-            modelService.createModel(Model.build(MODEL_NAME, "description of " + MODEL_NAME, EntityType.DATA));
-        } catch (EntityAlreadyExistsException e) {
-            // That's perfect, the model already exists
-        }
+    @Override
+    protected String buildingIndex() {
+        return "crawler_it_1";
     }
 
-    private void createDataSource() throws ModuleException {
-        PluginConfiguration pluginConfig = PluginConfiguration.build(TestDataSourcePluginFailable.class, null, null);
-        pluginConfig.setBusinessId(PLUGIN_BUSINESS_ID);
-        try {
-            datasourceService.createDataSource(pluginConfig);
-        } catch (EntityInvalidException e) {
-            if (e.getMessage().contains("already exists")) {
-                // That's perfect, the datasource already exists
-            } else {
-                throw e; // Unexpected error
-            }
-        }
+    @Override
+    protected String modelName() {
+        return "model";
+    }
+
+    @Override
+    protected String pluginBusinessId() {
+        return "test-datasource-failable-crawler-it";
     }
 
     @Test
@@ -174,7 +91,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         assertEquals(20, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.FINISHED, datasourceIngestion.getStatus());
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
-        searchKey.setSearchIndex(ALIAS);
+        searchKey.setSearchIndex(alias());
         List<DataObject> content = esRepository.search(searchKey, 25, ICriterion.all()).getContent();
         // THEN 20 data object has been crawled
         Assertions.assertEquals(20, content.size());
@@ -399,7 +316,7 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should store results at each bulk
         Awaitility.await().atMost(5, TimeUnit.SECONDS).pollInterval(500, TimeUnit.MILLISECONDS).until(() -> {
-            runtimeTenantResolver.forceTenant(TENANT);
+            runtimeTenantResolver.forceTenant(tenant());
             List<DatasourceIngestion> dsList = datasourceIngestionRepository.findAll();
             if (!dsList.isEmpty()) {
                 return dsList.get(0).getSavedObjectsCount().equals(50);
@@ -513,10 +430,10 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         Assertions.assertEquals(1, allDatasources.size());
         DatasourceIngestion datasourceIngestion = allDatasources.get(0);
         // WHEN delete ingestion
-        datasourceIngestionRunnerService.deleteDatasourceIngestion(PLUGIN_BUSINESS_ID);
+        datasourceIngestionRunnerService.deleteDatasourceIngestion(pluginBusinessId());
         // THEN the job is ABORTED
         Awaitility.await().pollInterval(500, TimeUnit.MILLISECONDS).atMost(4, TimeUnit.SECONDS).until(() -> {
-            runtimeTenantResolver.forceTenant(TENANT);
+            runtimeTenantResolver.forceTenant(tenant());
             // jobStatus should be ABORTED, but it can be SUCCEEDED if the job has been able to finish before been killed
             // (this appends when datasource ingestion is remove from BD, but the job has just started,
             // and so job finish instantly after, before receiving ABORTION event)
@@ -524,27 +441,11 @@ class CrawlerIT extends AbstractRegardsServiceIT {
         });
         allDatasources = datasourceIngestionRepository.findAll();
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
-        searchKey.setSearchIndex(ALIAS);
+        searchKey.setSearchIndex(alias());
         List<DataObject> content = esRepository.search(searchKey, 10, ICriterion.all()).getContent();
         // THEN Nothing have been crawled because job has been killed
         Assertions.assertEquals(0, content.size());
         Assertions.assertEquals(0, allDatasources.size());
     }
 
-    private DatasourceIngestion waitForCrawlingTermination(int atMostSeconds) {
-        List<DatasourceIngestion> datasourceIngestions = Awaitility.await()
-                                                                   .atMost(atMostSeconds, TimeUnit.SECONDS)
-                                                                   .pollInterval(1, TimeUnit.SECONDS)
-                                                                   .until(() -> {
-                                                                       runtimeTenantResolver.forceTenant(TENANT);
-                                                                       return datasourceIngestionRepository.findAll();
-                                                                   }, dsList -> {
-                                                                       if (!dsList.isEmpty()) {
-                                                                           return dsList.get(0).getStatus().isFinal();
-                                                                       } else {
-                                                                           return false;
-                                                                       }
-                                                                   });
-        return datasourceIngestions.get(0);
-    }
 }

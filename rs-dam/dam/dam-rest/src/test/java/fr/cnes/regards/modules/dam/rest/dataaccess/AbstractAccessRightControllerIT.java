@@ -41,12 +41,14 @@ import org.junit.Before;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -64,6 +66,9 @@ public abstract class AbstractAccessRightControllerIT extends AbstractRegardsIT 
 
     @Autowired
     protected IAccessGroupRepository agRepo;
+
+    @MockBean
+    private ExecutorService executor;
 
     protected AccessGroup ag1;
 

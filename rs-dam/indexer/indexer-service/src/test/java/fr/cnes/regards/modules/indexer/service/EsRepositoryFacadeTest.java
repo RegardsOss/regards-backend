@@ -35,6 +35,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,6 +53,9 @@ public class EsRepositoryFacadeTest {
 
     @MockBean
     private IndexAliasResolver indexAliasResolver;
+
+    @MockBean
+    private ExecutorService executor;
 
     @Autowired
     private EsRepositoryFacade facade;

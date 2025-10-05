@@ -17,9 +17,7 @@
  * along with REGARDS. If not, see `<http://www.gnu.org/licenses/>`.
  */
 
-/**
- *
- */
+
 package fr.cnes.regards.modules.indexer.service;
 
 import fr.cnes.regards.modules.indexer.dao.IEsIndexAliasRepository;

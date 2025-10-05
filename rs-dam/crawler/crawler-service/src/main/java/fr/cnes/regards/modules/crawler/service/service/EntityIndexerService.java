@@ -1313,8 +1313,10 @@ public class EntityIndexerService implements IEntityIndexerService {
 
     @Override
     public void deleteDataObjectsAndUpdate(String tenant, Set<String> ipIds) {
-        esRepoFacade.runOnAliasAndBuildingIndex(tenant,
-                                                index -> deleteDataObjectsAndUpdateInOneIndex(tenant, index, ipIds));
+        esRepoFacade.runOnCurrentIndexAndBuildingIndex(tenant,
+                                                       index -> deleteDataObjectsAndUpdateInOneIndex(tenant,
+                                                                                                     index,
+                                                                                                     ipIds));
     }
 
     private void deleteDataObjectsAndUpdateInOneIndex(String tenant, String index, Set<String> ipIds) {
@@ -1352,7 +1354,7 @@ public class EntityIndexerService implements IEntityIndexerService {
     private Set<String> deleteDataObjectReturningTags(String index, String ipId) {
         // get object deleted
         LOGGER.debug("[DELETE] Loading data to delete : {}", ipId);
-        DataObject obj = esRepoFacade.get(index, EntityType.DATA.toString(), ipId, DataObject.class);
+        DataObject obj = esRepoFacade.getWithIndex(index, EntityType.DATA.toString(), ipId, DataObject.class);
         // decrement the related session
         final DataObjectFeature feature = obj == null ? null : obj.getFeature();
         if (feature != null) {

@@ -23,11 +23,13 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.rest.DamRestConfiguration;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author lmieulet
@@ -40,6 +42,9 @@ public class CollectionControllerNoTxIT extends AbstractCollectionControllerIT {
 
     @Autowired
     protected IRuntimeTenantResolver runtimetenantResolver;
+
+    @MockBean
+    private ExecutorService esExecutorService;
 
     @Override
     public void initRepos() {

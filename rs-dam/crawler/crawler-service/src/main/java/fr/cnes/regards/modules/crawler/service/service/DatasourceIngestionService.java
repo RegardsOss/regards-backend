@@ -90,6 +90,8 @@ import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static fr.cnes.regards.modules.crawler.domain.DatasourceIngestion.BUILDING_INDEX_SUFFIX;
+
 /**
  * Service to handle {@link DatasourceIngestion}
  *
@@ -106,7 +108,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                                                                                         .append(DateTimeFormatter.ISO_LOCAL_TIME)
                                                                                         .toFormatter();
 
-    public static final String BUILDING_INDEX_SUFFIX = "_building";
+    private static final int BUILDING_DATASOURCE_FIXED_REFRESH_RATE = 86400;
 
     /**
      * Only used to delete all data objects from a removed datasource
@@ -131,9 +133,6 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
 
     @Autowired
     protected IEntityIndexerService entityIndexerService;
-
-    @Autowired
-    private INotificationClient notifClient;
 
     @Autowired
     private IModelService modelService;
@@ -191,13 +190,10 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                                                              .toList();
 
         // Add DatasourceIngestion for unmanaged datasource with immediate next planned ingestion date
-        pluginConfs.forEach(cfg -> {
-            String id = cfg.getBusinessId();
-            if (!dsIngestionMapbyId.containsKey(id)) {
-                DatasourceIngestion ds = dsIngestionRepos.save(new DatasourceIngestion(cfg,
-                                                                                       OffsetDateTime.now()
-                                                                                                     .withOffsetSameInstant(
-                                                                                                         ZoneOffset.UTC)));
+        for (PluginConfiguration pluginConf : pluginConfs) {
+            String id = pluginConf.getBusinessId();
+            if (!dsIngestionRepos.existsById(id)) {
+                DatasourceIngestion ds = dsIngestionRepos.save(new DatasourceIngestion(pluginConf, offsetNow()));
                 dsIngestionMapbyId.put(ds.getId(), ds);
             }
 
@@ -206,18 +202,20 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             if (indexAliasResolver.resolveBuildingIndex(currentTenant).isPresent()) {
                 String buildingId = id + BUILDING_INDEX_SUFFIX;
                 if (!dsIngestionMapbyId.containsKey(buildingId)) {
-                    DatasourceIngestion ds = dsIngestionRepos.save(new DatasourceIngestion(cfg, offsetNow(), true));
+                    DatasourceIngestion ds = dsIngestionRepos.save(new DatasourceIngestion(pluginConf,
+                                                                                           offsetNow(),
+                                                                                           true));
                     dsIngestionMapbyId.put(ds.getId(), ds);
                 }
             }
-        });
+        }
 
         List<String> activePluginIds = pluginConfs.stream().map(PluginConfiguration::getBusinessId).toList();
 
         //If the plugin for the datasource does not exist anymore, we have to remove the related DatasourceIngestions
         List<String> idsToDelete = dsIngestionMapbyId.keySet()
                                                      .stream()
-                                                     .filter(id -> !pluginService.exists(getPluginId(id)))
+                                                     .filter(id -> !pluginService.exists(stripBuildingSuffix(id)))
                                                      .toList();
 
         idsToDelete.stream()
@@ -226,7 +224,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
 
         List<String> idsInactive = dsIngestionMapbyId.keySet()
                                                      .stream()
-                                                     .filter(id -> !activePluginIds.contains(getPluginId(id)))
+                                                     .filter(id -> !activePluginIds.contains(stripBuildingSuffix(id)))
                                                      .toList();
 
         // Keep the map in tune with reality
@@ -386,7 +384,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     @Transactional(noRollbackFor = { ModuleException.class, NotAvailablePluginConfigurationException.class })
     public void updatePlannedDate(DatasourceIngestion dsIngestion)
         throws ModuleException, NotAvailablePluginConfigurationException {
-        int refreshRate = ((IDataSourcePlugin) pluginService.getPlugin(getPluginId(dsIngestion.getId()))).getRefreshRate();
+        int refreshRate = ((IDataSourcePlugin) pluginService.getPlugin(stripBuildingSuffix(dsIngestion.getId()))).getRefreshRate();
         // Take into account ONLY data source with null nextPlannedIngestDate
         if (dsIngestion.getNextPlannedIngestDate() == null) {
             switch (dsIngestion.getStatus()) {
@@ -400,7 +398,13 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                     dsIngestionRepos.save(dsIngestion);
                 }
                 case FINISHED, FINISHED_WITH_WARNINGS -> { // last ingest + refreshRate
-                    dsIngestion.setNextPlannedIngestDate(dsIngestion.getLastIngestDate().plusSeconds(refreshRate));
+
+                    // For building datasources: add 1 day to the last ingestion date.
+                    // This arbitrary 1-day delay ensures that schedulers have enough time
+                    // to run without triggering a new ingestion immediately.
+                    // For other datasources: use the normal refresh rate.
+                    int plusSeconds = dsIngestion.isBuilding() ? BUILDING_DATASOURCE_FIXED_REFRESH_RATE : refreshRate;
+                    dsIngestion.setNextPlannedIngestDate(dsIngestion.getLastIngestDate().plusSeconds(plusSeconds));
                     dsIngestionRepos.save(dsIngestion);
                 }
                 case INACTIVE -> {
@@ -452,7 +456,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             return Optional.empty();
         }
         DatasourceIngestion dsi = odsi.get();
-        PluginConfiguration pluginConf = pluginService.getPluginConfiguration(getPluginId(datasourceIngestionId));
+        PluginConfiguration pluginConf = pluginService.getPluginConfiguration(stripBuildingSuffix(datasourceIngestionId));
         OffsetDateTime lastUpdateDate = dsi.getLastIngestDate();
         IDataSourcePlugin dsPlugin;
         try {
@@ -464,7 +468,6 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         BulkSaveLightResult saveResult;
         OffsetDateTime ingestionStart = OffsetDateTime.now();
         Long datasourceId = pluginConf.getId();
-        indexService.createIndexAndAliasIfNeeded(tenant, false);
         // i decided not to put a cache here because attribute can be updated... even if it is minor updates it can
         // be taken into account by mappings. In case crawling seem to be slower because of this we can always add one
         // but it should be reset with attribute updates
@@ -538,8 +541,12 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         return dsIngestionRepos.findAll(Sort.by("label"));
     }
 
+    /**
+     * Delete synchronously the datasourceIngestion and asynchronously the associated job if running
+     */
     @Override
     public void deleteDatasourceIngestion(String id) {
+        LOGGER.info("Deleted datasource ingestion: {}", id);
         dsIngestionRepos.findById(id).ifPresent(datasourceIngestion -> {
             stopDatasourceIngestionJob(datasourceIngestion);
             dsIngestionRepos.deleteById(id);
@@ -557,7 +564,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     public void scheduleNowDatasourceIngestionFromDate(String datasourceIngestionId, OffsetDateTime fromDate)
         throws ModuleException {
         DatasourceIngestion dsi = getDatasourceIngestionOrThrowIfRunning(datasourceIngestionId);
-        PluginConfiguration pluginConf = pluginService.getPluginConfiguration(getPluginId(datasourceIngestionId));
+        PluginConfiguration pluginConf = pluginService.getPluginConfiguration(stripBuildingSuffix(datasourceIngestionId));
         IDataSourcePlugin dsPlugin;
         try {
             dsPlugin = pluginService.getPlugin(pluginConf.getBusinessId());
@@ -825,12 +832,13 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     }
 
     /**
-     * Return plugin ID of a {@link DatasourceIngestion} from the DatasourceIngestion ID
+     * Removes the {@code BUILDING_INDEX_SUFFIX} from the given value if present.
      */
-    private String getPluginId(String id) {
-        // is it a building index ?
-        return id != null && id.endsWith(BUILDING_INDEX_SUFFIX) ?
-            // then remove suffix
-            id.substring(0, id.length() - BUILDING_INDEX_SUFFIX.length()) : id;
+    public String stripBuildingSuffix(String value) {
+        if (value != null && value.endsWith(BUILDING_INDEX_SUFFIX)) {
+            return value.substring(0, value.length() - BUILDING_INDEX_SUFFIX.length());
+        }
+        return value;
     }
+
 }

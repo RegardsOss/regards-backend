@@ -190,7 +190,7 @@ public class TestDataSourcePluginFailable implements IDataSourcePlugin {
 
     @Override
     public int getRefreshRate() {
-        return 0;
+        return 86400; //1 day
     }
 
     /**

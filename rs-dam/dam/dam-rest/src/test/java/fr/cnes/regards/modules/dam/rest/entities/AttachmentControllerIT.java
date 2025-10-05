@@ -43,6 +43,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -62,6 +63,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Test entity attachments processing
@@ -96,6 +98,9 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private AttachmentController attachmentController;
+
+    @MockBean
+    private ExecutorService esExecutorService;
 
     private Collection collection;
 

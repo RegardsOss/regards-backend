@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 /**
@@ -73,9 +74,20 @@ public class DatasourceIngestionStatusService {
             }
             dsIngestion.setSavedObjectsCount(summary.getSavedObjectsCount());
             dsIngestion.setInErrorObjectsCount(summary.getInErrorObjectsCount());
+
+            // If datasourceIngestion is for the building index and this is the first ingestion, ie lastIngestDate is
+            // null, then we have to redo an ingestion, because we need two full ingestions to be done for each
+            // datasourceIngestion in the building index before considerating it completed.
+
+            if (dsIngestion.isBuilding() && dsIngestion.getLastIngestDate() == null) {
+                LOGGER.info("Update the nextPlannedDate to now for the datasource ingestion {}", dsIngestion.getId());
+                dsIngestion.setNextPlannedIngestDate(OffsetDateTime.now());
+            } else {
+                LOGGER.info("Update the nextPlannedDate to null for the datasource ingestion {}",
+                            dsIngestion.getId());                         // Else, we want to avoid redoing an ingestion in this "do...while" (must be at next call to manage)
+                dsIngestion.setNextPlannedIngestDate(null);
+            }
             dsIngestion.setLastIngestDate(summary.getDate());
-            // To avoid redoing an ingestion in this "do...while" (must be at next call to manage)
-            dsIngestion.setNextPlannedIngestDate(null);
             // To avoid redoing an ingestion from beginning in case where plugin are date optimized (or id optimized)
             if (summary.getLastEntityDate() != null) {
                 dsIngestion.setLastEntityDate(summary.getLastEntityDate(), summary.getPenultimateLastEntityDate());

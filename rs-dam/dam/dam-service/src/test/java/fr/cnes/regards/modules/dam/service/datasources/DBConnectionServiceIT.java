@@ -33,9 +33,11 @@ import fr.cnes.regards.modules.dam.plugins.datasources.DefaultPostgreConnectionP
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Unit testing of {@link DBConnectionService}.
@@ -59,6 +61,9 @@ public class DBConnectionServiceIT extends AbstractMultitenantServiceIT {
 
     @Autowired
     private IPluginConfigurationRepository pluginConfigurationRepository;
+
+    @MockBean
+    private ExecutorService executor;
 
     @After
     public void cleanUp() {

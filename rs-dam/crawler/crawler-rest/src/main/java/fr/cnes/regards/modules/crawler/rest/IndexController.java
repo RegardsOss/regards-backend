@@ -25,6 +25,8 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.crawler.service.service.CatalogResetService;
 import fr.cnes.regards.modules.crawler.service.service.IEntityIndexerService;
 import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,13 +37,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.OffsetDateTime;
 
+/**
+ * Controller for managing Elasticsearch indexes.
+ * Provides endpoints to recreate, update, and check the
+ * state of catalog indexes for the current tenant.
+ */
+@Tag(name = "Elasticsearch index controller")
 @RestController
 @RequestMapping(IndexController.TYPE_MAPPING)
 public class IndexController {
 
     public static final String TYPE_MAPPING = "/index";
 
-    public static final String INDEX_BUILDING = "/index/building";
+    public static final String INDEX_BUILDING = "/building";
 
     public static final String UPDATE_DATASETS = "/update/datasets";
 
@@ -63,11 +71,15 @@ public class IndexController {
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     * Delete a DatasourceIngestion.
+     * Reindex the whole catalog for the current tenant by creating a new index.
+     * The current index is still alive while the new index is still building, so it can still be requested.
+     * The current index is deleted only when the new index is completed.
      *
      * @return void
      */
-    @ResourceAccess(description = "Delete and recreate curent index.", role = DefaultRole.PROJECT_ADMIN)
+    @Operation(summary = "Reindex the whole catalog",
+               description = "Deletes and recreates the full catalog index for the current tenant.")
+    @ResourceAccess(description = "Endpoint to reindex the whole catalog.", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.DELETE)
     public ResponseEntity<Void> recreateIndex() {
         catalogResetService.scheduleCatalogReset();
@@ -75,11 +87,13 @@ public class IndexController {
     }
 
     /**
-     * Delete a DatasourceIngestion.
+     * Update all indexed datasets
      *
      * @return void
      */
-    @ResourceAccess(description = "Update all datasets indexed.", role = DefaultRole.PROJECT_ADMIN)
+    @Operation(summary = "Update all datasets",
+               description = "Triggers reindexing of all datasets for the current tenant.")
+    @ResourceAccess(description = "Endpoint to update all datasets indexed.", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(path = TYPE_MAPPING + UPDATE_DATASETS, method = RequestMethod.POST)
     public ResponseEntity<Void> updateDatasets() throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
@@ -88,11 +102,13 @@ public class IndexController {
     }
 
     /**
-     * Delete a DatasourceIngestion.
+     * Update all indexed collections
      *
      * @return void
      */
-    @ResourceAccess(description = "Update all collections indexed.", role = DefaultRole.PROJECT_ADMIN)
+    @Operation(summary = "Update all collections",
+               description = "Triggers reindexing of all collections for the current tenant.")
+    @ResourceAccess(description = "Endpoint to update all collections indexed.", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(path = TYPE_MAPPING + UPDATE_COLLECTIONS, method = RequestMethod.POST)
     public ResponseEntity<Void> updateCollections() throws ModuleException {
         String tenant = runtimeTenantResolver.getTenant();
@@ -103,11 +119,13 @@ public class IndexController {
     /**
      * Return true if there is a building index for the tenant
      */
+    @Operation(summary = "Check if a building index exists",
+               description = "Returns true if a building index exists for the current tenant, false otherwise.")
     @GetMapping(INDEX_BUILDING)
-    @ResourceAccess(description = "indicates whether a building index exists", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Endpoint to indicate whether a building index exists",
+                    role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Boolean> hasBuilding() {
         String tenant = runtimeTenantResolver.getTenant();
         return ResponseEntity.ok(indexAliasResolver.resolveBuildingIndex(tenant).isPresent());
     }
-
 }

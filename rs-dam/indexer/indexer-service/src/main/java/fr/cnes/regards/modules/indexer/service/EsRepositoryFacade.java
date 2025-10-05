@@ -33,6 +33,8 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -59,6 +61,8 @@ import static fr.cnes.regards.modules.indexer.service.IndexAliasResolver.resolve
  */
 @Service
 public class EsRepositoryFacade {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EsRepositoryFacade.class);
 
     private IEsRepository esRepository;
 
@@ -173,6 +177,13 @@ public class EsRepositoryFacade {
      */
     public <T extends IIndexable> T get(String tenant, String docType, String docId, Class<T> clazz) {
         return esRepository.get(resolveAliasName(tenant), docType, docId, clazz);
+    }
+
+    /**
+     * Get by id via the tenant (always resolved to alias)
+     */
+    public <T extends IIndexable> T getWithIndex(String index, String docType, String docId, Class<T> clazz) {
+        return esRepository.get(index, docType, docId, clazz);
     }
 
     /**
@@ -461,6 +472,14 @@ public class EsRepositoryFacade {
     public void runOnAliasAndBuildingIndex(String tenant, Consumer<String> op) {
         indexAliasResolver.resolveBuildingIndex(tenant).ifPresent(op);
         op.accept(resolveAliasName(tenant));
+    }
+
+    /**
+     * Execute the operation on the building index (if present) and then on the current index
+     */
+    public void runOnCurrentIndexAndBuildingIndex(String tenant, Consumer<String> op) {
+        indexAliasResolver.resolveBuildingIndex(tenant).ifPresent(op);
+        op.accept(indexAliasResolver.resolveCurrentIndex(tenant));
     }
 
 }

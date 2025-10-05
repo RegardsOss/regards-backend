@@ -81,14 +81,18 @@ public class IndexerEventsListener {
     }
 
     private void checkIndex(String tenant) {
-
         LOGGER.info("Listener Checking index for {}", tenant);
-        EsIndexAlias esIndexAlias = indexAliasService.getByAlias(IndexAliasResolver.resolveAliasName(tenant));
+        runtimeTenantResolver.forceTenant(tenant);
+        String aliasName = IndexAliasResolver.resolveAliasName(tenant);
+
+        EsIndexAlias esIndexAlias = indexAliasService.getByAlias(aliasName);
         if (esIndexAlias == null && !esRepositoryFacade.indexExists(tenant)) {
             // Creating the index with the default configuration if needed.
             // The user cannot use custom shard settings during the initial creation of the index as it happens before
             // the management of microservices is available. A catalog reset is required to use custom settings.
             boolean acknowledged = esRepositoryFacade.createIndex(tenant, CreateIndexConfiguration.DEFAULT);
+            esRepositoryFacade.createAlias(tenant, aliasName);
+            indexAliasService.saveOrUpdate(aliasName, tenant);
             if (acknowledged) {
                 instanceNotificationClient.notify(String.format(
                     "Elasticsearch index %s successfully created for tenant %s.",

@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.crawler.service.service;
 
 import com.google.common.base.Strings;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.service.settings.IDamSettingsService;
 import fr.cnes.regards.modules.indexer.dao.CreateIndexConfiguration;
-import fr.cnes.regards.modules.indexer.domain.EsIndexAlias;
 import fr.cnes.regards.modules.indexer.service.EsRepositoryFacade;
 import fr.cnes.regards.modules.indexer.service.IMappingService;
 import fr.cnes.regards.modules.indexer.service.IndexAliasResolver;
@@ -33,11 +33,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
- * Centralizes operations related to the lifecycle  of Elasticsearch indices and aliases
+ * Centralizes operations related to the lifecycle of Elasticsearch indexes and aliases. An alias can contain two
+ * indexes : current index and building index.
  *
  * @author Thibaud Michaudel
  **/
@@ -61,6 +64,9 @@ public class IndexService {
 
     @Autowired
     private IndexAliasResolver indexAliasResolver;
+
+    @Autowired
+    private ExecutorService executor;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IndexService.class);
 
@@ -171,32 +177,72 @@ public class IndexService {
 
     /**
      * Promotes the tenant’s <em>building</em> index to become the current index behind its search alias.
-     * Remove the old index
-     * Update the {@link EsIndexAlias} entity to remove the index from the
-     * building column
+     * Workflow:
+     * <ol>
+     *   <li> updates the alias in Elasticsearch (remove old / add building index).</li>
+     *   <li> Updates the {@link fr.cnes.regards.modules.indexer.domain.EsIndexAlias} in the database in a dedicated transaction.</li>
+     *   <li>If the database update fails, compensates the ES alias by restoring the previous state.</li>
+     *   <li>Delete the old index in ES</li>
+     * </ol>
+     *
+     * @return {@code true} if the switch was successful
      */
-    public void updateAliasWithBuildingIndex(String tenant) {
-        indexAliasResolver.resolveBuildingIndex(tenant).ifPresent(buildingIndex -> {
-            LOGGER.info("replace {} index with {}", indexAliasResolver.resolveCurrentIndex(tenant), buildingIndex);
-            String aliasName = IndexAliasResolver.resolveAliasName(tenant);
-            String oldIndex = indexAliasResolver.resolveCurrentIndex(tenant);
-            esRepositoryFacade.switchAlias(oldIndex, buildingIndex, aliasName);
-            indexAliasService.saveOrUpdate(aliasName, buildingIndex);
-            indexAliasService.clearBuilding(aliasName);
-            esRepositoryFacade.deleteIndexOrAlias(oldIndex);
-        });
+    @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
+    public boolean updateAliasWithBuildingIndex(String tenant) {
+        String aliasName = IndexAliasResolver.resolveAliasName(tenant);
+        String oldIndex = indexAliasResolver.resolveCurrentIndex(tenant);
+        String buildingIndex = indexAliasResolver.resolveBuildingIndex(tenant).orElse(null);
+        if (buildingIndex == null) {
+            LOGGER.info("No building index found for tenant {}", tenant);
+            return false;
+        }
+        LOGGER.info("Replace current index [{}] with building index [{}]",
+                    indexAliasResolver.resolveCurrentIndex(tenant),
+                    buildingIndex);
+        esRepositoryFacade.switchAlias(oldIndex, buildingIndex, aliasName);
+        try {
+            indexAliasService.updateCurrentAndClearBuilding(aliasName, buildingIndex);
+        } catch (RuntimeException e) {
+            LOGGER.error("Alias switch to building failed for tenant {}", tenant, e);
+            //If the DB is not updated, the alias need to point back to the old index
+            esRepositoryFacade.switchAlias(buildingIndex, oldIndex, aliasName);
+            return false;
+        }
+        enqueueDeleteIndex(oldIndex);
+        return true;
     }
 
     /**
-     * Delete index if it exists
+     * Delete index if it exists in the given tenant
      *
      * @param tenant concerned tenant
-     * @return true if a deletion has been done
+     * @return true if a deletion has been done; otherwise false
      */
     public boolean deleteIndex(String tenant) {
         if (!esRepositoryFacade.indexExists(tenant)) {
             return false;
         }
         return esRepositoryFacade.deleteIndexOrAlias(tenant);
+    }
+
+    /**
+     * Enqueues the deletion of an Elasticsearch index or alias in a background thread.
+     * If the parameter is an index, the index is deleted from Elasticsearch
+     * If the parameter is an alias, the alias and the pointed index are both deleted from Elasticsearch
+     * <p>
+     * Executed asynchronously because index deletion may be slow and is not critical for the alias/DB switch
+     * workflow. The application thread is released immediately to avoid blocking a transaction or delaying the main
+     * workflow.
+     *
+     * @param indexOrAlias the index or alias name to delete
+     */
+    public void enqueueDeleteIndex(String indexOrAlias) {
+        executor.submit(() -> {
+            try {
+                esRepositoryFacade.deleteIndexOrAlias(indexOrAlias);
+            } catch (RuntimeException e) {
+                LOGGER.error("Failed to delete index {}", indexOrAlias, e);
+            }
+        });
     }
 }

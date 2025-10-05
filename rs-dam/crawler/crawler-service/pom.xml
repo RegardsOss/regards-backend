@@ -94,6 +94,10 @@
             <artifactId>jobs-service</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+            <artifactId>jobs-domain</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.locationtech.jts</groupId>
             <artifactId>jts-core</artifactId>
         </dependency>
