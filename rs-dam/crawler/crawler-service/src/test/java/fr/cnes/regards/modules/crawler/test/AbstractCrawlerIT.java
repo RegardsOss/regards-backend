@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
@@ -82,9 +81,6 @@ public abstract class AbstractCrawlerIT extends AbstractRegardsServiceIT {
 
     @Autowired
     protected IDatasourceIngestionRepository datasourceIngestionRepository;
-
-    @Autowired
-    protected IJobService jobService;
 
     @Autowired
     protected IJobInfoService jobInfoService;

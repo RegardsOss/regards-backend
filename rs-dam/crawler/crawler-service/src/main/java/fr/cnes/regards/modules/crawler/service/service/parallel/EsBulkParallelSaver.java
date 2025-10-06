@@ -36,9 +36,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -51,6 +49,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class EsBulkParallelSaver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EsBulkParallelSaver.class);
+
+    private static final int THREAD_TIMEOUT_SECONDS = 300; // Timeout for future.get() calls, 5 min
 
     private final EsBulkSaveService esBulkSaveService;
 
@@ -158,8 +158,11 @@ public class EsBulkParallelSaver {
                                                              .toList();
         for (EsBulkTaskInformation task : tasksDone) {
             try {
-                intermediateResult.append(task.futureBulkSaveResult().get());
+                intermediateResult.append(task.futureBulkSaveResult().get(THREAD_TIMEOUT_SECONDS, TimeUnit.SECONDS));
                 allAsyncTasks.remove(task);
+            } catch (TimeoutException ex) {
+                manageThreadTimeout(ex);
+                break;
             } catch (CancellationException | InterruptedException | ExecutionException ex) {
                 // future.get() throw the task exception if any (encapsulated in ExecutionException)
                 storeErrorIfNeeded(task.cursor(), ex);
@@ -182,6 +185,18 @@ public class EsBulkParallelSaver {
                                                                                       oldestCursor.getPreviousLastId()),
                                                                   false);
         }
+    }
+
+    /**
+     * Stop all running tasks and store a timeout exception in the failure context.
+     * Store the timeout exception for the oldest cursor of the running tasks.
+     */
+    private void manageThreadTimeout(TimeoutException ex) {
+        for (EsBulkTaskInformation t : allAsyncTasks) {
+            t.futureBulkSaveResult().cancel(true);
+            storeErrorIfNeeded(t.cursor(), ex);
+        }
+        LOGGER.error("Timeout while waiting for future task completion ({}s)", THREAD_TIMEOUT_SECONDS, ex);
     }
 
     /**
@@ -210,7 +225,10 @@ public class EsBulkParallelSaver {
         // 1. loop of get() -> wait for all futures to complete, and catch unexpected exceptions to set the first error
         for (EsBulkTaskInformation task : allAsyncTasks) {
             try {
-                task.futureBulkSaveResult().get();
+                task.futureBulkSaveResult().get(THREAD_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            } catch (TimeoutException ex) {
+                manageThreadTimeout(ex);
+                break;
             } catch (CancellationException | InterruptedException | ExecutionException ex) {
                 // future.get() throw the task exception if any (encapsulated in ExecutionException)
                 storeErrorIfNeeded(task.cursor(), ex);
@@ -252,8 +270,11 @@ public class EsBulkParallelSaver {
                                                                              ingestionParameters.dsPlugin()
                                                                                                 .getCrawlingCursorMode())) {
                     // if task cursor is older than the error cursor, collect the result
-                    partialResult.append(task.futureBulkSaveResult().get());
+                    partialResult.append(task.futureBulkSaveResult().get(THREAD_TIMEOUT_SECONDS, TimeUnit.SECONDS));
                 }
+            } catch (TimeoutException ex) {
+                LOGGER.error("Timeout while waiting for future task completion ({}s)", THREAD_TIMEOUT_SECONDS, ex);
+                // should not happen because we already waited for all tasks in the first loop
             } catch (CancellationException | InterruptedException | ExecutionException ignored) {
                 // do nothing, we already handled the error in the first loop
             }

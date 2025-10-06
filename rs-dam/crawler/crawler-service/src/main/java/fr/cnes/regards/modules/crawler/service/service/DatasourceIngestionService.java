@@ -99,7 +99,6 @@ import static fr.cnes.regards.modules.crawler.domain.DatasourceIngestion.BUILDIN
  * @author Sébastien Binda
  */
 @Service
-@MultitenantTransactional
 public class DatasourceIngestionService implements IDatasourceIngesterService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DatasourceIngestionService.class);
@@ -168,6 +167,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
 
     private final List<DatasourceIdAndErrorCause> datasourcesBlockedInStarted = new ArrayList<>();
 
+    @MultitenantTransactional
     public void updateAndCleanTenantDatasourceIngestions() {
         String currentTenant = runtimeTenantResolver.getTenant();
         // First, check if all existing datasource plugins are managed
@@ -250,6 +250,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
      *
      * @return datasourceIngestion that just have been marked as STARTED
      */
+    @MultitenantTransactional
     public List<DatasourceIngestion> startAllReadyDatasourceIngestion() {
         List<DatasourceIngestion> allDatasourceIngestionReady = dsIngestionRepos.findAllReady(offsetNow());
         for (DatasourceIngestion datasourceIngestion : allDatasourceIngestionReady) {
@@ -263,6 +264,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         return allDatasourceIngestionReady;
     }
 
+    @MultitenantTransactional
     public void setInactive(String datasourceId, String cause) {
         Optional<DatasourceIngestion> oDsIngestion = dsIngestionRepos.findById(datasourceId);
         if (oDsIngestion.isPresent()) {
@@ -277,9 +279,10 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         }
     }
 
+    @MultitenantTransactional
     public void setError(String dsIngestionId, String cause, CrawlingCursor cursorToSet) {
         try {
-            LOGGER.debug("Error while processing datasource with id {}. Cause: {}. Reset cursor to {}",
+            LOGGER.debug("Error while processing datasource with id {}. Cause: {}. Reset cursor to {} if not null",
                          dsIngestionId,
                          cause,
                          cursorToSet);
@@ -309,6 +312,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         }
     }
 
+    @MultitenantTransactional
     public void setNotFinished(String dsIngestionId, NotFinishedException notFinishedException) {
         CrawlingCursor errorCursor = notFinishedException.getErrorCursor();
         BulkSaveLightResult partialSaveResult = notFinishedException.getSaveResult();
@@ -341,6 +345,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
         }
     }
 
+    @MultitenantTransactional
     public void addMessageToStackTrace(String dsId, String newMessage) {
         Optional<DatasourceIngestion> dsiOpt = dsIngestionRepos.findById(dsId);
         if (dsiOpt.isPresent()) {
@@ -426,6 +431,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     /**
      * Instantiate a crawl job for the given datasourceIngestion, and save its jobId into the datasourceIngestion
      */
+    @MultitenantTransactional
     public void createCrawlJob(DatasourceIngestion datasourceIngestion) {
         String dsId = datasourceIngestion.getId();
         LOGGER.info("Creating crawl job for datasource with id {}", dsId);
@@ -481,12 +487,16 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                                                                            + tenant)) :
             indexAliasResolver.resolveCurrentIndex(tenant);
         indexService.configureMappings(indexName, modelName);
-        saveResult = readDatasource(new IngestionParameters(lastUpdateDate,
-                                                            tenant,
-                                                            dsPlugin,
-                                                            datasourceId,
-                                                            ingestionStart), dsi);
-
+        try {
+            saveResult = readDatasource(new IngestionParameters(lastUpdateDate,
+                                                                tenant,
+                                                                dsPlugin,
+                                                                datasourceId,
+                                                                ingestionStart), dsi);
+        } finally {
+            // Store datasourceIngestion state after crawling (essentially cursor position) whether it succeeds or fails
+            dsIngestionRepos.save(dsi);
+        }
         // Only update dataset if new docs are indexed
         if (saveResult.getSavedDocsCount() > 0) {
             // In case Dataset associated with datasourceId already exists (or had been created between datasource creation
@@ -537,6 +547,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     }
 
     @Override
+    @MultitenantTransactional
     public List<DatasourceIngestion> getDatasourceIngestions() {
         return dsIngestionRepos.findAll(Sort.by("label"));
     }
@@ -545,6 +556,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
      * Delete synchronously the datasourceIngestion and asynchronously the associated job if running
      */
     @Override
+    @MultitenantTransactional
     public void deleteDatasourceIngestion(String id) {
         LOGGER.info("Deleted datasource ingestion: {}", id);
         dsIngestionRepos.findById(id).ifPresent(datasourceIngestion -> {
@@ -554,6 +566,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     }
 
     @Override
+    @MultitenantTransactional
     public void scheduleNowDatasourceIngestion(String datasourceIngestionId) throws ModuleException {
         DatasourceIngestion dsi = getDatasourceIngestionOrThrowIfRunning(datasourceIngestionId);
         dsi.setNextPlannedIngestDate(offsetNow());
@@ -561,6 +574,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     }
 
     @Override
+    @MultitenantTransactional
     public void scheduleNowDatasourceIngestionFromDate(String datasourceIngestionId, OffsetDateTime fromDate)
         throws ModuleException {
         DatasourceIngestion dsi = getDatasourceIngestionOrThrowIfRunning(datasourceIngestionId);
@@ -646,8 +660,8 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             while (cursor.hasNext()) {
                 // This method is called inside a job, so we can check if the thread has been interrupted to stop processing
                 if (Thread.currentThread().isInterrupted()) {
-                    LOGGER.info("Datasource ingestion is interrupted");
-                    throw new CancellationException("Datasource ingestion is interrupted");
+                    LOGGER.info("Datasource ingestion {} is interrupted", dsiId);
+                    throw new CancellationException("Datasource ingestion " + dsiId + "is interrupted");
                 }
                 cursor.next(ingestionParameters.dsPlugin().getCrawlingCursorMode());
                 isFirstFind = false;
@@ -793,6 +807,7 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
     /**
      * Get Callable to be used by parallel tasks to create a bulk of data objects
      */
+    @MultitenantTransactional
     public BulkSaveResult createOrUpdateDataObjects(IngestionParameters ingestionParameters,
                                                     DatasourceIngestion datasourceIngestion,
                                                     List<DataObject> dataObjects,

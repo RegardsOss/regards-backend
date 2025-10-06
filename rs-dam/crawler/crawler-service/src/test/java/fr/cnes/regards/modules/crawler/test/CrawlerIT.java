@@ -181,12 +181,11 @@ class CrawlerIT extends AbstractCrawlerIT {
         TestDataSourcePluginFailable.configureFailAtFindAllCall(1);
         // WHEN launch the ingestion
         crawlerCreatorService.manageCrawlingForAllTenants();
-        jobService.manage();
         DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(10);
         // THEN the ingestion should be marked as error (first save failed)
         assertEquals(0, datasourceIngestion.getSavedObjectsCount());
+        assertEquals(IngestionStatus.ERROR, datasourceIngestion.getStatus());
 
-        // THEN cursor position is the same as the first call because nothing has been saved
         // THEN cursor position is the same as the first call because nothing has been saved
         assertEquals(0, datasourceIngestion.getCursor().getPosition());
     }
