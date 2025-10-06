@@ -28,6 +28,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 
 /**
  * JPA Repository to handle access to {@link RequestGroup} entities.
@@ -49,34 +50,63 @@ public interface IRequestGroupRepository extends JpaRepository<RequestGroup, Str
      * @return List of terminated {@link RequestGroup}s
      */
     @Query(value = """
-        select * from t_request_group groups 
-        WHERE NOT EXISTS (
-            SELECT * FROM ta_storage_request_group_ids ta_storage_request
-            INNER JOIN t_file_storage_request storage_request
-                ON storage_request.id = ta_storage_request.file_storage_request_id
-            WHERE groups.id = ta_storage_request.group_id
-            AND storage_request.status != 'ERROR'
-        )
-        AND NOT EXISTS (
-            SELECT * FROM ta_file_cache_request_group_id ta_file_cache_request
-            INNER JOIN t_file_cache_request cache_requests
-                ON cache_requests.id = ta_file_cache_request.file_cache_request_id
-            WHERE groups.id = ta_file_cache_request.group_id
-            AND cache_requests.status != 'ERROR'
-        )
-        AND NOT EXISTS (
-            SELECT * FROM t_file_deletion_request del_requests
-            WHERE groups.id = del_requests.group_id 
-            AND del_requests.status != 'ERROR'
-        )
-        AND NOT EXISTS (
-            SELECT * FROM t_file_copy_request copy_requests
-            WHERE groups.id = copy_requests.group_id 
-            AND copy_requests.status != 'ERROR'
-        )
-        LIMIT :limit
-        """, nativeQuery = true)
+            select * from t_request_group groups 
+            WHERE NOT EXISTS (
+                SELECT * FROM ta_storage_request_group_ids ta_storage_request
+                INNER JOIN t_file_storage_request storage_request
+                    ON storage_request.id = ta_storage_request.file_storage_request_id
+                WHERE groups.id = ta_storage_request.group_id
+                AND storage_request.status != 'ERROR'
+            )
+            AND NOT EXISTS (
+                SELECT * FROM ta_file_reference_request_group_ids ta_reference_request
+                INNER JOIN t_file_reference_request reference_request
+                    ON reference_request.id = ta_reference_request.file_reference_request_id
+                WHERE groups.id = ta_reference_request.group_id
+                AND reference_request.status not in ('ERROR','SUCCESS')
+            )
+            AND NOT EXISTS (
+                SELECT * FROM ta_file_cache_request_group_id ta_file_cache_request
+                INNER JOIN t_file_cache_request cache_requests
+                    ON cache_requests.id = ta_file_cache_request.file_cache_request_id
+                WHERE groups.id = ta_file_cache_request.group_id
+                AND cache_requests.status != 'ERROR'
+            )
+            AND NOT EXISTS (
+                SELECT * FROM t_file_deletion_request del_requests
+                WHERE groups.id = del_requests.group_id 
+                AND del_requests.status != 'ERROR'
+            )
+            AND NOT EXISTS (
+                SELECT * FROM t_file_copy_request copy_requests
+                WHERE groups.id = copy_requests.group_id 
+                AND copy_requests.status != 'ERROR'
+            )
+            LIMIT :limit
+            """, nativeQuery = true)
     List<RequestGroup> findGroupDones(@Param("limit") Integer limit);
+
+    /**
+     * Retrieve all the id of terminated {@link RequestGroup} of reference request. <br/>
+     * A {@link RequestGroup} is terminated if there is no more running request associated to it<br/>
+     * i.e. either no request at all (empty group) or only request in a terminated status.
+     *
+     * @param limit Maximum number of terminated groups to return
+     * @return Set of id of terminated {@link RequestGroup}s
+     */
+    @Query(value = """
+            select id from t_request_group groups 
+            WHERE groups.type = 'REFERENCE' 
+            AND NOT EXISTS (
+                SELECT * FROM ta_file_reference_request_group_ids ta_reference_request
+                INNER JOIN t_file_reference_request reference_request
+                    ON reference_request.id = ta_reference_request.file_reference_request_id
+                WHERE groups.id = ta_reference_request.group_id
+                AND reference_request.status not in ('ERROR','SUCCESS')
+            )
+            LIMIT :limit
+            """, nativeQuery = true)
+    Set<String> findAllGroupIdsOfTerminatedReferenceRequest(@Param("limit") Integer limit);
 
     Page<RequestGroup> findByExpirationDateLessThanEqual(OffsetDateTime expirationDate, Pageable page);
 }

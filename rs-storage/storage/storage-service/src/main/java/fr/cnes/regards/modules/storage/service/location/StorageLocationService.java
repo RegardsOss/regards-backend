@@ -270,9 +270,6 @@ public class StorageLocationService {
         Collection<StorageMonitoringAggregation> aggregations = fileReferenceService.aggregateFilesSizePerStorage(
             storageMonitoring.getLastFileReferenceIdMonitored());
         LOGGER.trace("Aggregation calcul done (reset={})", reset);
-        List<String> storages = aggregations.stream()
-                                            .map(StorageMonitoringAggregation::getStorage)
-                                            .collect(Collectors.toList());
         for (StorageMonitoringAggregation agg : aggregations) {
             // Retrieve associated storage info if exists
             Optional<StorageLocation> oStorage = storageLocationRepo.findByName(agg.getStorage());
@@ -576,10 +573,7 @@ public class StorageLocationService {
                 } else {
                     delRequests = deletionReqService.search(storageName, page);
                 }
-                results = new PageImpl<>(delRequests.getContent()
-                                                    .stream()
-                                                    .map(this::toRequestInfosDto)
-                                                    .collect(Collectors.toList()),
+                results = new PageImpl<>(delRequests.getContent().stream().map(this::toRequestInfosDto).toList(),
                                          page,
                                          delRequests.getTotalElements());
                 break;
@@ -592,10 +586,9 @@ public class StorageLocationService {
                 } else {
                     requests = storageService.search(storageName, page);
                 }
-                results = new PageImpl<>(requests.getContent()
-                                                 .stream()
-                                                 .map(this::toRequestInfosDto)
-                                                 .collect(Collectors.toList()), page, requests.getTotalElements());
+                results = new PageImpl<>(requests.getContent().stream().map(this::toRequestInfosDto).toList(),
+                                         page,
+                                         requests.getTotalElements());
                 break;
             default:
                 break;

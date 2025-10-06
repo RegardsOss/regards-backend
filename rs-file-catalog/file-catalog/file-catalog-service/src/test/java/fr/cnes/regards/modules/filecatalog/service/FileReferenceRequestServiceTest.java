@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.filecatalog.service;
 
+import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
 import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.domain.FileLocation;
@@ -48,9 +49,27 @@ public class FileReferenceRequestServiceTest {
 
     private static final String FILE_NAME = "fileName";
 
-    private static final long FILE_SIZE = 1000L;
+    private static final Long FILE_SIZE = 1_000L;
 
     private static final String MIME_TYPE = "text/plain";
+
+    public static final String URL1 = "https://myhost.com/fileName.txt";
+
+    public static final String URL2 = "https://mysecondhost.com/fileName.txt";
+
+    private static final String STORAGE = "testSTORAGE";
+
+    private static final String CHECKSUM1 = RandomChecksumUtils.generateRandomChecksum();
+
+    private static final String CHECKSUM2 = RandomChecksumUtils.generateRandomChecksum();
+
+    private static final String GROUP_ID = "testGroupId";
+
+    private static final String OWNER = "owner";
+
+    private static final String SESSION_OWNER = "session owner";
+
+    private static final String SESSION = "session";
 
     @Mock
     private FileReferenceRequestService fileReferenceRequestService;
@@ -71,27 +90,11 @@ public class FileReferenceRequestServiceTest {
 
     @Test
     public void test_same_url_different_checksum() {
-        String storage = "testStorage";
-        String existingFileUrl = "http://myhost.com/fileName.txt";
-        String existingFileChecksum = "differentChecksum";
-
         // Service Mocks Setup
-        FileReference existingFileRef = mockServices(existingFileUrl, existingFileChecksum, true, false);
+        mockServices(URL1, CHECKSUM1, true, false);
 
         // Given
-        String groupId = "testGroupId";
-        String fileChecksum = "fileChecksum";
-        FileReferenceRequestDto dto = FileReferenceRequestDto.build(FILE_NAME,
-                                                                    fileChecksum,
-                                                                    MD5,
-                                                                    MIME_TYPE,
-                                                                    FILE_SIZE,
-                                                                    "owner",
-                                                                    storage,
-                                                                    existingFileUrl,
-                                                                    "sessionOwner",
-                                                                    "session");
-        FilesReferenceEvent event = new FilesReferenceEvent(dto, groupId);
+        final FilesReferenceEvent event = newFilesReferenceEvent(CHECKSUM2, URL1);
 
         ArgumentCaptor<String> messageArgumentCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> checksumArgumentCaptor = ArgumentCaptor.forClass(String.class);
@@ -107,7 +110,7 @@ public class FileReferenceRequestServiceTest {
                            messageArgumentCaptor.capture(),
                            Mockito.any(Set.class));
 
-        Assertions.assertEquals(fileChecksum,
+        Assertions.assertEquals(CHECKSUM2,
                                 checksumArgumentCaptor.getValue(),
                                 "There should be an error matching the given test checksum");
 
@@ -118,27 +121,12 @@ public class FileReferenceRequestServiceTest {
 
     @Test
     public void test_same_url_same_checksum() {
-        String storage = "testStorage";
-        String existingFileUrl = "http://myhost.com/fileName.txt";
-        String existingFileChecksum = "differentChecksum";
 
         // Service Mocks Setup
-        FileReference existingFileRef = mockServices(existingFileUrl, existingFileChecksum, true, true);
+        final FileReference existingFileRef = mockServices(URL1, CHECKSUM1, true, true);
 
         // Given
-        String groupId = "testGroupId";
-        String fileChecksum = existingFileChecksum;
-        FileReferenceRequestDto dto = FileReferenceRequestDto.build(FILE_NAME,
-                                                                    fileChecksum,
-                                                                    MD5,
-                                                                    MIME_TYPE,
-                                                                    FILE_SIZE,
-                                                                    "owner",
-                                                                    storage,
-                                                                    existingFileUrl,
-                                                                    "sessionOwner",
-                                                                    "session");
-        FilesReferenceEvent event = new FilesReferenceEvent(dto, groupId);
+        final FilesReferenceEvent event = newFilesReferenceEvent(CHECKSUM1, URL1);
 
         ArgumentCaptor<FileReference> fileReferenceArgumentCaptor = ArgumentCaptor.forClass(FileReference.class);
         ArgumentCaptor<String> messageArgumentCaptor = ArgumentCaptor.forClass(String.class);
@@ -163,28 +151,11 @@ public class FileReferenceRequestServiceTest {
 
     @Test
     public void test_different_url_same_checksum() {
-        String storage = "testStorage";
-        String existingFileUrl = "http://myhost.com/fileName.txt";
-        String existingFileChecksum = "differentChecksum";
-
         // Service Mocks Setup
-        FileReference existingFileRef = mockServices(existingFileUrl, existingFileChecksum, false, true);
+        final FileReference existingFileRef = mockServices(URL1, CHECKSUM1, false, true);
 
         // Given
-        String groupId = "testGroupId";
-        String fileChecksum = existingFileChecksum;
-        String url = "http://mysecondhost.com/fileName.txt";
-        FileReferenceRequestDto dto = FileReferenceRequestDto.build(FILE_NAME,
-                                                                    fileChecksum,
-                                                                    MD5,
-                                                                    MIME_TYPE,
-                                                                    FILE_SIZE,
-                                                                    "owner",
-                                                                    storage,
-                                                                    url,
-                                                                    "sessionOwner",
-                                                                    "session");
-        FilesReferenceEvent event = new FilesReferenceEvent(dto, groupId);
+        final FilesReferenceEvent event = newFilesReferenceEvent(CHECKSUM1, URL2);
 
         ArgumentCaptor<FileReference> fileReferenceArgumentCaptor = ArgumentCaptor.forClass(FileReference.class);
         ArgumentCaptor<String> messageArgumentCaptor = ArgumentCaptor.forClass(String.class);
@@ -210,28 +181,11 @@ public class FileReferenceRequestServiceTest {
     @Test
     public void test_different_url_different_checksum() {
         // This is the nominal case when an actual new file is being added
-        String storage = "testStorage";
-        String existingFileUrl = "http://myhost.com/fileName.txt";
-        String existingFileChecksum = "differentChecksum";
-        String fileChecksum = "fileChecksum";
-        String url = "http://mysecondhost.com/fileName.txt";
-
         // Service Mocks Setup
-        mockServices(existingFileUrl, existingFileChecksum, url, fileChecksum, false, false);
+        mockServices(URL1, CHECKSUM1, URL2, CHECKSUM2, false, false);
 
         // Given
-        String groupId = "testGroupId";
-        FileReferenceRequestDto dto = FileReferenceRequestDto.build(FILE_NAME,
-                                                                    fileChecksum,
-                                                                    MD5,
-                                                                    MIME_TYPE,
-                                                                    FILE_SIZE,
-                                                                    "owner",
-                                                                    storage,
-                                                                    url,
-                                                                    "sessionOwner",
-                                                                    "session");
-        FilesReferenceEvent event = new FilesReferenceEvent(dto, groupId);
+        FilesReferenceEvent event = newFilesReferenceEvent(CHECKSUM2, URL2);
 
         ArgumentCaptor<FileReference> fileReferenceArgumentCaptor = ArgumentCaptor.forClass(FileReference.class);
         ArgumentCaptor<String> messageArgumentCaptor = ArgumentCaptor.forClass(String.class);
@@ -246,16 +200,30 @@ public class FileReferenceRequestServiceTest {
                              Mockito.any(Collection.class),
                              Mockito.any());
 
-        Assertions.assertEquals(fileChecksum,
+        Assertions.assertEquals(CHECKSUM2,
                                 fileReferenceArgumentCaptor.getValue().getMetaInfo().getChecksum(),
                                 "There should be a success with matching checksum");
 
-        Assertions.assertEquals(url,
+        Assertions.assertEquals(URL2,
                                 fileReferenceArgumentCaptor.getValue().getLocation().getUrl(),
                                 "There should be a success with matching url");
 
         Assertions.assertTrue(messageArgumentCaptor.getValue().startsWith("New file"),
                               "There should be a message indicating that a new file was created");
+    }
+
+    private static FilesReferenceEvent newFilesReferenceEvent(String checksum, String url) {
+        FileReferenceRequestDto dto = FileReferenceRequestDto.build(FILE_NAME,
+                                                                    checksum,
+                                                                    MD5,
+                                                                    MIME_TYPE,
+                                                                    FILE_SIZE,
+                                                                    OWNER,
+                                                                    STORAGE,
+                                                                    url,
+                                                                    SESSION_OWNER,
+                                                                    SESSION);
+        return new FilesReferenceEvent(dto, GROUP_ID);
     }
 
     private FileReference mockServices(String existingFileUrl,
@@ -271,15 +239,14 @@ public class FileReferenceRequestServiceTest {
                                        String newFileChecksum,
                                        boolean urlExists,
                                        boolean checksumExists) {
-        String storage1 = "testStorage";
 
-        FileLocation existingFileLoc = new FileLocation(storage1, existingFileUrl, null);
+        FileLocation existingFileLoc = new FileLocation(STORAGE, existingFileUrl, null);
         FileReferenceMetaInfo existingFileMetaInfo = new FileReferenceMetaInfo(existingFileChecksum,
                                                                                MD5,
                                                                                FILE_NAME,
                                                                                FILE_SIZE,
                                                                                MimeType.valueOf(MIME_TYPE));
-        FileReference existingFileRef = new FileReference("owner", existingFileMetaInfo, existingFileLoc);
+        FileReference existingFileRef = new FileReference(OWNER, existingFileMetaInfo, existingFileLoc);
 
         if (checksumExists) {
             Mockito.when(fileReferenceService.search(Mockito.any(Collection.class)))
@@ -290,13 +257,13 @@ public class FileReferenceRequestServiceTest {
                    .thenReturn(new HashSet<>(List.of(existingFileRef)));
         }
         if (newFileUrl != null) {
-            FileLocation newFileLoc = new FileLocation(storage1, newFileUrl, null);
+            FileLocation newFileLoc = new FileLocation(STORAGE, newFileUrl, null);
             FileReferenceMetaInfo newFileMetaInfo = new FileReferenceMetaInfo(newFileChecksum,
                                                                               MD5,
                                                                               FILE_NAME,
                                                                               FILE_SIZE,
                                                                               MimeType.valueOf(MIME_TYPE));
-            FileReference newFileRef = new FileReference("owner", newFileMetaInfo, newFileLoc);
+            FileReference newFileRef = new FileReference(OWNER, newFileMetaInfo, newFileLoc);
             Mockito.when(fileReferenceService.create(Mockito.any(Collection.class),
                                                      Mockito.any(),
                                                      Mockito.any(),
@@ -313,5 +280,4 @@ public class FileReferenceRequestServiceTest {
                                                                       Mockito.mock(SessionNotifier.class));
         return existingFileRef;
     }
-
 }

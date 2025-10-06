@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.framework.urn;
 
+import jakarta.annotation.Nullable;
+
+import java.util.Optional;
+import java.util.stream.Stream;
+
 /**
  * Entity types
  *
@@ -36,9 +41,26 @@ public enum DataType {
         return this.name();
     }
 
+    /**
+     * Find the constant matching the given name.
+     *
+     * @param name the name of the constant to be found.
+     * @return an Optional of the matching constant or an empty Optional if no enum constant is matching.
+     */
+    public static Optional<DataType> find(@Nullable String name) {
+        Optional<DataType> found;
+        if (name == null) {
+            return Optional.empty();
+        }
+
+        return Stream.of(DataType.values()).filter(t -> t.name().equalsIgnoreCase(name)).findFirst();
+    }
+
     public static DataType parse(String value, DataType defaultValue) {
         DataType dt = defaultValue;
-        if (value != null && valueOf(value) != null) {
+        if (value != null) {
+            // NullPointerException if no matching name
+            // is-it really what we want?
             dt = valueOf(value);
         }
         return dt;

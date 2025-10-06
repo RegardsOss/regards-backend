@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
+import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,16 +57,20 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
 
     private FileCacheRequestService fileCacheRequestService;
 
+    private FileReferenceRequestService fileReferenceRequestService;
+
     private IJobInfoService jobInfoService;
 
     public JobEventHandler(ISubscriber subscriber,
                            IJobInfoService jobInfoService,
                            FileStorageRequestService fileStorageRequestService,
+                           FileReferenceRequestService fileReferenceRequestService,
                            FileDeletionRequestService fileDeletionRequestService,
                            FileCacheRequestService fileCacheRequestService) {
         this.subscriber = subscriber;
         this.jobInfoService = jobInfoService;
         this.fileStorageRequestService = fileStorageRequestService;
+        this.fileReferenceRequestService = fileReferenceRequestService;
         this.fileDeletionRequestService = fileDeletionRequestService;
         this.fileCacheRequestService = fileCacheRequestService;
     }
@@ -94,7 +99,8 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
                 // so all requests are dead
                 boolean isHandled = fileStorageRequestService.handleJobCrash(jobInfo)
                                     || fileDeletionRequestService.handleJobCrash(jobInfo)
-                                    || fileCacheRequestService.handleJobCrash(jobInfo);
+                                    || fileCacheRequestService.handleJobCrash(jobInfo)
+                                    || fileReferenceRequestService.handleJobCrash(jobInfo);
                 if (isHandled) {
                     nbJobError++;
                 }

@@ -123,7 +123,7 @@ public class StoreMultipleFilesIT extends AbstractStorageIT {
                                                                                                      FILE_REF_OWNER + i,
                                                                                                      SESSION_OWNER,
                                                                                                      SESSION,
-                                                                                                     originUrl,
+                                                                                                     ORIGIN_URL,
                                                                                                      ONLINE_CONF_LABEL,
                                                                                                      Optional.empty()),
                                                                          UUID.randomUUID().toString());

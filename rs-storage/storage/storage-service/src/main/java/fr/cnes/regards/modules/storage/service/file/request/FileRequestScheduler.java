@@ -24,10 +24,7 @@ import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
+import fr.cnes.regards.modules.storage.domain.database.request.*;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
@@ -40,6 +37,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Set;
 
 /**
  * Scheduler to periodically handle bulk requests :<br />
@@ -47,6 +45,7 @@ import java.time.Instant;
  * <li> {@link FileDeletionRequest} for deletion</li>
  * <li> {@link FileCopyRequest} for copy</li>
  * <li> {@link FileCacheRequest} for availability</li>
+ * <li> {@link FileReferenceRequestAggregation} for referencing</li>
  * </ul>
  * <p>
  * NOTE : Number of parallel schedule execution is defined by spring configuration property spring.task.scheduling.pool.size.
@@ -79,6 +78,12 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
+    private FileReferenceRequestJobSchedulingService fileReferenceRequestJobSchedulingService;
+
+    @Autowired
+    private FileReferenceRequestService fileReferenceRequestService;
+
+    @Autowired
     private FileStorageRequestService fileStorageRequestService;
 
     @Autowired
@@ -103,10 +108,26 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
         lockingTaskExecutors.assertLocked();
         handleGroupRequests();
         handleFileCacheRequests();
+        handleFileReferenceRequests();
         handleFileStorageRequests();
         handleFileDeletionRequests();
         handleFileCopyRequests();
     };
+
+    public void handleFileReferenceRequests() {
+        // A bit of cleaning.
+        // Delete all the terminated request (SUCCESS or ERROR) of a terminated group.
+        // A group is considered terminated if all the request of this group are terminated.
+        // The group itself wont be deleted.
+        final Set<String> groupIds = reqGrpService.findAllGroupIdsOfTerminatedReferenceRequests();
+        fileReferenceRequestService.deleteAllTerminatedRequestOfGroups(groupIds);
+
+        // reassign DELAYED requests to be handled again. status to TO_DO
+        reqStatusService.checkDelayedReferenceRequests(fileReferenceRequestService);
+
+        // create jobs of request to be handled (in a TO_DO status) grouped by storage
+        fileReferenceRequestJobSchedulingService.scheduleJobs(FileRequestStatus.TO_DO);
+    }
 
     public void handleFileStorageRequests() {
         reqStatusService.checkDelayedStorageRequests(fileStorageRequestService);
@@ -142,7 +163,8 @@ public class FileRequestScheduler extends AbstractTaskScheduler {
                 lockingTaskExecutors.executeWithLock(handleRequestsTask,
                                                      new LockConfiguration(Instant.now(),
                                                                            STORAGE_LOCK,
-                                                                           Duration.ofSeconds(UPDATE_LOCK_TIME_TO_LIVE_IN_SECONDS),
+                                                                           Duration.ofSeconds(
+                                                                               UPDATE_LOCK_TIME_TO_LIVE_IN_SECONDS),
                                                                            Duration.ZERO));
             } catch (Throwable e) {
                 handleSchedulingError(STORAGE_ACTIONS, STORAGE_TITLE, e);

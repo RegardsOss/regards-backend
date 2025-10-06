@@ -96,6 +96,19 @@ public class FileReferenceMetaInfo {
         this.mimeType = mimeType;
     }
 
+    public FileReferenceMetaInfo copy() {
+        final FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo();
+        metaInfo.setChecksum(checksum);
+        metaInfo.setAlgorithm(algorithm);
+        metaInfo.setFileName(fileName);
+        metaInfo.setFileSize(fileSize);
+        metaInfo.setMimeType(mimeType);
+        metaInfo.setType(type);
+        metaInfo.setHeight(height);
+        metaInfo.setWidth(width);
+        return metaInfo;
+    }
+
     /**
      * @return the checksum
      */
@@ -150,6 +163,14 @@ public class FileReferenceMetaInfo {
      */
     public void setFileSize(Long fileSize) {
         this.fileSize = fileSize;
+    }
+
+    /**
+     * @param fileSize the fileSize to set
+     */
+    public FileReferenceMetaInfo withFileSize(Long fileSize) {
+        this.fileSize = fileSize;
+        return this;
     }
 
     /**

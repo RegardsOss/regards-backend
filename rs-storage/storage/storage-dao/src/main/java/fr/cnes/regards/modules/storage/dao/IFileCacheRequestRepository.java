@@ -29,6 +29,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -62,22 +63,66 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
 
     void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus status);
 
-    @Modifying
+    @Deprecated
+    @Modifying // the query is executed against the database leaving the persistence context outdated.
     @Query("update FileCacheRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
     int updateError(@Param("status") FileRequestStatus status,
                     @Param("errorCause") String errorCause,
                     @Param("id") Long id);
 
-    @Modifying
+    /**
+     * Update the {@link FileCacheRequest} identified by the given id with the given status and error cause.<br/>
+     * If no {@link FileCacheRequest} is found, no update is executed.</br>
+     * Note: Update query is executed without outdating the persistence context.
+     *
+     * @param id                of the FileCacheRequest to be updated
+     * @param fileRequestStatus new status of the FileCacheRequest
+     * @param message           new error cause of the FileCacheRequest
+     * @return an Optional of the updated {@link FileCacheRequest} or an empty optional.
+     */
+    default Optional<FileCacheRequest> updateError(Long id, FileRequestStatus fileRequestStatus, String message) {
+        final Optional<FileCacheRequest> optRequest = this.findById(id);
+        optRequest.ifPresent(request -> {
+            request.setErrorCause(message);
+            request.setStatus(fileRequestStatus);
+            this.save(request);
+        });
+        return optRequest;
+    }
+
+    @Deprecated
+    @Modifying // WARNING: the query is executed against the database leaving the persistence context outdated.
     @Query("update FileCacheRequest fcr set fcr.status = :status, fcr.jobId = :jobId where fcr.id = :id")
     int updateStatusAndJobId(@Param("status") FileRequestStatus pending,
                              @Param("jobId") String jobId,
                              @Param("id") Long id);
 
+    /**
+     * Update the {@link FileCacheRequest} identified by the given id with the given the status and job id.<br/>
+     * If no {@link FileCacheRequest} is found, no update is executed.</br>
+     * Note: Update query is executed without outdating the persistence context.
+     *
+     * @param id                of the FileCacheRequest to be updated
+     * @param fileRequestStatus new status of the FileCacheRequest
+     * @param jobId             new job id the FileCacheRequest
+     * @return an Optional of the updated {@link FileCacheRequest} or an empty optional.
+     */
+    default Optional<FileCacheRequest> updateStatusAndJobId(Long id,
+                                                            FileRequestStatus fileRequestStatus,
+                                                            String jobId) {
+        final Optional<FileCacheRequest> optRequest = this.findById(id);
+        optRequest.ifPresent(request -> {
+            request.setJobId(jobId);
+            request.setStatus(fileRequestStatus);
+            this.save(request);
+        });
+        return optRequest;
+    }
+
     @Query("select coalesce(sum(fcr.fileSize),0) from FileCacheRequest fcr where fcr.status = 'PENDING'")
     Long getPendingFileSize();
 
-    @Modifying
+    @Modifying // WARNING: the query is executed against the database leaving the persistence context outdated.
     @Query(value = "DELETE FROM t_file_cache_request cac WHERE cac.status NOT IN :runningStatuses AND cac.id IN (SELECT grp.file_cache_request_id FROM ta_file_cache_request_group_id grp WHERE grp.group_id = :groupId )",
            nativeQuery = true)
     void deleteByGroupIdsAndStatusNotIn(@Param("groupId") String groupId,

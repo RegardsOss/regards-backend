@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.storage.service.metric;
 
 import fr.cnes.regards.framework.metric.service.AbstractMetricService;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -60,40 +61,40 @@ public class StorageMetricService extends AbstractMetricService {
         incrementCounter(STORAGE_REQUEST_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant), 1);
         // Initialize success and error counters to 0 for Grafana visualization
         //If the counters already exists, meterRegistry does not reinitialize it
-        initializeCounterIfAbsent(STORAGE_REQUEST_SUCCESS_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant));
-        initializeCounterIfAbsent(STORAGE_REQUEST_ERROR_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant));
+        initializeCounterIfAbsent(STORAGE_REQUEST_SUCCESS_COUNTER_NAME, Tags.of(NAME, storageName, TENANT, tenant));
+        initializeCounterIfAbsent(STORAGE_REQUEST_ERROR_COUNTER_NAME, Tags.of(NAME, storageName, TENANT, tenant));
     }
 
     /**
      * Increment the counter of finished storage requests in success
      */
     public void incrementStorageRequestSuccess(String storageName, String tenant) {
-        incrementCounter(STORAGE_REQUEST_SUCCESS_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant), 1);
+        incrementCounter(STORAGE_REQUEST_SUCCESS_COUNTER_NAME, Tags.of(NAME, storageName, TENANT, tenant), 1);
     }
 
     /**
      * Increment the counter of finished storage requests in error
      */
     public void incrementStorageRequestError(String storageName, String tenant) {
-        incrementCounter(STORAGE_REQUEST_ERROR_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant), 1);
+        incrementCounter(STORAGE_REQUEST_ERROR_COUNTER_NAME, Tags.of(NAME, storageName, TENANT, tenant), 1);
     }
 
     /**
      * Increment the counter of received storage restoration requests
      */
     public void incrementRestorationRequests(String storageName, String tenant) {
-        incrementCounter(STORAGE_RESTORE_REQUEST_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant), 1);
+        incrementCounter(STORAGE_RESTORE_REQUEST_COUNTER_NAME, Tags.of(NAME, storageName, TENANT, tenant), 1);
         // Initialize success and error counters to 0 for Grafana visualization
         //If the counters already exists, meterRegistry does not reinitialize it
-        initializeCounterIfAbsent(STORAGE_RESTORE_SUCCESS_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant));
-        initializeCounterIfAbsent(STORAGE_RESTORE_ERROR_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant));
+        initializeCounterIfAbsent(STORAGE_RESTORE_SUCCESS_COUNTER_NAME, Tags.of(NAME, storageName, TENANT, tenant));
+        initializeCounterIfAbsent(STORAGE_RESTORE_ERROR_COUNTER_NAME, Tags.of(NAME, storageName, TENANT, tenant));
     }
 
     /**
      * Increment the counter of finished storage restoration requests in success
      */
     public void incrementRestorationRequestSuccess(String storageName, String tenant) {
-        incrementCounter(STORAGE_RESTORE_SUCCESS_COUNTER_NAME, Map.of(NAME, storageName, TENANT, tenant), 1);
+        incrementCounter(STORAGE_RESTORE_SUCCESS_COUNTER_NAME, Tags.of(NAME, storageName, TENANT, tenant), 1);
     }
 
     /**

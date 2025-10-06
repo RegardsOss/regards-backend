@@ -1,0 +1,337 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package "file-catalog-amqp / file-access-dto"  {
+    class FileReferenceRequestDto <<DTO>> {
+        + String fileName
+        + String checksum
+        + String algorithm
+        + String mimeType
+        + String type
+
+        + Long fileSize
+        + Integer height
+        + Integer width
+
+        + String owner
+        + String storage
+        + String url
+        + String sessionOwner
+        + String session
+    }
+
+    class FilesReferenceDto <<DTO>> {
+        + String groupId
+        + Set<FileReferenceRequestDto> files
+    }
+
+    class FilesReferenceEvent  <<Event>> {
+        + Errors validate(Validator validator)
+    }
+    FilesReferenceEvent --|>FilesReferenceDto
+    FilesReferenceDto *..> FileReferenceRequestDto
+
+    class FileStorageRequestDto <<DTO>> {
+             + String fileName
+             + String checksum
+             + String algorithm
+             + String mimeType
+             + String type
+
+            + String owner
+            + String storage
+            + String originUrl
+            + String sessionOwner
+            + String session
+
+            + boolean reference
+    }
+
+    class FilesStorageRequestDto <<DTO>> {
+        + String groupId
+        + Set<FileStorageRequestDto> files
+    }
+
+    class FilesStorageRequestEvent <<Event>>
+    FilesStorageRequestEvent --|>FilesStorageRequestDto
+    FilesStorageRequestDto *..> FileStorageRequestDto
+
+
+    class FileReferenceEvent <<Event>> {
+        + FileReferenceEventType type
+        + String message
+    }
+
+    class FileReferenceDto <<DTO>> {
+         + Long id
+
+         + List<String> owners
+         + Set<String> groupIds
+
+         + String originStorage
+         + String checksum
+
+         + FileLocationDto location
+         + FileReferenceMetaInfoDto metaInfo
+         + OffsetDateTime storageDate
+
+         + Object additionalFields
+
+         + boolean referenced
+         + boolean nearlineConfirmed
+    }
+
+    class FileLocationDto <<DTO>> {
+        + String storage
+        + String url
+        + FileArchiveStatus fileArchiveStatus
+    }
+    FileReferenceDto .right.> FileLocationDto
+
+    class FileReferenceMetaInfoDto <<DTO>> {
+         + String fileName
+         + String checksum
+         + String algorithm
+         + String mimeType
+         + String type
+
+         + Long fileSize
+         + Integer height
+         + Integer width
+    }
+    FileReferenceEvent --|>FileReferenceDto
+    FileReferenceDto ..> FileReferenceMetaInfoDto
+
+    class FileStorageRequestAggregationDto {
+
+        + Long id
+
+        + Set<String> owners
+        + Set<String> groupIds
+
+        + String storage;
+        + String originUrl
+
+        + String subDirectory
+
+        + OffsetDateTime creationDate;
+        + FileReferenceMetaInfoDto metaInfo;
+
+        + String sessionOwner
+        + String session
+        + String jobId;
+        + String errorCause;
+    }
+    FileStorageRequestAggregationDto ..> FileReferenceMetaInfoDto
+
+}
+@enduml
+
+@startuml
+'https://plantuml.com/class-diagram
+
+package "storage-domain" {
+class FileReferenceRequestAggregation <<Entity>><<New>> {
+    + Long id
+    + Set<String> groupIds
+    + Set<String> owners
+    + String originUrl
+    + String storageSubDirectory
+    + String storage
+    + FileReferenceMetaInfo metaInfo
+    + FileRequestStatus status
+    + OffsetDateTime creationDate
+    + String errorCause
+    + String jobId
+    + String session
+}
+
+class FileStorageRequestAggregation <<Entity>> {
+    + Long id
+    + Set<String> groupIds
+    + Set<String> owners
+    + String originUrl
+    + String storageSubDirectory
+    + String storage
+    + FileReferenceMetaInfo metaInfo
+    + FileRequestStatus status
+    + OffsetDateTime creationDate
+    + String errorCause
+    + String jobId
+    + String session
+}
+class FileReferenceMetaInfo <<Embeddable>> {
+    + String fileName
+    + String checksum
+    + String algorithm
+    + String mimeType
+    + String type
+
+    + Long fileSize
+    + Integer height
+    + Integer width
+}
+
+FileReferenceRequestAggregation -right-> FileReferenceMetaInfo
+FileStorageRequestAggregation -left-> FileReferenceMetaInfo
+
+class FileReference <<Entity>> {
++ Long id
++ OffsetDateTime storageDate
+
++ Set<String> owners
++ FileReferenceMetaInfo metaInfo
++ FileLocation location
+
++ boolean referenced
++ boolean nearlineConfirmed
+}
+FileReference -up-> FileReferenceMetaInfo
+FileReference -right-> FileLocation
+
+class FileLocation <<Embeddable>> {
++ String storage
++ String url
++ boolean  pendingActionRemaining
+}
+}
+@enduml
+
+@startuml 'https://plantuml.com/class-diagram
+package "storage-dao" {
+
+interface IFileReferenceRequestRepository <<JpaRepository>> {
+    + Page<FileReferenceRequestAggregation> findByStorage(String storage, Pageable pageable)
+    + Page<FileReferenceRequestAggregation> findAllByStorage(String storage, Pageable page)
+    + Page<FileReferenceRequestAggregation> findAllByStorageAndOwnersIn(String storage,Collection<String> owners,Pageable page)
+    + Page<FileReferenceRequestAggregation> findAllByStorageAndStatus(String storage,FileRequestStatus status,Pageable page)
+    + Page<FileReferenceRequestAggregation> findAllByStorageAndStatusAndIdGreaterThan(String storage,FileRequestStatus status,Long id,Pageable page)
+    + Page<FileReferenceRequestAggregation> findAllByStorageAndStatusAndOwnersInAndIdGreaterThan(String storage,FileRequestStatus status,Collection<String> owners,Long id,Pageable page)
+    + Page<FileReferenceRequestAggregation> findByStatus(FileRequestStatus delayed, Pageable page)
+    + Page<FileStorageRequestAggregation> findByStatusAndSessionOwnerAndSession(FileRequestStatus error,String source,String session,Pageable page)
+    + Page<FileReferenceRequestAggregation> findByOwnersInAndStatus(Collection<String> owners,FileRequestStatus error,Pageable page)
+
+    + Set<FileReferenceRequestAggregation> findByGroupIds(String groupId)
+    + Set<String> findGroupIdsByGroupIdsIn(Collection<String> groupId)
+    + Set<String> findStoragesByStatus(FileRequestStatus status)
+    + Set<FileReferenceRequestAggregation> findByMetaInfoChecksumIn(Set<String> checksums)
+    + Set<FileReferenceRequestAggregation> findByMetaInfoChecksumAndStorage(String checksum, String storage)
+    + Optional<FileReferenceRequestAggregation> findByMetaInfoChecksum(String checksum)
+    + Optional<FileReferenceRequestAggregation> findByStorageAndMetaInfoChecksum(String storage, String checksum)
+    + List<FileReferenceRequestAggregation> findByGroupIdsAndStatusNotIn(String group,Collection<FileRequestStatus> status)
+    + Set<FileReferenceRequestAggregation> findByGroupIdsAndStatus(String groupId, FileRequestStatus error)
+
+    + int updateError(FileRequestStatus status,String errorCause,Long id)
+    + int updateStatusAndJobId(FileRequestStatus status,String jobId,Long id)
+
+    + void deleteByStorage(String storageLocationId)
+    + void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus FileReferenceStatus)
+
+    + Long countByStorageAndStatus(String storage, FileRequestStatus status)
+
+    + boolean existsByGroupIdsAndStatusNot(String groupId, FileRequestStatus error)
+    + boolean existsByStorageAndStatusIn(String storageId, Set<FileRequestStatus> status)
+    + boolean existsByStorageAndMetaInfoChecksumAndStatusIn(String storage,String checksum,Set<FileRequestStatus> status)
+}
+
+interface IFileStorageRequestRepository <<JpaRepository>> {
+
+    + Page<FileStorageRequestAggregation> findByStorage(String storage, Pageable pageable)
+    + Page<FileStorageRequestAggregation> findAllByStorage(String storage, Pageable page)
+    + Page<FileStorageRequestAggregation> findAllByStorageAndOwnersIn(String storage,Collection<String> owners,Pageable page)
+    + Page<FileStorageRequestAggregation> findAllByStorageAndStatus(String storage,FileRequestStatus status,Pageable page)
+    + Page<FileStorageRequestAggregation> findAllByStorageAndStatusAndIdGreaterThan(String storage,FileRequestStatus status,Long id,Pageable page)
+    + Page<FileStorageRequestAggregation> findAllByStorageAndStatusAndOwnersInAndIdGreaterThan(String storage,FileRequestStatus status,Collection<String> owners,Long id,Pageable page)
+    + Page<FileStorageRequestAggregation> findByStatus(FileRequestStatus delayed, Pageable page)
+    + Page<FileStorageRequestAggregation> findByStatusAndSessionOwnerAndSession(FileRequestStatus error,String source,String session,Pageable page)
+    + Page<FileStorageRequestAggregation> findByOwnersInAndStatus(Collection<String> owners,FileRequestStatus error,Pageable page)
+
+    + Set<FileStorageRequestAggregation> findByGroupIds(String groupId)
+    + Set<String> findGroupIdsByGroupIdsIn(Collection<String> groupId)
+    + Set<String> findStoragesByStatus(FileRequestStatus status)
+    + Set<FileStorageRequestAggregation> findByMetaInfoChecksumIn(Set<String> checksums)
+    + Set<FileStorageRequestAggregation> findByMetaInfoChecksumAndStorage(String checksum, String storage)
+    + Optional<FileStorageRequestAggregation> findByMetaInfoChecksum(String checksum)
+    + Optional<FileStorageRequestAggregation> findByStorageAndMetaInfoChecksum(String storage, String checksum)
+    + List<FileStorageRequestAggregation> findByGroupIdsAndStatusNotIn(String group,Collection<FileRequestStatus> status)
+    + Set<FileStorageRequestAggregation> findByGroupIdsAndStatus(String groupId, FileRequestStatus error)
+
+    + int updateError(FileRequestStatus status,String errorCause,Long id)
+    + int updateStatusAndJobId(FileRequestStatus status,String jobId,Long id)
+
+    + void deleteByStorage(String storageLocationId)
+    + void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus FileReferenceStatus)
+
+    + Long countByStorageAndStatus(String storage, FileRequestStatus status)
+
+    + boolean existsByGroupIdsAndStatusNot(String groupId, FileRequestStatus error)
+    + boolean existsByStorageAndStatusIn(String storageId, Set<FileRequestStatus> status)
+    + boolean existsByStorageAndMetaInfoChecksumAndStatusIn(String storage,String checksum,Set<FileRequestStatus> status)
+}
+}
+@enduml
+
+@startuml 'https://plantuml.com/class-diagram
+
+package "storage-domain" {
+class FileReference <<Entity>> {
+    + Long id
+    + OffsetDateTime storageDate
+    + FileReferenceMetaInfo metaInfo
+    + FileLocation location
+    + boolean referenced
+    + boolean nearlineConfirmed
+}
+
+class FileLocation <<Embeddable>> {
+    + String storage
+    + String url
+    + boolean pendingActionRemaining
+}
+class StorageLocation <<Entity>> {
+    + Long id
+    + String name
+    + Long numberOfReferencedFiles
+    + Long totalSizeOfReferencedFiles
+    + OffsetDateTime lastUpdateDate
+    + boolean pendingActionRemaining
+}
+
+class FileReferenceMetaInfo <<Embeddable>> {
+    + String fileName
+    + String checksum
+    + String algorithm
+    + String mimeType
+    + String type
+
+    + Long fileSize
+    + Integer height
+    + Integer width
+}
+class FileStorageRequestAggregation <<Entity>> {
+    + Long id
+    + Set<String> groupId
+    + Set<String> owners
+    + String originUrl
+    + String storageSubDirectory
+    + String storage
+    + FileReferenceMetaInfo metaInfo
+    + FileRequestStatus status
+    + String errorCause
+    + OffsetDateTime creationDate
+    + String jobId
+    + String sessionOwner
+    + String session
+}
+FileStorageRequestAggregation .right.> FileReferenceMetaInfo
+FileStorageRequestAggregation ..> StorageLocation
+FileReference .left.> FileReferenceMetaInfo
+FileReference ..> FileLocation
+}
+package "storage-dao" {
+    interface IFileReferenceRepository<<JpaRepository>>
+    interface IStorageLocationRepository<<JpaRepository>>
+    interface IFileStorageRequestRepository<<JpaRepository>>
+    interface IFileReferenceRequestRepository<<JpaRepository>>
+}
+@enduml

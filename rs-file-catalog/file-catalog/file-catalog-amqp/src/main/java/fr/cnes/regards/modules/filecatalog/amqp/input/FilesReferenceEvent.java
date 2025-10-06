@@ -31,10 +31,7 @@ import org.springframework.validation.Validator;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Event to request a new file reference.<br/>
@@ -55,16 +52,12 @@ public class FilesReferenceEvent extends FilesReferenceDto implements ISubscriba
         super();
     }
 
-    public FilesReferenceEvent(Set<FileReferenceRequestDto> files, String groupId) {
+    public FilesReferenceEvent(Collection<FileReferenceRequestDto> files, String groupId) {
         super(groupId, files);
     }
 
-    public FilesReferenceEvent(Collection<FileReferenceRequestDto> files, String groupId) {
-        super(groupId, new HashSet<>(files));
-    }
-
     public FilesReferenceEvent(FileReferenceRequestDto file, String groupId) {
-        super(groupId, Stream.of(file).collect(Collectors.toSet()));
+        super(groupId, Set.of(file));
     }
 
     /**

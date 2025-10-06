@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.CommonFileUtils;
+import fr.cnes.regards.modules.fileaccess.dto.FileReferenceMetaInfoDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
@@ -69,6 +70,8 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
      * JOB Parameter key for the Working subset of {@link FileStorageRequestAggregation} to handle for storage.
      */
     public static final String WORKING_SUB_SET = "wss";
+
+    private static final MediaType MEDIA_TYPE_IMAGE = MediaType.valueOf("image/*");
 
     @Autowired
     private FileStorageRequestService fileStorageReqService;
@@ -173,23 +176,30 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
      * @param fileRefRequest to calculate for image dimension
      */
     public static void calculateImageDimension(FileStorageRequestAggregationDto fileRefRequest) {
+        final FileReferenceMetaInfoDto metaInfo = fileRefRequest.getMetaInfo();
+
+        // does MetaInfo represents an image with missing dimension ?
+        final boolean isImage = MediaType.valueOf(metaInfo.getMimeType()).isCompatibleWith(MEDIA_TYPE_IMAGE);
+        final boolean missingDimension = (metaInfo.getHeight() == null) || (metaInfo.getWidth() == null);
+        final boolean calculate = isImage && missingDimension;
+        if (!calculate) {
+            return;
+        }
+
+        // the image dimension are missing but can be calculated
         try {
-            if (((fileRefRequest.getMetaInfo().getHeight() == null) || (fileRefRequest.getMetaInfo().getWidth()
-                                                                        == null))
-                && MediaType.valueOf(fileRefRequest.getMetaInfo().getMimeType())
-                            .isCompatibleWith(MediaType.valueOf("image/*"))) {
-                URL localUrl = new URL(fileRefRequest.getOriginUrl());
-                if (localUrl.getProtocol().equals("file")) {
-                    Path filePath = Paths.get(localUrl.toURI().getPath());
-                    if (Files.isReadable(filePath)) {
-                        Dimension dimension = CommonFileUtils.getImageDimension(filePath.toFile());
-                        fileRefRequest.getMetaInfo().setHeight(((Number) dimension.getHeight()).intValue());
-                        fileRefRequest.getMetaInfo().setWidth(((Number) dimension.getWidth()).intValue());
-                    } else {
-                        STATIC_LOGGER.warn(
-                            "Error calculating image file height/width. Cause : File {} is not accessible.",
-                            fileRefRequest.getOriginUrl());
-                    }
+            // is the file accessible?
+            final URL localUrl = new URL(fileRefRequest.getOriginUrl());
+            if (localUrl.getProtocol().equals("file")) {
+                final Path filePath = Paths.get(localUrl.toURI().getPath());
+                if (Files.isReadable(filePath)) {
+                    // obtain the dimension by reading the file.
+                    final Dimension dimension = CommonFileUtils.getImageDimension(filePath.toFile());
+                    metaInfo.setHeight(((Number) dimension.getHeight()).intValue());
+                    metaInfo.setWidth(((Number) dimension.getWidth()).intValue());
+                } else {
+                    STATIC_LOGGER.warn("Error calculating image file height/width. Cause : File {} is not accessible.",
+                                       fileRefRequest.getOriginUrl());
                 }
             }
         } catch (IOException | URISyntaxException e) {

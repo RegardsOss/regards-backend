@@ -94,7 +94,7 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                                         SESSION_OWNER_1,
                                         SESSION_1);
         }
-        JobInfo ji = fileDeletionRequestService.scheduleJob(ONLINE_CONF_LABEL, false, SESSION_OWNER_1, SESSION_1);
+        JobInfo ji = deletionRequestService.scheduleJob(ONLINE_CONF_LABEL, false, SESSION_OWNER_1, SESSION_1);
         Assert.assertNotNull("A job should be created", ji);
         Mockito.reset(publisher);
         jobService.runJob(ji, getDefaultTenant()).get();
@@ -120,12 +120,12 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                                            false);
         }
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
-        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(oFileRef.get()
-                                                                                             .getLocation()
-                                                                                             .getStorage(),
-                                                                                     oFileRef.get()
-                                                                                             .getMetaInfo()
-                                                                                             .getChecksum());
+        Collection<FileStorageRequestAggregation> storageReqs = storageRequestService.search(oFileRef.get()
+                                                                                                     .getLocation()
+                                                                                                     .getStorage(),
+                                                                                             oFileRef.get()
+                                                                                                     .getMetaInfo()
+                                                                                                     .getChecksum());
         Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
                           storageReqs.isEmpty());
         FileReference fileRef = oFileRef.get();
@@ -137,20 +137,20 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                                                         SESSION_OWNER_1,
                                                         SESSION_1,
                                                         false);
-        fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
+        deletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
 
         // File reference should still exists for the remaining owner
-        Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
-                                                                      fileRef.getMetaInfo().getChecksum());
+        Optional<FileReference> afterDeletion = referenceService.search(fileRef.getLocation().getStorage(),
+                                                                        fileRef.getMetaInfo().getChecksum());
 
         Assert.assertTrue("File reference should be always existing", afterDeletion.isPresent());
-        FileReference fr = fileRefWithOwnersRepo.findOneById(afterDeletion.get().getId());
+        FileReference fr = referenceWithOwnersRepository.findOneById(afterDeletion.get().getId());
         Assert.assertEquals("File reference should always be owned by one owner", 1, fr.getLazzyOwners().size());
         Assert.assertTrue("File reference should always be owned by one owner",
                           fr.getLazzyOwners().contains(owners.get(1)));
 
         // To check that cache request are deleted with fileReference add a cache request for one stored file
-        fileCacheRequestService.create(fileRef, 24, UUID.randomUUID().toString());
+        cacheRequestService.create(fileRef, 24, UUID.randomUUID().toString());
 
         // Delete file reference for the remaining owner
         request = FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
@@ -159,10 +159,11 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                                         SESSION_OWNER_2,
                                         SESSION_1,
                                         false);
-        fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
+        deletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
 
         // File reference should be deleted
-        afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());
+        afterDeletion = referenceService.search(fileRef.getLocation().getStorage(),
+                                                fileRef.getMetaInfo().getChecksum());
         Assert.assertFalse("File reference should not existing anymore", afterDeletion.isPresent());
 
     }
@@ -216,13 +217,13 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                                                          SESSION_OWNER_3,
                                                          SESSION_1,
                                                          false);
-        fileDeletionRequestService.handle(Sets.newHashSet(request, request2, request3), UUID.randomUUID().toString());
+        deletionRequestService.handle(Sets.newHashSet(request, request2, request3), UUID.randomUUID().toString());
 
         // Re-submit same request for one owner
-        fileDeletionRequestService.handle(Sets.newHashSet(request3), UUID.randomUUID().toString());
+        deletionRequestService.handle(Sets.newHashSet(request3), UUID.randomUUID().toString());
 
         // File reference should be deleted
-        Optional<FileDeletionRequest> afterDeletion = fileDeletionRequestService.search(fileRef);
+        Optional<FileDeletionRequest> afterDeletion = deletionRequestService.search(fileRef);
         Assert.assertTrue("File deletion request should exists", afterDeletion.isPresent());
 
     }
@@ -251,26 +252,26 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                                                         SESSION_OWNER_1,
                                                         SESSION_1,
                                                         false);
-        fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
+        deletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
 
         // File reference should still exists with no owners
-        Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
-                                                                      fileRef.getMetaInfo().getChecksum());
+        Optional<FileReference> afterDeletion = referenceService.search(fileRef.getLocation().getStorage(),
+                                                                        fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("File reference should still exists", afterDeletion.isPresent());
-        FileReference fr = fileRefWithOwnersRepo.findOneById(afterDeletion.get().getId());
+        FileReference fr = referenceWithOwnersRepository.findOneById(afterDeletion.get().getId());
         Assert.assertTrue("File reference should not belongs to anyone", fr.getLazzyOwners().isEmpty());
-        Optional<FileDeletionRequest> oDeletionRequest = fileDeletionRequestService.search(fileRef);
+        Optional<FileDeletionRequest> oDeletionRequest = deletionRequestService.search(fileRef);
         Assert.assertTrue("File deletion request should be created", oDeletionRequest.isPresent());
 
         // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                                           Lists.newArrayList());
+        Collection<JobInfo> jobs = deletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList());
         runAndWaitJob(jobs);
 
         // File reference & request deletion should be deleted
-        afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());
+        afterDeletion = referenceService.search(fileRef.getLocation().getStorage(),
+                                                fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("File reference should be deleted", afterDeletion.isPresent());
-        oDeletionRequest = fileDeletionRequestService.search(fileRef);
+        oDeletionRequest = deletionRequestService.search(fileRef);
         Assert.assertTrue("File reference request should be still present", oDeletionRequest.isPresent());
         Assert.assertEquals("File reference request should be in ERROR state",
                             FileRequestStatus.ERROR,
@@ -350,19 +351,19 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                                                             SESSION_OWNER_1,
                                                             SESSION_1,
                                                             false);
-            fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
+            deletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
 
             // File reference should still exists for the remaining owner
-            Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
-                                                                          fileRef.getMetaInfo().getChecksum());
+            Optional<FileReference> afterDeletion = referenceService.search(fileRef.getLocation().getStorage(),
+                                                                            fileRef.getMetaInfo().getChecksum());
             Assert.assertTrue("File reference should be always existing", afterDeletion.isPresent());
-            FileReference fr = fileRefWithOwnersRepo.findOneById(afterDeletion.get().getId());
+            FileReference fr = referenceWithOwnersRepository.findOneById(afterDeletion.get().getId());
             Assert.assertEquals("File reference should always be owned by one owner", 1, fr.getLazzyOwners().size());
             Assert.assertTrue("File reference should always be owned by one owner",
                               fr.getLazzyOwners().contains(secondOwner));
 
             // To check that cache request are deleted with fileReference add a cache request for one stored file
-            fileCacheRequestService.create(fileRef, 24, UUID.randomUUID().toString());
+            cacheRequestService.create(fileRef, 24, UUID.randomUUID().toString());
 
             // Delete file reference for the remaining owner
             request = FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
@@ -371,28 +372,28 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
                                             SESSION_OWNER_2,
                                             SESSION_1,
                                             false);
-            fileDeletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
+            deletionRequestService.handle(Sets.newHashSet(request), UUID.randomUUID().toString());
 
             // File reference should still exists with no owners
-            afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
-                                                  fileRef.getMetaInfo().getChecksum());
+            afterDeletion = referenceService.search(fileRef.getLocation().getStorage(),
+                                                    fileRef.getMetaInfo().getChecksum());
             Assert.assertTrue("File reference should still exists", afterDeletion.isPresent());
-            fr = fileRefWithOwnersRepo.findOneById(afterDeletion.get().getId());
+            fr = referenceWithOwnersRepository.findOneById(afterDeletion.get().getId());
             Assert.assertTrue("File reference should not belongs to anyone", fr.getLazzyOwners().isEmpty());
-            Optional<FileDeletionRequest> oDeletionRequest = fileDeletionRequestService.search(fileRef);
+            Optional<FileDeletionRequest> oDeletionRequest = deletionRequestService.search(fileRef);
             Assert.assertTrue("File deletion request should be created", oDeletionRequest.isPresent());
             Assert.assertTrue("File should exists on disk", Files.exists(filePathToDelete));
 
             // Now schedule deletion jobs
-            Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                                               Lists.newArrayList());
+            Collection<JobInfo> jobs = deletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                                           Lists.newArrayList());
             runAndWaitJob(jobs);
 
             // File reference & request deletion should be deleted
-            afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
-                                                  fileRef.getMetaInfo().getChecksum());
+            afterDeletion = referenceService.search(fileRef.getLocation().getStorage(),
+                                                    fileRef.getMetaInfo().getChecksum());
             Assert.assertFalse("File reference should be deleted", afterDeletion.isPresent());
-            oDeletionRequest = fileDeletionRequestService.search(fileRef);
+            oDeletionRequest = deletionRequestService.search(fileRef);
             Assert.assertFalse("File reference request should be deleted", oDeletionRequest.isPresent());
             return filePathToDelete;
         } catch (InterruptedException | ExecutionException | MalformedURLException e) {

@@ -58,11 +58,32 @@ public interface IFileCopyRequestRepository
 
     boolean existsByGroupIdAndStatusNot(String groupId, FileRequestStatus error);
 
-    @Modifying
+    @Deprecated
+    @Modifying // the query is executed against the database leaving the persistence context outdated
     @Query("update FileCopyRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
     int updateError(@Param("status") FileRequestStatus status,
                     @Param("errorCause") String errorCause,
                     @Param("id") Long id);
+
+    /**
+     * Update the {@link FileCopyRequest} identified by the given id with the given status and error cause.<br/>
+     * If no {@link FileCopyRequest} is found, no update is executed.</br>
+     * Note: Update query is executed without outdating the persistence context.
+     *
+     * @param id                of the FileCopyRequest to be updated
+     * @param fileRequestStatus new status of the FileCopyRequest
+     * @param message           new error cause of the FileCopyRequest
+     * @return an Optional of the updated FileCopyRequest or an empty optional.
+     */
+    default Optional<FileCopyRequest> updateError(Long id, FileRequestStatus fileRequestStatus, String message) {
+        final Optional<FileCopyRequest> optRequest = this.findById(id);
+        optRequest.ifPresent(request -> {
+            request.setErrorCause(message);
+            request.setStatus(fileRequestStatus);
+            this.save(request);
+        });
+        return optRequest;
+    }
 
     void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus status);
 

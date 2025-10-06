@@ -23,9 +23,8 @@ import fr.cnes.regards.framework.metric.service.AbstractMetricService;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 /**
  * Initializes and increments the prometheus counter metrics concerning jobs in order to show in grafana
@@ -55,26 +54,19 @@ public class JobMetricService extends AbstractMetricService {
      * Increment the counter of created jobs
      */
     public void incrementJobCreation(String type, String tenant, String service) {
-        incrementCounter(JOBS_CREATION_COUNTER_NAME, Map.of(TYPE, type, TENANT, tenant, SERVICE, service), 1);
+        incrementCounter(JOBS_CREATION_COUNTER_NAME, Tags.of(TYPE, type, TENANT, tenant, SERVICE, service), 1);
     }
 
     /**
      * Increment the counter of running jobs
      */
     public void incrementRunningJob(String type, String tenant, String service) {
-        incrementCounter(JOBS_RUNNING_COUNTER_NAME, Map.of(TYPE, type, TENANT, tenant, SERVICE, service), 1);
-        // tThe metric regards_job_done_count must be initialized in order to have results in the grafana dashboard
-        // when checkin the job currently running
+        incrementCounter(JOBS_RUNNING_COUNTER_NAME, Tags.of(TYPE, type, TENANT, tenant, SERVICE, service), 1);
+        // The metric regards_job_done_count must be initialized in order to have results in the grafana dashboard
+        // when checking the job currently running
         // So, if this counter does not exist, this initializes the counter with a 0 increment
         Counter.builder(JOBS_DONE_COUNTER_NAME)
-               .tags(generateTags(Map.of(TYPE,
-                                         type,
-                                         TENANT,
-                                         tenant,
-                                         SERVICE,
-                                         service,
-                                         "status",
-                                         JobStatus.SUCCEEDED.toString())))
+               .tags(Tags.of(TYPE, type, TENANT, tenant, SERVICE, service, "status", JobStatus.SUCCEEDED.toString()))
                .register(registry);
     }
 
@@ -83,7 +75,7 @@ public class JobMetricService extends AbstractMetricService {
      */
     public void incrementJobDone(String type, String tenant, String service, String status) {
         incrementCounter(JOBS_DONE_COUNTER_NAME,
-                         Map.of(TYPE, type, TENANT, tenant, SERVICE, service, "status", status),
+                         Tags.of(TYPE, type, TENANT, tenant, SERVICE, service, "status", status),
                          1);
     }
 }

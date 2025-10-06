@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storage.service.file.handler;
 
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileGroupRequestStatus;
@@ -29,9 +28,10 @@ import fr.cnes.regards.modules.filecatalog.amqp.input.FilesReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
-import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
-import org.apache.commons.compress.utils.Lists;
+import fr.cnes.regards.modules.storage.service.file.fixture.FileReferenceRequestArgs;
+import fr.cnes.regards.modules.storage.service.file.fixture.FileReferenceRequestPublisher;
+import fr.cnes.regards.modules.storage.service.file.request.AbstractFileReferenceRequestServiceIT;
+import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,14 +40,19 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
+
+import static fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum.DEC;
+import static fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum.INC;
+import static fr.cnes.regards.modules.storage.service.file.fixture.FileReferenceConstants.*;
+import static fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test class
@@ -57,18 +62,12 @@ import java.util.concurrent.ExecutionException;
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
                     locations = { "classpath:application-test.properties" })
-public class ReferenceEventHandlerIT extends AbstractStorageIT {
+public class ReferenceEventHandlerIT extends AbstractFileReferenceRequestServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceEventHandlerIT.class);
 
-    private static final String SESSION_OWNER_1 = "SOURCE 1";
-
-    private static final String SESSION_OWNER_2 = "SOURCE 2";
-
-    private static final String SESSION_1 = "SESSION 1";
-
     @Autowired
-    private FilesReferenceEventHandler handler;
+    private FileReferenceRequestPublisher referenceRequestPublisher;
 
     @Before
     public void initialize() throws ModuleException {
@@ -81,304 +80,286 @@ public class ReferenceEventHandlerIT extends AbstractStorageIT {
      * The file is not stored by the service as the origin storage and the destination storage are identical
      */
     @Test
-    public void add_file_reference() throws InterruptedException {
-        String checksum = RandomChecksumUtils.generateRandomChecksum();
-        String storage = "storage";
+    public void add_file_reference() {
+        // GIVEN
+        final FileReferenceRequestArgs args = newReferenceRequestArgs();
         // Create a new bus message File reference request
-        FilesReferenceEvent item = new FilesReferenceEvent(FileReferenceRequestDto.build("file.name",
-                                                                                         checksum,
-                                                                                         "MD5",
-                                                                                         "application/octet-stream",
-                                                                                         10L,
-                                                                                         "owner-test",
-                                                                                         storage,
-                                                                                         "file://storage/location/file.name",
-                                                                                         SESSION_OWNER_1,
-                                                                                         SESSION_1),
-                                                           UUID.randomUUID().toString());
-        List<FilesReferenceEvent> items = new ArrayList<>();
-        items.add(item);
-        long start = System.currentTimeMillis();
-        handler.handleBatch(items);
-        long finish = System.currentTimeMillis();
-        LOGGER.info("Add file reference duration {}ms", finish - start);
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-        // Check file is well referenced
-        Optional<FileReference> fileRef = fileRefService.search(storage, checksum);
-        Assert.assertTrue("File should be present", fileRef.isPresent());
-        Assert.assertTrue("File should be referenced", fileRef.get().isReferenced());
+        final FilesReferenceEvent event = newFilesReferenceEvent(args);
 
-        // Now check for event published
-        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        // WHEN
+        // publish and run the request
+        referenceRequestPublisher.publishReferenceEvents(1, event);
+
+        // THEN
+
+        // Check file is well referenced
+        final FileReference fileRef = referenceService.search(args.getStorage(), args.getChecksum()).orElse(null);
+        assertThat(fileRef).as("File should be present").isNotNull();
+        assertThat(fileRef.isReferenced()).as("File should be referenced").isTrue();
+
+        // check for event published
+        final ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference event STORED should be published",
-                            FileReferenceEventType.STORED,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
+        final FileReferenceEventType type = getFileReferenceEvent(argumentCaptor.getAllValues()).getType();
+        assertThat(type).as("File reference event STORED should be published").isEqualTo(FileReferenceEventType.STORED);
+
         // Check step events were correctly send
-        List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
-        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 4, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.REFERENCE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(2),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(3),
-                       SessionNotifierPropertyEnum.REFERENCED_FILES,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
+        final List<StepPropertyUpdateRequestEvent> stepEvents = getStepPropertyEvents(argumentCaptor.getAllValues());
+        assertThat(stepEvents).as("Unexpected number of StepPropertyUpdateRequestEvents").hasSize(5);
+        checkStepEvent(stepEvents.get(0), REQUESTS_RUNNING, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(1), REFERENCE_REQUESTS, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(2), REQUESTS_RUNNING, DEC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(3), REFERENCE_REQUESTS, DEC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(4), REFERENCED_FILES, INC, SESSION1_OWNER, SESSION1, "1");
     }
 
     @Test
-    public void add_file_reference_same_checksum() throws InterruptedException {
-        String checksum = RandomChecksumUtils.generateRandomChecksum();
-        String owner = "new-owner";
-        String storage = "somewhere";
-        List<FilesReferenceEvent> items = Lists.newArrayList();
+    public void add_file_reference_same_checksum() {
+        // GIVEN
+        final FileReferenceRequestArgs args1 = newReferenceRequestArgs();
+        final FileReferenceRequestArgs args2 = args1.withFileName("file.name.2");
 
-        // Create a request to reference a file with the same checksum as the one stored before but with a new owner
-        FilesReferenceEvent item = new FilesReferenceEvent(FileReferenceRequestDto.build("file.name",
-                                                                                         checksum,
-                                                                                         "MD5",
-                                                                                         "application/octet-stream",
-                                                                                         10L,
-                                                                                         owner,
-                                                                                         storage,
-                                                                                         "file://storage/location/file.name",
-                                                                                         SESSION_OWNER_1,
-                                                                                         SESSION_1),
-                                                           UUID.randomUUID().toString());
-        items.add(item);
+        // Create a request to reference a file with the same checksum
+        final String groupId = UUID.randomUUID().toString();
+        final FilesReferenceEvent event1 = newFilesReferenceEvent(groupId, args1);
+        final FilesReferenceEvent event2 = newFilesReferenceEvent(groupId, args2);
 
-        // Create a request to reference a file with the same checksum as the one stored before but with a new owner
-        FilesReferenceEvent item2 = new FilesReferenceEvent(FileReferenceRequestDto.build("file.name.2",
-                                                                                          checksum,
-                                                                                          "MD5",
-                                                                                          "application/octet-stream",
-                                                                                          10L,
-                                                                                          owner,
-                                                                                          storage,
-                                                                                          "file://storage/location/file.name",
-                                                                                          SESSION_OWNER_1,
-                                                                                          SESSION_1),
-                                                            UUID.randomUUID().toString());
-        items.add(item2);
+        // WHEN
+        referenceRequestPublisher.publishReferenceEvents(1, event1, event2);
 
-        // Publish request
-        handler.handleBatch(items);
-        Thread.sleep(5_000L);
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        // THEN
+
         // Check file is well referenced
-        Assert.assertTrue("File should be referenced", fileRefService.search(storage, checksum).isPresent());
-    }
+        final FileReference fileRef = referenceService.search(args1.getStorage(), args1.getChecksum()).orElse(null);
+        assertThat(fileRef).as("File should be present").isNotNull();
+        assertThat(fileRef.isReferenced()).as("File should be referenced").isTrue();
 
-    @Test
-    public void add_file_reference_no_checksum() throws InterruptedException {
-
-        String checksum = RandomChecksumUtils.generateRandomChecksum();
-        String owner = "new-owner";
-        String storage = "somewhere";
-        List<FilesReferenceEvent> items = Lists.newArrayList();
-
-        // Create a request to reference a file with the same checksum as the one stored before but with a new owner
-        FileReferenceRequestDto req = FileReferenceRequestDto.build("file.name",
-                                                                    checksum,
-                                                                    "MD5",
-                                                                    "application/octet-stream",
-                                                                    10L,
-                                                                    owner,
-                                                                    storage,
-                                                                    "file://storage/location/file.name",
-                                                                    SESSION_OWNER_1,
-                                                                    SESSION_1);
-        req.setChecksum(null);
-        FilesReferenceEvent item = new FilesReferenceEvent(req, UUID.randomUUID().toString());
-        items.add(item);
-
-        // Publish request
-        handler.handleBatch(items);
-        Thread.sleep(5_000L);
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-        // Check file is well referenced
-        Assert.assertFalse("File should be referenced", fileRefService.search(storage, checksum).isPresent());
-        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        // check for event published
+        final ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(this.publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference event STORED should be published",
-                            FileGroupRequestStatus.DENIED,
-                            getFileRequestsGroupEvent(argumentCaptor.getAllValues()).getState());
-        // Check step events were correctly send
-        List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
-        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 2, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.REFERENCE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_REFUSED,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
 
+        // reference event STORED
+        final FileReferenceEventType type = getFileReferenceEvent(argumentCaptor.getAllValues()).getType();
+        assertThat(type).as("File reference event STORED should be published").isEqualTo(FileReferenceEventType.STORED);
+
+        // group GRANTED
+        final FileGroupRequestStatus state = getFileRequestsGroupEvent(argumentCaptor.getAllValues()).getState();
+        assertThat(state).isEqualTo(FileGroupRequestStatus.GRANTED);
+
+        // Check step events were correctly send
+        final List<StepPropertyUpdateRequestEvent> stepEvents = getStepPropertyEvents(argumentCaptor.getAllValues());
+        assertThat(stepEvents).as("Unexpected number of StepPropertyUpdateRequestEvents").hasSize(9);
+        // 2 request to be process
+        checkStepEvent(stepEvents.get(0), REQUESTS_RUNNING, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(1), REQUESTS_RUNNING, INC, SESSION1_OWNER, SESSION1, "1");
+
+        // success referencing request 1 new file
+        checkStepEvent(stepEvents.get(2), REFERENCE_REQUESTS, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(3), REQUESTS_RUNNING, DEC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(4), REFERENCE_REQUESTS, DEC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(5), REFERENCED_FILES, INC, SESSION1_OWNER, SESSION1, "1");
+
+        // success referencing request 2 new file
+        checkStepEvent(stepEvents.get(6), REFERENCE_REQUESTS, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(7), REQUESTS_RUNNING, DEC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(8), REFERENCE_REQUESTS, DEC, SESSION1_OWNER, SESSION1, "1");
+    }
+
+    @Test
+    public void add_file_reference_no_checksum() {
+
+        // GIVEN
+        final FileReferenceRequestArgs args = newReferenceRequestArgs();
+
+        // Create a new bus message File reference request
+        final String groupId = UUID.randomUUID().toString();
+        final FilesReferenceEvent event = newFilesReferenceEvent(groupId, args);
+        // hack to reset to null the checksum. constructor does not allow nullity.
+        event.getFiles().iterator().next().setChecksum(null);
+        // Publish request.
+        referenceRequestPublisher.publishReferenceEvents(0, event);
+
+        // Check file is not referenced
+        final FileReference fileRef = referenceService.search(args.getStorage(), args.getChecksum()).orElse(null);
+        assertThat(fileRef).as("File should be present").isNull();
+
+        // check for event published
+        final ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(this.publisher, Mockito.times(0)).publish(Mockito.any(FileReferenceEvent.class));
+        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+
+        final FileGroupRequestStatus state = getFileRequestsGroupEvent(argumentCaptor.getAllValues()).getState();
+        assertThat(state).isEqualTo(FileGroupRequestStatus.DENIED);
+
+        final FileReferenceEvent foundEvent = getFileReferenceEvent(argumentCaptor.getAllValues());
+        assertThat(foundEvent).isNull();
+
+        // Check step events were correctly send
+        final List<StepPropertyUpdateRequestEvent> stepEvents = getStepPropertyEvents(argumentCaptor.getAllValues());
+        assertThat(stepEvents).as("Unexpected number of StepPropertyUpdateRequestEvents").hasSize(1);
+
+        checkStepEvent(stepEvents.get(0), REQUESTS_REFUSED, INC, SESSION1_OWNER, SESSION1, "1");
     }
 
     /**
      * Test request to reference a file already stored.
-     * The file is not stored by the service as the origin storage and the destination storage are identical
+     * storage and checksum identical.
      */
     @Test
-    public void add_file_reference_already_exists() throws InterruptedException, ExecutionException {
-        String checksum = RandomChecksumUtils.generateRandomChecksum();
-        String owner = "new-owner";
-        FileReference fileRef = this.generateStoredFileReference(checksum,
-                                                                 owner,
-                                                                 "file.test",
-                                                                 ONLINE_CONF_LABEL,
-                                                                 Optional.empty(),
-                                                                 Optional.empty(),
-                                                                 SESSION_OWNER_1,
-                                                                 SESSION_1);
-        String storage = fileRef.getLocation().getStorage();
+    @SneakyThrows
+    public void add_file_reference_already_exists() {
+        // GIVEN
+        final FileReference fileRef = this.generateStoredFileReference(RandomChecksumUtils.generateRandomChecksum(),
+                                                                       OWNER1,
+                                                                       FILE_REF_NAME,
+                                                                       ONLINE_CONF_LABEL,
+                                                                       Optional.empty(),
+                                                                       Optional.empty(),
+                                                                       SESSION1_OWNER,
+                                                                       SESSION1);
+        final String storage = fileRef.getLocation().getStorage();
+        final String checksum = fileRef.getMetaInfo().getChecksum();
+
+        final FileReference foundFileRef = referenceService.search(storage, checksum).orElse(null);
+        assertThat(foundFileRef).as("File should be present").isNotNull();
+        assertThat(foundFileRef.isReferenced()).as("File should be referenced").isFalse();
+
         // One store event should be sent
         Mockito.verify(this.publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
 
         // Create a request to reference a file with the same checksum as the one stored before but with a new owner
-        FilesReferenceEvent item = new FilesReferenceEvent(FileReferenceRequestDto.build("file.name",
-                                                                                         checksum,
-                                                                                         "MD5",
-                                                                                         "application/octet-stream",
-                                                                                         10L,
-                                                                                         "owner-test",
-                                                                                         storage,
-                                                                                         "file://storage/location/file.name",
-                                                                                         SESSION_OWNER_2,
-                                                                                         SESSION_1),
-                                                           UUID.randomUUID().toString());
-        List<FilesReferenceEvent> items = new ArrayList<>();
-        items.add(item);
-        handler.handleBatch(items);
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
-        // Check file is well referenced
-        Assert.assertTrue("File should be referenced", fileRefService.search(storage, checksum).isPresent());
-        // Now check for event published. One for each referenced file
-        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        Mockito.verify(this.publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
-        Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference event STORED should be published",
-                            FileReferenceEventType.STORED,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
+        final FileReferenceRequestArgs args = newReferenceRequestArgs2().withChecksum(checksum).withStorage(storage);
+        final FilesReferenceEvent event = newFilesReferenceEvent(UUID.randomUUID().toString(), args);
 
-        // Check step events were correctly send
-        List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
-        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 8, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.STORE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(2),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(3),
-                       SessionNotifierPropertyEnum.STORED_FILES,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(4),
-                       SessionNotifierPropertyEnum.REFERENCE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_2,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(5),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_2,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(6),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_2,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(7),
-                       SessionNotifierPropertyEnum.REFERENCED_FILES,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_2,
-                       SESSION_1,
-                       "1");
+        // WHEN
+        referenceRequestPublisher.publishReferenceEvents(1, event);
+
+        // THEN
+        assertStepEventsWhenAlreadyExists(storage, checksum);
     }
 
     /**
-     * Test request to reference a file already stored.
-     * The file is not stored by the service as the origin storage and the destination storage are identical
+     * Request to reference a file already stored.
+     * Storage are distinct. Checksum are identical.
      */
     @Test
-    public void add_file_reference_already_stored() throws InterruptedException, ExecutionException {
-        String checksum = RandomChecksumUtils.generateRandomChecksum();
-        String owner = "new-owner";
-        String storage = "aStorage";
+    @SneakyThrows
+    public void add_file_reference_already_stored() {
+
+        // GIVEN
+        final String checksum = RandomChecksumUtils.generateRandomChecksum();
         this.generateStoredFileReference(checksum,
-                                         owner,
-                                         "file.test",
+                                         OWNER1,
+                                         FILE_REF_NAME,
                                          ONLINE_CONF_LABEL,
                                          Optional.empty(),
                                          Optional.empty(),
-                                         SESSION_OWNER_1,
-                                         SESSION_1);
-        // Create a new bus message File reference request
-        FilesReferenceEvent item = new FilesReferenceEvent(FileReferenceRequestDto.build("file.name",
-                                                                                         checksum,
-                                                                                         "MD5",
-                                                                                         "application/octet-stream",
-                                                                                         10L,
-                                                                                         "owner-test",
-                                                                                         storage,
-                                                                                         "file://storage/location/file.name",
-                                                                                         SESSION_OWNER_2,
-                                                                                         SESSION_1),
-                                                           UUID.randomUUID().toString());
-        List<FilesReferenceEvent> items = new ArrayList<>();
-        items.add(item);
-        handler.handleBatch(items);
-        runtimeTenantResolver.forceTenant(getDefaultTenant());
+                                         SESSION1_OWNER,
+                                         SESSION1);
+
+        // Create reference request with a new storage and same checksum
+        final FileReferenceRequestArgs args = newReferenceRequestArgs2().withChecksum(checksum);
+        final String groupId = UUID.randomUUID().toString();
+        final FilesReferenceEvent event = newFilesReferenceEvent(groupId, args);
+
+        // WHEN
+        referenceRequestPublisher.publishReferenceEvents(1, event);
+
+        // THEN
+
         // Check file is well referenced
-        Assert.assertTrue("File should be referenced", fileRefService.search(storage, checksum).isPresent());
+        final FileReference newFileRef = referenceService.search(args.getStorage(), checksum).orElse(null);
+        assertThat(newFileRef).as("File with same checksum sand new storage should have a new reference").isNotNull();
+        assertThat(newFileRef.isReferenced()).isTrue();
+
+        assertStepEventsWhenAlreadyExists(ONLINE_CONF_LABEL, checksum);
+    }
+
+    private void assertStepEventsWhenAlreadyExists(String storage, String checksum) {
+
+        // Check file is well referenced
+        final FileReference foundFileRef2 = referenceService.search(storage, checksum).orElse(null);
+        assertThat(foundFileRef2).as("File should be present").isNotNull();
+        assertThat(foundFileRef2.isReferenced()).as("File should be referenced").isFalse();
+
         // Now check for event published. One for each referenced file
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Assert.assertEquals("File reference event STORED should be published",
-                            FileReferenceEventType.STORED,
-                            getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
+
+        // reference event STORED
+        final FileReferenceEventType type = getFileReferenceEvent(argumentCaptor.getAllValues()).getType();
+        assertThat(type).as("File reference event STORED should be published").isEqualTo(FileReferenceEventType.STORED);
+
+        // Check step events were correctly send
+        final List<StepPropertyUpdateRequestEvent> stepEvents = getStepPropertyEvents(argumentCaptor.getAllValues());
+        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 9, stepEvents.size());
+        // storage request : file getting stored
+        checkStepEvent(stepEvents.get(0), STORE_REQUESTS, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(1), REQUESTS_RUNNING, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(2), REQUESTS_RUNNING, DEC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEvents.get(3), STORED_FILES, INC, SESSION1_OWNER, SESSION1, "1");
+
+        // reference request : file already referenced but a new owner is added
+        checkStepEvent(stepEvents.get(4), REQUESTS_RUNNING, INC, SESSION2_OWNER, SESSION2, "1");
+        checkStepEvent(stepEvents.get(5), REFERENCE_REQUESTS, INC, SESSION2_OWNER, SESSION2, "1");
+        checkStepEvent(stepEvents.get(6), REQUESTS_RUNNING, DEC, SESSION2_OWNER, SESSION2, "1");
+        checkStepEvent(stepEvents.get(7), REFERENCE_REQUESTS, DEC, SESSION2_OWNER, SESSION2, "1");
+        checkStepEvent(stepEvents.get(8), REFERENCED_FILES, INC, SESSION2_OWNER, SESSION2, "1");
     }
+
+    private FileReferenceRequestArgs newReferenceRequestArgs() {
+
+        return FileReferenceRequestArgs.builder()
+                                       .storage(STORAGE1)
+                                       .checksum(RandomChecksumUtils.generateRandomChecksum())
+                                       .algorithm("MD5")
+                                       .fileName(FILE_REF_NAME)
+                                       .url("file://" + STORAGE1 + "/location/" + FILE_REF_NAME)
+                                       .mimeType(MediaType.APPLICATION_OCTET_STREAM_VALUE)
+                                       .fileSize(10L)
+                                       .owner(OWNER1)
+                                       .session(SESSION1)
+                                       .sessionOwner(SESSION1_OWNER)
+                                       .build();
+
+    }
+
+    private FileReferenceRequestArgs newReferenceRequestArgs2() {
+
+        return FileReferenceRequestArgs.builder()
+                                       .storage(STORAGE1)
+                                       .checksum(RandomChecksumUtils.generateRandomChecksum())
+                                       .algorithm("MD5")
+                                       .fileName(FILE_REF_NAME)
+                                       .url("file://" + STORAGE1 + "/location/" + FILE_REF_NAME)
+                                       .mimeType(MediaType.APPLICATION_OCTET_STREAM_VALUE)
+                                       .fileSize(10L)
+                                       .owner(OWNER2)
+                                       .session(SESSION2)
+                                       .sessionOwner(SESSION2_OWNER)
+                                       .build();
+
+    }
+
+    private FilesReferenceEvent newFilesReferenceEvent(FileReferenceRequestArgs args) {
+        return newFilesReferenceEvent(UUID.randomUUID().toString(), args);
+    }
+
+    private FilesReferenceEvent newFilesReferenceEvent(String groupId, FileReferenceRequestArgs args) {
+        final FileReferenceRequestDto dto = FileReferenceRequestDto.build(args.getFileName(),
+                                                                          args.getChecksum(),
+                                                                          args.getAlgorithm(),
+                                                                          args.getMimeType(),
+                                                                          args.getFileSize(),
+                                                                          args.getOwner(),
+                                                                          args.getStorage(),
+                                                                          args.getUrl(),
+                                                                          args.getSessionOwner(),
+                                                                          args.getSession());
+        return new FilesReferenceEvent(dto, groupId);
+    }
+
 }

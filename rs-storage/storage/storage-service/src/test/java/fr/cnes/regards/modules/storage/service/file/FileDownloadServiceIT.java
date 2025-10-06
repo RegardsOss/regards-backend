@@ -92,14 +92,14 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
                                               SESSION_OWNER,
                                               SESSION);
         // When
-        fileDownloadService.downloadFile(fileRef.getMetaInfo().getChecksum());
+        downloadService.downloadFile(fileRef.getMetaInfo().getChecksum());
 
         // Then : there should not be any exception as the file is at the same time online and nearline
     }
 
     @Test
     public void downloadFileReferenceOnline() throws ModuleException, InterruptedException, ExecutionException {
-        fileDownloadService.downloadFile(generateRandomStoredOnlineFileReference().getMetaInfo().getChecksum());
+        downloadService.downloadFile(generateRandomStoredOnlineFileReference().getMetaInfo().getChecksum());
     }
 
     @Test
@@ -114,8 +114,8 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
                                               "session1",
                                               false).get();
         // When
-        Try<Callable<DownloadableFile>> result = Try.of(() -> fileDownloadService.downloadFile(fileRef.getMetaInfo()
-                                                                                                      .getChecksum()));
+        Try<Callable<DownloadableFile>> result = Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo()
+                                                                                                  .getChecksum()));
         // Then
         assertTrue("File should not be available for download as it is not handled by a known storage location plugin",
                    result.isFailure());
@@ -130,13 +130,13 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
         // Update the real url of file(without the protocol) in order to download the file
         String url = fileReference.getLocation().getUrl();
         fileReference.getLocation().setUrl(url.substring(url.indexOf(":") + 1));
-        fileRefService.store(fileReference);
+        referenceService.store(fileReference);
         SimpleNearlineDataStorage plugin = pluginService.getPlugin(nearLineConf.getBusinessId());
         plugin.simulateAvailableFileForDownload(fileReference.getMetaInfo().getChecksum());
 
         // When
-        Try<DownloadableFile> downloadableFile = Try.of(() -> fileDownloadService.downloadFile(fileReference.getMetaInfo()
-                                                                                                            .getChecksum()))
+        Try<DownloadableFile> downloadableFile = Try.of(() -> downloadService.downloadFile(fileReference.getMetaInfo()
+                                                                                                        .getChecksum()))
                                                     .mapTry(Callable::call);
 
         // Then
@@ -168,27 +168,27 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
         assertFalse(fileReference.isNearlineConfirmed());
 
         // When
-        Try<DownloadableFile> downloadableFile = Try.of(() -> fileDownloadService.downloadFile(fileReference.getMetaInfo()
-                                                                                                            .getChecksum()))
+        Try<DownloadableFile> downloadableFile = Try.of(() -> downloadService.downloadFile(fileReference.getMetaInfo()
+                                                                                                        .getChecksum()))
                                                     .mapTry(Callable::call);
 
         // Then
         assertTrue("File should not be available for download as it is not online", downloadableFile.isFailure());
         assertTrue(downloadableFile.getCause() instanceof NearlineFileNotAvailableException);
 
-        List<FileReference> fileReferences = new ArrayList<>(fileRefService.search(fileReference.getMetaInfo()
-                                                                                                .getChecksum()));
+        List<FileReference> fileReferences = new ArrayList<>(referenceService.search(fileReference.getMetaInfo()
+                                                                                                  .getChecksum()));
         assertEquals(1, fileReferences.size());
         assertTrue(fileReferences.get(0).isNearlineConfirmed());
 
         // Given : ask the file is available in cache
-        fileCacheRequestService.makeAvailable(Sets.newHashSet(fileReference), 24, UUID.randomUUID().toString());
+        cacheRequestService.makeAvailable(Sets.newHashSet(fileReference), 24, UUID.randomUUID().toString());
 
         // A cache request should be created
-        Optional<FileCacheRequest> fileCacheRequestOpt = fileCacheRequestService.search(fileReference.getMetaInfo()
-                                                                                                     .getChecksum())
-                                                                                .stream()
-                                                                                .findFirst();
+        Optional<FileCacheRequest> fileCacheRequestOpt = cacheRequestService.search(fileReference.getMetaInfo()
+                                                                                                 .getChecksum())
+                                                                            .stream()
+                                                                            .findFirst();
         Assert.assertTrue("FileCacheRequest should be created", fileCacheRequestOpt.isPresent());
         assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
                      NEARLINE_EXT_CACHE_CONF_LABEL,
@@ -197,7 +197,7 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
                      FileRequestStatus.TO_DO,
                      fileCacheRequestOpt.get().getStatus());
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
+        Collection<JobInfo> jobs = cacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         Assert.assertTrue(!jobs.isEmpty());
         runAndWaitJob(jobs);
 
@@ -208,7 +208,7 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
                      cacheFileOpt.get().getLocation().getPath());
 
         // When : now the file is available in cache try to download it again.
-        downloadableFile = Try.of(() -> fileDownloadService.downloadFile(fileReference.getMetaInfo().getChecksum()))
+        downloadableFile = Try.of(() -> downloadService.downloadFile(fileReference.getMetaInfo().getChecksum()))
                               .mapTry(Callable::call);
 
         // Then
@@ -230,11 +230,11 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
         // Given
         FileReference fileReference = generateRandomStoredNearlineFileReference();
         fileReference.setNearlineConfirmed(true);
-        fileRefService.store(fileReference);
+        referenceService.store(fileReference);
 
         // When
-        Try<DownloadableFile> result = Try.of(() -> fileDownloadService.downloadFile(fileReference.getMetaInfo()
-                                                                                                  .getChecksum()))
+        Try<DownloadableFile> result = Try.of(() -> downloadService.downloadFile(fileReference.getMetaInfo()
+                                                                                              .getChecksum()))
                                           .mapTry(Callable::call);
 
         // Then
@@ -248,20 +248,20 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
     @Test
     public void testGenerateDownloadUrl() throws ModuleException {
         // Given
-        Assert.assertTrue(downloadTokenRepo.findAll().isEmpty());
+        Assert.assertTrue(downloadTokenRepository.findAll().isEmpty());
         // When
         downloadTokenService.generateDownloadUrl(RandomChecksumUtils.generateRandomChecksum());
         // Then
-        assertEquals(1, downloadTokenRepo.findAll().size());
+        assertEquals(1, downloadTokenRepository.findAll().size());
 
         // Given, when
-        downloadTokenRepo.save(DownloadToken.build("plop", "pllip", OffsetDateTime.now().minusHours(2)));
+        downloadTokenRepository.save(DownloadToken.build("plop", "pllip", OffsetDateTime.now().minusHours(2)));
         // Then
-        assertEquals(2, downloadTokenRepo.findAll().size());
+        assertEquals(2, downloadTokenRepository.findAll().size());
         // When
         downloadTokenService.purgeTokens();
         // Then
-        assertEquals(1, downloadTokenRepo.findAll().size());
+        assertEquals(1, downloadTokenRepository.findAll().size());
     }
 
     @Test
@@ -282,8 +282,7 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
                                                                 SESSION);
 
             // When
-            DownloadableFile dlFile = Try.of(() -> fileDownloadService.downloadFile(fileRef.getMetaInfo()
-                                                                                           .getChecksum()))
+            DownloadableFile dlFile = Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()))
                                          .mapTry(Callable::call)
                                          .get();
 

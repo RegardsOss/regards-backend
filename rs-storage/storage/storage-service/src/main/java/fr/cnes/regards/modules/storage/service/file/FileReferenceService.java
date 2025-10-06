@@ -210,21 +210,18 @@ public class FileReferenceService {
      * Remove given owner form the given fileReference.
      */
     public void removeOwner(FileReference fileReference, String owner, String groupId) {
-        String message;
-        if (!fileRefRepo.isOwnedBy(fileReference.getId(), owner)) {
-            message = String.format("File <%s (checksum: %s)> at %s does not to belongs to %s",
-                                    fileReference.getMetaInfo().getFileName(),
-                                    fileReference.getMetaInfo().getChecksum(),
-                                    fileReference.getLocation().toString(),
-                                    owner);
-        } else {
+        String format;
+        if (fileRefRepo.isOwnedBy(fileReference.getId(), owner)) {
+            format = "File reference <%s (checksum: %s)> at %s does not belongs to %s anymore";
             fileRefRepo.removeOwner(fileReference.getId(), owner);
-            message = String.format("File reference <%s (checksum: %s)> at %s does not belongs to %s anymore",
-                                    fileReference.getMetaInfo().getFileName(),
-                                    fileReference.getMetaInfo().getChecksum(),
-                                    fileReference.getLocation().toString(),
-                                    owner);
+        } else {
+            format = "File <%s (checksum: %s)> at %s does not to belongs to %s";
         }
+        final String message = String.format(format,
+                                             fileReference.getMetaInfo().getFileName(),
+                                             fileReference.getMetaInfo().getChecksum(),
+                                             fileReference.getLocation().toString(),
+                                             owner);
         LOGGER.trace(message);
         fileRefEventPublisher.deletionForOwnerSuccess(fileReference, owner, message, groupId);
     }

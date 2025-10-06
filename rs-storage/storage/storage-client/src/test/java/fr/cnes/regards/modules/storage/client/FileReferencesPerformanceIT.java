@@ -29,7 +29,6 @@ import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.service.file.handler.FileReferenceEventHandler;
 import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -65,9 +64,6 @@ import java.util.concurrent.TimeUnit;
 public class FileReferencesPerformanceIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferencesPerformanceIT.class);
-
-    @Autowired
-    protected FileReferenceEventHandler fileRefEventHandler;
 
     @Autowired
     protected IFileReferenceRepository fileRefRepo;

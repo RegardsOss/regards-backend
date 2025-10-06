@@ -43,10 +43,10 @@ import java.util.List;
  */
 @Profile({ "!downloader" })
 @Component
-public class FilesReferenceEventHandler
+public class FilesReferenceRequestEventHandler
     implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FilesReferenceEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FilesReferenceEventHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FilesReferenceRequestEventHandler.class);
 
     /**
      * Bulk size limit to handle messages
@@ -58,7 +58,7 @@ public class FilesReferenceEventHandler
     private ISubscriber subscriber;
 
     @Autowired
-    private FileReferenceRequestService fileRefReqService;
+    private FileReferenceRequestService fileReferenceRequestService;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -69,7 +69,7 @@ public class FilesReferenceEventHandler
     public void handleBatch(List<FilesReferenceEvent> messages) {
         LOGGER.info("[FILES REFERENCE EVENT HANDLER] Bulk saving {} FilesReferenceEvent...", messages.size());
         long start = System.currentTimeMillis();
-        fileRefReqService.reference(messages);
+        fileReferenceRequestService.createReferenceRequests(messages);
         LOGGER.info("[FILES REFERENCE EVENT HANDLER] {} FilesReferenceEvent handled in {} ms",
                     messages.size(),
                     System.currentTimeMillis() - start);

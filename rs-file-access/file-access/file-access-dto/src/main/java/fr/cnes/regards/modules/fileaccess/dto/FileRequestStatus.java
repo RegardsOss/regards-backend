@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2025 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,13 +18,26 @@
  */
 package fr.cnes.regards.modules.fileaccess.dto;
 
-import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
- * Enumeration for possible status of a  FileReference
+ * Enumeration of possible status for entity requests or dto requests like file reference, file storage, file deletion,
+ * file copy.
+ * <br />
+ * For a {@link fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation} the status follow the sequence:
+ * <ul>
+ *     <li>TO_DO -> DELAYED -> TO_DO -> PENDING -> ERROR or request immediately deleted on success</li>
+ *     <li>TO_DO -> PENDING -> ERROR or request deleted</li>
+ * </ul>
+ * <br />
+ * For a {@link fr.cnes.regards.modules.storage.domain.database.request.FileReferenceRequestAggregation} the status follow the sequence:
+ * <ul>
+ *      <li>TO_DO -> DELAYED -> TO_DO -> ERROR or SUCCESS</li>
+ *      <li>TO_DO -> ERROR or SUCCESS</li>
+ * </ul>
+ * <br />
+ * requests FileStorageRequestAggregation and FileReferenceRequestAggregation in SUCCESS or ERROR status are deleted
+ * later by the group scheduler CheckRequestDoneGroupsScheduler.checkRequestsDoneGroups
  *
  * @author Sébastien Binda
  */
@@ -36,7 +49,10 @@ public enum FileRequestStatus {
     TO_DO,
 
     /**
-     * Request has been handled.
+     * Request has been handled but not completed yet.<br />
+     * Status not used by
+     * {@link fr.cnes.regards.modules.storage.domain.database.request.FileReferenceRequestAggregation}
+     * but by {@link fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation}
      */
     PENDING,
 
@@ -48,16 +64,26 @@ public enum FileRequestStatus {
     /**
      * Request is finished in error.
      */
-    ERROR;
+    ERROR,
 
-    public final static Set<FileRequestStatus> RUNNING_STATUS = Stream.of(FileRequestStatus.TO_DO,
-                                                                          FileRequestStatus.PENDING)
-                                                                      .collect(Collectors.toCollection(HashSet::new));
+    /**
+     * Request is finished in success.<br />
+     * Status currently used only by {@link fr.cnes.regards.modules.storage.domain.database.request.FileReferenceRequestAggregation}
+     */
+    SUCCESS;
 
-    public final static Set<FileRequestStatus> RUNNING_AND_DELAYED_STATUS = Stream.of(FileRequestStatus.TO_DO,
-                                                                                      FileRequestStatus.PENDING,
-                                                                                      FileRequestStatus.DELAYED)
-                                                                                  .collect(Collectors.toCollection(
-                                                                                      HashSet::new));
+    public static final Set<FileRequestStatus> RUNNING_STATUS = Set.of(FileRequestStatus.TO_DO,
+                                                                       FileRequestStatus.PENDING);
 
+    public static final Set<FileRequestStatus> RUNNING_AND_DELAYED_STATUS = Set.of(FileRequestStatus.TO_DO,
+                                                                                   FileRequestStatus.PENDING,
+                                                                                   FileRequestStatus.DELAYED);
+
+    public static boolean isRunning(FileRequestStatus status) {
+        return RUNNING_STATUS.contains(status);
+    }
+
+    public static boolean isFinished(FileRequestStatus status) {
+        return status == ERROR || status == SUCCESS;
+    }
 }

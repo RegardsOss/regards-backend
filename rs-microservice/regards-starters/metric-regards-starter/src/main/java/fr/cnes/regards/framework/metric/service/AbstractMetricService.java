@@ -44,6 +44,7 @@ public abstract class AbstractMetricService {
      *
      * @param tags Key value pairs representing the tags
      */
+    @Deprecated
     protected List<Tag> generateTags(Map<String, String> tags) {
         return tags.entrySet().stream().map(entry -> Tag.of(entry.getKey(), entry.getValue())).toList();
     }
@@ -51,16 +52,28 @@ public abstract class AbstractMetricService {
     /**
      * Increments Prometheus counter with dynamic tags
      */
+    @Deprecated
     protected void incrementCounter(String metricName, Map<String, String> tags, int increment) {
-        Counter counter = registry.counter(metricName, generateTags(tags));
+        incrementCounter(metricName, generateTags(tags), increment);
+    }
+
+    /**
+     * Increments Prometheus counter with dynamic tags
+     */
+    protected void incrementCounter(String metricName, Iterable<Tag> tags, int increment) {
+        Counter counter = registry.counter(metricName, tags);
         counter.increment(increment);
     }
 
     /**
      * Initialize a counter with a 0 value if it does not already exist
      */
+    @Deprecated
     protected void initializeCounterIfAbsent(String metricName, Map<String, String> tags) {
-        Counter.builder(metricName).tags(generateTags(tags)).register(registry);
+        initializeCounterIfAbsent(metricName, generateTags(tags));
     }
 
+    protected void initializeCounterIfAbsent(String metricName, Iterable<Tag> tags) {
+        Counter.builder(metricName).tags(tags).register(registry);
+    }
 }

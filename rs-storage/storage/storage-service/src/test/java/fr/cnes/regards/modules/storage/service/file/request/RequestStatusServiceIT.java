@@ -72,18 +72,18 @@ public class RequestStatusServiceIT extends AbstractStorageIT {
         String id = UUID.randomUUID().toString();
         String checksum = RandomChecksumUtils.generateRandomChecksum();
         IntStream.range(0, 10)
-                 .forEach(i -> newRequests.add(generateRandomStorageRequest(id, checksum, FileRequestStatus.DELAYED)));
-        fileStorageRequestRepo.saveAll(newRequests);
+                 .forEach(i -> newRequests.add(newRandomStorageRequest(id, checksum, FileRequestStatus.DELAYED)));
+        storageRequestRepository.saveAll(newRequests);
 
         // With try to un delayed possible requests
         requestStatusService.checkDelayedStorageRequests(null);
 
         // Then only one request should be un delayed
         Assert.assertEquals(0L,
-                            fileStorageRequestRepo.countByStorageAndStatus(ONLINE_CONF_LABEL, FileRequestStatus.DELAYED)
-                                                  .longValue());
+                            storageRequestRepository.countByStorageAndStatus(ONLINE_CONF_LABEL,
+                                                                             FileRequestStatus.DELAYED).longValue());
         // Then there is one TO_DO request containing all 10 requests
-        List<FileStorageRequestAggregation> requests = fileStorageRequestRepo.findAllByStorageAndStatus(
+        List<FileStorageRequestAggregation> requests = storageRequestRepository.findAllByStorageAndStatus(
             ONLINE_CONF_LABEL,
             FileRequestStatus.TO_DO,
             Pageable.ofSize(10)).getContent();
@@ -122,7 +122,7 @@ public class RequestStatusServiceIT extends AbstractStorageIT {
                                                                              "sessionOwner",
                                                                              "session");
         fr.setStatus(FileRequestStatus.DELAYED);
-        fileStorageRequestRepo.save(fr);
+        storageRequestRepository.save(fr);
 
         // Resume delayed request
         requestStatusService.checkDelayedStorageRequests(fileStorageRequestService);

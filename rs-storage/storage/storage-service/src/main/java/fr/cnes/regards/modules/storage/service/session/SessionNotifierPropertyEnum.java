@@ -48,7 +48,7 @@ public enum SessionNotifierPropertyEnum {
     DELETE_REQUESTS("deleteRequests", StepPropertyStateEnum.SUCCESS, false, false),
 
     /**
-     * Number of requests refused
+     * Number of requests in execution
      */
     REQUESTS_RUNNING("requestsRunning", StepPropertyStateEnum.RUNNING, false, false),
 

@@ -86,13 +86,57 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
                                          @Param("statusToSet") FileRequestStatus statusToSet,
                                          @Param("storage") String storageLocationId);
 
-    @Modifying
+    /**
+     * Update the {@link FileDeletionRequest} identified by the given id with the given status and error cause.<br/>
+     * If no {@link FileDeletionRequest} is found, no update is executed.</br>
+     * Note: Update query is executed without outdating the persistence context.
+     *
+     * @param id                of the FileDeletionRequest to be updated
+     * @param fileRequestStatus new status of the FileDeletionRequest
+     * @param message           new error cause of the FileDeletionRequest
+     * @return an Optional of the updated FileDeletionRequest or an empty optional.
+     */
+    default Optional<FileDeletionRequest> updateError(Long id, FileRequestStatus fileRequestStatus, String message) {
+        final Optional<FileDeletionRequest> optRequest = this.findById(id);
+        optRequest.ifPresent(request -> {
+            request.setErrorCause(message);
+            request.setStatus(fileRequestStatus);
+            this.save(request);
+        });
+        return optRequest;
+    }
+
+    @Deprecated
+    @Modifying // WARNING: the query is executed against the database leaving the persistence context outdated.
     @Query("update FileDeletionRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
     int updateError(@Param("status") FileRequestStatus status,
                     @Param("errorCause") String errorCause,
                     @Param("id") Long id);
 
-    @Modifying
+    /**
+     * Update the {@link FileDeletionRequest} identified by the given id with the given the status and job id.<br/>
+     * If no {@link FileDeletionRequest} is found, no update is executed.</br>
+     * Note: Update query is executed without outdating the persistence context.
+     *
+     * @param id                of the FileDeletionRequest to be updated
+     * @param fileRequestStatus new status of the FileDeletionRequest
+     * @param jobId             new job id the FileDeletionRequest
+     * @return an Optional of the updated {@link FileDeletionRequest} or an empty optional.
+     */
+    default Optional<FileDeletionRequest> updateStatusAndJobId(Long id,
+                                                               FileRequestStatus fileRequestStatus,
+                                                               String jobId) {
+        final Optional<FileDeletionRequest> optRequest = this.findById(id);
+        optRequest.ifPresent(request -> {
+            request.setJobId(jobId);
+            request.setStatus(fileRequestStatus);
+            this.save(request);
+        });
+        return optRequest;
+    }
+
+    @Deprecated
+    @Modifying // WARNING: the query is executed against the database leaving the persistence context outdated
     @Query("update FileDeletionRequest fdr set fdr.status = :status, fdr.jobId = :jobId where fdr.id = :id")
     int updateStatusAndJobId(@Param("status") FileRequestStatus pending,
                              @Param("jobId") String jobId,

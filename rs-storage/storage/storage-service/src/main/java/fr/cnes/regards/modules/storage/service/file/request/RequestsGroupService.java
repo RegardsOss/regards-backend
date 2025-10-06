@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestType;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileGroupRequestStatus;
+import fr.cnes.regards.modules.fileaccess.dto.request.RequestResultInfoDto;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.dao.*;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
@@ -98,6 +99,9 @@ public class RequestsGroupService {
     private IFileDeletetionRequestRepository delReqRepository;
 
     @Autowired
+    private IFileReferenceRequestRepository referenceReqRepository;
+
+    @Autowired
     private IRequestGroupRepository reqGroupRepository;
 
     @Autowired
@@ -107,6 +111,9 @@ public class RequestsGroupService {
     public MeterRegistry meterRegistry;
 
     private io.micrometer.core.instrument.Timer myTimer;
+
+    @Autowired
+    private IFileReferenceRequestRepository iFileReferenceRequestRepository;
 
     public io.micrometer.core.instrument.Timer getTimer() {
         if (myTimer == null) {
@@ -204,7 +211,7 @@ public class RequestsGroupService {
     public void granted(Set<String> groupIds, FileRequestType type, OffsetDateTime expirationDate) {
         // Create new group request
         List<RequestGroup> existings = reqGroupRepository.findAllById(groupIds);
-        List<String> existingGrpIds = existings.stream().map(RequestGroup::getId).collect(Collectors.toList());
+        List<String> existingGrpIds = existings.stream().map(RequestGroup::getId).toList();
         Set<RequestGroup> toSave = Sets.newHashSet();
         for (String groupId : groupIds) {
             if (!existingGrpIds.contains(groupId)) {
@@ -221,7 +228,8 @@ public class RequestsGroupService {
     }
 
     /**
-     * Delete all requests associated to the given group ids if not running.
+     * Delete all requests associated to the given group ids if not running i.e. TO_DO or PENDING
+     * TODO what about requests in DELAYED status? is it considered as running or not?
      *
      * @param group group identifier
      */
@@ -259,6 +267,18 @@ public class RequestsGroupService {
         });
         copyReqRepository.deleteAll(copyRequests);
 
+        // Cancel reference requests
+        final List<FileReferenceRequestAggregation> referenceRequests = referenceReqRepository.findByGroupIdsAndStatusNotIn(
+            group,
+            FileRequestStatus.RUNNING_STATUS);
+        referenceRequests.forEach(req -> {
+            sessionNotifier.decrementReferenceRequests(req.getSessionOwner(), req.getSession());
+            if (req.getStatus() == FileRequestStatus.ERROR) {
+                sessionNotifier.decrementErrorRequests(req.getSessionOwner(), req.getSession());
+            }
+        });
+        referenceReqRepository.deleteAll(referenceRequests);
+
         // Cancel cache requests
         cacheReqRepository.deleteByGroupIdsAndStatusNotIn(group,
                                                           FileRequestStatus.RUNNING_STATUS.stream()
@@ -268,11 +288,12 @@ public class RequestsGroupService {
     }
 
     /**
-     * Check for all current request groups if all requests are terminated. If so send a SUCCESS or ERROR event on the bus message.
+     * Check for all current request groups if all requests are terminated.
+     * If so send a SUCCESS or ERROR event on the bus message.
      */
     public void checkRequestsGroupsDone() {
         LOGGER.debug("[REQUEST GROUPS] Start checking request groups expired ... ");
-        long start = System.currentTimeMillis();
+        long startExpired = System.currentTimeMillis();
         // Handle expired groups
         Page<RequestGroup> expiredGroups = reqGroupRepository.findByExpirationDateLessThanEqual(OffsetDateTime.now(),
                                                                                                 PageRequest.of(0,
@@ -288,14 +309,15 @@ public class RequestsGroupService {
             LOGGER.info("[REQUEST GROUPS] {}/{} expired groups done in {}ms ",
                         expiredGroupsHandledCount,
                         expiredGroupsCount,
-                        System.currentTimeMillis() - start);
+                        System.currentTimeMillis() - startExpired);
         }
-        start = System.currentTimeMillis();
+
+        long startDone = System.currentTimeMillis();
         LOGGER.debug("[REQUEST GROUPS] Start checking request groups done ... ");
-        // Handle done groups
-        List<RequestGroup> groupsDone = reqGroupRepository.findGroupDones(maxRequestPerTransaction);
-        List<String> groupsDoneIds = groupsDone.stream().map(RequestGroup::getId).collect(Collectors.toList());
-        Set<RequestResultInfo> requestsInfo = groupReqInfoRepository.findByGroupIdIn(groupsDoneIds);
+        // Handle done groups ie. group without running request
+        final List<RequestGroup> groupsDone = reqGroupRepository.findGroupDones(maxRequestPerTransaction);
+        final List<String> groupsDoneIds = groupsDone.stream().map(RequestGroup::getId).toList();
+        final Set<RequestResultInfo> requestsInfo = groupReqInfoRepository.findByGroupIdIn(groupsDoneIds);
         if (!groupsDone.isEmpty()) {
             for (RequestGroup group : groupsDone) {
                 groupDone(group,
@@ -306,12 +328,12 @@ public class RequestsGroupService {
             groupReqInfoRepository.deleteByGroupIdIn(groupsDoneIds);
             reqGroupRepository.deleteAll(groupsDone);
             LOGGER.info("[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}.",
-                        System.currentTimeMillis() - start,
+                        System.currentTimeMillis() - startDone,
                         groupsDone.size());
-            getTimer().record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
+            getTimer().record(System.currentTimeMillis() - startDone, TimeUnit.MILLISECONDS);
         } else {
             LOGGER.debug("[REQUEST GROUPS] Checking request groups done in {}ms. No groups done.",
-                         System.currentTimeMillis() - start);
+                         System.currentTimeMillis() - startDone);
         }
     }
 
@@ -325,25 +347,25 @@ public class RequestsGroupService {
         switch (reqGrp.getType()) {
             case AVAILABILITY:
                 cacheReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> {
-                    cacheReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                    cacheReqRepository.updateError(req.getId(), FileRequestStatus.ERROR, errorCause);
                     eventPublisher.notAvailable(req.getChecksum(), null, errorCause, reqGrp.getId());
                 });
                 break;
             case COPY:
                 copyReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
-                    copyReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                    copyReqRepository.updateError(req.getId(), FileRequestStatus.ERROR, errorCause);
                     eventPublisher.copyError(req, errorCause);
                 });
                 break;
             case DELETION:
                 delReqRepository.findByGroupId(reqGrp.getId()).forEach(req -> {
-                    delReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                    delReqRepository.updateError(req.getId(), FileRequestStatus.ERROR, errorCause);
                     eventPublisher.deletionError(req.getFileReference(), errorCause, reqGrp.getId());
                 });
                 break;
             case STORAGE:
                 storageReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> {
-                    storageReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
+                    storageReqRepository.updateError(req.getId(), FileRequestStatus.ERROR, errorCause);
                     eventPublisher.storeError(req.getMetaInfo().getChecksum(),
                                               req.getOwners(),
                                               req.getStorage(),
@@ -352,7 +374,14 @@ public class RequestsGroupService {
                 });
                 break;
             case REFERENCE:
-                // There is no asynchronous request for reference. If the request is referenced in db, so all requests have been handled
+                referenceReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> {
+                    referenceReqRepository.updateError(req.getId(), FileRequestStatus.ERROR, errorCause);
+                    eventPublisher.storeError(req.getMetaInfo().getChecksum(),
+                                              req.getOwners(),
+                                              req.getStorage(),
+                                              errorCause,
+                                              reqGrp.getId());
+                });
                 break;
             default:
                 break;
@@ -369,13 +398,13 @@ public class RequestsGroupService {
     private void groupDone(RequestGroup reqGrp,
                            Set<RequestResultInfo> resultInfos,
                            Optional<FileGroupRequestStatus> forcedStatus) {
-        Set<RequestResultInfo> errors = Sets.newHashSet();
-        Set<RequestResultInfo> successes = Sets.newHashSet();
+        final Set<RequestResultInfoDto> errors = Sets.newHashSet();
+        final Set<RequestResultInfoDto> successes = Sets.newHashSet();
         for (RequestResultInfo info : resultInfos) {
             if (info.isError()) {
-                errors.add(info);
+                errors.add(info.toDto());
             } else {
-                successes.add(info);
+                successes.add(info.toDto());
             }
         }
         // 1. Publish events
@@ -388,7 +417,7 @@ public class RequestsGroupService {
             publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(),
                                                            reqGrp.getType(),
                                                            forcedStatus.orElse(FileGroupRequestStatus.SUCCESS),
-                                                           successes.stream().map(RequestResultInfo::toDto).toList()));
+                                                           successes));
             if (successes.isEmpty()) {
                 LOGGER.debug("[{} GROUP {} {}] No success requests associated to terminated group",
                              forcedStatus.orElse(FileGroupRequestStatus.SUCCESS),
@@ -401,14 +430,7 @@ public class RequestsGroupService {
                          reqGrp.getId(),
                          successes.size(),
                          errors.size());
-            publisher.publish(FileRequestsGroupEvent.buildError(reqGrp.getId(),
-                                                                reqGrp.getType(),
-                                                                successes.stream()
-                                                                         .map(RequestResultInfo::toDto)
-                                                                         .toList(),
-                                                                errors.stream()
-                                                                      .map(RequestResultInfo::toDto)
-                                                                      .toList()));
+            publisher.publish(FileRequestsGroupEvent.buildError(reqGrp.getId(), reqGrp.getType(), successes, errors));
         }
     }
 
@@ -440,7 +462,7 @@ public class RequestsGroupService {
         Pageable page = PageRequest.of(0, 500, Direction.ASC, "id");
         Page<RequestGroup> groups = reqGroupRepository.findByType(type, page);
         Set<RequestResultInfo> infos = groupReqInfoRepository.findByGroupIdIn(groups.stream()
-                                                                                    .map(g -> g.getId())
+                                                                                    .map(RequestGroup::getId)
                                                                                     .collect(Collectors.toSet()));
         if (!groups.isEmpty()) {
             for (RequestGroup group : groups) {
@@ -453,5 +475,15 @@ public class RequestsGroupService {
                                                            .collect(Collectors.toSet()));
             reqGroupRepository.deleteAll(groups);
         }
+    }
+
+    /**
+     * Find all the ids of terminated group of reference request {@link FileReferenceRequestAggregation}.
+     * A group is considered as terminated if all its reference request are terminated (i.e. status in SUCCESS or ERROR)
+     *
+     * @return Set of id of terminated group
+     */
+    public Set<String> findAllGroupIdsOfTerminatedReferenceRequests() {
+        return reqGroupRepository.findAllGroupIdsOfTerminatedReferenceRequest(maxRequestPerTransaction);
     }
 }

@@ -18,9 +18,12 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.test;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.util.JUnitLogRule;
 import org.junit.After;
 import org.junit.Rule;
 import org.mockito.ArgumentCaptor;
@@ -40,12 +43,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.util.JUnitLogRule;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Multitenant test utility class for testing service layer. This class starts up an integration test context enabling

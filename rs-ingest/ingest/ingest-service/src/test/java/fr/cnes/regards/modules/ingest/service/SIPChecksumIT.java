@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
+import fr.cnes.regards.framework.oais.dto.sip.SIPDto;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import org.junit.Assert;
 import org.junit.Test;

@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -106,13 +104,13 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
                                         SESSION_OWNER,
                                         SESSION);
         }
-        JobInfo ji = fileCopyRequestService.scheduleJob(ONLINE_CONF_LABEL,
-                                                        "rep/one",
-                                                        NEARLINE_CONF_LABEL,
-                                                        Optional.empty(),
-                                                        Sets.newHashSet("plop"),
-                                                        SESSION_OWNER,
-                                                        SESSION);
+        JobInfo ji = copyRequestService.scheduleJob(ONLINE_CONF_LABEL,
+                                                    "rep/one",
+                                                    NEARLINE_CONF_LABEL,
+                                                    Optional.empty(),
+                                                    Set.of("plop"),
+                                                    SESSION_OWNER,
+                                                    SESSION);
         Assert.assertNotNull("A job should be created", ji);
         Mockito.reset(publisher);
         jobService.runJob(ji, getDefaultTenant()).get();
@@ -137,37 +135,37 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     public void copyFile() throws InterruptedException, ExecutionException {
         String requestGroup = UUID.randomUUID().toString();
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
-        Set<FileCopyDto> requests = Sets.newHashSet(FileCopyDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                      ONLINE_CONF_LABEL,
-                                                                      SESSION_OWNER,
-                                                                      SESSION));
-        fileCopyRequestService.copy(Sets.newHashSet(new FilesCopyEvent(requests, requestGroup)));
+        Set<FileCopyDto> requests = Set.of(FileCopyDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                             ONLINE_CONF_LABEL,
+                                                             SESSION_OWNER,
+                                                             SESSION));
+        copyRequestService.copy(Set.of(new FilesCopyEvent(requests, requestGroup)));
         // A new copy request should be created
-        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
-                                                                       ONLINE_CONF_LABEL);
+        Optional<FileCopyRequest> oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(),
+                                                                   ONLINE_CONF_LABEL);
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
 
         // Now run copy schedule
-        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
+        copyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
 
         // There should be one availability request created
-        Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum())
-                                                                      .stream()
-                                                                      .findFirst();
-        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        Optional<FileCacheRequest> oCacheReq = cacheRequestService.search(fileRef.getMetaInfo().getChecksum())
+                                                                  .stream()
+                                                                  .findFirst();
+        oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertTrue("There should be a cache request created", oCacheReq.isPresent());
-        Assert.assertTrue("No storage request should be created yet", fileStorageRequestRepo.count() == 0);
+        Assert.assertTrue("No storage request should be created yet", storageRequestRepository.count() == 0);
         Assert.assertTrue("There should be a copy request", oReq.isPresent());
         Assert.assertTrue("There should be a copy request in pending state",
                           oReq.get().getStatus() == FileRequestStatus.PENDING);
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
+        Collection<JobInfo> jobs = cacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         // Cache file should be restored
-        oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).stream().findFirst();
+        oCacheReq = cacheRequestService.search(fileRef.getMetaInfo().getChecksum()).stream().findFirst();
         Optional<CacheFile> oCachedFile = cacheService.findByChecksum(fileRef.getMetaInfo().getChecksum());
-        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertFalse("There should not be a cache request anymore", oCacheReq.isPresent());
         Assert.assertTrue("The file should be restored in  cache", oCachedFile.isPresent());
         Assert.assertTrue("There should be a copy request", oReq.isPresent());
@@ -180,14 +178,14 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
 
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        fileRefEventHandler.handleBatch(Lists.newArrayList(event));
+        referenceEventHandler.handleBatch(List.of(event));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // A new storage request should be created
-        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(ONLINE_CONF_LABEL,
-                                                                                     fileRef.getMetaInfo()
-                                                                                            .getChecksum());
-        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        Collection<FileStorageRequestAggregation> storageReqs = storageRequestService.search(ONLINE_CONF_LABEL,
+                                                                                             fileRef.getMetaInfo()
+                                                                                                    .getChecksum());
+        oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertEquals("There should be a storage request created", 1, storageReqs.size());
         Assert.assertTrue("There should be a copy request", oReq.isPresent());
         Assert.assertTrue("There should be a copy request in pending state",
@@ -197,11 +195,11 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
 
         // Run storage job
         Mockito.reset(publisher);
-        jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList(), Lists.newArrayList());
+        jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO, List.of(), List.of());
         runAndWaitJob(jobs);
-        storageReqs = stoReqService.search(ONLINE_CONF_LABEL, fileRef.getMetaInfo().getChecksum());
-        Optional<FileReference> oFileRef = fileRefService.search(ONLINE_CONF_LABEL,
-                                                                 fileRef.getMetaInfo().getChecksum());
+        storageReqs = storageRequestService.search(ONLINE_CONF_LABEL, fileRef.getMetaInfo().getChecksum());
+        Optional<FileReference> oFileRef = referenceService.search(ONLINE_CONF_LABEL,
+                                                                   fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
         Assert.assertTrue("File reference request should not exists anymore", storageReqs.isEmpty());
         Assert.assertTrue("There should be a copy request", oReq.isPresent());
@@ -255,9 +253,9 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         // Simulate file stored event
         event = getFileReferenceEvent(argumentCaptor.getAllValues());
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
-        fileRefEventHandler.handleBatch(Lists.newArrayList(event));
+        referenceEventHandler.handleBatch(List.of(event));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertFalse("There should not be a copy request anymore", oReq.isPresent());
 
         // File should not be in cache anymore
@@ -302,38 +300,38 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     public void copyFileInSubDir() throws InterruptedException, ExecutionException {
         String copyDestinationPath = "dir/test/copy";
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
-        Set<FileCopyDto> requests = Sets.newHashSet(FileCopyDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                      ONLINE_CONF_LABEL,
-                                                                      copyDestinationPath,
-                                                                      SESSION_OWNER,
-                                                                      SESSION));
-        fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
+        Set<FileCopyDto> requests = Set.of(FileCopyDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                             ONLINE_CONF_LABEL,
+                                                             copyDestinationPath,
+                                                             SESSION_OWNER,
+                                                             SESSION));
+        copyRequestService.handle(requests, UUID.randomUUID().toString());
         // A new copy request should be created
-        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
-                                                                       ONLINE_CONF_LABEL);
+        Optional<FileCopyRequest> oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(),
+                                                                   ONLINE_CONF_LABEL);
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
 
         // Now run copy schedule
-        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
+        copyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
 
         // There should be one availability request created
-        Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum())
-                                                                      .stream()
-                                                                      .findFirst();
-        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        Optional<FileCacheRequest> oCacheReq = cacheRequestService.search(fileRef.getMetaInfo().getChecksum())
+                                                                  .stream()
+                                                                  .findFirst();
+        oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertTrue("There should be a cache request created", oCacheReq.isPresent());
-        Assert.assertTrue("No storage request should be created yet", fileStorageRequestRepo.count() == 0);
+        Assert.assertTrue("No storage request should be created yet", storageRequestRepository.count() == 0);
         Assert.assertTrue("There should be a copy request", oReq.isPresent());
         Assert.assertTrue("There should be a copy request in pending state",
                           oReq.get().getStatus() == FileRequestStatus.PENDING);
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
+        Collection<JobInfo> jobs = cacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         // Cache file should be restored
-        oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).stream().findFirst();
+        oCacheReq = cacheRequestService.search(fileRef.getMetaInfo().getChecksum()).stream().findFirst();
         Optional<CacheFile> oCachedFile = cacheService.findByChecksum(fileRef.getMetaInfo().getChecksum());
-        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertFalse("There should not be a cache request anymore", oCacheReq.isPresent());
         Assert.assertTrue("The file should be restored in  cache", oCachedFile.isPresent());
         Assert.assertTrue("There should be a copy request", oReq.isPresent());
@@ -345,14 +343,14 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
 
-        fileRefEventHandler.handleBatch(Lists.newArrayList(event));
+        referenceEventHandler.handleBatch(List.of(event));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // A new storage request should be created
-        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(ONLINE_CONF_LABEL,
-                                                                                     fileRef.getMetaInfo()
-                                                                                            .getChecksum());
-        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        Collection<FileStorageRequestAggregation> storageReqs = storageRequestService.search(ONLINE_CONF_LABEL,
+                                                                                             fileRef.getMetaInfo()
+                                                                                                    .getChecksum());
+        oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertEquals("There should be a storage request created", 1, storageReqs.size());
         Assert.assertEquals("The storage request should contains subdirectory to store to",
                             copyDestinationPath,
@@ -363,11 +361,11 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
 
         // Run storage job
         Mockito.reset(publisher);
-        jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList(), Lists.newArrayList());
+        jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO, List.of(), List.of());
         runAndWaitJob(jobs);
-        storageReqs = stoReqService.search(ONLINE_CONF_LABEL, fileRef.getMetaInfo().getChecksum());
-        Optional<FileReference> oFileRef = fileRefService.search(ONLINE_CONF_LABEL,
-                                                                 fileRef.getMetaInfo().getChecksum());
+        storageReqs = storageRequestService.search(ONLINE_CONF_LABEL, fileRef.getMetaInfo().getChecksum());
+        Optional<FileReference> oFileRef = referenceService.search(ONLINE_CONF_LABEL,
+                                                                   fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
         Assert.assertTrue("File reference request should not exists anymore", storageReqs.isEmpty());
         Assert.assertTrue("There should be a copy request", oReq.isPresent());
@@ -377,10 +375,10 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         // Simulate file  stored event
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         event = getFileReferenceEvent(argumentCaptor.getAllValues());
-        fileRefEventHandler.handleBatch(Lists.newArrayList(event));
+        referenceEventHandler.handleBatch(List.of(event));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
-        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertFalse("There should not be a copy request anymore", oReq.isPresent());
 
         // File should not be in cache anymore
@@ -399,33 +397,33 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
                                                     SESSION_OWNER,
                                                     SESSION,
                                                     false).get();
-        Set<FileCopyDto> requests = Sets.newHashSet(FileCopyDto.build(fileRef.getMetaInfo().getChecksum(),
-                                                                      storageCopyDest,
-                                                                      SESSION_OWNER,
-                                                                      SESSION));
-        fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
-        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
-                                                                       storageCopyDest);
+        Set<FileCopyDto> requests = Set.of(FileCopyDto.build(fileRef.getMetaInfo().getChecksum(),
+                                                             storageCopyDest,
+                                                             SESSION_OWNER,
+                                                             SESSION));
+        copyRequestService.handle(requests, UUID.randomUUID().toString());
+        Optional<FileCopyRequest> oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(),
+                                                                   storageCopyDest);
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
 
         // Now run copy schedule
-        fileCopyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
+        copyRequestService.scheduleCopyRequests(FileRequestStatus.TO_DO);
 
         // There should be one availability request created
-        Optional<FileCacheRequest> oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum())
-                                                                      .stream()
-                                                                      .findFirst();
-        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), storageCopyDest);
+        Optional<FileCacheRequest> oCacheReq = cacheRequestService.search(fileRef.getMetaInfo().getChecksum())
+                                                                  .stream()
+                                                                  .findFirst();
+        oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(), storageCopyDest);
         Assert.assertTrue("There should be a cache request created", oCacheReq.isPresent());
-        Assert.assertTrue("No storage request should be created yet", fileStorageRequestRepo.count() == 0);
+        Assert.assertTrue("No storage request should be created yet", storageRequestRepository.count() == 0);
         Assert.assertTrue("There should be a copy request", oReq.isPresent());
         Assert.assertTrue("There should be a copy request in pending state",
                           oReq.get().getStatus() == FileRequestStatus.PENDING);
 
-        Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
+        Collection<JobInfo> jobs = cacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
-        oCacheReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum()).stream().findFirst();
+        oCacheReq = cacheRequestService.search(fileRef.getMetaInfo().getChecksum()).stream().findFirst();
         Assert.assertTrue("There should be a cache request in error state",
                           oCacheReq.get().getStatus() == FileRequestStatus.ERROR);
 
@@ -433,11 +431,11 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         FileReferenceEvent event = getFileReferenceEvent(argumentCaptor.getAllValues());
-        fileRefEventHandler.handleBatch(Lists.newArrayList(event));
+        referenceEventHandler.handleBatch(List.of(event));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // Copy request should be updated in ERROR
-        oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), storageCopyDest);
+        oReq = copyRequestService.search(fileRef.getMetaInfo().getChecksum(), storageCopyDest);
         Assert.assertTrue("There should be a copy request in error state",
                           oReq.get().getStatus() == FileRequestStatus.ERROR);
     }
@@ -446,12 +444,9 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     public void copyFile_error_unknownFile() {
         String storage = "somewhere";
         String unknownChecksum = RandomChecksumUtils.generateRandomChecksum();
-        Set<FileCopyDto> requests = Sets.newHashSet(FileCopyDto.build(unknownChecksum,
-                                                                      storage,
-                                                                      SESSION_OWNER,
-                                                                      SESSION));
-        fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
-        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(unknownChecksum, storage);
+        Set<FileCopyDto> requests = Set.of(FileCopyDto.build(unknownChecksum, storage, SESSION_OWNER, SESSION));
+        copyRequestService.handle(requests, UUID.randomUUID().toString());
+        Optional<FileCopyRequest> oReq = copyRequestService.search(unknownChecksum, storage);
         Assert.assertFalse("There should not be a copy request created", oReq.isPresent());
     }
 

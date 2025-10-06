@@ -1,0 +1,178 @@
+
+@startuml 'https://plantuml.com/class-diagram
+
+package "storage-service" {
+
+class FilesStorageRequestEventHandler <<BatchHandler>> {
+    - FileStorageRequestService fileStorageRequestService
+    + void handleBatch(List<FilesStorageRequestEvent> messages)
+    + Errors validate(FilesStorageRequestEvent message)
+}
+
+class RequestStatusService <<Service>> {
+
+    + FileRequestStatus getNewStatus(FileReferenceRequestAggregation request, Optional<FileRequestStatus> oDefault)
+    + FileRequestStatus getNewStatus(FileStorageRequestAggregation request, Optional<FileRequestStatus> oDefault)
+    + FileRequestStatus getNewStatus(FileDeletionRequest request, Optional<FileRequestStatus> oDefault)
+    + FileRequestStatus getNewStatus(FileCopyRequest request, Optional<FileRequestStatus> oDefault
+    + FileRequestStatus getNewStatus(FileCacheRequest request, Optional<FileRequestStatus> oDefault)
+
+    + void checkDelayedReferenceRequests(FileReferenceRequestService fileReferenceRequestService)
+    + void checkDelayedStorageRequests(FileStorageRequestService fileStorageRequestService)
+    + void checkDelayedDeleteRequests()
+    + void checkDelayedCopyRequests()
+    + void checkDelayedCacheRequests()
+
+    + void stopReferenceRequests()
+    + void stopStorageRequests()
+    + void stopDeletionRequests()
+    + void stopCopyRequests()
+    + void stopCacheRequests()
+}
+
+class FileStorageRequestService <<Service>> {
+    - SessionNotifier sessionNotifier
+    - RequestStatusService reqStatusService
+    - FileReferenceRequestService fileRefReqService
+    - IFileStorageRequestRepository fileRequestRepository
+
+    + RequestResult handleRequest(...)
+    + void store()
+    + Collection<FileStorageRequestAggregation> search(...)
+    + Long count(...)
+    + void delete(FileStorageRequestAggregation)
+    + void update(FileStorageRequestAggregation)
+    + void retry(...)
+    + Collection<JobInfo> scheduleJobs(...)
+    + void createNewFileStorageRequest(...)
+}
+
+FilesStorageRequestEventHandler -- FileStorageRequestService
+
+class FileRequestScheduler {
+    - RequestStatusService requestStatusService
+    - FileStorageRequestService fileStorageRequestService
+    - FileReferenceRequestService fileReferenceRequestService
+    - FileDeletionRequestService fileDeletionRequestService
+    - FileCacheRequestService fileCacheRequestService
+    - FileCopyRequestService fileCopyRequestService
+    - RequestsGroupService reqGroupService
+    - RequestStatusService reqStatusService
+
+    + void scheduleUpdateRequests()
+    + handleGroupRequests()
+    + handleFileCacheRequests()
+    + handleFileStorageRequests()
+    + handleFileDeletionRequests()
+    + handleFileCopyRequests()
+    + handleFileReferenceRequests()
+}
+FileRequestScheduler -- FileStorageRequestService
+FileRequestScheduler -- RequestStatusService
+
+
+    class JobEventHandler <<BatchHandler>> {
+        + handleBatch(List<JobEvent> jobEvents)
+    }
+    class FileStorageRequestJob
+
+    class FileStorageRequestService
+    class FileReferenceRequestService
+
+    class FileReferenceRequestHandler <<BatchHandler>> {
+
+    }
+    class FileReferenceEventHandler <<BatchHandler>> {
+        + void handleBatch(List<FileReferenceEvent> messages
+        + void handle(FileReferenceEvent event)
+    }
+
+    class FilesReferenceEventHandler <<EventHandler>> {
+        + void handleBatch(List<FilesReferenceEvent> messages)
+    }
+
+    class FilesReferenceRequestEventHandler <<BatchHandler>> {
+        + void handleBatch(List<FilesReferenceEvent> messages)
+    }
+}
+@enduml
+
+
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+QUEUE -->  FilesStorageRequestHandler : handleBatch
+activate FilesStorageRequestHandler
+FilesStorageRequestHandler --> FileStorageRequestService : store(List<FilesStorageRequestEvent>)
+activate FileStorageRequestService
+loop
+FileStorageRequestService --> FileStorageRequestService : doStore
+alt error validation
+FileStorageRequestService --> RequestsGroupService : denied
+else validation ok
+FileStorageRequestService --> FileStorageRequestService : handleRequest
+FileStorageRequestService --> RequestsGroupService : granted
+end
+end
+deactivate
+@enduml
+
+@startuml
+'https://plantuml.com/sequence-diagram
+
+CRON --> FileRequestScheduler : scheduleUpdateRequests
+activate FileRequestScheduler
+FileRequestScheduler --> FileRequestScheduler : handleFileStorageRequests
+activate FileRequestScheduler
+FileRequestScheduler --> RequestStatusService : checkDelayedStorageRequests
+FileRequestScheduler --> FileStorageRequestService : scheduleJobs
+deactivate
+
+FileRequestScheduler --> FileRequestScheduler : handleFileReferenceRequests
+activate FileRequestScheduler
+FileRequestScheduler --> RequestStatusService : checkDelayedStorageRequests
+FileRequestScheduler --> FileReferenceRequestService : scheduleJobs
+deactivate
+deactivate
+@enduml
+
+@startuml
+'https://plantuml.com/sequence-diagram
+
+AMQP --> JobEventHandler : handleBatch(List<JobEvent>)
+activate JobEventHandler
+
+loop [jobEvent]
+alt [jobEventType is FAILED or ABORTED]]
+JobEventHandler --> JobInfoService : retrieveJob
+JobEventHandler <-- JobInfoService : jobInfo
+JobEventHandler --> FileStorageRequestService : handleJobCrash(jobInfo)
+JobEventHandler --> FileDeletionRequestService : handleJobCrash(jobInfo)
+JobEventHandler --> FileCacheRequestService : handleJobCrash(jobInfo)
+JobEventHandler --> FileReferenceRequestService : handleJobCrash(jobInfo)
+end
+end
+
+@enduml
+
+@startuml
+'https://plantuml.com/sequence-diagram
+
+AMQP --> FileReferenceRequestEventHandler : handleBatch(List<FilesReferenceRequestEvent> messages)>)
+FileReferenceRequestEventHandler --> FileReferenceRequestService : createReferenceRequests(List<FilesReferenceRequestEvent>)
+
+activate FileReferenceRequestEventHandler
+loop
+loop
+FilesStorageRequestHandler --> FileReferenceRequestService : createNewFileReferenceRequest
+FileReferenceRequestService --> fileReferenceRequestRepo : save(FileReferenceRequestAggregation)
+end
+FileReferenceRequestService --> RequestsGroupService : granted
+end
+deactivate
+
+@enduml
+
+

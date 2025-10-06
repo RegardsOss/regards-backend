@@ -23,6 +23,8 @@ import fr.cnes.regards.modules.fileaccess.dto.FileLocationDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
+import java.util.Objects;
+
 /**
  * Definition of a file location
  *
@@ -106,18 +108,16 @@ public class FileLocation {
      */
     @Override
     public String toString() {
-        return "FileLocation [" + (storage != null ? "storage=" + storage + ", " : "") + (url != null ?
-            "url=" + url :
-            "") + "]";
+        return "FileLocation ["
+               // storage
+               + (storage != null ? "storage=" + storage + ", " : "")
+               // url
+               + (url != null ? "url=" + url : "") + "]";
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result) + ((storage == null) ? 0 : storage.hashCode());
-        result = (prime * result) + ((url == null) ? 0 : url.hashCode());
-        return result;
+        return Objects.hash(storage, url);
     }
 
     @Override

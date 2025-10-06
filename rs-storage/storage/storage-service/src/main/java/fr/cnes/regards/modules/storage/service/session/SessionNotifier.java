@@ -59,6 +59,10 @@ public class SessionNotifier {
         incrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REFERENCE_REQUESTS, 1);
     }
 
+    public void decrementReferenceRequests(String sessionOwner, String session) {
+        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REFERENCE_REQUESTS, 1);
+    }
+
     // store request
     public void incrementStoreRequests(String sessionOwner, String session) {
         incrementCount(sessionOwner, session, SessionNotifierPropertyEnum.STORE_REQUESTS, 1);

@@ -47,7 +47,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static fr.cnes.regards.modules.storage.rest.DownloadQuotaController.*;
@@ -228,7 +227,7 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
                                                                  maxQuota,
                                                                  rateLimit));
                                                          })
-                                                         .collect(Collectors.toList());
+                                                         .toList();
 
         RequestBuilderCustomizer customizer = customizer().addParameter(USER_EMAIL_PARAM,
                                                                         quotaLimits.stream()

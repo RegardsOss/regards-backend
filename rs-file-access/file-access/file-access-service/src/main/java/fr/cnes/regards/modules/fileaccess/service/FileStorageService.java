@@ -31,6 +31,8 @@ import fr.cnes.regards.modules.fileaccess.amqp.output.StorageResponseEvent;
 import fr.cnes.regards.modules.fileaccess.amqp.output.StorageWorkerRequestEvent;
 import fr.cnes.regards.modules.fileaccess.dto.output.StorageResponseErrorEnum;
 import fr.cnes.regards.modules.fileaccess.dto.output.worker.StorageWorkerResponseDto;
+import fr.cnes.regards.modules.fileaccess.dto.output.worker.type.FileMetadata;
+import fr.cnes.regards.modules.fileaccess.dto.output.worker.type.FileProcessingMetadata;
 import fr.cnes.regards.modules.fileaccess.dto.output.worker.type.ImageFileMetadata;
 import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageLocation;
 import fr.cnes.regards.modules.workermanager.amqp.events.in.RequestEvent;
@@ -124,33 +126,27 @@ public class FileStorageService {
                     } else {
                         Integer height = null;
                         Integer width = null;
-                        if (workerResponseContent.getStoreFileMetadata() instanceof ImageFileMetadata imageFileMetadata) {
+                        final FileMetadata storeFileMetadata = workerResponseContent.getStoreFileMetadata();
+                        if (storeFileMetadata instanceof ImageFileMetadata imageFileMetadata) {
                             height = imageFileMetadata.getHeightInPx();
                             width = imageFileMetadata.getWidthInPx();
                         }
                         if (isStoredInCache(workerResponseContent)) {
+                            final FileProcessingMetadata fileProcessingMetadata = workerResponseContent.getFileProcessingMetadata();
                             publisher.publish(StorageResponseEvent.createSuccessCacheResponse(message.getRequestId(),
-                                                                                              workerResponseContent.getStoreFileMetadata()
-                                                                                                                   .getStoredFileUrl(),
-                                                                                              workerResponseContent.getStoreFileMetadata()
-                                                                                                                   .getChecksum(),
-                                                                                              workerResponseContent.getStoreFileMetadata()
-                                                                                                                   .getFileSizeInBytes(),
+                                                                                              storeFileMetadata.getStoredFileUrl(),
+                                                                                              storeFileMetadata.getChecksum(),
+                                                                                              storeFileMetadata.getFileSizeInBytes(),
                                                                                               height,
                                                                                               width,
-                                                                                              workerResponseContent.getFileProcessingMetadata()
-                                                                                                                   .getStoreParentUrl(),
-                                                                                              workerResponseContent.getFileProcessingMetadata()
-                                                                                                                   .getCachePath()),
+                                                                                              fileProcessingMetadata.getStoreParentUrl(),
+                                                                                              fileProcessingMetadata.getCachePath()),
                                               message.getRequestId());
                         } else {
                             publisher.publish(StorageResponseEvent.createSuccessResponse(message.getRequestId(),
-                                                                                         workerResponseContent.getStoreFileMetadata()
-                                                                                                              .getStoredFileUrl(),
-                                                                                         workerResponseContent.getStoreFileMetadata()
-                                                                                                              .getChecksum(),
-                                                                                         workerResponseContent.getStoreFileMetadata()
-                                                                                                              .getFileSizeInBytes(),
+                                                                                         storeFileMetadata.getStoredFileUrl(),
+                                                                                         storeFileMetadata.getChecksum(),
+                                                                                         storeFileMetadata.getFileSizeInBytes(),
                                                                                          height,
                                                                                          width),
                                               message.getRequestId());

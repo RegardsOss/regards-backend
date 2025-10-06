@@ -371,10 +371,8 @@ public class FileReferenceRequestService {
                                                                     Sets.newHashSet(id)));
             throw new ModuleException(message);
         } else {
-            if (deletionRequest.isPresent()) {
-                // Delete not running deletion request to add the new owner
-                fileDeletionRequestService.delete(deletionRequest.get());
-            }
+            // Delete not running deletion request to add the new owner
+            deletionRequest.ifPresent(fileDeletionRequestService::delete);
             if (!fileReference.getMetaInfo().equals(FileReferenceMetaInfo.buildFromFileReferenceRequestDto(request))) {
                 LOGGER.debug("Existing referenced file meta information differs "
                              + "from new reference meta information. Previous ones are maintained");

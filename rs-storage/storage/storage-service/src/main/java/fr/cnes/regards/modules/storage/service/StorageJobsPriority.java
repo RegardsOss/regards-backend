@@ -32,6 +32,8 @@ public final class StorageJobsPriority {
 
     public static final int FILE_STORAGE_JOB = 50;
 
+    public static final int FILE_REFERENCE_JOB = 55;
+
     public static final int FILE_CACHE_JOB = 60;
 
     public static final int CACHE_VERIFICATION = 90;

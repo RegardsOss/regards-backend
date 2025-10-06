@@ -34,15 +34,15 @@ public class FileStorageWorkingSubset {
     /**
      * Raw {@link FileStorageRequestAggregationDto}s associate
      */
-    private final Set<FileStorageRequestAggregationDto> fileRefenreceRequests = new HashSet<>();
+    private final Set<FileStorageRequestAggregationDto> fileReferenceRequests = new HashSet<>();
 
     public FileStorageWorkingSubset(Collection<FileStorageRequestAggregationDto> dataFiles) {
         super();
-        this.fileRefenreceRequests.addAll(dataFiles);
+        this.fileReferenceRequests.addAll(dataFiles);
     }
 
     public Set<FileStorageRequestAggregationDto> getFileReferenceRequests() {
-        return fileRefenreceRequests;
+        return fileReferenceRequests;
     }
 
 }

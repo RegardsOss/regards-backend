@@ -168,4 +168,5 @@ public class FileReferenceDto {
     public void setAdditionalFields(Object additionalFields) {
         this.additionalFields = additionalFields;
     }
+
 }

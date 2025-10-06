@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Information about a file for a store request.<br/>
+ * Information about a file for a storage or reference request.<br/>
  * Mandatory information are : <ul>
  * <li> metaInfo.Filename</li>
  * <li> metaInfo.Checksum</li>
@@ -202,4 +202,5 @@ public class FileStorageRequestAggregationDto {
                + groupIds
                + '}';
     }
+
 }

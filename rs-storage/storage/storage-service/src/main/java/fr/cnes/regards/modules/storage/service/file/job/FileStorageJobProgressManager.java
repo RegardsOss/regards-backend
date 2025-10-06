@@ -20,10 +20,10 @@ package fr.cnes.regards.modules.storage.service.file.job;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
-import fr.cnes.regards.modules.fileaccess.plugin.domain.IPeriodicActionProgressManager;
-import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageProgressManager;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestAggregationDto;
 import fr.cnes.regards.modules.fileaccess.dto.request.FileStorageRequestResultDto;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IPeriodicActionProgressManager;
+import fr.cnes.regards.modules.fileaccess.plugin.domain.IStorageProgressManager;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
@@ -33,8 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Progress manager class to handle {@link FileStorageRequestJob} advancement.<br>
@@ -52,8 +54,6 @@ public class FileStorageJobProgressManager extends PeriodicActionProgressManager
 
     private final FileStorageRequestService storageRequestService;
 
-    private final StorageLocationService storageLocationService;
-
     private final Set<FileStorageRequestResultDto> handledRequests = Sets.newHashSet();
 
     private final Set<FileStorageRequestResultDto> handledAndSavedRequests = Sets.newHashSet();
@@ -66,7 +66,6 @@ public class FileStorageJobProgressManager extends PeriodicActionProgressManager
         super(fileRefService, storageLocationService, glacierArchiveService);
         this.job = job;
         this.storageRequestService = storageRequestService;
-        this.storageLocationService = storageLocationService;
     }
 
     @Override
@@ -136,12 +135,13 @@ public class FileStorageJobProgressManager extends PeriodicActionProgressManager
 
     public void bulkSave() {
         long start = System.currentTimeMillis();
-        Set<FileStorageRequestResultDto> successes = handledRequests.stream()
-                                                                    .filter(r -> !r.isError())
-                                                                    .collect(Collectors.toSet());
-        Set<FileStorageRequestResultDto> errors = handledRequests.stream()
-                                                                 .filter(r -> r.isError())
-                                                                 .collect(Collectors.toSet());
+        final Map<Boolean, Set<FileStorageRequestResultDto>> partitionedByErrorOrSuccess = handledRequests.stream()
+                                                                                                          .collect(
+                                                                                                              Collectors.partitioningBy(
+                                                                                                                  FileStorageRequestResultDto::isError,
+                                                                                                                  Collectors.toSet()));
+        final Set<FileStorageRequestResultDto> successes = partitionedByErrorOrSuccess.get(Boolean.FALSE);
+        final Set<FileStorageRequestResultDto> errors = partitionedByErrorOrSuccess.get(Boolean.TRUE);
         storageRequestService.handleSuccess(successes);
         storageRequestService.handleError(errors);
         // Job as also completed some remaining pending action on previous stored files. Update this files.
@@ -158,7 +158,7 @@ public class FileStorageJobProgressManager extends PeriodicActionProgressManager
      * @param req {@link FileStorageRequestAggregation} to check for
      */
     public boolean isHandled(FileStorageRequestAggregation req) {
-        return this.handledRequests.stream().anyMatch(f -> f.getRequest().getId().equals(req.getId()))
-               || this.handledAndSavedRequests.stream().anyMatch(f -> f.getRequest().getId().equals(req.getId()));
+        return Stream.concat(this.handledRequests.stream(), this.handledAndSavedRequests.stream())
+                     .anyMatch(f -> f.getRequest().getId().equals(req.getId()));
     }
 }

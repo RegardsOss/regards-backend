@@ -153,14 +153,14 @@ public class StorageClient implements IStorageClient {
         }
     }
 
-    private <T> Collection<RequestInfo> publish(BiFunction<Collection<T>, String, ISubscribable> func,
+    private <T> Collection<RequestInfo> publish(BiFunction<Collection<T>, String, ISubscribable> eventConstructor,
                                                 Collection<T> files,
                                                 int maxFilesPerRequest) {
         Collection<RequestInfo> requestInfos = Lists.newArrayList();
         // If number of files in the request is less than the maximum allowed by request then publish it
         if (files.size() <= maxFilesPerRequest) {
             RequestInfo requestInfo = RequestInfo.build();
-            publisher.publish(func.apply(files, requestInfo.getGroupId()));
+            publisher.publish(eventConstructor.apply(files, requestInfo.getGroupId()));
             requestInfos.add(requestInfo);
         } else {
             // Else publish as many requests as needed.
@@ -170,14 +170,14 @@ public class StorageClient implements IStorageClient {
                 group.add(it.next());
                 if (group.size() >= maxFilesPerRequest) {
                     RequestInfo requestInfo = RequestInfo.build();
-                    publisher.publish(func.apply(group, requestInfo.getGroupId()));
+                    publisher.publish(eventConstructor.apply(group, requestInfo.getGroupId()));
                     requestInfos.add(requestInfo);
                     group.clear();
                 }
             }
             if (!group.isEmpty()) {
                 RequestInfo requestInfo = RequestInfo.build();
-                publisher.publish(func.apply(group, requestInfo.getGroupId()));
+                publisher.publish(eventConstructor.apply(group, requestInfo.getGroupId()));
                 requestInfos.add(requestInfo);
             }
         }

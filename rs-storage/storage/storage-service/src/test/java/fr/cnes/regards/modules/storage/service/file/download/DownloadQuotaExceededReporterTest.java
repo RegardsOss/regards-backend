@@ -24,7 +24,6 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
@@ -130,7 +129,7 @@ public class DownloadQuotaExceededReporterTest {
         long moreErrors = RAND.nextInt(10) + 1;
         List<String> messages = List.ofAll(LongStream.range(0, errorsProduced)
                                                      .mapToObj(ignored -> UUID.randomUUID().toString())
-                                                     .collect(Collectors.toList()));
+                                                     .toList());
 
         // when
         quotaReporter.notifyUserErrors(email, messages, moreErrors);

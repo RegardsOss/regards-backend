@@ -123,7 +123,7 @@ public class FileStorageRequestAggregation {
         Assert.notNull(originUrl, "File storage request need an origin location !");
         Assert.notNull(storage, "File storage request need a destination location !");
         Assert.notNull(metaInfos, "File storage request need file meta information !");
-        Assert.notNull(metaInfos.getChecksum(), "File storage request need file checkusm !");
+        Assert.notNull(metaInfos.getChecksum(), "File storage request need file checksum !");
         Assert.notNull(groupId, "Group id is mandatory");
 
         this.owners.add(owner);
@@ -153,7 +153,7 @@ public class FileStorageRequestAggregation {
         Assert.notNull(originUrl, "File storage request need an origin location !");
         Assert.notNull(storage, "File storage request need a destination location !");
         Assert.notNull(metaInfos, "File storage request need file meta information !");
-        Assert.notNull(metaInfos.getChecksum(), "File storage request need file checkusm !");
+        Assert.notNull(metaInfos.getChecksum(), "File storage request need file checksum !");
         Assert.notNull(groupId, "GroupId is mandatory");
 
         this.owners.addAll(owners);

@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionReque
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.file.handler.FileRestorationRequestEventHandler;
 import fr.cnes.regards.modules.storage.service.file.handler.FilesDeletionEventHandler;
-import fr.cnes.regards.modules.storage.service.file.handler.FilesReferenceEventHandler;
+import fr.cnes.regards.modules.storage.service.file.handler.FilesReferenceRequestEventHandler;
 import fr.cnes.regards.modules.storage.service.file.handler.FilesStorageRequestEventHandler;
 import org.junit.Assert;
 import org.junit.Before;
@@ -82,7 +82,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
     private final Set<String> nlChecksums = Sets.newHashSet();
 
     @Autowired
-    private FilesReferenceEventHandler filesReferenceEventHandler;
+    private FilesReferenceRequestEventHandler filesReferenceRequestEventHandler;
 
     @Autowired
     private FilesStorageRequestEventHandler filesStorageRequestHandler;
@@ -98,9 +98,9 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
         LOGGER.info("----- Tests initialization -----");
         Mockito.clearInvocations(publisher);
 
-        fileStorageRequestRepo.deleteAll();
-        fileCacheRequestRepository.deleteAll();
-        jobInfoRepo.deleteAll();
+        storageRequestRepository.deleteAll();
+        cacheRequestRepository.deleteAll();
+        jobInfoRepository.deleteAll();
         if (!storageLocationConfService.search(ONLINE_CONF_LABEL).isPresent()) {
             initDataStoragePluginConfiguration(ONLINE_CONF_LABEL, true);
         }
@@ -111,7 +111,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
         storagePlgConfHandler.refresh();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
-        if (fileRefRepo.count() == 0) {
+        if (referenceRepository.count() == 0) {
             // Insert many refs
             Set<FileReference> toSave = Sets.newHashSet();
             for (Long i = 0L; i < 1_000_000; i++) {
@@ -125,7 +125,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
                 toSave.add(fileRef);
                 if (toSave.size() >= 10_000) {
                     long start = System.currentTimeMillis();
-                    fileRefRepo.saveAll(toSave);
+                    referenceRepository.saveAll(toSave);
                     LOGGER.info("Saves {} done in {}ms", toSave.size(), System.currentTimeMillis() - start);
                     toSave.clear();
                 }
@@ -133,7 +133,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
 
             // Init nearline stored refs
             long start = System.currentTimeMillis();
-            fileRefRepo.saveAll(toSave);
+            referenceRepository.saveAll(toSave);
             LOGGER.info("Saves {} NearLines done in {}ms", toSave.size(), System.currentTimeMillis() - start);
         }
 
@@ -151,7 +151,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
             toSave.add(fileRef);
         }
         long start = System.currentTimeMillis();
-        fileRefRepo.saveAll(toSave);
+        referenceRepository.saveAll(toSave);
         LOGGER.info("Saves {} NearLines done in {}ms", toSave.size(), System.currentTimeMillis() - start);
 
         LOGGER.info("----- Tests initialization OK-----");
@@ -179,7 +179,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
                                                        sessionOwner,
                                                        session));
             items.add(new FilesReferenceEvent(requests, UUID.randomUUID().toString()));
-            filesReferenceEventHandler.handleBatch(items);
+            filesReferenceRequestEventHandler.handleBatch(items);
         }
 
     }
@@ -248,13 +248,13 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
                                                        sessionOwner,
                                                        session));
             items.add(new FilesReferenceEvent(requests, UUID.randomUUID().toString()));
-            if (items.size() >= filesReferenceEventHandler.getBatchSize()) {
-                filesReferenceEventHandler.handleBatch(items);
+            if (items.size() >= filesReferenceRequestEventHandler.getBatchSize()) {
+                filesReferenceRequestEventHandler.handleBatch(items);
                 items.clear();
             }
         }
         if (items.size() > 0) {
-            filesReferenceEventHandler.handleBatch(items);
+            filesReferenceRequestEventHandler.handleBatch(items);
             items.clear();
         }
 
@@ -262,14 +262,15 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
         Page<FileReference> page;
         do {
             Thread.sleep(2_000);
-            page = fileRefRepo.findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id"));
+            page = referenceRepository.findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
         } while ((loops < 50) && ((page.getTotalElements()) != 5000));
 
         Assert.assertEquals("There should be 5000 file ref created",
                             5000,
-                            fileRefRepo.findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id"))
-                                       .getTotalElements());
+                            referenceRepository.findByLocationStorage(storage,
+                                                                      PageRequest.of(0, 1, Direction.ASC, "id"))
+                                               .getTotalElements());
     }
 
     @Test
@@ -287,7 +288,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
                                                                                "owner-test",
                                                                                SESSION_OWNER,
                                                                                SESSION,
-                                                                               originUrl,
+                                                                               ORIGIN_URL,
                                                                                ONLINE_CONF_LABEL,
                                                                                Optional.empty()),
                                                    UUID.randomUUID().toString()));
@@ -302,51 +303,53 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
 
         Assert.assertEquals("There should be 5000 file storage request created",
                             5000,
-                            stoReqService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"))
-                                         .getTotalElements());
+                            storageRequestService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"))
+                                                 .getTotalElements());
 
         PageRequest pageable = PageRequest.of(0, 1, Direction.ASC, "id");
         Assert.assertEquals("No file ref should be created",
                             0,
-                            fileRefService.search(FileReferenceSpecification.search(null,
-                                                                                    null,
-                                                                                    null,
-                                                                                    Lists.newArrayList(ONLINE_CONF_LABEL),
-                                                                                    null,
-                                                                                    now,
-                                                                                    null,
-                                                                                    pageable), pageable)
-                                          .getTotalElements());
+                            referenceService.search(FileReferenceSpecification.search(null,
+                                                                                      null,
+                                                                                      null,
+                                                                                      Lists.newArrayList(
+                                                                                          ONLINE_CONF_LABEL),
+                                                                                      null,
+                                                                                      now,
+                                                                                      null,
+                                                                                      pageable), pageable)
+                                            .getTotalElements());
         long start = System.currentTimeMillis();
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                              Lists.newArrayList(ONLINE_CONF_LABEL),
-                                                              Lists.newArrayList());
+        Collection<JobInfo> jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                                      Lists.newArrayList(ONLINE_CONF_LABEL),
+                                                                      Lists.newArrayList());
         Thread.sleep(10_000);
         start = System.currentTimeMillis();
         runAndWaitJob(jobs);
         LOGGER.info("...{} jobs handled in {} ms", jobs.size(), System.currentTimeMillis() - start);
         Assert.assertEquals("There should be no file storage request created",
                             0,
-                            stoReqService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"))
-                                         .getTotalElements());
+                            storageRequestService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"))
+                                                 .getTotalElements());
         Assert.assertEquals("5000 file ref should be created",
                             5000,
-                            fileRefService.search(FileReferenceSpecification.search(null,
-                                                                                    null,
-                                                                                    null,
-                                                                                    Lists.newArrayList(ONLINE_CONF_LABEL),
-                                                                                    null,
-                                                                                    now,
-                                                                                    null,
-                                                                                    pageable), pageable)
-                                          .getTotalElements());
+                            referenceService.search(FileReferenceSpecification.search(null,
+                                                                                      null,
+                                                                                      null,
+                                                                                      Lists.newArrayList(
+                                                                                          ONLINE_CONF_LABEL),
+                                                                                      null,
+                                                                                      now,
+                                                                                      null,
+                                                                                      pageable), pageable)
+                                            .getTotalElements());
     }
 
     @Test
     public void delete_referenced_file() throws InterruptedException {
         LOGGER.info(" --------     DELETE TEST     --------- ");
         int nbToDelete = 500;
-        Page<FileReference> page = fileRefService.search(PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
+        Page<FileReference> page = referenceService.search(PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         Long total = page.getTotalElements();
         List<FilesDeletionEvent> items = Lists.newArrayList();
         for (FileReference fileRef : page.getContent()) {
@@ -363,7 +366,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
         }
         filesDeletionEventHandler.handleBatch(items);
 
-        page = fileRefService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
+        page = referenceService.search(PageRequest.of(0, 1, Direction.ASC, "id"));
 
         Assert.assertEquals("500 ref should be deleted", nbToDelete, total - page.getTotalElements());
     }
@@ -373,8 +376,8 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
         LOGGER.info(" --------     DELETE TEST     --------- ");
         int nbToDelete = 500;
         List<FilesDeletionEvent> items = Lists.newArrayList();
-        Page<FileReference> page = fileRefService.search(NEARLINE_CONF_LABEL,
-                                                         PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
+        Page<FileReference> page = referenceService.search(NEARLINE_CONF_LABEL,
+                                                           PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         for (FileReference fileRef : page.getContent()) {
             items.add(new FilesDeletionEvent(FileDeletionDto.build(fileRef.getMetaInfo().getChecksum(),
                                                                    fileRef.getLocation().getStorage(),
@@ -393,7 +396,7 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
         Page<FileDeletionRequest> pageDel = null;
         do {
             Thread.sleep(500);
-            pageDel = fileDeletionRequestService.search(NEARLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"));
+            pageDel = deletionRequestService.search(NEARLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"));
             loops++;
         } while ((loops < 100) && (pageDel.getTotalElements() < nbToDelete));
 
@@ -413,8 +416,6 @@ public class FileReferencePerformanceIT extends AbstractStorageIT {
         items.add(item);
         fileRestorationRequestEventHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        Assert.assertEquals("Invalid count of cache file request",
-                            nlChecksums.size(),
-                            fileCacheRequestRepository.count());
+        Assert.assertEquals("Invalid count of cache file request", nlChecksums.size(), cacheRequestRepository.count());
     }
 }

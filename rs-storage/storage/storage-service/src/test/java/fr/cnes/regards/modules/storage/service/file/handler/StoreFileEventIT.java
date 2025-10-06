@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.file.handler;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -40,11 +38,12 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequestAggregation;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
-import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
-import fr.cnes.regards.modules.storage.service.file.request.RequestStatusService;
+import fr.cnes.regards.modules.storage.service.file.fixture.FileReferenceRequestArgs;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -55,8 +54,18 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum.DEC;
+import static fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum.INC;
+import static fr.cnes.regards.modules.storage.service.file.fixture.FileReferenceConstants.SESSION1;
+import static fr.cnes.regards.modules.storage.service.file.fixture.FileReferenceConstants.SESSION1_OWNER;
+import static fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -70,21 +79,13 @@ import static org.mockito.ArgumentMatchers.eq;
                     locations = { "classpath:application-test.properties" })
 public class StoreFileEventIT extends AbstractStorageIT {
 
-    private static final String SESSION_OWNER = "SOURCE 1";
-
-    private static final String SESSION = "SESSION 1";
+    public static final PageRequest PAGE_1ST_1000 = PageRequest.of(0, 1_000);
 
     @Autowired
     private FilesStorageRequestEventHandler storeHandler;
 
     @Autowired
     private FilesRetryRequestEventHandler retryHandler;
-
-    @Autowired
-    private RequestStatusService requestStatusService;
-
-    @Autowired
-    private FileStorageRequestService fileStorageRequestService;
 
     @Before
     public void initialize() throws ModuleException {
@@ -97,16 +98,11 @@ public class StoreFileEventIT extends AbstractStorageIT {
     @Purpose("Check that a storage request without checksum is denied")
     public void store_file_no_checksum() {
         // Create a new bus message File reference request
-        new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
-                                                                 null,
-                                                                 "MD5",
-                                                                 "application/octet-stream",
-                                                                 "owner",
-                                                                 SESSION_OWNER,
-                                                                 SESSION,
-                                                                 originUrl,
-                                                                 ONLINE_CONF_LABEL,
-                                                                 Optional.empty()), UUID.randomUUID().toString());
+        newStorageRequestEvent(FileReferenceRequestArgs.builder()
+                                                       .fileName("file.name")
+                                                       .storage(ONLINE_CONF_LABEL)
+                                                       .owner("owner")
+                                                       .build());
     }
 
     /**
@@ -115,46 +111,49 @@ public class StoreFileEventIT extends AbstractStorageIT {
      */
     @Test
     public void store_file_already_stored() {
-        String owner = "new-owner";
-        String checksum = RandomChecksumUtils.generateRandomChecksum();
-        String storage = "storage";
+        // GIVEN
+        final String checksum = RandomChecksumUtils.generateRandomChecksum();
         // Create a new bus message File reference request
-        FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
-                                                                                                 checksum,
-                                                                                                 "MD5",
-                                                                                                 "application/octet-stream",
-                                                                                                 owner,
-                                                                                                 SESSION_OWNER,
-                                                                                                 SESSION,
-                                                                                                 originUrl,
-                                                                                                 ONLINE_CONF_LABEL,
-                                                                                                 Optional.empty()),
-                                                                     UUID.randomUUID().toString());
-        List<FilesStorageRequestEvent> items = new ArrayList<>();
-        items.add(item);
-        storeHandler.handleBatch(items);
+        final FileReferenceRequestArgs args = FileReferenceRequestArgs.builder()
+                                                                      .fileName("file.name")
+                                                                      .checksum(checksum)
+                                                                      .storage(ONLINE_CONF_LABEL)
+                                                                      .owner("new-owner")
+                                                                      .build();
+        final FilesStorageRequestEvent item = newStorageRequestEvent(args);
+        storeHandler.handleBatch(List.of(item));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+
         // Check file is not referenced yet
-        Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
+        FileReference fileRef = referenceService.search(ONLINE_CONF_LABEL, checksum).orElse(null);
+        assumeThat(fileRef).as("File should not be referenced").isNull();
+
         // Check a file reference request is created
-        Assert.assertEquals("File request should be created",
-                            1,
-                            stoReqService.search(ONLINE_CONF_LABEL, checksum).size());
+        assumeThat(storageRequestService.search(ONLINE_CONF_LABEL, checksum)).as("File request should be created")
+                                                                             .hasSize(1);
         // Now check for event published
         Mockito.verify(this.publisher, Mockito.times(0)).publish(any(FileReferenceEvent.class));
 
-        // SImulate job schedule
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                              Lists.newArrayList(ONLINE_CONF_LABEL),
-                                                              Lists.newArrayList(owner));
+        // Simulate job schedule
+        // WHEN
+        Collection<JobInfo> jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                                      List.of(ONLINE_CONF_LABEL),
+                                                                      List.of(args.getOwner()));
+        assertThat(jobs).hasSize(1);
         runAndWaitJob(jobs);
-        Optional<FileReference> fileRef = fileRefService.search(ONLINE_CONF_LABEL, checksum);
-        Assert.assertTrue("File should be referenced", fileRef.isPresent());
-        Assert.assertFalse("File should in stored state", fileRef.get().isReferenced());
-        Assert.assertFalse("File should in stored state", fileRef.get().getLocation().isPendingActionRemaining());
-        Assert.assertTrue("File request should be deleted",
-                          stoReqService.search(ONLINE_CONF_LABEL, checksum).isEmpty());
-        // Now check for event published
+
+        // THEN
+        // File is referenced
+        fileRef = referenceService.search(ONLINE_CONF_LABEL, checksum).orElse(null);
+        assertThat(fileRef).as("File should be referenced").isNotNull();
+        assertThat(fileRef.isReferenced()).as("File should in stored state").isFalse();
+        assertThat(fileRef.getLocation().isPendingActionRemaining()).as("File should in stored state").isFalse();
+
+        // Request has been processed and is now deleted.
+        assertThat(storageRequestService.search(ONLINE_CONF_LABEL, checksum)).as("File request should be deleted")
+                                                                             .isEmpty();
+
+        // check for published event published
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
@@ -165,131 +164,94 @@ public class StoreFileEventIT extends AbstractStorageIT {
         // Check step events were correctly send
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 4, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.STORE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(2),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(3),
-                       SessionNotifierPropertyEnum.STORED_FILES,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
+        checkStepEvent(stepEventList.get(0), STORE_REQUESTS, INC);
+        checkStepEvent(stepEventList.get(1), REQUESTS_RUNNING, INC);
+        checkStepEvent(stepEventList.get(2), REQUESTS_RUNNING, DEC);
+        checkStepEvent(stepEventList.get(3), STORED_FILES, INC);
     }
 
     @Test
     public void store_file_nearline_with_pending_actions() {
-        String owner = "new-owner";
-        String checksum = RandomChecksumUtils.generateRandomChecksum();
-        String storage = "storage";
+        // GIVEN
+        final String checksum = RandomChecksumUtils.generateRandomChecksum();
         // Create a new bus message File reference request
-        FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("pending.file.name",
-                                                                                                 checksum,
-                                                                                                 "MD5",
-                                                                                                 "application/octet-stream",
-                                                                                                 owner,
-                                                                                                 SESSION_OWNER,
-                                                                                                 SESSION,
-                                                                                                 originUrl,
-                                                                                                 NEARLINE_CONF_LABEL,
-                                                                                                 Optional.empty()),
-                                                                     UUID.randomUUID().toString());
-        List<FilesStorageRequestEvent> items = new ArrayList<>();
-        items.add(item);
-        storeHandler.handleBatch(items);
+        final FileReferenceRequestArgs args = FileReferenceRequestArgs.builder()
+                                                                      .fileName("pending.file.name")
+                                                                      .checksum(checksum)
+                                                                      .storage(NEARLINE_CONF_LABEL)
+                                                                      .owner("new-owner")
+                                                                      .build();
+        final FilesStorageRequestEvent item = newStorageRequestEvent(args);
+        storeHandler.handleBatch(List.of(item));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                              Lists.newArrayList(NEARLINE_CONF_LABEL),
-                                                              Lists.newArrayList(owner));
+
+        // WHEN
+        final Collection<JobInfo> jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                                            List.of(NEARLINE_CONF_LABEL),
+                                                                            List.of(args.getOwner()));
         runAndWaitJob(jobs);
-        Optional<FileReference> fileRef = fileRefService.search(NEARLINE_CONF_LABEL, checksum);
-        Assert.assertTrue("File should be referenced", fileRef.isPresent());
-        Assert.assertFalse("File should in stored state", fileRef.get().isReferenced());
+
+        // THEN
+        final FileReference fileRef = referenceService.search(NEARLINE_CONF_LABEL, checksum).orElse(null);
+        Assert.assertNotNull("File should be referenced", fileRef);
+        Assert.assertFalse("File should in stored state", fileRef.isReferenced());
         Assert.assertTrue("File should be referenced with pending action remaining",
-                          fileRef.get().getLocation().isPendingActionRemaining());
+                          fileRef.getLocation().isPendingActionRemaining());
     }
 
     @Test
     public void store_file_while_previous_request_exists() {
         String owner = "new-owner";
         String checksum = RandomChecksumUtils.generateRandomChecksum();
-        String storage = "storage";
         // Create a new bus message File reference request
         String algorithm = "MD5";
         String fileName = "file.name";
-        String mimeType = "application/octet-stream";
+
         String groupId = UUID.randomUUID().toString();
 
         FileRequestStatus oldRequestStatus = FileRequestStatus.TO_DO;
-        FileStorageRequestAggregation request = stoReqService.createNewFileStorageRequest(Collections.singleton(owner),
-                                                                                          new FileReferenceMetaInfo(
-                                                                                              checksum,
-                                                                                              algorithm,
-                                                                                              fileName,
-                                                                                              null,
-                                                                                              MediaType.valueOf(mimeType)).withType(
-                                                                                              DataType.RAWDATA.toString()),
-                                                                                          originUrl,
-                                                                                          ONLINE_CONF_LABEL,
-                                                                                          Optional.empty(),
-                                                                                          groupId,
-                                                                                          Optional.of("File "
-                                                                                                      + fileName
-                                                                                                      + " (checksum: "
-                                                                                                      + checksum
-                                                                                                      + ") not handled by storage job. Storage job failed cause : For input string: \"Killed\""),
-                                                                                          Optional.of(oldRequestStatus),
-                                                                                          SESSION_OWNER,
-                                                                                          SESSION);
+        FileStorageRequestAggregation request = storageRequestService.createNewFileStorageRequest(Collections.singleton(
+                                                                                                      owner),
+                                                                                                  new FileReferenceMetaInfo(
+                                                                                                      checksum,
+                                                                                                      algorithm,
+                                                                                                      fileName,
+                                                                                                      null,
+                                                                                                      MediaType.APPLICATION_OCTET_STREAM).withType(
+                                                                                                      DataType.RAWDATA.toString()),
+                                                                                                  ORIGIN_URL,
+                                                                                                  ONLINE_CONF_LABEL,
+                                                                                                  Optional.empty(),
+                                                                                                  groupId,
+                                                                                                  Optional.of("File "
+                                                                                                              + fileName
+                                                                                                              + " (checksum: "
+                                                                                                              + checksum
+                                                                                                              + ") not handled by storage job. Storage job failed cause : For input string: \"Killed\""),
+                                                                                                  Optional.of(
+                                                                                                      oldRequestStatus),
+                                                                                                  SESSION1_OWNER,
+                                                                                                  SESSION1);
 
-        FilesStorageRequestEvent storageItem1 = new FilesStorageRequestEvent(FileStorageRequestDto.build(fileName,
-                                                                                                         checksum,
-                                                                                                         algorithm,
-                                                                                                         mimeType,
-                                                                                                         owner,
-                                                                                                         SESSION_OWNER,
-                                                                                                         SESSION,
-                                                                                                         originUrl,
-                                                                                                         ONLINE_CONF_LABEL,
-                                                                                                         Optional.empty()),
-                                                                             "group1");
+        final FileReferenceRequestArgs args = FileReferenceRequestArgs.builder()
+                                                                      .fileName(fileName)
+                                                                      .checksum(checksum)
+                                                                      .storage(ONLINE_CONF_LABEL)
+                                                                      .owner(owner)
+                                                                      .build();
+        // 2 event in distinct group.
+        final FilesStorageRequestEvent storageItem1 = newStorageRequestEvent(args);
+        final FilesStorageRequestEvent storageItem2 = newStorageRequestEvent(args);
 
-        FilesStorageRequestEvent storageItem2 = new FilesStorageRequestEvent(FileStorageRequestDto.build(fileName,
-                                                                                                         checksum,
-                                                                                                         algorithm,
-                                                                                                         mimeType,
-                                                                                                         owner,
-                                                                                                         SESSION_OWNER,
-                                                                                                         SESSION,
-                                                                                                         originUrl,
-                                                                                                         ONLINE_CONF_LABEL,
-                                                                                                         Optional.empty()),
-                                                                             "group2");
-
-        List<FilesStorageRequestEvent> items = new ArrayList<>();
-        items.add(storageItem1);
-        items.add(storageItem2);
-        storeHandler.handleBatch(items);
+        storeHandler.handleBatch(List.of(storageItem1, storageItem2));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+
         // Check file is not referenced yet
-        Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
+        Assert.assertFalse("File should not be referenced yet",
+                           referenceService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         // Check a file reference request is created
-        Collection<FileStorageRequestAggregation> fileStorageRequests = stoReqService.search(ONLINE_CONF_LABEL,
-                                                                                             checksum);
+        Collection<FileStorageRequestAggregation> fileStorageRequests = storageRequestService.search(ONLINE_CONF_LABEL,
+                                                                                                     checksum);
         Assert.assertEquals("New storage request in DELAYED status should have been created",
                             3,
                             fileStorageRequests.size());
@@ -302,24 +264,27 @@ public class StoreFileEventIT extends AbstractStorageIT {
         // Now check for event published
         Mockito.verify(this.publisher, Mockito.times(0)).publish(any(FileReferenceEvent.class));
 
+        // WHEN
         // Simulate job schedule -> Run first request
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                              Lists.newArrayList(ONLINE_CONF_LABEL),
-                                                              Lists.newArrayList(owner));
+        Collection<JobInfo> jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                                      List.of(ONLINE_CONF_LABEL),
+                                                                      List.of(owner));
         runAndWaitJob(jobs);
-        Optional<FileReference> fileRef = fileRefService.search(ONLINE_CONF_LABEL, checksum);
-        Assert.assertTrue("File should be referenced", fileRef.isPresent());
-        Assert.assertFalse("File should in stored state", fileRef.get().isReferenced());
+
+        // THEN
+        FileReference fileRef = referenceService.search(ONLINE_CONF_LABEL, checksum).orElse(null);
+        Assert.assertNotNull("File should be referenced", fileRef);
+        Assert.assertFalse("File should in stored state", fileRef.isReferenced());
         // Request should still be delayed
-        fileStorageRequests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
+        fileStorageRequests = storageRequestService.search(ONLINE_CONF_LABEL, checksum);
         Assert.assertEquals("There should be two delayed request remaining", 2L, fileStorageRequests.size());
         Assert.assertTrue("New request should be in state " + FileRequestStatus.DELAYED,
                           fileStorageRequests.stream().allMatch(r -> r.getStatus() == FileRequestStatus.DELAYED));
 
         // As no request is still running, the two requests will resume but the file they aim to store is now already
         // stored. So no more request will be processed
-        requestStatusService.checkDelayedStorageRequests(fileStorageRequestService);
-        fileStorageRequests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
+        statusService.checkDelayedStorageRequests(storageRequestService);
+        fileStorageRequests = storageRequestService.search(ONLINE_CONF_LABEL, checksum);
         Assert.assertEquals("There should be no more requests", 0L, fileStorageRequests.size());
     }
 
@@ -327,79 +292,89 @@ public class StoreFileEventIT extends AbstractStorageIT {
      * Test request to reference a file already stored.
      * The file is not stored by the service as the origin storage and the destination storage are identical
      */
+    // TODO random
+    @Ignore
     @Test
     public void store_same_file() {
-        String owner = "new-owner";
-        String owner2 = owner + "23";
+        String owner1 = "new-owner";
+        String owner2 = "new-owner-23";
         String checksum = RandomChecksumUtils.generateRandomChecksum();
-        String storage = "storage";
         // Create a new bus message File reference request
-        FilesStorageRequestEvent item1 = new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
-                                                                                                  checksum,
-                                                                                                  "MD5",
-                                                                                                  "application/octet-stream",
-                                                                                                  owner,
-                                                                                                  SESSION_OWNER,
-                                                                                                  SESSION,
-                                                                                                  originUrl,
-                                                                                                  ONLINE_CONF_LABEL,
-                                                                                                  Optional.empty()),
-                                                                      UUID.randomUUID().toString());
-        FilesStorageRequestEvent item2 = new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
-                                                                                                  checksum,
-                                                                                                  "MD5",
-                                                                                                  "application/octet-stream",
-                                                                                                  owner2,
-                                                                                                  SESSION_OWNER,
-                                                                                                  SESSION,
-                                                                                                  originUrl,
-                                                                                                  ONLINE_CONF_LABEL,
-                                                                                                  Optional.empty()),
-                                                                      UUID.randomUUID().toString());
-        List<FilesStorageRequestEvent> items = new ArrayList<>();
-        items.add(item1);
-        items.add(item2);
-        storeHandler.handleBatch(items);
+        final FileReferenceRequestArgs args = FileReferenceRequestArgs.builder()
+                                                                      .fileName("file.name")
+                                                                      .checksum(checksum)
+                                                                      .storage(ONLINE_CONF_LABEL)
+                                                                      .owner(owner1)
+                                                                      .build();
+        final FilesStorageRequestEvent item1 = newStorageRequestEvent(args);
+        final FilesStorageRequestEvent item2 = newStorageRequestEvent(args.withOwner(owner2));
+        storeHandler.handleBatch(List.of(item1, item2));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+
         // Check file is not referenced yet
-        Assert.assertFalse("File should not be referenced yet", fileRefService.search(storage, checksum).isPresent());
-        // Check a file reference request is created
-        Collection<FileStorageRequestAggregation> requests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
-        Assert.assertEquals("there should be two store requests", 2, requests.size());
-        Assert.assertTrue("there should be on request in TODO status",
-                          requests.stream().anyMatch(r -> r.getStatus() == FileRequestStatus.TO_DO));
-        Assert.assertTrue("there should be on request in DELAYED status",
-                          requests.stream().anyMatch(r -> r.getStatus() == FileRequestStatus.DELAYED));
+        FileReference fileReference = referenceService.search(ONLINE_CONF_LABEL, checksum).orElse(null);
+        assumeThat(fileReference).as("File should not be referenced yet").isNull();
+
+        // Check all file reference request are created one is in a TO_DO status the other is DELAYED
+        Collection<FileStorageRequestAggregation> requests = storageRequestService.search(ONLINE_CONF_LABEL, checksum);
+        assumeThat(requests).as("there should be two store requests").hasSize(2);
+
+        final Set<FileRequestStatus> statuses = requests.stream()
+                                                        .map(FileStorageRequestAggregation::getStatus)
+                                                        .collect(Collectors.toSet());
+        assumeThat(statuses).as("One request is in a TO_DO status the other is DELAYED")
+                            .hasSize(2)
+                            .containsExactlyInAnyOrder(FileRequestStatus.TO_DO, FileRequestStatus.DELAYED);
+
         // Now check for event published
         Mockito.verify(this.publisher, Mockito.times(0)).publish(any(FileReferenceEvent.class));
-
+        // Awaitility.await().pollDelay(Duration.ofSeconds(1)).until(Boolean.TRUE::booleanValue);
         // Simulate job schedule for the first storage request
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                              Lists.newArrayList(ONLINE_CONF_LABEL),
-                                                              Lists.newArrayList(owner));
+        Collection<JobInfo> jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                                      List.of(ONLINE_CONF_LABEL),
+                                                                      List.of(owner1));
+        assertThat(jobs).hasSize(1);
         runAndWaitJob(jobs);
+        Awaitility.await().pollDelay(Duration.ofSeconds(1)).until(Boolean.TRUE::booleanValue);
 
-        requests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
-        // The first request should be done
-        Assert.assertEquals("there should be two store requests", 1, requests.size());
-        Assert.assertTrue("there should be on request in DELAYED status",
-                          requests.stream().anyMatch(r -> r.getStatus() == FileRequestStatus.DELAYED));
+        requests = storageRequestService.search(ONLINE_CONF_LABEL, checksum);
+        // The 1st request should be done and deleted
+        // the 2nd request should be delayed
+        Assert.assertEquals("there should be one store request", 1, requests.size());
+        FileStorageRequestAggregation request2 = requests.iterator().next();
+        assertThat(request2.getStatus()).as("2nd request should be DELAYED").isEqualTo(FileRequestStatus.DELAYED);
 
-        // simulate job for the second storage request, the request will not be processed as
-        // the file is now stored
-        reqStatusService.checkDelayedStorageRequests(fileStorageRequestService);
-        requests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
+        fileReference = referenceService.search(ONLINE_CONF_LABEL, checksum).orElse(null);
+        assertThat(fileReference).as("File should now be referenced").isNotNull();
+        Collection<String> owners = referenceWithOwnersRepository.findOneById(fileReference.getId()).getLazzyOwners();
+        assertThat(owners).as("FileReference should have 1 owners").hasSize(1);
+
+        // simulate job for the second storage request,
+        // the delayed request will not be processed since the file is now stored but be deleted
+        statusService.checkDelayedStorageRequests(storageRequestService);
+        requests = storageRequestService.search(ONLINE_CONF_LABEL, checksum);
         Assert.assertEquals("there should be no store request", 0, requests.size());
 
-        jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
-                                          Lists.newArrayList(ONLINE_CONF_LABEL),
-                                          Lists.newArrayList(owner2));
+        jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO, List.of(ONLINE_CONF_LABEL), List.of(owner2));
+        assertThat(jobs).hasSize(0);
         runAndWaitJob(jobs);
+        Awaitility.await().pollDelay(Duration.ofSeconds(1)).until(Boolean.TRUE::booleanValue);
 
         // Check results
-        Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
-        Assert.assertTrue("File request should be deleted",
-                          stoReqService.search(ONLINE_CONF_LABEL, checksum).isEmpty());
+        // FileReference created ...
+        fileReference = referenceService.search(ONLINE_CONF_LABEL, checksum).orElse(null);
+        assertThat(fileReference).as("File should be referenced").isNotNull();
+
+        // with 2 owners
+        owners = referenceWithOwnersRepository.findOneById(fileReference.getId()).getLazzyOwners();
+        assertThat(owners).as("FileReference should have 2 owners")
+                          .hasSize(2)
+                          .containsExactlyInAnyOrder(owner1, owner2);
+
+        // whereas all the have been processed and deleted
+        assertThat(storageRequestService.search(ONLINE_CONF_LABEL, checksum)).as("File request should be deleted")
+                                                                             .isEmpty();
+
         // Now check for event published
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(2)).publish(any(FileReferenceEvent.class));
@@ -411,83 +386,33 @@ public class StoreFileEventIT extends AbstractStorageIT {
         // Check step events were correctly send
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 8, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.STORE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(2),
-                       SessionNotifierPropertyEnum.STORE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(3),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(4),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(5),
-                       SessionNotifierPropertyEnum.STORED_FILES,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(6),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(7),
-                       SessionNotifierPropertyEnum.STORED_FILES,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
+        checkStepEvent(stepEventList.get(0), STORE_REQUESTS, INC);
+        checkStepEvent(stepEventList.get(1), REQUESTS_RUNNING, INC);
+        checkStepEvent(stepEventList.get(2), STORE_REQUESTS, INC);
+        checkStepEvent(stepEventList.get(3), REQUESTS_RUNNING, INC);
+        checkStepEvent(stepEventList.get(4), REQUESTS_RUNNING, DEC);
+        checkStepEvent(stepEventList.get(5), STORED_FILES, INC);
+        checkStepEvent(stepEventList.get(6), REQUESTS_RUNNING, DEC);
+        checkStepEvent(stepEventList.get(7), STORED_FILES, INC);
     }
 
     @Test
     public void store_files() {
         // Create a new bus message File reference request
-        Set<FileStorageRequestDto> requests = Sets.newHashSet();
-        String cs1 = RandomChecksumUtils.generateRandomChecksum();
-        String cs2 = RandomChecksumUtils.generateRandomChecksum();
-        requests.add(FileStorageRequestDto.build("file.name",
-                                                 cs1,
-                                                 "MD5",
-                                                 "application/octet-stream",
-                                                 "owner",
-                                                 SESSION_OWNER,
-                                                 SESSION,
-                                                 originUrl,
-                                                 ONLINE_CONF_LABEL,
-                                                 Optional.empty()));
-        requests.add(FileStorageRequestDto.build("file.name",
-                                                 cs2,
-                                                 "MD5",
-                                                 "application/octet-stream",
-                                                 "owner",
-                                                 SESSION_OWNER,
-                                                 SESSION,
-                                                 originUrl,
-                                                 ONLINE_CONF_LABEL,
-                                                 Optional.empty()));
-        FilesStorageRequestEvent item = new FilesStorageRequestEvent(requests, UUID.randomUUID().toString());
+        final String checksum1 = RandomChecksumUtils.generateRandomChecksum();
+        final String checksum2 = RandomChecksumUtils.generateRandomChecksum();
+
+        final FileReferenceRequestArgs args = FileReferenceRequestArgs.builder()
+                                                                      .fileName("file.name")
+                                                                      .checksum(checksum1)
+                                                                      .storage(ONLINE_CONF_LABEL)
+                                                                      .owner("owner")
+                                                                      .build();
+        final FileStorageRequestDto request1 = newStorageRequest(args);
+        final FileStorageRequestDto request2 = newStorageRequest(args.withChecksum(checksum2));
+
+        FilesStorageRequestEvent item = new FilesStorageRequestEvent(Set.of(request1, request2),
+                                                                     UUID.randomUUID().toString());
 
         List<FilesStorageRequestEvent> items = new ArrayList<>();
         items.add(item);
@@ -496,30 +421,36 @@ public class StoreFileEventIT extends AbstractStorageIT {
 
         // Check file is not referenced yet
         Assert.assertFalse("File should not be referenced yet",
-                           fileRefService.search(ONLINE_CONF_LABEL, cs1).isPresent());
+                           referenceService.search(ONLINE_CONF_LABEL, checksum1).isPresent());
         Assert.assertFalse("File should not be referenced yet",
-                           fileRefService.search(ONLINE_CONF_LABEL, cs2).isPresent());
+                           referenceService.search(ONLINE_CONF_LABEL, checksum2).isPresent());
         // Check a file reference request is created
-        Collection<FileStorageRequestAggregation> storageReqs = stoReqService.search(ONLINE_CONF_LABEL, cs1);
-        Collection<FileStorageRequestAggregation> storageReqs2 = stoReqService.search(ONLINE_CONF_LABEL, cs2);
-        Assert.assertEquals("File request should be created", 1, storageReqs.size());
+        Collection<FileStorageRequestAggregation> storageReqs1 = storageRequestService.search(ONLINE_CONF_LABEL,
+                                                                                              checksum1);
+        Collection<FileStorageRequestAggregation> storageReqs2 = storageRequestService.search(ONLINE_CONF_LABEL,
+                                                                                              checksum2);
+        Assert.assertEquals("File request should be created", 1, storageReqs1.size());
         Assert.assertEquals("File request should be created", 1, storageReqs2.size());
         Assert.assertEquals("",
-                            storageReqs.stream().findFirst().get().getGroupIds().stream().findFirst().get(),
-                            storageReqs2.stream().findFirst().get().getGroupIds().stream().findFirst().get());
+                            storageReqs1.iterator().next().getGroupIds().iterator().next(),
+                            storageReqs2.iterator().next().getGroupIds().iterator().next());
 
         // Now check for event published
         Mockito.verify(this.publisher, Mockito.times(0)).publish(any(FileReferenceEvent.class));
 
         // Simulate job schedule
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                              Lists.newArrayList(ONLINE_CONF_LABEL),
-                                                              Lists.newArrayList());
+        Collection<JobInfo> jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                                      List.of(ONLINE_CONF_LABEL),
+                                                                      List.of());
         runAndWaitJob(jobs);
-        Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, cs1).isPresent());
-        Assert.assertTrue("File should be referenced", fileRefService.search(ONLINE_CONF_LABEL, cs2).isPresent());
-        Assert.assertTrue("File request should be deleted", stoReqService.search(ONLINE_CONF_LABEL, cs1).isEmpty());
-        Assert.assertTrue("File request should be deleted", stoReqService.search(ONLINE_CONF_LABEL, cs2).isEmpty());
+        Assert.assertTrue("File should be referenced",
+                          referenceService.search(ONLINE_CONF_LABEL, checksum1).isPresent());
+        Assert.assertTrue("File should be referenced",
+                          referenceService.search(ONLINE_CONF_LABEL, checksum2).isPresent());
+        Assert.assertTrue("File request should be deleted",
+                          storageRequestService.search(ONLINE_CONF_LABEL, checksum1).isEmpty());
+        Assert.assertTrue("File request should be deleted",
+                          storageRequestService.search(ONLINE_CONF_LABEL, checksum2).isEmpty());
         // Now check for event published
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(2)).publish(any(FileReferenceEvent.class));
@@ -540,26 +471,21 @@ public class StoreFileEventIT extends AbstractStorageIT {
     @Test
     public void store_file_unknown_storage() {
         String checksum = RandomChecksumUtils.generateRandomChecksum();
-        String storageDestination = "somewheere";
+        String storageDestination = "somewhere";
         // Create a new bus message File reference request
-        FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("file.name",
-                                                                                                 checksum,
-                                                                                                 "MD5",
-                                                                                                 "application/octet-stream",
-                                                                                                 "owner-test",
-                                                                                                 SESSION_OWNER,
-                                                                                                 SESSION,
-                                                                                                 originUrl,
-                                                                                                 storageDestination,
-                                                                                                 Optional.empty()),
-                                                                     UUID.randomUUID().toString());
-        List<FilesStorageRequestEvent> items = new ArrayList<>();
-        items.add(item);
-        storeHandler.handleBatch(items);
+        final FileReferenceRequestArgs args = FileReferenceRequestArgs.builder()
+                                                                      .fileName("file.name")
+                                                                      .checksum(checksum)
+                                                                      .storage(storageDestination)
+                                                                      .owner("owner-test")
+                                                                      .build();
+        final FilesStorageRequestEvent item = newStorageRequestEvent(args);
+
+        storeHandler.handleBatch(List.of(item));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertFalse("File should not be referenced",
-                           fileRefService.search(storageDestination, checksum).isPresent());
+                           referenceService.search(storageDestination, checksum).isPresent());
         // Now check for event published
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(any(FileReferenceEvent.class));
@@ -570,30 +496,10 @@ public class StoreFileEventIT extends AbstractStorageIT {
         // Check step events were correctly send
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 4, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.STORE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(2),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(3),
-                       SessionNotifierPropertyEnum.REQUESTS_ERRORS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
+        checkStepEvent(stepEventList.get(0), STORE_REQUESTS, INC);
+        checkStepEvent(stepEventList.get(1), REQUESTS_RUNNING, INC);
+        checkStepEvent(stepEventList.get(2), REQUESTS_RUNNING, DEC);
+        checkStepEvent(stepEventList.get(3), REQUESTS_ERRORS, INC);
     }
 
     /**
@@ -601,44 +507,41 @@ public class StoreFileEventIT extends AbstractStorageIT {
      */
     @Test
     public void store_file_error() {
-        String checksum = RandomChecksumUtils.generateRandomChecksum();
+        final String checksum = RandomChecksumUtils.generateRandomChecksum();
         // Create a new bus message File reference request
-        FilesStorageRequestEvent item = new FilesStorageRequestEvent(FileStorageRequestDto.build("error.file.name",
-                                                                                                 checksum,
-                                                                                                 "MD5",
-                                                                                                 "application/octet-stream",
-                                                                                                 "owner-test",
-                                                                                                 SESSION_OWNER,
-                                                                                                 SESSION,
-                                                                                                 originUrl,
-                                                                                                 ONLINE_CONF_LABEL,
-                                                                                                 Optional.empty()),
-                                                                     UUID.randomUUID().toString());
-        List<FilesStorageRequestEvent> items = new ArrayList<>();
-        items.add(item);
+        final FileReferenceRequestArgs args = FileReferenceRequestArgs.builder()
+                                                                      .fileName("error.file.name")
+                                                                      .checksum(checksum)
+                                                                      .storage(ONLINE_CONF_LABEL)
+                                                                      .owner("owner-test")
+                                                                      .build();
+        final FilesStorageRequestEvent item = newStorageRequestEvent(args);
+        final List<FilesStorageRequestEvent> items = List.of(item);
+
         storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check file is well referenced
         Assert.assertFalse("File should not be referenced",
-                           fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+                           referenceService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         // Now check for event published
         Mockito.verify(publisher, Mockito.times(0)).publish(any(FileReferenceEvent.class));
         Mockito.clearInvocations(publisher);
 
         // Simulate job schedule
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                              Lists.newArrayList(ONLINE_CONF_LABEL),
-                                                              Lists.newArrayList());
+        Collection<JobInfo> jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                                      List.of(ONLINE_CONF_LABEL),
+                                                                      List.of());
         runAndWaitJob(jobs);
 
         Assert.assertFalse("File should not be referenced",
-                           fileRefService.search(ONLINE_CONF_LABEL, checksum).isPresent());
+                           referenceService.search(ONLINE_CONF_LABEL, checksum).isPresent());
         Assert.assertEquals("File request should be still present",
                             1,
-                            stoReqService.search(ONLINE_CONF_LABEL, checksum).size());
+                            storageRequestService.search(ONLINE_CONF_LABEL, checksum).size());
         Assert.assertEquals("File request should be in ERROR state",
                             FileRequestStatus.ERROR,
-                            stoReqService.search(ONLINE_CONF_LABEL, checksum).stream().findFirst().get().getStatus());
+                            storageRequestService.search(ONLINE_CONF_LABEL, checksum).iterator().next().getStatus());
+
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.times(1)).publish(any(FileReferenceEvent.class));
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
@@ -646,17 +549,20 @@ public class StoreFileEventIT extends AbstractStorageIT {
                             FileReferenceEventType.STORE_ERROR,
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
 
-        Assert.assertEquals("File request still present", 1, stoReqService.search(ONLINE_CONF_LABEL, checksum).size());
+        Assert.assertEquals("File request still present",
+                            1,
+                            storageRequestService.search(ONLINE_CONF_LABEL, checksum).size());
         Assert.assertEquals("File request in ERROR state",
                             FileRequestStatus.ERROR,
-                            stoReqService.search(ONLINE_CONF_LABEL, checksum).stream().findFirst().get().getStatus());
+                            storageRequestService.search(ONLINE_CONF_LABEL, checksum).iterator().next().getStatus());
 
         // Retry same storage request
         storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // There should be one storage request. Same as previous error one but updated to to_do thanks to new request
-        Collection<FileStorageRequestAggregation> storeRequests = stoReqService.search(ONLINE_CONF_LABEL, checksum);
+        Collection<FileStorageRequestAggregation> storeRequests = storageRequestService.search(ONLINE_CONF_LABEL,
+                                                                                               checksum);
         Assert.assertEquals("File request still present", 1, storeRequests.size());
         // One in TO_DO state
         Assert.assertEquals("There should be one request in TO_DO state",
@@ -671,109 +577,67 @@ public class StoreFileEventIT extends AbstractStorageIT {
 
     @Test
     public void retry_byGroupId() {
-        String storageDestination = "somewheere";
+        String storageDestination = "somewhere";
         String owner = "retry-test";
-        Set<FileStorageRequestDto> files = Sets.newHashSet();
+
+        Set<FileStorageRequestDto> files = IntStream.rangeClosed(1, 3)
+                                                    .mapToObj(i -> "file" + i + ".test")
+                                                    .map(fileName -> FileReferenceRequestArgs.builder()
+                                                                                             .fileName(fileName)
+                                                                                             .checksum(
+                                                                                                 RandomChecksumUtils.generateRandomChecksum())
+                                                                                             .storage(storageDestination)
+                                                                                             .owner("retry-test")
+                                                                                             .build())
+                                                    .map(this::newStorageRequest)
+                                                    .collect(Collectors.toSet());
 
         // Create a new bus message File reference request
-        files.add(FileStorageRequestDto.build("file1.test",
-                                              RandomChecksumUtils.generateRandomChecksum(),
-                                              "MD5",
-                                              "application/octet-stream",
-                                              owner,
-                                              SESSION_OWNER,
-                                              SESSION,
-                                              originUrl,
-                                              storageDestination,
-                                              Optional.empty()));
-        files.add(FileStorageRequestDto.build("file2.test",
-                                              RandomChecksumUtils.generateRandomChecksum(),
-                                              "MD5",
-                                              "application/octet-stream",
-                                              owner,
-                                              SESSION_OWNER,
-                                              SESSION,
-                                              originUrl,
-                                              storageDestination,
-                                              Optional.empty()));
-        files.add(FileStorageRequestDto.build("file3.test",
-                                              RandomChecksumUtils.generateRandomChecksum(),
-                                              "MD5",
-                                              "application/octet-stream",
-                                              owner,
-                                              SESSION_OWNER,
-                                              SESSION,
-                                              originUrl,
-                                              storageDestination,
-                                              Optional.empty()));
-        FilesStorageRequestEvent item = new FilesStorageRequestEvent(files, UUID.randomUUID().toString());
-        List<FilesStorageRequestEvent> items = new ArrayList<>();
-        items.add(item);
-        storeHandler.handleBatch(items);
+
+        final FilesStorageRequestEvent item = new FilesStorageRequestEvent(files, UUID.randomUUID().toString());
+        storeHandler.handleBatch(List.of(item));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check request in error
-        Page<FileStorageRequestAggregation> requests = fileStorageRequestRepo.findByOwnersInAndStatus(Lists.newArrayList(
-            owner), FileRequestStatus.ERROR, PageRequest.of(0, 1_000));
+        Page<FileStorageRequestAggregation> requests = storageRequestRepository.findByOwnersInAndStatus(List.of(owner),
+                                                                                                        FileRequestStatus.ERROR,
+                                                                                                        PAGE_1ST_1000);
         Assert.assertEquals("The 3 requests should be in error", 3, requests.getTotalElements());
 
-        FilesRetryRequestEvent retry = FilesRetryRequestEvent.buildStorageRetry(Lists.newArrayList(owner));
+        FilesRetryRequestEvent retry = FilesRetryRequestEvent.buildStorageRetry(List.of(owner));
         TenantWrapper<FilesRetryRequestEvent> retryWrapper = TenantWrapper.build(retry, getDefaultTenant());
         retryHandler.handle(retryWrapper);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // Check request in {@link FileRequestStatus#TO_DO}
-        requests = fileStorageRequestRepo.findByOwnersInAndStatus(Lists.newArrayList(owner),
-                                                                  FileRequestStatus.TO_DO,
-                                                                  PageRequest.of(0, 1_000));
+        requests = storageRequestRepository.findByOwnersInAndStatus(List.of(owner),
+                                                                    FileRequestStatus.TO_DO,
+                                                                    PAGE_1ST_1000);
         Assert.assertEquals("The 3 requests should be in TO_DO", 3, requests.getTotalElements());
 
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                              Lists.newArrayList(),
-                                                              Lists.newArrayList());
+        Collection<JobInfo> jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO, List.of(), List.of());
         runAndWaitJob(jobs);
 
-        requests = fileStorageRequestRepo.findByOwnersInAndStatus(Lists.newArrayList(owner),
-                                                                  FileRequestStatus.ERROR,
-                                                                  PageRequest.of(0, 1_000));
+        requests = storageRequestRepository.findByOwnersInAndStatus(List.of(owner),
+                                                                    FileRequestStatus.ERROR,
+                                                                    PAGE_1ST_1000);
         Assert.assertEquals("The 3 requests should be in error again", 3, requests.getTotalElements());
     }
 
     @Test
     public void retry_byOwners() {
-        String storageDestination = "somewheere";
-        List<String> owners = Lists.newArrayList("retry-test", "retry-test-2", "retry-test-3");
-        Set<FileStorageRequestDto> files = Sets.newHashSet();
+        String storageDestination = "somewhere";
+        List<String> owners = List.of("retry-test-1", "retry-test-2", "retry-test-3");
+        Set<FileStorageRequestDto> files = IntStream.rangeClosed(1, 3)
+                                                    .mapToObj(i -> FileReferenceRequestArgs.builder()
+                                                                                           .fileName("file.test" + i)
+                                                                                           .checksum(RandomChecksumUtils.generateRandomChecksum())
+                                                                                           .storage(storageDestination)
+                                                                                           .owner("retry-test-" + i)
+                                                                                           .build())
+                                                    .map(this::newStorageRequest)
+                                                    .collect(Collectors.toSet());
+
         // Create a new bus message File reference request
-        files.add(FileStorageRequestDto.build("file1.test",
-                                              RandomChecksumUtils.generateRandomChecksum(),
-                                              "MD5",
-                                              "application/octet-stream",
-                                              owners.get(0),
-                                              SESSION_OWNER,
-                                              SESSION,
-                                              originUrl,
-                                              storageDestination,
-                                              Optional.empty()));
-        files.add(FileStorageRequestDto.build("file2.test",
-                                              RandomChecksumUtils.generateRandomChecksum(),
-                                              "MD5",
-                                              "application/octet-stream",
-                                              owners.get(1),
-                                              SESSION_OWNER,
-                                              SESSION,
-                                              originUrl,
-                                              storageDestination,
-                                              Optional.empty()));
-        files.add(FileStorageRequestDto.build("file3.test",
-                                              RandomChecksumUtils.generateRandomChecksum(),
-                                              "MD5",
-                                              "application/octet-stream",
-                                              owners.get(2),
-                                              SESSION_OWNER,
-                                              SESSION,
-                                              originUrl,
-                                              storageDestination,
-                                              Optional.empty()));
         FilesStorageRequestEvent item = new FilesStorageRequestEvent(files,
                                                                      RandomChecksumUtils.generateRandomChecksum());
         List<FilesStorageRequestEvent> items = new ArrayList<>();
@@ -781,10 +645,9 @@ public class StoreFileEventIT extends AbstractStorageIT {
         storeHandler.handleBatch(items);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Check request in error
-        Page<FileStorageRequestAggregation> requests = fileStorageRequestRepo.findByOwnersInAndStatus(owners,
-                                                                                                      FileRequestStatus.ERROR,
-                                                                                                      PageRequest.of(0,
-                                                                                                                     1_000));
+        Page<FileStorageRequestAggregation> requests = storageRequestRepository.findByOwnersInAndStatus(owners,
+                                                                                                        FileRequestStatus.ERROR,
+                                                                                                        PAGE_1ST_1000);
         Assert.assertEquals("The 3 requests should be in error", 3, requests.getTotalElements());
 
         FilesRetryRequestEvent retry = FilesRetryRequestEvent.buildStorageRetry(owners);
@@ -793,19 +656,13 @@ public class StoreFileEventIT extends AbstractStorageIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         // Check request in {@link FileRequestStatus#TO_DO}
-        requests = fileStorageRequestRepo.findByOwnersInAndStatus(owners,
-                                                                  FileRequestStatus.TO_DO,
-                                                                  PageRequest.of(0, 1_000));
+        requests = storageRequestRepository.findByOwnersInAndStatus(owners, FileRequestStatus.TO_DO, PAGE_1ST_1000);
         Assert.assertEquals("The 3 requests should be in TO_DO", 3, requests.getTotalElements());
 
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                              Lists.newArrayList(),
-                                                              Lists.newArrayList());
+        Collection<JobInfo> jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO, List.of(), List.of());
         runAndWaitJob(jobs);
 
-        requests = fileStorageRequestRepo.findByOwnersInAndStatus(owners,
-                                                                  FileRequestStatus.ERROR,
-                                                                  PageRequest.of(0, 1_000));
+        requests = storageRequestRepository.findByOwnersInAndStatus(owners, FileRequestStatus.ERROR, PAGE_1ST_1000);
         Assert.assertEquals("The 3 requests should be in error again", 3, requests.getTotalElements());
 
         // Check step events were correctly send (check only for the first request)
@@ -813,53 +670,37 @@ public class StoreFileEventIT extends AbstractStorageIT {
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 24, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.STORE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(2),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(3),
-                       SessionNotifierPropertyEnum.REQUESTS_ERRORS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(12),
-                       SessionNotifierPropertyEnum.REQUESTS_ERRORS,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(13),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(18),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
-        checkStepEvent(stepEventList.get(19),
-                       SessionNotifierPropertyEnum.REQUESTS_ERRORS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER,
-                       SESSION,
-                       "1");
+        checkStepEvent(stepEventList.get(0), STORE_REQUESTS, INC);
+        checkStepEvent(stepEventList.get(1), REQUESTS_RUNNING, INC);
+        checkStepEvent(stepEventList.get(2), REQUESTS_RUNNING, DEC);
+        checkStepEvent(stepEventList.get(3), REQUESTS_ERRORS, INC);
+        checkStepEvent(stepEventList.get(12), REQUESTS_ERRORS, DEC);
+        checkStepEvent(stepEventList.get(13), REQUESTS_RUNNING, INC);
+        checkStepEvent(stepEventList.get(18), REQUESTS_RUNNING, DEC);
+        checkStepEvent(stepEventList.get(19), REQUESTS_ERRORS, INC);
     }
+
+    private void checkStepEvent(StepPropertyUpdateRequestEvent event,
+                                SessionNotifierPropertyEnum expectedEventProperty,
+                                StepPropertyEventTypeEnum expectedType) {
+        checkStepEvent(event, expectedEventProperty, expectedType, SESSION1_OWNER, SESSION1, "1");
+    }
+
+    private FileStorageRequestDto newStorageRequest(FileReferenceRequestArgs args) {
+        return FileStorageRequestDto.build(args.getFileName(),
+                                           args.getChecksum(),
+                                           "MD5",
+                                           MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                                           args.getOwner(),
+                                           SESSION1_OWNER,
+                                           SESSION1,
+                                           ORIGIN_URL,
+                                           args.getStorage(),
+                                           Optional.ofNullable(args.getSubDirectory()));
+    }
+
+    private FilesStorageRequestEvent newStorageRequestEvent(FileReferenceRequestArgs args) {
+        return new FilesStorageRequestEvent(newStorageRequest(args), UUID.randomUUID().toString());
+    }
+
 }

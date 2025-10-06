@@ -47,6 +47,7 @@ import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storage.domain.predicate.StoragePredicates;
 import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -370,9 +371,9 @@ public class FileDeletionRequestService {
                                                                     authResolver.getUser(),
                                                                     FileDeletionRequestJob.class.getName()));
         workingSubset.getFileDeletionRequests()
-                     .forEach(fileRefReq -> fileDeletionRequestRepo.updateStatusAndJobId(FileRequestStatus.PENDING,
-                                                                                         jobInfo.getId().toString(),
-                                                                                         fileRefReq.getId()));
+                     .forEach(fileRefReq -> fileDeletionRequestRepo.updateStatusAndJobId(fileRefReq.getId(),
+                                                                                         FileRequestStatus.PENDING,
+                                                                                         jobInfo.getId().toString()));
         return jobInfo;
     }
 
@@ -494,23 +495,17 @@ public class FileDeletionRequestService {
 
             // check if file reference already exists
             Optional<FileReference> oFileRef = existingOnes.stream()
-                                                           .filter(f -> f.getLocation()
-                                                                         .getStorage()
-                                                                         .equals(request.getStorage())
-                                                                        && f.getMetaInfo()
-                                                                            .getChecksum()
-                                                                            .equals(request.getChecksum()))
+                                                           .filter(StoragePredicates.fileReferenceWithSameStorageAndChecksum(
+                                                               request.getStorage(),
+                                                               request.getChecksum()))
                                                            .findFirst();
-            if (oFileRef.isPresent()) {
-                FileReference fileRef = oFileRef.get();
-                removeOwner(fileRef,
-                            request.getOwner(),
-                            request.getSessionOwner(),
-                            request.getSession(),
-                            request.isForceDelete(),
-                            existingRequests,
-                            groupId);
-            }
+            oFileRef.ifPresent(fileRef -> removeOwner(fileRef,
+                                                      request.getOwner(),
+                                                      request.getSessionOwner(),
+                                                      request.getSession(),
+                                                      request.isForceDelete(),
+                                                      existingRequests,
+                                                      groupId));
             // In all case, inform caller that deletion request is success.
             reqGroupService.requestSuccess(groupId,
                                            FileRequestType.DELETION,

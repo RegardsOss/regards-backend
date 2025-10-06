@@ -346,12 +346,12 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         // --- CHECK RESULTS ---
         // assert all requests states have changed
         // deletion requests
-        List<FileDeletionRequest> updatedDeletionRequests = this.fileDeletionRequestRepo.findAll();
+        List<FileDeletionRequest> updatedDeletionRequests = this.deletionRequestRepository.findAll();
         updatedDeletionRequests.forEach(req -> Assert.assertEquals("Request state should have been updated for retry",
                                                                    FileRequestStatus.TO_DO,
                                                                    req.getStatus()));
         // storage requests
-        List<FileStorageRequestAggregation> updatedStorageRequests = this.fileStorageRequestRepo.findAll();
+        List<FileStorageRequestAggregation> updatedStorageRequests = this.storageRequestRepository.findAll();
         updatedStorageRequests.forEach(req -> Assert.assertEquals("Request state should have been updated for retry",
                                                                   FileRequestStatus.TO_DO,
                                                                   req.getStatus()));
@@ -407,12 +407,12 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         // --- CHECK RESULTS ---
         // assert all requests states are not changed
         // deletion requests
-        List<FileDeletionRequest> updatedDeletionRequests = this.fileDeletionRequestRepo.findAll();
+        List<FileDeletionRequest> updatedDeletionRequests = this.deletionRequestRepository.findAll();
         updatedDeletionRequests.forEach(req -> Assert.assertEquals("Request state should be in the same state",
                                                                    FileRequestStatus.DELAYED,
                                                                    req.getStatus()));
         // storage requests
-        List<FileStorageRequestAggregation> updatedStorageRequests = this.fileStorageRequestRepo.findAll();
+        List<FileStorageRequestAggregation> updatedStorageRequests = this.storageRequestRepository.findAll();
         updatedStorageRequests.forEach(req -> Assert.assertEquals("Request state should be in the same state",
                                                                   FileRequestStatus.PENDING,
                                                                   req.getStatus()));
@@ -441,7 +441,7 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
                                                                   session);
             createdDeletionRequests.add(request);
         }
-        return this.fileDeletionRequestRepo.saveAll(createdDeletionRequests);
+        return this.deletionRequestRepository.saveAll(createdDeletionRequests);
     }
 
     /**
@@ -474,6 +474,6 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
             request.setStatus(requestStatus);
             createdStorageRequests.add(request);
         }
-        return this.fileStorageRequestRepo.saveAll(createdStorageRequests);
+        return this.storageRequestRepository.saveAll(createdStorageRequests);
     }
 }

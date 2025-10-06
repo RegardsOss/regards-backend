@@ -65,13 +65,11 @@ public class FileStorageRequestResultDto {
                                                     Long fileSize,
                                                     boolean pendingActionRemaining,
                                                     boolean notifyActionRemainingToAdmin) {
-        FileStorageRequestResultDto dto = new FileStorageRequestResultDto();
-        dto.request = request;
-        dto.storedUrl = storedUrl;
-        dto.fileSize = fileSize;
-        dto.fileArchiveStatus = pendingActionRemaining ? FileArchiveStatus.TO_STORE : FileArchiveStatus.STORED;
-        dto.notifyActionRemainingToAdmin = notifyActionRemainingToAdmin;
-        return dto;
+        return build(request,
+                     storedUrl,
+                     fileSize,
+                     pendingActionRemaining ? FileArchiveStatus.TO_STORE : FileArchiveStatus.STORED,
+                     notifyActionRemainingToAdmin);
     }
 
     public FileStorageRequestResultDto error(String cause) {

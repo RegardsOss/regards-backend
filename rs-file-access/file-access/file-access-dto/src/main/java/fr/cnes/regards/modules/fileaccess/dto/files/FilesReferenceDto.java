@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.fileaccess.dto.files;
 
 import fr.cnes.regards.modules.fileaccess.dto.request.FileReferenceRequestDto;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class FilesReferenceDto {
      */
     private String groupId;
 
-    public FilesReferenceDto(String groupId, Set<FileReferenceRequestDto> files) {
+    public FilesReferenceDto(String groupId, Collection<FileReferenceRequestDto> files) {
         if (groupId == null) {
             throw new IllegalArgumentException("groupId is required");
         }

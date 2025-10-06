@@ -18,12 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.service.file.handler;
 
-import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.test.integration.RandomChecksumUtils;
 import fr.cnes.regards.modules.fileaccess.dto.FileRequestStatus;
@@ -35,11 +32,7 @@ import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEvent;
 import fr.cnes.regards.modules.filecatalog.amqp.output.FileReferenceEventType;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
-import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
-import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
-import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
-import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
-import org.apache.commons.compress.utils.Sets;
+import fr.cnes.regards.modules.storage.service.file.fixture.FileReferenceRequestPublisher;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,6 +46,12 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import static fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum.DEC;
+import static fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum.INC;
+import static fr.cnes.regards.modules.storage.service.file.fixture.FileReferenceConstants.*;
+import static fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * Test class
  *
@@ -63,31 +62,11 @@ import java.util.stream.Collectors;
                     locations = { "classpath:application-test.properties" })
 public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
 
-    private static final String SESSION_OWNER_1 = "SOURCE 1";
-
-    private static final String SESSION_OWNER_2 = "SOURCE 2";
-
-    private static final String SESSION_1 = "SESSION 1";
-
-    private static final boolean waitForLock = false;
-
-    @Autowired
-    FileReferenceRequestService fileRefReqService;
-
-    @Autowired
-    FileReferenceService fileRefService;
-
-    @Autowired
-    FileStorageRequestService fileStorageReqService;
-
     @Autowired
     private FilesDeletionEventHandler filesDeletionEventHandler;
 
     @Autowired
-    private FilesReferenceEventHandler filesReferenceEventHandler;
-
-    @Autowired
-    private ILockingTaskExecutors lockingTaskExecutors;
+    private FileReferenceRequestPublisher referenceRequestPublisher;
 
     @Before
     public void initialize() throws ModuleException {
@@ -103,14 +82,13 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
     @Test
     public void delete_file_not_existing() {
         FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(RandomChecksumUtils.generateRandomChecksum(),
-                                                                               "some-stprage",
+                                                                               "some-storage",
                                                                                "owner",
-                                                                               SESSION_OWNER_1,
-                                                                               SESSION_1,
+                                                                               SESSION1_OWNER,
+                                                                               SESSION1,
                                                                                false), UUID.randomUUID().toString());
-        List<FilesDeletionEvent> items = new ArrayList<>();
-        items.add(item);
-        filesDeletionEventHandler.handleBatch(items);
+
+        filesDeletionEventHandler.handleBatch(List.of(item));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.never()).publish(Mockito.any(FileReferenceEvent.class));
@@ -118,12 +96,7 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 1, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.DELETE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
+        checkStepEvent(stepEventList.get(0), DELETE_REQUESTS, INC, SESSION1_OWNER, SESSION1, "1");
     }
 
     /**
@@ -137,59 +110,32 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
         String checksum = RandomChecksumUtils.generateRandomChecksum();
         String storage = "some-storage";
         String owner = "owner";
-        this.referenceFile(checksum, owner, null, "file.test", storage, SESSION_OWNER_1, SESSION_1, false);
+        this.referenceFile(checksum, owner, null, "file.test", storage, SESSION1_OWNER, SESSION1, false);
         Mockito.clearInvocations(publisher);
         FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(checksum,
                                                                                storage,
                                                                                owner,
-                                                                               SESSION_OWNER_1,
-                                                                               SESSION_1,
+                                                                               SESSION1_OWNER,
+                                                                               SESSION1,
                                                                                false), UUID.randomUUID().toString());
-        List<FilesDeletionEvent> items = new ArrayList<>();
-        items.add(item);
-        filesDeletionEventHandler.handleBatch(items);
+
+        filesDeletionEventHandler.handleBatch(List.of(item));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Collection<FileReferenceEvent> events = getFileReferenceEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("There should be two events. One DELETED_FOR_WONER and one FULLY_DELETED",
-                            Sets.newHashSet(FileReferenceEventType.DELETED_FOR_OWNER,
-                                            FileReferenceEventType.FULLY_DELETED),
+                            Set.of(FileReferenceEventType.DELETED_FOR_OWNER, FileReferenceEventType.FULLY_DELETED),
                             events.stream().map(r -> r.getType()).collect(Collectors.toSet()));
         // Check step events were correctly send
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 5, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.DELETE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(2),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(3),
-                       SessionNotifierPropertyEnum.DELETED_FILES,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(4),
-                       SessionNotifierPropertyEnum.STORED_FILES,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
+        checkStepEvent(stepEventList.get(0), DELETE_REQUESTS, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(1), REQUESTS_RUNNING, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(2), REQUESTS_RUNNING, DEC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(3), DELETED_FILES, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(4), STORED_FILES, DEC, SESSION1_OWNER, SESSION1, "1");
     }
 
     /**
@@ -203,18 +149,16 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
         String checksum = RandomChecksumUtils.generateRandomChecksum();
         String storage = "some-storage";
         String owner = "owner";
-        this.referenceFile(checksum, owner, null, "file.test", storage, SESSION_OWNER_1, SESSION_1, false);
-        this.referenceFile(checksum, "other-owner", null, "file.test", storage, SESSION_OWNER_2, SESSION_1, false);
+        this.referenceFile(checksum, owner, null, "file.test", storage, SESSION1_OWNER, SESSION1, false);
+        this.referenceFile(checksum, "other-owner", null, "file.test", storage, SESSION2_OWNER, SESSION1, false);
         Mockito.clearInvocations(publisher);
         FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(checksum,
                                                                                storage,
                                                                                owner,
-                                                                               SESSION_OWNER_1,
-                                                                               SESSION_1,
+                                                                               SESSION1_OWNER,
+                                                                               SESSION1,
                                                                                false), UUID.randomUUID().toString());
-        List<FilesDeletionEvent> items = new ArrayList<>();
-        items.add(item);
-        filesDeletionEventHandler.handleBatch(items);
+        filesDeletionEventHandler.handleBatch(List.of(item));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -225,24 +169,9 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
         // Check step events were correctly send
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 3, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.DELETE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.DELETED_FILES,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(2),
-                       SessionNotifierPropertyEnum.STORED_FILES,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
+        checkStepEvent(stepEventList.get(0), DELETE_REQUESTS, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(1), DELETED_FILES, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(2), STORED_FILES, DEC, SESSION1_OWNER, SESSION1, "1");
     }
 
     /**
@@ -261,19 +190,17 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
                                                                  ONLINE_CONF_LABEL,
                                                                  Optional.empty(),
                                                                  Optional.empty(),
-                                                                 SESSION_OWNER_1,
-                                                                 SESSION_1);
+                                                                 SESSION1_OWNER,
+                                                                 SESSION1);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
         FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(checksum,
                                                                                storage,
                                                                                owner,
-                                                                               SESSION_OWNER_1,
-                                                                               SESSION_1,
+                                                                               SESSION1_OWNER,
+                                                                               SESSION1,
                                                                                false), UUID.randomUUID().toString());
-        List<FilesDeletionEvent> items = new ArrayList<>();
-        items.add(item);
-        filesDeletionEventHandler.handleBatch(items);
+        filesDeletionEventHandler.handleBatch(List.of(item));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -284,30 +211,19 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
         // Check step events were correctly send
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 2, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.DELETE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
+        checkStepEvent(stepEventList.get(0), DELETE_REQUESTS, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(1), REQUESTS_RUNNING, INC, SESSION1_OWNER, SESSION1, "1");
 
         // A new File deletion request should be sent
         Assert.assertTrue("A file deletion request should be created",
-                          fileDeletionRequestService.search(fileRef).isPresent());
+                          deletionRequestService.search(fileRef).isPresent());
         Assert.assertEquals("A file deletion request should be created in TO_DO state",
                             FileRequestStatus.TO_DO,
-                            fileDeletionRequestService.search(fileRef).get().getStatus());
+                            deletionRequestService.search(fileRef).get().getStatus());
         Mockito.clearInvocations(publisher);
 
         // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                                           Lists.newArrayList());
+        Collection<JobInfo> jobs = deletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, List.of());
         runAndWaitJob(jobs);
 
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
@@ -319,24 +235,9 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
         // Check step events were correctly send
         stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 3, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.DELETED_FILES,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(2),
-                       SessionNotifierPropertyEnum.STORED_FILES,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
+        checkStepEvent(stepEventList.get(0), REQUESTS_RUNNING, DEC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(1), DELETED_FILES, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(2), STORED_FILES, DEC, SESSION1_OWNER, SESSION1, "1");
 
     }
 
@@ -357,19 +258,17 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
                                                                  ONLINE_CONF_LABEL,
                                                                  Optional.empty(),
                                                                  Optional.empty(),
-                                                                 SESSION_OWNER_1,
-                                                                 SESSION_1);
+                                                                 SESSION1_OWNER,
+                                                                 SESSION1);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
         FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(checksum,
                                                                                storage,
                                                                                owner,
-                                                                               SESSION_OWNER_1,
-                                                                               SESSION_1,
+                                                                               SESSION1_OWNER,
+                                                                               SESSION1,
                                                                                false), UUID.randomUUID().toString());
-        List<FilesDeletionEvent> items = new ArrayList<>();
-        items.add(item);
-        filesDeletionEventHandler.handleBatch(items);
+        filesDeletionEventHandler.handleBatch(List.of(item));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -379,31 +278,20 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
         // A new File deletion request should be sent
         Assert.assertTrue("A file deletion request should be created",
-                          fileDeletionRequestService.search(fileRef).isPresent());
+                          deletionRequestService.search(fileRef).isPresent());
         Assert.assertEquals("A file deletion request should be created in TO_DO state",
                             FileRequestStatus.TO_DO,
-                            fileDeletionRequestService.search(fileRef).get().getStatus());
+                            deletionRequestService.search(fileRef).get().getStatus());
         Mockito.clearInvocations(publisher);
 
         // Check step events were correctly send
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 2, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.DELETE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
+        checkStepEvent(stepEventList.get(0), DELETE_REQUESTS, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(1), REQUESTS_RUNNING, INC, SESSION1_OWNER, SESSION1, "1");
 
         // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                                           Lists.newArrayList());
+        Collection<JobInfo> jobs = deletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, List.of());
         runAndWaitJob(jobs);
 
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
@@ -416,18 +304,8 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
         // Check step events were correctly send
         stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 2, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_ERRORS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
+        checkStepEvent(stepEventList.get(0), REQUESTS_RUNNING, DEC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(1), REQUESTS_ERRORS, INC, SESSION1_OWNER, SESSION1, "1");
     }
 
     /**
@@ -447,19 +325,17 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
                                                                  ONLINE_CONF_LABEL,
                                                                  Optional.empty(),
                                                                  Optional.empty(),
-                                                                 SESSION_OWNER_1,
-                                                                 SESSION_1);
+                                                                 SESSION1_OWNER,
+                                                                 SESSION1);
         String storage = fileRef.getLocation().getStorage();
         Mockito.clearInvocations(publisher);
         FilesDeletionEvent item = new FilesDeletionEvent(FileDeletionDto.build(checksum,
                                                                                storage,
                                                                                owner,
-                                                                               SESSION_OWNER_1,
-                                                                               SESSION_1,
+                                                                               SESSION1_OWNER,
+                                                                               SESSION1,
                                                                                true), UUID.randomUUID().toString());
-        List<FilesDeletionEvent> items = new ArrayList<>();
-        items.add(item);
-        filesDeletionEventHandler.handleBatch(items);
+        filesDeletionEventHandler.handleBatch(List.of(item));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(FileReferenceEvent.class));
@@ -469,31 +345,20 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
                             getFileReferenceEvent(argumentCaptor.getAllValues()).getType());
         // A new File deletion request should be sent
         Assert.assertTrue("A file deletion request should be created",
-                          fileDeletionRequestService.search(fileRef).isPresent());
+                          deletionRequestService.search(fileRef).isPresent());
         Assert.assertEquals("A file deletion request should be created in TO_DO state",
                             FileRequestStatus.TO_DO,
-                            fileDeletionRequestService.search(fileRef).get().getStatus());
+                            deletionRequestService.search(fileRef).get().getStatus());
         Mockito.clearInvocations(publisher);
 
         // Check step events were correctly send
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 2, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.DELETE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
+        checkStepEvent(stepEventList.get(0), DELETE_REQUESTS, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(1), REQUESTS_RUNNING, INC, SESSION1_OWNER, SESSION1, "1");
 
         // Now schedule deletion jobs
-        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                                           Lists.newArrayList());
+        Collection<JobInfo> jobs = deletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, List.of());
         runAndWaitJob(jobs);
 
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
@@ -506,24 +371,9 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
         // Check step events were correctly send
         stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 3, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.DELETED_FILES,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(2),
-                       SessionNotifierPropertyEnum.STORED_FILES,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
+        checkStepEvent(stepEventList.get(0), REQUESTS_RUNNING, DEC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(1), DELETED_FILES, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(2), STORED_FILES, DEC, SESSION1_OWNER, SESSION1, "1");
     }
 
     /**
@@ -531,13 +381,12 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
      */
     @Test
     public void delete_referenced_file() {
-        // PREPARATION
-        // init parameters
+        // GIVEN
         String checksum = RandomChecksumUtils.generateRandomChecksum();
         String storage = "local";
         String owner = "owner-test";
 
-        // create reference event
+        // create and process a reference request
         FilesReferenceEvent refItem = new FilesReferenceEvent(FileReferenceRequestDto.build("file.name",
                                                                                             checksum,
                                                                                             "MD5",
@@ -546,64 +395,47 @@ public class DeleteFileReferenceEventHandlerIT extends AbstractStorageIT {
                                                                                             owner,
                                                                                             storage,
                                                                                             "file://storage/location/file.name",
-                                                                                            SESSION_OWNER_1,
-                                                                                            SESSION_1),
+                                                                                            SESSION1_OWNER,
+                                                                                            SESSION1),
                                                               UUID.randomUUID().toString());
-        filesReferenceEventHandler.handleBatch(Lists.newArrayList(refItem));
+
+        referenceRequestPublisher.publishReferenceEvents(1, refItem);
         Mockito.clearInvocations(publisher);
 
-        // DELETE FILE REFERENCE
+        // WHEN
+        // create deletion request
         FilesDeletionEvent delItem = new FilesDeletionEvent(FileDeletionDto.build(checksum,
                                                                                   storage,
                                                                                   owner,
-                                                                                  SESSION_OWNER_1,
-                                                                                  SESSION_1,
+                                                                                  SESSION1_OWNER,
+                                                                                  SESSION1,
                                                                                   false), UUID.randomUUID().toString());
-        filesDeletionEventHandler.handleBatch(Lists.newArrayList(delItem));
+
+        filesDeletionEventHandler.handleBatch(List.of(delItem));
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
-        // CHECK RESULTS
+        // THEN
         // check events sent
-        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        final ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        Collection<FileReferenceEvent> events = getFileReferenceEvents(argumentCaptor.getAllValues());
-        Assert.assertEquals("There should be two events. One DELETED_FOR_WONER and one FULLY_DELETED",
-                            Sets.newHashSet(FileReferenceEventType.DELETED_FOR_OWNER,
-                                            FileReferenceEventType.FULLY_DELETED),
-                            events.stream().map(FileReferenceEvent::getType).collect(Collectors.toSet()));
+
+        final Collection<FileReferenceEvent> events = getFileReferenceEvents(argumentCaptor.getAllValues());
+        assertThat(events).hasSize(2);
+        final Set<FileReferenceEventType> eventTypes = events.stream()
+                                                             .map(FileReferenceEvent::getType)
+                                                             .collect(Collectors.toSet());
+        assertThat(eventTypes).as("There should be two events. One DELETED_FOR_OWNER and one FULLY_DELETED")
+                              .containsExactlyInAnyOrder(FileReferenceEventType.DELETED_FOR_OWNER,
+                                                         FileReferenceEventType.FULLY_DELETED);
+
         // Check step events were correctly send
-        List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
-        Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 5, stepEventList.size());
-        checkStepEvent(stepEventList.get(0),
-                       SessionNotifierPropertyEnum.DELETE_REQUESTS,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(1),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(2),
-                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(3),
-                       SessionNotifierPropertyEnum.DELETED_FILES,
-                       StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
-        checkStepEvent(stepEventList.get(4),
-                       SessionNotifierPropertyEnum.REFERENCED_FILES,
-                       StepPropertyEventTypeEnum.DEC,
-                       SESSION_OWNER_1,
-                       SESSION_1,
-                       "1");
+        final List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
+        assertThat(stepEventList).as("Unexpected number of StepPropertyUpdateRequestEvents").hasSize(5);
+        checkStepEvent(stepEventList.get(0), DELETE_REQUESTS, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(1), REQUESTS_RUNNING, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(2), REQUESTS_RUNNING, DEC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(3), DELETED_FILES, INC, SESSION1_OWNER, SESSION1, "1");
+        checkStepEvent(stepEventList.get(4), REFERENCED_FILES, DEC, SESSION1_OWNER, SESSION1, "1");
     }
 }

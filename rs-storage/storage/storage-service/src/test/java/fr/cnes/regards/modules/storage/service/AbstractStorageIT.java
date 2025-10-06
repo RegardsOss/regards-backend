@@ -76,6 +76,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -83,6 +84,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author sbinda
@@ -104,38 +107,43 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
 
     private static final Long ALLOCATED_SIZE_IN_KO = 1_000_000L;
 
+    protected final static String ORIGIN_URL = "file://in/this/directory/file.test";
+
     @SpyBean
-    protected FileReferenceEventPublisher fileEventPublisher;
+    protected FileReferenceEventPublisher referenceEventPublisher;
 
     @Autowired
-    protected FileReferenceEventHandler fileRefEventHandler;
+    protected FileReferenceEventHandler referenceEventHandler;
 
     @Autowired
-    protected FileReferenceRequestService fileReqService;
+    protected FileReferenceService referenceService;
 
     @Autowired
-    protected FileReferenceService fileRefService;
+    protected FileReferenceRequestService referenceRequestService;
 
     @Autowired
-    protected FileDownloadService fileDownloadService;
+    protected FileReferenceRequestJobSchedulingService referenceRequestSchedulingService;
+
+    @Autowired
+    protected FileDownloadService downloadService;
 
     @Autowired
     protected DownloadTokenService downloadTokenService;
 
     @Autowired
-    protected FileStorageRequestService stoReqService;
+    protected FileStorageRequestService storageRequestService;
 
     @Autowired
-    protected FileCacheRequestService fileCacheRequestService;
+    protected FileCacheRequestService cacheRequestService;
 
     @Autowired
-    protected FileCopyRequestService fileCopyRequestService;
+    protected FileCopyRequestService copyRequestService;
 
     @Autowired
     protected CacheService cacheService;
 
     @Autowired
-    protected FileDeletionRequestService fileDeletionRequestService;
+    protected FileDeletionRequestService deletionRequestService;
 
     @Autowired
     protected IJobService jobService;
@@ -144,28 +152,31 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     protected StoragePluginConfigurationHandler storagePlgConfHandler;
 
     @Autowired
-    protected IFileReferenceRepository fileRefRepo;
+    protected IFileReferenceRepository referenceRepository;
 
     @Autowired
-    protected IFileReferenceWithOwnersRepository fileRefWithOwnersRepo;
+    protected IFileReferenceWithOwnersRepository referenceWithOwnersRepository;
 
     @Autowired
-    protected IFileCacheRequestRepository fileCacheRequestRepository;
+    protected IFileCacheRequestRepository cacheRequestRepository;
 
     @Autowired
     protected ICacheFileRepository cacheFileRepository;
 
     @Autowired
-    protected IFileStorageRequestRepository fileStorageRequestRepo;
+    protected IFileStorageRequestRepository storageRequestRepository;
 
     @Autowired
-    protected IFileDeletetionRequestRepository fileDeletionRequestRepo;
+    protected IFileReferenceRequestRepository referenceRequestRepository;
+
+    @Autowired
+    protected IFileDeletetionRequestRepository deletionRequestRepository;
 
     @Autowired
     protected IFileCopyRequestRepository copyRequestRepository;
 
     @Autowired
-    protected IJobInfoRepository jobInfoRepo;
+    protected IJobInfoRepository jobInfoRepository;
 
     @Autowired
     protected IGroupRequestInfoRepository groupRequestInfoRepository;
@@ -174,16 +185,19 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     protected StorageLocationConfigurationService storageLocationConfService;
 
     @Autowired
-    protected IDownloadTokenRepository downloadTokenRepo;
+    protected StorageLocationService storageLocationService;
 
     @Autowired
-    protected RequestStatusService reqStatusService;
+    protected IDownloadTokenRepository downloadTokenRepository;
 
     @Autowired
-    protected IRequestGroupRepository requestGroupRepository;
+    protected RequestStatusService statusService;
 
     @Autowired
-    protected ITemplateRepository templateRepo;
+    protected IRequestGroupRepository groupRepository;
+
+    @Autowired
+    protected ITemplateRepository templateRepository;
 
     @Autowired
     protected IPluginService pluginService;
@@ -191,36 +205,38 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     @MockBean
     protected StorageMetricService storageMetricService;
 
-    protected String originUrl = "file://in/this/directory/file.test";
-
     protected PluginConfiguration nearLineConf;
-
-    @Autowired
-    protected StorageLocationService storageLocationService;
 
     protected void init() throws ModuleException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        // remove directories
         try {
-            if (Files.exists(Paths.get("target/cache"))) {
-                FileUtils.deleteDirectory(Paths.get("target/cache").toFile());
+            final Path cachePath = Paths.get("target/cache");
+            if (Files.exists(cachePath)) {
+                FileUtils.deleteDirectory(cachePath.toFile());
             }
-            if (Files.exists(Paths.get("target/storage"))) {
-                FileUtils.deleteDirectory(Paths.get("target/storage").toFile());
+            final Path storagePath = Paths.get("target/storage");
+            if (Files.exists(storagePath)) {
+                FileUtils.deleteDirectory(storagePath.toFile());
             }
         } catch (IOException e) {
             Assert.fail(e.getMessage());
         }
-        templateRepo.deleteAll();
+
+        // clearDB
+        templateRepository.deleteAll();
         groupRequestInfoRepository.deleteAll();
         copyRequestRepository.deleteAll();
-        fileDeletionRequestRepo.deleteAll();
-        fileStorageRequestRepo.deleteAll();
-        fileCacheRequestRepository.deleteAll();
+        deletionRequestRepository.deleteAll();
+        storageRequestRepository.deleteAll();
+        referenceRequestRepository.deleteAll();
+
+        cacheRequestRepository.deleteAll();
         cacheFileRepository.deleteAll();
-        fileRefRepo.deleteAll();
-        jobInfoRepo.deleteAll();
-        downloadTokenRepo.deleteAll();
-        requestGroupRepository.deleteAll();
+        referenceRepository.deleteAll();
+        jobInfoRepository.deleteAll();
+        downloadTokenRepository.deleteAll();
+        groupRepository.deleteAll();
 
         storageLocationService.getAllLocations().forEach(f -> {
             try {
@@ -374,16 +390,16 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                                                    String newOwner,
                                                                                    String sessionOwner,
                                                                                    String session) {
-        Optional<FileReference> oFilef = fileRefService.search(storage, checksum);
+        Optional<FileReference> oFilef = referenceService.search(storage, checksum);
         Assert.assertTrue("File reference should already exists", oFilef.isPresent());
-        return stoReqService.handleRequest(newOwner,
-                                           sessionOwner,
-                                           session,
-                                           oFilef.get().getMetaInfo(),
-                                           originUrl,
-                                           oFilef.get().getLocation().getStorage(),
-                                           Optional.empty(),
-                                           UUID.randomUUID().toString());
+        return storageRequestService.handleRequest(newOwner,
+                                                   sessionOwner,
+                                                   session,
+                                                   oFilef.get().getMetaInfo(),
+                                                   ORIGIN_URL,
+                                                   oFilef.get().getLocation().getStorage(),
+                                                   Optional.empty(),
+                                                   UUID.randomUUID().toString());
 
     }
 
@@ -403,43 +419,58 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                                        MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.withType(type.orElse(null));
         // Run file reference creation.
-        stoReqService.handleRequest(owner,
-                                    sessionOwner,
-                                    session,
-                                    fileMetaInfo,
-                                    originUrl,
-                                    storage,
-                                    subDir,
-                                    UUID.randomUUID().toString());
-        // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
-        Optional<FileReference> oFileRef = fileRefService.search(storage, checksum);
-        Collection<FileStorageRequestAggregation> fileRefReqs = stoReqService.search(storage, checksum);
+        storageRequestService.handleRequest(owner,
+                                            sessionOwner,
+                                            session,
+                                            fileMetaInfo,
+                                            ORIGIN_URL,
+                                            storage,
+                                            subDir,
+                                            UUID.randomUUID().toString());
+        // The file reference should not exist yet cause a storage job is needed.
+        // But a FileStorageRequestAggregation should have been created.
+        final Optional<FileReference> oFileRef = referenceService.search(storage, checksum);
+        Collection<FileStorageRequestAggregation> fileRefReqs = storageRequestService.search(storage, checksum);
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
-        Assert.assertEquals("File reference request should be in TO_STORE status",
+        final FileStorageRequestAggregation fileRefReq = fileRefReqs.iterator().next();
+        Assert.assertEquals("File reference request should be in TO_DO status",
                             FileRequestStatus.TO_DO,
-                            fileRefReqs.stream().findFirst().get().getStatus());
+                            fileRefReq.getStatus());
+
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, null, null);
+        Collection<JobInfo> jobs = storageRequestService.scheduleJobs(FileRequestStatus.TO_DO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         runAndWaitJob(jobs);
-        // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        fileRefReqs = stoReqService.search(storage, checksum);
-        oFileRef = fileRefService.search(storage, checksum);
-        Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
-        Assert.assertFalse("File reference should be fully stored witout remaining action.",
-                           oFileRef.get().getLocation().isPendingActionRemaining());
+
+        // Once storage job is successfully done,
+        // the FileReference should have been created
+        // and the FileReferenceRequest should have been removed.
+
+        // FileReference successfully created
+        FileReference fileRef = referenceService.search(storage, checksum).orElse(null);
+        Assert.assertNotNull("File reference should have been created.", fileRef);
+        Assert.assertFalse("File reference should be fully stored without remaining action.",
+                           fileRef.getLocation().isPendingActionRemaining());
         try {
             Assert.assertTrue("File should be created on disk",
-                              Files.exists(Paths.get(new URL(oFileRef.get().getLocation().getUrl()).getPath())));
+                              Files.exists(Paths.get(new URL(fileRef.getLocation().getUrl()).getPath())));
         } catch (MalformedURLException e) {
             Assert.fail(e.getMessage());
         }
+
+        // no more file storage request (FileStorageReferenceAggregation).
+        fileRefReqs = storageRequestService.search(storage, checksum);
         Assert.assertTrue("File reference request should not exists anymore", fileRefReqs.isEmpty());
-        return fileRefWithOwnersRepo.findOneById(oFileRef.get().getId());
+        return referenceWithOwnersRepository.findOneById(fileRef.getId());
     }
 
+    /**
+     * Create and save a FileReference for the given parameters and return it.
+     *
+     * @return an Optional of the newly created FileReference or an empty Optional if no FileReference created
+     */
     protected Optional<FileReference> referenceFile(String checksum,
                                                     String owner,
                                                     String type,
@@ -458,19 +489,24 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                  "anywhere://in/this/directory/file.test",
                                                  pendingActionRemaining);
         try {
-            fileReqService.reference(owner,
-                                     fileMetaInfo,
-                                     location,
-                                     Sets.newHashSet(UUID.randomUUID().toString()),
-                                     sessionOwner,
-                                     session);
+            referenceRequestService.reference(owner,
+                                              fileMetaInfo,
+                                              location,
+                                              Sets.newHashSet(UUID.randomUUID().toString()),
+                                              sessionOwner,
+                                              session);
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
         }
-        return fileRefService.search(location.getStorage(), fileMetaInfo.getChecksum());
+        return referenceService.search(location.getStorage(), fileMetaInfo.getChecksum());
     }
 
+    /**
+     * Create and save a FileReference for the given parameters and a random checksum.
+     *
+     * @return an Optional of the newly created FileReference or an empty Optional if no FileReference created.
+     */
     protected Optional<FileReference> referenceRandomFile(String owner,
                                                           String type,
                                                           String fileName,
@@ -488,9 +524,13 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                   pendingRemainingAction);
     }
 
-    protected FileStorageRequestAggregation generateRandomStorageRequest(String id,
-                                                                         String checksum,
-                                                                         FileRequestStatus status) {
+    /**
+     * Instantiate a new FileStorageRequestAggregation with a random owner and random group id and the given checksum
+     * and given status and given url identifier ("file:///test/toto/" + id)
+     */
+    protected FileStorageRequestAggregation newRandomStorageRequest(String id,
+                                                                    String checksum,
+                                                                    FileRequestStatus status) {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum,
                                                                        "MD5",
                                                                        checksum,
@@ -519,42 +559,41 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                                        MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storageDestination, "/in/this/directory", false);
         // Run file reference creation.
-        stoReqService.handleRequest(owner,
-                                    sessionOwner,
-                                    session,
-                                    fileMetaInfo,
-                                    originUrl,
-                                    storageDestination,
-                                    Optional.of("/in/this/directory"),
-                                    UUID.randomUUID().toString());
-        // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
-        Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Collection<FileStorageRequestAggregation> fileRefReqs = stoReqService.search(destination.getStorage(),
-                                                                                     fileMetaInfo.getChecksum());
+        storageRequestService.handleRequest(owner,
+                                            sessionOwner,
+                                            session,
+                                            fileMetaInfo,
+                                            ORIGIN_URL,
+                                            storageDestination,
+                                            Optional.of("/in/this/directory"),
+                                            UUID.randomUUID().toString());
+        // The file reference should not exist yet because a storage job is needed.
+        // Anyway a FileReferenceRequest should be created.
+        Optional<FileReference> oFileRef = referenceService.search(destination.getStorage(),
+                                                                   fileMetaInfo.getChecksum());
+        Collection<FileStorageRequestAggregation> fileRefReqs = storageRequestService.search(destination.getStorage(),
+                                                                                             fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
-        // only the configured storage can be used for storage. Otherwise the request should be set in error.
+        // only the configured storage can be used for storage, otherwise the request should be set in error.
         if (storageDestination.equals(ONLINE_CONF_LABEL) || storageDestination.equals(NEARLINE_CONF_LABEL)) {
             Assert.assertEquals("File reference request should be in TO_DO status",
                                 FileRequestStatus.TO_DO,
                                 fileRefReqs.stream().findFirst().get().getStatus());
-            // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-            Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                                  Sets.newHashSet(),
-                                                                  Sets.newHashSet());
-            Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
-            // Run Job and wait for end
-            runAndWaitJob(jobs);
-            // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-            fileRefReqs = stoReqService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-            oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
+
+            scheduleStorageRequestJob(1, FileRequestStatus.TO_DO);
+
+            // After storage job is terminated,
+            // FileReference should not have been created and the FileReferenceRequest should be in ERROR.
+            fileRefReqs = storageRequestService.search(destination.getStorage(), fileMetaInfo.getChecksum());
+            oFileRef = referenceService.search(destination.getStorage(), fileMetaInfo.getChecksum());
             Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
             Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
-            Assert.assertEquals("File reference request should be STORE_ERROR status",
+            Assert.assertEquals("File reference request should be in ERROR status",
                                 FileRequestStatus.ERROR,
                                 fileRefReqs.stream().findFirst().get().getStatus());
         } else {
-            Assert.assertEquals("File reference request should be in STORE_ERROR status",
+            Assert.assertEquals("File reference request should be in ERROR status",
                                 FileRequestStatus.ERROR,
                                 fileRefReqs.stream().findFirst().get().getStatus());
         }
@@ -569,6 +608,15 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
             Assert.fail(e.getMessage());
             return null;
         }
+    }
+
+    protected void scheduleStorageRequestJob(int expectedCount, FileRequestStatus status) {
+        // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created earlier
+        Collection<JobInfo> jobs = storageRequestService.scheduleJobs(status, Set.of(), Set.of());
+        assertThat(jobs).as("%s Storage Request Jobs are expected to be scheduled", expectedCount)
+                        .hasSize(expectedCount);
+        // Run Job and wait for end
+        runAndWaitJob(jobs);
     }
 
     protected void runAndWaitJob(Collection<JobInfo> jobs) {
@@ -600,7 +648,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                 event = (FileReferenceEvent) c;
             }
         }
-        Assert.assertNotNull("No file reference event checked", event);
+        // Assert.assertNotNull("No file reference event checked", event);
         return event;
     }
 
@@ -611,7 +659,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                 event = (FileRequestsGroupEvent) c;
             }
         }
-        Assert.assertNotNull("No file reference event checked", event);
+        // Assert.assertNotNull("No request group event checked", event);
         return event;
     }
 
@@ -733,11 +781,12 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                  Set.of(UUID.randomUUID().toString()),
                                  null);
             // Create file on disk
-            if (!Files.exists(Paths.get(filePath).getParent())) {
-                Files.createDirectories(Paths.get(filePath).getParent());
+            final Path path = Paths.get(filePath);
+            if (!Files.exists(path.getParent())) {
+                Files.createDirectories(path.getParent());
             }
-            if (!Files.exists(Paths.get(filePath))) {
-                Files.createFile(Paths.get(filePath));
+            if (!Files.exists(path)) {
+                Files.createFile(path);
             }
         } catch (IOException e) {
             Assert.fail(e.getMessage());

@@ -675,9 +675,9 @@ public class FileCacheRequestService {
                                                                     authResolver.getUser(),
                                                                     FileCacheRequestJob.class.getName()));
         workingSubset.getFileRestorationRequests()
-                     .forEach(r -> fileCacheRequestRepository.updateStatusAndJobId(FileRequestStatus.PENDING,
-                                                                                   jobInfo.getId().toString(),
-                                                                                   r.getId()));
+                     .forEach(r -> fileCacheRequestRepository.updateStatusAndJobId(r.getId(),
+                                                                                   FileRequestStatus.PENDING,
+                                                                                   jobInfo.getId().toString()));
         em.flush();
         em.clear();
         return jobInfo;

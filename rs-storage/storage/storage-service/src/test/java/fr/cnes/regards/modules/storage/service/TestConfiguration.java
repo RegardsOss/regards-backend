@@ -56,7 +56,7 @@ public class TestConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public CacheScheduler cahceScheduler() {
+    public CacheScheduler cacheScheduler() {
         return Mockito.mock(CacheScheduler.class);
     }
 }

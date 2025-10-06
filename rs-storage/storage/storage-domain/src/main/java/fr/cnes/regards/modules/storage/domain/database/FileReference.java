@@ -203,14 +203,14 @@ public class FileReference {
     }
 
     /**
-     * @return if the file is referenced (true only the file is not stored physically)
+     * @return indicates whether the file is referenced only and not stored physically.
      */
     public boolean isReferenced() {
         return referenced;
     }
 
     /**
-     * if the file is referenced (not stored physically), set to true
+     * Set whether the file is referenced only but not stored physically.
      *
      * @param referenced if the file is referenced
      */
@@ -295,4 +295,5 @@ public class FileReference {
                                  dto.isReferenced(),
                                  dto.isNearlineConfirmed());
     }
+
 }

@@ -44,7 +44,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * This component handle the pool of {@link IStorageLocation} plugins configuration as known as {@link StorageLocationConfiguration}.
@@ -164,7 +163,7 @@ public class StoragePluginConfigurationHandler
         List<PluginConfiguration> onlineConfs = confs.stream()
                                                      .filter(c -> c.getInterfaceNames()
                                                                    .contains(IOnlineStorageLocation.class.getName()))
-                                                     .collect(Collectors.toList());
+                                                     .toList();
         confs.forEach(c -> this.storages.put(runtimeTenantResolver.getTenant(), c));
         onlineConfs.forEach(c -> this.onlineStorages.put(runtimeTenantResolver.getTenant(), c));
     }

@@ -77,6 +77,9 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
     @Query("select storage from FileStorageRequestAggregation where status = :status")
     Set<String> findStoragesByStatus(@Param("status") FileRequestStatus status);
 
+    // WARNING: the query is executed against the database leaving the persistence context outdated
+    // use flushAutomatically = true and/or clearAutomatically = true
+    @Deprecated
     @Modifying
     @Query(
         "update FileStorageRequestAggregation fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
@@ -84,15 +87,42 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
                     @Param("errorCause") String errorCause,
                     @Param("id") Long id);
 
+    // WARNING: the query is executed against the database leaving the persistence context outdated
+    // use flushAutomatically = true and/or clearAutomatically = true
+    @Deprecated
     @Modifying
     @Query("update FileStorageRequestAggregation fsr set fsr.status = :status, fsr.jobId = :jobId where fsr.id = :id")
     int updateStatusAndJobId(@Param("status") FileRequestStatus status,
                              @Param("jobId") String jobId,
                              @Param("id") Long id);
 
+    default Optional<FileStorageRequestAggregation> updateStatusAndJobId(Long id,
+                                                                         FileRequestStatus fileRequestStatus,
+                                                                         String jobId) {
+        final Optional<FileStorageRequestAggregation> optRequest = this.findById(id);
+        optRequest.ifPresent(request -> {
+            request.setJobId(jobId);
+            request.setStatus(fileRequestStatus);
+            this.save(request);
+        });
+        return optRequest;
+    }
+
+    default Optional<FileStorageRequestAggregation> updateError(Long id,
+                                                                FileRequestStatus fileRequestStatus,
+                                                                String message) {
+        final Optional<FileStorageRequestAggregation> optRequest = this.findById(id);
+        optRequest.ifPresent(request -> {
+            request.setErrorCause(message);
+            request.setStatus(fileRequestStatus);
+            this.save(request);
+        });
+        return optRequest;
+    }
+
     void deleteByStorage(String storageLocationId);
 
-    void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus FileReferenceStatus);
+    void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus status);
 
     boolean existsByGroupIdsAndStatusNot(String groupId, FileRequestStatus error);
 
@@ -109,7 +139,7 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     boolean existsByStorageAndMetaInfoChecksumAndStatusIn(String storage,
                                                           String checksum,
-                                                          Set<FileRequestStatus> ruuningStatus);
+                                                          Set<FileRequestStatus> runningStatus);
 
     Set<FileStorageRequestAggregation> findByMetaInfoChecksumIn(Set<String> checksums);
 
