@@ -18,31 +18,27 @@
  */
 package fr.cnes.regards.modules.feature.domain;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.feature.dto.Feature;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.validation.Valid;
-import org.hibernate.annotations.Type;
 
 /**
- * Entity representing a feature with the feature field fully deserialized (as opposed to a "raw" entity).
+ * Entity representing a feature with the feature field serialized as a JSON String.
  *
  * @author Thibaud Michaudel
+ * @see AbstractFeatureEntity for the version with the feature field deserialized
  **/
 @MappedSuperclass
-public abstract class AbstractFeatureDeserializedEntity extends AbstractFeatureEntity {
+public abstract class AbstractFeatureRawEntity extends AbstractFeatureEntity {
 
     @Column(columnDefinition = "jsonb", name = "feature")
-    @Type(JsonBinaryType.class)
-    @Valid
-    protected Feature feature;
+    protected String feature;
 
-    public Feature getFeature() {
+    public String getFeature() {
         return feature;
     }
 
-    public void setFeature(Feature feature) {
+    public void setFeature(String feature) {
         this.feature = feature;
     }
+
 }

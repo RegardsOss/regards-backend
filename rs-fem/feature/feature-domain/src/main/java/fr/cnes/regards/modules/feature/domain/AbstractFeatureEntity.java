@@ -27,8 +27,14 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.OffsetDateTime;
 
+/**
+ * Entity representing a feature with the feature field serialized as a JSON String.
+ *
+ * @author Thibaud Michaudel
+ * @see AbstractFeatureRawEntity for the version with the feature field as a JSON String
+ **/
 @MappedSuperclass
-public class AbstractFeatureEntity {
+public abstract class AbstractFeatureEntity {
 
     @Id
     @SequenceGenerator(name = "featureSequence", initialValue = 1, sequenceName = "seq_feature", allocationSize = 1000)

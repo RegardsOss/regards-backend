@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.domain;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationInfoType;
 import fr.cnes.regards.modules.feature.domain.request.dissemination.FeatureUpdateDisseminationRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureDisseminationInfoDto;
 import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
@@ -218,6 +219,10 @@ public class FeatureDisseminationInfo {
 
     public boolean isAckPending() {
         return getAckDate() == null;
+    }
+
+    public FeatureDisseminationInfoDto toDto() {
+        return new FeatureDisseminationInfoDto(this.label, this.requestDate, this.ackDate, this.blocking);
     }
 
     @Override

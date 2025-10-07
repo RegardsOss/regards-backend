@@ -25,7 +25,9 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.lang.Nullable;
 
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * {@link FeatureEntityDto} with the {@link Feature} serialized as a JSON object.
@@ -68,6 +70,9 @@ public class FeatureEntityRawDto {
     @Schema(description = "Whether the product has pending dissemination tasks")
     private final boolean disseminationPending;
 
+    @Schema(description = "Dissemination of the product")
+    private Set<FeatureDisseminationInfoDto> disseminationsInfo = new HashSet<>();
+
     public FeatureEntityRawDto(Long id,
                                FeatureUniformResourceName urn,
                                String source,
@@ -86,6 +91,20 @@ public class FeatureEntityRawDto {
         this.lastUpdate = lastUpdate;
         this.feature = feature;
         this.disseminationPending = disseminationPending;
+    }
+
+    public FeatureEntityRawDto(Long id,
+                               FeatureUniformResourceName urn,
+                               String source,
+                               String session,
+                               String providerId,
+                               Integer version,
+                               OffsetDateTime lastUpdate,
+                               @Nullable JsonObject feature,
+                               boolean disseminationPending,
+                               Set<FeatureDisseminationInfoDto> disseminationsInfo) {
+        this(id, urn, source, session, providerId, version, lastUpdate, feature, disseminationPending);
+        this.disseminationsInfo = disseminationsInfo;
     }
 
     public Long getId() {

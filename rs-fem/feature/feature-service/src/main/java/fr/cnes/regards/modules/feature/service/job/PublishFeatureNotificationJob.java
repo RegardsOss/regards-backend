@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityRawDto;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Job to publish {@link FeatureNotificationRequestEvent}s for each {@link FeatureEntityDto} matching search parameters
+ * Job to publish {@link FeatureNotificationRequestEvent}s for each {@link FeatureEntityRawDto} matching search parameters
  *
  * @author Sébastien Binda
  */
@@ -85,7 +85,7 @@ public class PublishFeatureNotificationJob extends AbstractJob<Void> {
     public void run() {
         long start = System.currentTimeMillis();
         Pageable page = PageRequest.of(0, pageSize);
-        Page<FeatureEntityDto> results = null;
+        Page<FeatureEntityRawDto> results = null;
         long totalElementCheck = 0;
         boolean firstPass = true;
 
@@ -99,14 +99,14 @@ public class PublishFeatureNotificationJob extends AbstractJob<Void> {
                 firstPass = false;
             }
             // Publish notification requests of features with the list of recipients for the direct notification
-            publishFeatureNotificationRequestEvents(results.map(f -> f.getFeature().getUrn()).toList(), recipients);
+            publishFeatureNotificationRequestEvents(results.map(FeatureEntityRawDto::getUrn).toList(), recipients);
 
             logger.debug("[PUBLISH FEATURE NOTIFICATION JOB] Publish job for {} feature notification requests "
                          + "(remaining {}).",
                          results.getNumberOfElements(),
                          totalElementCheck - results.getNumberOfElements());
             page = page.next();
-        } while (results != null && results.hasNext() && !Thread.interrupted());
+        } while (results.hasNext() && !Thread.interrupted());
         logger.debug("[PUBLISH FEATURE NOTIFICATION JOB] {} feature notification request(s) in {}ms",
                      totalElementCheck,
                      System.currentTimeMillis() - start);

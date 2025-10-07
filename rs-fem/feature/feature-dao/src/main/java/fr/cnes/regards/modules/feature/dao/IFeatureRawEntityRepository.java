@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2024 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2025 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.FeatureRawEntity;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -30,26 +30,29 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Another repository to handle access to {@link FeatureEntity} entities, but this one always fetch disseminationsInfo
- * graph
+ * Repository interface for managing {@link FeatureRawEntity} entities with theirs dissemination info. Those
+ * entities
+ * are
+ * {@link fr.cnes.regards.modules.feature.domain.FeatureEntity} that are retrieved without deserializing the
+ * feature field.
  *
- * @author Léo Mieulet
+ * @author Thibaud Michaudel
  */
 @Repository
-public interface IFeatureEntityWithDisseminationRepository
-    extends JpaRepository<FeatureEntity, Long>, JpaSpecificationExecutor<FeatureEntity> {
+public interface IFeatureRawEntityRepository
+    extends JpaRepository<FeatureRawEntity, Long>, JpaSpecificationExecutor<FeatureRawEntity> {
 
-    default List<FeatureEntity> findByUrnIn(Set<FeatureUniformResourceName> urn) {
-        return findByUrnIn(urn, Sort.unsorted());
+    @EntityGraph(attributePaths = { "disseminationsInfo" }, type = EntityGraph.EntityGraphType.LOAD)
+    List<FeatureRawEntity> findByIdIn(Set<Long> ids, Sort sort);
+
+    @EntityGraph(attributePaths = { "disseminationsInfo" }, type = EntityGraph.EntityGraphType.LOAD)
+    FeatureRawEntity findByUrn(FeatureUniformResourceName urn);
+
+    default List<FeatureRawEntity> findByIdInWithDisseminationsInfo(Set<Long> ids, Sort sort) {
+        return findByIdIn(ids, sort);
     }
 
-    @EntityGraph(attributePaths = { "disseminationsInfo" }, type = EntityGraph.EntityGraphType.LOAD)
-    List<FeatureEntity> findByUrnIn(Set<FeatureUniformResourceName> urn, Sort sort);
-
-    @EntityGraph(attributePaths = { "disseminationsInfo" }, type = EntityGraph.EntityGraphType.LOAD)
-    FeatureEntity findByUrn(FeatureUniformResourceName urn);
-
-    @EntityGraph(attributePaths = { "disseminationsInfo" }, type = EntityGraph.EntityGraphType.LOAD)
-    List<FeatureEntity> findAll();
-
+    default FeatureRawEntity findByUrnWithDisseminationsInfo(FeatureUniformResourceName urn) {
+        return findByUrn(urn);
+    }
 }

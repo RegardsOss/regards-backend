@@ -19,16 +19,21 @@
 package fr.cnes.regards.modules.feature.domain;
 
 import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureDisseminationInfoDto;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+/**
+ * Entity representing a feature with the dissemination info and with the feature field serialized as a JSON String.
+ *
+ * @author Thibaud Michaudel
+ * @see FeatureRawEntity for the version with the dissemination info and the feature field as a JSON String
+ * @see FeatureSimpleEntity for the version without dissemination info
+ * @see FeatureSimpleRawEntity for the version without dissemination info and with the feature field as a JSON String
+ */
 @Entity
 @Table(name = "t_feature",
        indexes = { @Index(name = "idx_feature_last_update", columnList = "last_update"),
@@ -60,30 +65,6 @@ public class FeatureEntity extends AbstractFeatureDeserializedEntity {
         featureEntity.setModel(model);
         featureEntity.setDisseminationPending(false);
         return featureEntity;
-    }
-
-    public FeatureEntityDto toDto(boolean addFeatureContent) {
-        FeatureEntityDto dto = new FeatureEntityDto();
-        dto.setSession(this.getSession());
-        dto.setSource(this.getSessionOwner());
-        dto.setProviderId(this.getProviderId());
-        dto.setVersion(this.getVersion());
-        dto.setLastUpdate(this.getLastUpdate());
-        dto.setUrn(this.getUrn());
-        dto.setId(this.getId());
-        dto.setDisseminationPending(this.isDisseminationPending());
-        dto.setDisseminationsInfo(this.getDisseminationsInfo()
-                                      .stream()
-                                      .map(featureDisseminationInfo -> new FeatureDisseminationInfoDto(
-                                          featureDisseminationInfo.getLabel(),
-                                          featureDisseminationInfo.getRequestDate(),
-                                          featureDisseminationInfo.getAckDate(),
-                                          featureDisseminationInfo.isBlocking()))
-                                      .collect(Collectors.toSet()));
-        if (addFeatureContent) {
-            dto.setFeature(this.getFeature());
-        }
-        return dto;
     }
 
     public Set<FeatureDisseminationInfo> getDisseminationsInfo() {

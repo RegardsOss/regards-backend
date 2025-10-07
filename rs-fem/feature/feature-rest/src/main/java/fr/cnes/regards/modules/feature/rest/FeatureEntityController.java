@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.RecipientsSearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityRawDto;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,14 +38,18 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.data.web.SlicedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.SlicedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -57,10 +61,13 @@ import org.springframework.web.bind.annotation.*;
  * @author Kevin Marchois
  */
 @RestController
+@Tag(name = "Feature entity Controller")
 @RequestMapping(FeatureEntityController.PATH_DATA_FEATURE_OBJECT)
-public class FeatureEntityController implements IResourceController<FeatureEntityDto> {
+public class FeatureEntityController implements IResourceController<FeatureEntityRawDto> {
 
     public static final String PATH_DATA_FEATURE_OBJECT = "/admin/features";
+
+    public static final String SLICE_PATH = "/slice";
 
     public static final String NOTIFY_PATH = "/notify";
 
@@ -78,32 +85,52 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
     private IResourceService resourceService;
 
     /**
-     * Get a {@link Page} of {@link FeatureEntityDto} matching provided {@link SearchFeatureSimpleEntityParameters}
+     * Get a {@link Page} of {@link FeatureEntityRawDto} matching provided {@link SearchFeatureSimpleEntityParameters}
      * filters
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get features", description = "Return a page of features matching criteria.")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All features were retrieved.") })
     @ResourceAccess(description = "Endpoint to retrieve features matching criteria", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> searchFeatures(
+    public ResponseEntity<PagedModel<EntityModel<FeatureEntityRawDto>>> searchFeatures(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria.",
                                                               content = @Content(schema = @Schema(implementation = SearchFeatureSimpleEntityParameters.class)))
         @Parameter(description = "Filter criteria for features") @RequestBody
         SearchFeatureSimpleEntityParameters filters,
         @PageableQueryParam @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        @Parameter(hidden = true) PagedResourcesAssembler<FeatureEntityDto> assembler) {
+        @Parameter(hidden = true) PagedResourcesAssembler<FeatureEntityRawDto> assembler) {
 
         return new ResponseEntity<>(toPagedResources(featureService.findAll(filters, pageable), assembler),
+                                    HttpStatus.OK);
+    }
+
+    /**
+     * Get a {@link Slice} of {@link FeatureEntityRawDto} matching provided {@link SearchFeatureSimpleEntityParameters}
+     * filters
+     */
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, path = SLICE_PATH)
+    @Operation(summary = "Get features", description = "Return a slice of features matching criteria.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All features were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve features matching criteria", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<SlicedModel<EntityModel<FeatureEntityRawDto>>> searchFeaturesSlice(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria.",
+                                                              content = @Content(schema = @Schema(implementation = SearchFeatureSimpleEntityParameters.class)))
+        @Parameter(description = "Filter criteria for features") @RequestBody
+        SearchFeatureSimpleEntityParameters filters,
+        @PageableQueryParam @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        @Parameter(hidden = true) SlicedResourcesAssembler<FeatureEntityRawDto> assembler) {
+        return new ResponseEntity<>(toSlicedResources(featureService.findAllSlice(filters, pageable), assembler),
                                     HttpStatus.OK);
     }
 
     @Operation(summary = "Retrieve one feature by its urn", description = "Retrieve one feature by its urn")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retrieve one feature by its urn") })
     @GetMapping(path = URN_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Retrieve one feature by its urn", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<FeatureEntityDto> getFeature(
+    @ResourceAccess(description = "Endpoint to retrieve one feature by its urn", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<FeatureEntityRawDto> getFeature(
         @Parameter(description = "URN of the feature") @PathVariable("urn") String urn) {
-        return new ResponseEntity<>(featureService.findOne(FeatureUniformResourceName.fromString(urn)), HttpStatus.OK);
+        return new ResponseEntity<>(featureService.findOneRaw(FeatureUniformResourceName.fromString(urn)),
+                                    HttpStatus.OK);
     }
 
     /**
@@ -114,7 +141,7 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
     @ApiResponses(value = { @ApiResponse(responseCode = "200",
                                          description = "Notify features to given recipients according to search parameters") })
     @PostMapping(path = NOTIFY_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Notify features to given recipients according to search parameters",
+    @ResourceAccess(description = "Endpoint to notify features to given recipients according to search parameters",
                     role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> notifyFeatures(@io.swagger.v3.oas.annotations.parameters.RequestBody(description =
                                                                                                          "Set of search criteria with the "
@@ -137,7 +164,8 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
     @ApiResponses(value = { @ApiResponse(responseCode = "200",
                                          description = "Delete features according to search parameters") })
     @DeleteMapping(path = DELETE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Delete features according to search parameters", role = DefaultRole.EXPLOIT)
+    @ResourceAccess(description = "Endpoint to delete features according to search parameters",
+                    role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> deleteFeatures(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criteria.",
                                                               content = @Content(schema = @Schema(implementation = SearchFeatureSimpleEntityParameters.class)))
@@ -148,8 +176,8 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
     }
 
     @Override
-    public EntityModel<FeatureEntityDto> toResource(FeatureEntityDto element, Object... extras) {
-        EntityModel<FeatureEntityDto> resource = resourceService.toResource(element);
+    public EntityModel<FeatureEntityRawDto> toResource(FeatureEntityRawDto element, Object... extras) {
+        EntityModel<FeatureEntityRawDto> resource = resourceService.toResource(element);
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "getFeature",

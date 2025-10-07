@@ -25,6 +25,11 @@ import jakarta.persistence.UniqueConstraint;
 
 /**
  * Entity representing a feature with no dissemination info
+ *
+ * @author Thibaud Michaudel
+ * @see FeatureEntity for the version with the dissemination info
+ * @see FeatureRawEntity for the version with the dissemination info and the feature field as a JSON String
+ * @see FeatureSimpleRawEntity for the version without dissemination info and with the feature field as a JSON String
  */
 @Entity
 @Table(name = "t_feature",

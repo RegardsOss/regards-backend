@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.client;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityRawDto;
 import jakarta.annotation.Nullable;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.SlicedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,6 +46,8 @@ import java.time.OffsetDateTime;
 public interface IFeatureEntityClient {
 
     String PATH_DATA_FEATURE_OBJECT = "/admin/features";
+
+    String PATH_DATA_FEATURE_SLICE = "/admin/features/slice";
 
     @PostMapping(path = PATH_DATA_FEATURE_OBJECT, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> findAll(
@@ -63,5 +67,29 @@ public interface IFeatureEntityClient {
                                                                                                    lastUpdateDateBefore);
 
         return findAll(filters, PageRequest.of(page, size, sort));
+    }
+
+    @PostMapping(path = PATH_DATA_FEATURE_SLICE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<SlicedModel<EntityModel<FeatureEntityDto>>> findAllSlice(
+        @RequestBody SearchFeatureSimpleEntityParameters filters, @SpringQueryMap Pageable pageable);
+
+    /**
+     * Return a Slice of FeatureEntityDto without dissemination information, without deserialize the feature.
+     * {@link FeatureEntityDto} and {@link FeatureEntityRawDto} are the same object at client level
+     */
+    default ResponseEntity<SlicedModel<EntityModel<FeatureEntityDto>>> findAllSlice(String model,
+                                                                                    @org.springframework.lang.Nullable
+                                                                                    OffsetDateTime lastUpdateDateAfter,
+                                                                                    @org.springframework.lang.Nullable
+                                                                                    OffsetDateTime lastUpdateDateBefore,
+                                                                                    int page,
+                                                                                    int size,
+                                                                                    Sort sort) {
+        SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withModel(model)
+                                                                                               .withLastUpdateAfter(
+                                                                                                   lastUpdateDateAfter)
+                                                                                               .withLastUpdateBefore(
+                                                                                                   lastUpdateDateBefore);
+        return findAllSlice(filters, PageRequest.of(page, size, sort));
     }
 }

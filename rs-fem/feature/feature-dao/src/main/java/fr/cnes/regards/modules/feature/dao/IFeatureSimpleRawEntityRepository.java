@@ -18,13 +18,22 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
+import fr.cnes.regards.modules.feature.domain.FeatureRawEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureSimpleRawEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Repository interface for managing {@link FeatureRawEntity} entities without theirs dissemination info. Those entities
+ * are
+ * {@link fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity} that are retrieved without deserializing the
+ * feature field.
+ *
+ * @author Thibaud Michaudel
+ */
 @Repository
 public interface IFeatureSimpleRawEntityRepository
     extends JpaRepository<FeatureSimpleRawEntity, Long>, JpaSpecificationExecutor<FeatureSimpleRawEntity> {
-    
+
 }

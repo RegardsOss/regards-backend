@@ -20,18 +20,19 @@ package fr.cnes.regards.modules.feature.domain;
 
 import com.google.gson.JsonParser;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityRawDto;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Entity representing a feature with no dissemination info and with the feature field serialized as a JSON String.
+ * Entity representing a feature with the dissemination info and with the feature field serialized as a JSON String.
  *
  * @author Thibaud Michaudel
  * @see FeatureEntity for the version with the dissemination info
- * @see FeatureRawEntity for the version with the dissemination info and the feature field as a JSON String
  * @see FeatureSimpleEntity for the version without dissemination info
+ * @see FeatureSimpleRawEntity for the version without dissemination info and with the feature field as a JSON String
  */
 @Entity
 @Table(name = "t_feature",
@@ -40,7 +41,15 @@ import jakarta.persistence.UniqueConstraint;
                    @Index(name = "idx_feature_session", columnList = "session_owner,session_name"),
                    @Index(name = "idx_feature_provider_id", columnList = "provider_id") },
        uniqueConstraints = { @UniqueConstraint(name = "uk_feature_urn", columnNames = { "urn" }) })
-public class FeatureSimpleRawEntity extends AbstractFeatureRawEntity {
+public class FeatureRawEntity extends AbstractFeatureRawEntity {
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "feature_id", foreignKey = @ForeignKey(name = "fk_feature_dissemination_info_feature_id"))
+    private Set<FeatureDisseminationInfo> disseminationsInfo = new HashSet<>();
+
+    public Set<FeatureDisseminationInfo> getDisseminationsInfo() {
+        return disseminationsInfo;
+    }
 
     public FeatureEntityRawDto toDto() {
         return new FeatureEntityRawDto(getId(),
@@ -51,11 +60,9 @@ public class FeatureSimpleRawEntity extends AbstractFeatureRawEntity {
                                        getVersion(),
                                        getLastUpdate(),
                                        JsonParser.parseString(this.getFeature()).getAsJsonObject(),
-                                       isDisseminationPending());
-    }
-
-    @Override
-    public String toString() {
-        return "FeatureSimpleRawEntity{" + "feature='" + feature + '\'' + "} " + super.toString();
+                                       isDisseminationPending(),
+                                       getDisseminationsInfo().stream()
+                                                              .map(FeatureDisseminationInfo::toDto)
+                                                              .collect(Collectors.toSet()));
     }
 }

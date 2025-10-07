@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.feature.dto;
 
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 /**
  * @author Léo Mieulet
@@ -57,5 +58,22 @@ public class FeatureDisseminationInfoDto {
 
     public boolean isBlocking() {
         return blocking;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FeatureDisseminationInfoDto that = (FeatureDisseminationInfoDto) o;
+        return blocking == that.blocking && Objects.equals(label, that.label);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(label, blocking);
     }
 }
