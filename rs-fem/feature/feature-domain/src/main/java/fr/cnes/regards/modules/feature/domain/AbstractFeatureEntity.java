@@ -19,11 +19,15 @@
 package fr.cnes.regards.modules.feature.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.Type;
 
 import java.time.OffsetDateTime;
 
@@ -48,6 +52,11 @@ public class AbstractFeatureEntity {
 
     @Column(length = 128, name = "session_name", nullable = false)
     private String session;
+
+    @Column(columnDefinition = "jsonb", name = "feature")
+    @Type(JsonBinaryType.class)
+    @Valid
+    private Feature feature;
 
     @Column(name = "last_update", nullable = false)
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
@@ -80,6 +89,14 @@ public class AbstractFeatureEntity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Feature getFeature() {
+        return feature;
+    }
+
+    public void setFeature(Feature feature) {
+        this.feature = feature;
     }
 
     public OffsetDateTime getLastUpdate() {
@@ -162,35 +179,4 @@ public class AbstractFeatureEntity {
         this.disseminationPending = disseminationPending;
     }
 
-    @Override
-    public String toString() {
-        return "AbstractFeatureEntity{"
-               + "id="
-               + id
-               + ", urn="
-               + urn
-               + ", previousVersionUrn="
-               + previousVersionUrn
-               + ", sessionOwner='"
-               + sessionOwner
-               + '\''
-               + ", session='"
-               + session
-               + '\''
-               + ", lastUpdate="
-               + lastUpdate
-               + ", creationDate="
-               + creationDate
-               + ", providerId='"
-               + providerId
-               + '\''
-               + ", version="
-               + version
-               + ", model='"
-               + model
-               + '\''
-               + ", disseminationPending="
-               + disseminationPending
-               + '}';
-    }
 }

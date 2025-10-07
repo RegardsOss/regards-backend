@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.feature.client;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import jakarta.annotation.Nullable;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,11 +32,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
 
 /**
- * Client interface for accessing feature entity data.
- *
  * @author Kevin Marchois
  */
 @RestClient(name = "rs-fem", contextId = "rs-fem.model-att-assoc.client")
@@ -58,10 +56,10 @@ public interface IFeatureEntityClient {
                                                                               Sort sort) {
         SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withModel(model)
                                                                                                .withLastUpdateAfter(
-                                                                                                   lastUpdateDateAfter)
-                                                                                               .withLastUpdateBefore(
-                                                                                                   lastUpdateDateBefore);
-
+                                                                                                   lastUpdateDateAfter);
+        if (lastUpdateDateBefore != null) {
+            filters.withLastUpdateBefore(lastUpdateDateBefore);
+        }
         return findAll(filters, PageRequest.of(page, size, sort));
     }
 }

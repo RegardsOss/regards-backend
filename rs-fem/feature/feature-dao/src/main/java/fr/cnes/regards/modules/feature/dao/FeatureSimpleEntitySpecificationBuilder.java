@@ -18,15 +18,49 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
+import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
 import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
+import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 
 /**
- * Specification builder for {@link FeatureSimpleEntity} using
- * {@link AbstractFeatureSimpleEntitySpecificationBuilder}
- *
- * @author Thibaud Michaudel
+ * @author Stephane Cortine
  */
 public class FeatureSimpleEntitySpecificationBuilder
-    extends AbstractFeatureSimpleEntitySpecificationBuilder<FeatureSimpleEntity> {
+    extends AbstractSpecificationsBuilder<FeatureSimpleEntity, SearchFeatureSimpleEntityParameters> {
 
+    private static final String DISSEMINATION_PENDING_FILED = "disseminationPending";
+
+    @Override
+    protected void addSpecificationsFromParameters(SearchFeatureSimpleEntityParameters parameters) {
+        if (parameters != null) {
+            add(useValuesRestriction("id", parameters.getFeatureIds()));
+            add(useValuesRestriction("providerId", parameters.getProviderIds()));
+
+            add(equals("model", parameters.getModel()));
+
+            add(equals("sessionOwner", parameters.getSource()));
+            add(equals("session", parameters.getSession()));
+
+            add(after("lastUpdate", parameters.getLastUpdate().getAfter()));
+            add(before("lastUpdate", parameters.getLastUpdate().getBefore()));
+
+            if (parameters.getDisseminationStatus() != null) {
+                switch (parameters.getDisseminationStatus()) {
+                    case NONE -> {
+                        add(isNull(DISSEMINATION_PENDING_FILED));
+                    }
+                    case PENDING -> {
+                        add(equals(DISSEMINATION_PENDING_FILED, true));
+                    }
+                    case DONE -> {
+                        add(equals(DISSEMINATION_PENDING_FILED, false));
+                    }
+                    default -> {
+                        // nothing to do
+                    }
+                }
+            }
+
+        }
+    }
 }

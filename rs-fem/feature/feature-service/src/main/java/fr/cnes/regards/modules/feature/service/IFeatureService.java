@@ -24,7 +24,6 @@ import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
 import fr.cnes.regards.modules.feature.domain.RecipientsSearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityRawDto;
 import fr.cnes.regards.modules.feature.dto.FeatureIdUrnDto;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.data.domain.Page;
@@ -54,16 +53,6 @@ public interface IFeatureService {
      * @return {@link Page} of {@link FeatureIdUrnDto}
      */
     Page<FeatureIdUrnDto> findAll(Specification<FeatureSimpleEntity> filters, Pageable pageable);
-
-    /**
-     * Get a {@link Page} of {@link FeatureEntityRawDto} dto, meaning {@link FeatureEntityDto} with the
-     * {@link FeatureEntityDto#getFeature() feature field} serialized as a JSON String.
-     * The {@link Page} will be initialized from a list of {@link FeatureEntityRawDto}
-     *
-     * @param filters {@link SearchFeatureSimpleEntityParameters} search filters
-     * @return {@link Page} of {@link FeatureEntityRawDto}
-     */
-    Page<FeatureEntityRawDto> findAllRaw(SearchFeatureSimpleEntityParameters filters, Pageable pageable);
 
     /**
      * Get a {@link FeatureEntityDto} by its urn

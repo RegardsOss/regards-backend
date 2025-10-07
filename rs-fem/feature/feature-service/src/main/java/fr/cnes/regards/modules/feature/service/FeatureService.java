@@ -25,10 +25,15 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
-import fr.cnes.regards.modules.feature.dao.*;
-import fr.cnes.regards.modules.feature.domain.*;
+import fr.cnes.regards.modules.feature.dao.FeatureSimpleEntitySpecificationBuilder;
+import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureSimpleEntityCustomRepository;
+import fr.cnes.regards.modules.feature.dao.IFeatureSimpleEntityRepository;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
+import fr.cnes.regards.modules.feature.domain.RecipientsSearchFeatureSimpleEntityParameters;
+import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityRawDto;
 import fr.cnes.regards.modules.feature.dto.FeatureIdUrnDto;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -66,21 +71,17 @@ public class FeatureService implements IFeatureService {
 
     private final IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo;
 
-    private final IFeatureSimpleRawEntityRepository featureSimpleRawEntityRepository;
-
     private final IAuthenticationResolver authResolver;
 
     private final IJobInfoService jobInfoService;
 
     public FeatureService(IFeatureSimpleEntityRepository featureSimpleEntityRepository,
                           IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo,
-                          IFeatureSimpleRawEntityRepository featureSimpleRawEntityRepository,
                           IAuthenticationResolver authResolver,
                           IJobInfoService jobInfoService,
                           IFeatureSimpleEntityCustomRepository featureSimpleEntityCustomRepository) {
         this.featureSimpleEntityRepository = featureSimpleEntityRepository;
         this.featureWithDisseminationRepo = featureWithDisseminationRepo;
-        this.featureSimpleRawEntityRepository = featureSimpleRawEntityRepository;
         this.authResolver = authResolver;
         this.jobInfoService = jobInfoService;
         this.featureSimpleEntityCustomRepository = featureSimpleEntityCustomRepository;
@@ -105,9 +106,8 @@ public class FeatureService implements IFeatureService {
     @Override
     @MultitenantTransactional(isolation = Isolation.REPEATABLE_READ)
     @Timed(value = "feature_find_all", description = "Durée d'exécution de FeatureService#findAll")
-    // Prevent the entity being updated between the two successive find calls
     public Page<FeatureEntityDto> findAll(SearchFeatureSimpleEntityParameters filters, Pageable pageable) {
-        LOGGER.debug("Search features with filters : {}", filters);
+        LOGGER.debug("Filters feature deletion: {}", filters);
         long start = System.currentTimeMillis();
         // Workaround to avoid in-memory pagination with specification
         // 1. use simple entities with specification + pagination to get 1 page
@@ -122,15 +122,10 @@ public class FeatureService implements IFeatureService {
                                                                                       featureSimpleEntities.getSort());
 
         List<FeatureEntityDto> featureEntityDtos = featureEntities.stream().map(entity -> entity.toDto(true)).toList();
-        LOGGER.debug("Search features with filters complete in {} ms", System.currentTimeMillis() - start);
+        LOGGER.debug("Filters feature deletion registered in {} ms", System.currentTimeMillis() - start);
         return new PageImpl<>(featureEntityDtos, pageable, featureSimpleEntities.getTotalElements());
     }
 
-    /**
-     * Find all features entities.
-     *
-     * @return {@link Page} of {@link FeatureEntityRawDto} with the feature field serialized as a JSON String.
-     */
     @Override
     @MultitenantTransactional(readOnly = true)
     public Page<FeatureIdUrnDto> findAll(Specification<FeatureSimpleEntity> filters, Pageable pageable) {
@@ -147,31 +142,6 @@ public class FeatureService implements IFeatureService {
 
         LOGGER.debug("Filters feature deletion registered in {} ms", System.currentTimeMillis() - start);
         return featureIdUrnDto;
-    }
-
-    /**
-     * Find all features entities without deserializing the feature.
-     *
-     * @return {@link Page} of {@link FeatureEntityRawDto} with the feature field serialized as a JSON String.
-     */
-    @Override
-    @Timed(value = "feature_find_all_raw", description = "Durée d'exécution de FeatureService#findAllRaw")
-    public Page<FeatureEntityRawDto> findAllRaw(SearchFeatureSimpleEntityParameters filters, Pageable pageable) {
-        long startRetrieving = System.currentTimeMillis();
-        Page<FeatureSimpleRawEntity> featureSimpleRawEntities = featureSimpleRawEntityRepository.findAll(new FeatureSimpleRawEntitySpecificationBuilder().withParameters(
-            filters).build(), pageable);
-        LOGGER.debug("Retrieving {} entities took {} ms",
-                     featureSimpleRawEntities.getContent().size(),
-                     System.currentTimeMillis() - startRetrieving);
-        long startMapping = System.currentTimeMillis();
-        List<FeatureEntityRawDto> dtoWithJsonObject = featureSimpleRawEntities.getContent()
-                                                                              .stream()
-                                                                              .map(FeatureSimpleRawEntity::toDto)
-                                                                              .toList();
-        LOGGER.debug("String to JsonObject mapping took {} ms for {} entities",
-                     System.currentTimeMillis() - startMapping,
-                     dtoWithJsonObject.size());
-        return new PageImpl<>(dtoWithJsonObject, pageable, featureSimpleRawEntities.getTotalElements());
     }
 
     @Override
@@ -210,4 +180,5 @@ public class FeatureService implements IFeatureService {
                                                          authResolver.getUser(),
                                                          ScheduleFeatureDeletionJobsJob.class.getName()));
     }
+
 }

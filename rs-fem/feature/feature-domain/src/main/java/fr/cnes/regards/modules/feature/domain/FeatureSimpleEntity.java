@@ -23,9 +23,6 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-/**
- * Entity representing a feature with no dissemination info
- */
 @Entity
 @Table(name = "t_feature",
        indexes = { @Index(name = "idx_feature_last_update", columnList = "last_update"),
@@ -33,6 +30,6 @@ import jakarta.persistence.UniqueConstraint;
                    @Index(name = "idx_feature_session", columnList = "session_owner,session_name"),
                    @Index(name = "idx_feature_provider_id", columnList = "provider_id") },
        uniqueConstraints = { @UniqueConstraint(name = "uk_feature_urn", columnNames = { "urn" }) })
-public class FeatureSimpleEntity extends AbstractFeatureDeserializedEntity {
+public class FeatureSimpleEntity extends AbstractFeatureEntity {
 
 }

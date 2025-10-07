@@ -27,7 +27,6 @@ import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityRawDto;
 import fr.cnes.regards.modules.feature.dto.FeatureIdUrnDto;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -48,7 +47,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test of {@link FeatureServiceIT}
@@ -301,34 +301,6 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
         results = featureService.findAll(specification, page);
         // Then
         assertEquals(2, results.getNumberOfElements());
-    }
-
-    @Test
-    public void test_findAll_raw() {
-        // Given
-        Pageable page = PageRequest.of(0, 10);
-        SearchFeatureSimpleEntityParameters selection = new SearchFeatureSimpleEntityParameters().withModel(
-            featureModelName);
-        // When
-        Page<FeatureEntityRawDto> results = featureService.findAllRaw(selection, page);
-        // Then
-        assertEquals(2, results.getNumberOfElements());
-
-        verifyRawFeature(results);
-    }
-
-    private void verifyRawFeature(Page<FeatureEntityRawDto> results) {
-        FeatureEntityRawDto dofOpt = results.getContent()
-                                            .stream()
-                                            .filter(fed -> fed.getId().equals(secondFeature.getId()))
-                                            .findFirst()
-                                            .orElse(null);
-        assertNotNull(dofOpt, "Entity researched not found");
-        // compare values inside the DataObjectFeature and those of the FeatureEntity should be the same
-        assertEquals(secondFeature.getSession(), dofOpt.getSession());
-        assertEquals(secondFeature.getSessionOwner(), dofOpt.getSource());
-        assertEquals(secondFeature.getFeature().getModel(), dofOpt.getFeature().get("model").getAsString());
-        assertEquals(secondFeature.getFeature().getUrn().toString(), dofOpt.getFeature().get("urn").getAsString());
     }
 
 }

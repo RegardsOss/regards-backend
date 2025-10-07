@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
                    @Index(name = "idx_feature_session", columnList = "session_owner,session_name"),
                    @Index(name = "idx_feature_provider_id", columnList = "provider_id") },
        uniqueConstraints = { @UniqueConstraint(name = "uk_feature_urn", columnNames = { "urn" }) })
-public class FeatureEntity extends AbstractFeatureDeserializedEntity {
+public class FeatureEntity extends AbstractFeatureEntity {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "feature_id", foreignKey = @ForeignKey(name = "fk_feature_dissemination_info_feature_id"))
