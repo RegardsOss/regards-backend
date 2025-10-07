@@ -136,6 +136,7 @@
         <flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
         <versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
+        <sonar-maven-plugin.version>5.2.0.4988</sonar-maven-plugin.version>
         <maven-shade-plugin.version>3.5.1</maven-shade-plugin.version>
         <hibernate-enhance-maven-plugin.version>${hibernate.version}</hibernate-enhance-maven-plugin.version>
         <docker-maven-plugin.version>1.2.2</docker-maven-plugin.version>
@@ -2860,6 +2861,12 @@
     <build>
         <pluginManagement>
             <plugins>
+                <!-- sonar -->
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>${sonar-maven-plugin.version}</version>
+                </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
