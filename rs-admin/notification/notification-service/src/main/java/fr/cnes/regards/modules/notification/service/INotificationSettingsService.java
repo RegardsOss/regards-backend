@@ -18,38 +18,37 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
 
 /**
- * Strategy interface to handle CRUD operations on {@link NotificationService} entities.
+ * Strategy interface to handle CRUD operations on {@link NotificationSettings} entities in database.
  *
  * @author Xavier-Alexandre Brochard
  */
 public interface INotificationSettingsService {
 
     /**
-     * Retrieve the notification configuration parameters for the logged user
+     * Retrieve the notification configuration parameters for the logged user.
+     * Call {link {@link INotificationSettingsService#retrieveNotificationSettings(String)}}
      *
      * @return The {@link NotificationSettings}
-     * @throws EntityNotFoundException thrown when no current user could be found
      */
-    NotificationSettings retrieveNotificationSettings() throws EntityNotFoundException;
+    NotificationSettings retrieveNotificationSettings();
 
     /**
-     * Retrieve {@link NotificationSettings} for the given user if any. Create it otherwise.
+     * Retrieve {@link NotificationSettings} for the given user if any, create it otherwise in database with
+     * {@link fr.cnes.regards.modules.notification.domain.NotificationFrequency.WEEKLY} frenquency for
+     * the given user.
      */
     NotificationSettings retrieveNotificationSettings(String userEmail);
 
     /**
-     * Define the endpoint for updating the {@link Notification#status}
+     * Update the {@link NotificationSettings} in the database.
+     * Call {link {@link INotificationSettingsService#retrieveNotificationSettings()}}
      *
-     * @param pNotificationSettings The notification settings
-     * @throws EntityNotFoundException thrown when no current user could be found
+     * @param notificationSettings The notification settings
      */
-    NotificationSettings updateNotificationSettings(NotificationSettingsDTO pNotificationSettings)
-        throws EntityNotFoundException;
+    NotificationSettings updateNotificationSettings(NotificationSettingsDTO notificationSettings);
 
 }

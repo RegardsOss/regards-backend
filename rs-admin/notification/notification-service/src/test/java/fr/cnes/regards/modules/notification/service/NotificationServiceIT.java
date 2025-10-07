@@ -82,6 +82,9 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     @Autowired
     protected INotificationRepository notificationRepository;
 
+    @Autowired
+    private SendingScheduler sendingScheduler;
+
     @MockBean
     private IAccessGroupClient accessGroupClient;
 
@@ -529,5 +532,4 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
         // Then
         Assert.assertEquals("All notification are deleted", 0, notificationRepository.findAll().size());
     }
-
 }

@@ -25,6 +25,8 @@ import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
 import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
 import fr.cnes.regards.modules.notification.service.utils.NotificationUserSetting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -38,7 +40,7 @@ import java.util.stream.Stream;
 
 /**
  * Service responsible for scheduling the sending of notifications to their recipients.<br>
- * It periodically retrieves the notifications to send, and sends thems to their recipients.<br>
+ * It periodically retrieves the notifications to send, and sends them to their recipients.<br>
  * Implements a strategy pattern on the sending method in order to easily add ways of sending notifications (mail, ihm,
  * owl...).
  *
@@ -89,8 +91,9 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
     /**
      * Find all notifications which should be sent daily and send them with the sending strategy
      */
-    @Scheduled(cron = "${regards.notification.cron.daily}")
+    @Scheduled(cron = "${regards.notification.cron.daily:0 0 12 * * *}")
     public void sendDaily() throws ModuleException {
+        LOGGER.debug("Schedule the sending daily");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -104,8 +107,9 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
     /**
      * Find all notifications which should be sent weekly and send them with the sending strategy
      */
-    @Scheduled(cron = "${regards.notification.cron.weekly}")
+    @Scheduled(cron = "${regards.notification.cron.weekly:0 0 12 ? * MON}")
     public void sendWeekly() throws ModuleException {
+        LOGGER.debug("Schedule the sending weekly");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -119,8 +123,9 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
     /**
      * Find all notifications which should be sent weekly and send them with the sending strategy
      */
-    @Scheduled(cron = "${regards.notification.cron.monthly}")
+    @Scheduled(cron = "${regards.notification.cron.monthly:0 0 12 1-7 * MON}")
     public void sendMonthly() throws ModuleException {
+        LOGGER.debug("Schedule the sending monthly");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -134,8 +139,9 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
     /**
      * Find all notifications which have a custom sending frequency and send them with the sending strategy if need be
      */
-    @Scheduled(cron = "${regards.notification.cron.daily}")
+    @Scheduled(cron = "${regards.notification.cron.daily:0 0 12 * * *}")
     public void sendCustom() throws ModuleException {
+        LOGGER.debug("Schedule the sending custom");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -157,6 +163,8 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
             }
         }
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SendingScheduler.class);
 
     /**
      * Find all notifications which should be sent, filter them with passed filter and send them with the sending
@@ -180,18 +188,16 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
                                                      .map(NotificationUserSetting::getProjectUser)
                                                      .distinct()
                                                      .toArray(String[]::new);
+            LOGGER.debug("Sending {} to {} recipients", notification.getId(), recipients);
 
             // Send the notification to recipients
             sendNotification(notification, recipients);
         });
-
     }
 
     private void sendNotification(Notification notification, String... recipients) {
         if (recipients.length > 0) {
             strategy.send(notification, recipients);
-            // Update sent date
-            notification.setDate(OffsetDateTime.now());
         }
     }
 
@@ -203,12 +209,13 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
      * @return The filter as a {@link Predicate}. Use in a {@link Stream#map} for example.
      */
     private Predicate<NotificationUserSetting> createFrequencyFilter(NotificationFrequency frequency) {
+        LOGGER.debug("Filtering notification settings for frequency [{}]", frequency);
         return n -> frequency.equals(notificationSettingsService.retrieveNotificationSettings(n.getProjectUser())
                                                                 .getFrequency());
     }
 
     /**
-     * Change the sending strategy
+     * Change the sending strategy about notifications
      *
      * @param strategy the strategy to set
      */
@@ -217,12 +224,13 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
     }
 
     /**
-     * Allows to trigger sending process before the frequency
+     * Allows to trigger notification sending process before the frequency
      */
     @Override
     public void onApplicationEvent(NotificationToSendEvent event) {
-        Notification notif = event.getNotification();
-        String[] recipients = notificationService.findRecipients(notif).toArray(new String[0]);
-        sendNotification(notif, recipients);
+        Notification notification = event.getNotification();
+        String[] recipients = notificationService.findRecipients(notification).toArray(new String[0]);
+        // Send the notification to recipients
+        sendNotification(notification, recipients);
     }
 }

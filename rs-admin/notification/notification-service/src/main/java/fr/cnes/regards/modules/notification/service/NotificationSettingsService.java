@@ -20,12 +20,12 @@ package fr.cnes.regards.modules.notification.service;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
-import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -38,6 +38,8 @@ import org.springframework.stereotype.Service;
 @Service
 @RegardsTransactional
 public class NotificationSettingsService implements INotificationSettingsService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotificationSettingsService.class);
 
     /**
      * Service handling CRUD operations on project users. Autowired by Spring.
@@ -57,66 +59,38 @@ public class NotificationSettingsService implements INotificationSettingsService
      */
     public NotificationSettingsService(final IAuthenticationResolver authenticationResolver,
                                        final INotificationSettingsRepository pNotificationSettingsRepository) {
-        super();
         this.authenticationResolver = authenticationResolver;
-        notificationSettingsRepository = pNotificationSettingsRepository;
+        this.notificationSettingsRepository = pNotificationSettingsRepository;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.notification.service.INotificationService#retrieveNotificationSettings()
-     */
     @Override
     public NotificationSettings retrieveNotificationSettings() {
         return retrieveNotificationSettings(authenticationResolver.getUser());
     }
 
     @Override
-    public NotificationSettings retrieveNotificationSettings(String userEmail) {
-        NotificationSettings result = notificationSettingsRepository.findOneByProjectUserEmail(userEmail);
-        if (result == null) {
-            result = createNotificationSettings(userEmail);
-        }
-        return result;
+    public NotificationSettings retrieveNotificationSettings(String projectUserEmail) {
+        LOGGER.info("Creating notification settings for {} with WEEKLY frequency", projectUserEmail);
+        
+        notificationSettingsRepository.insertNotificationSettingsIfNotExistsWeekly(projectUserEmail);
+        return notificationSettingsRepository.findOneByProjectUserEmail(projectUserEmail);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.notification.service.INotificationService#updateNotificationSettings(fr.cnes.regards.
-     * modules.notification.domain.NotificationSettings)
-     */
     @Override
-    public NotificationSettings updateNotificationSettings(final NotificationSettingsDTO pDto)
-        throws EntityNotFoundException {
-        final NotificationSettings notificationSettings = retrieveNotificationSettings();
+    public NotificationSettings updateNotificationSettings(final NotificationSettingsDTO notificationSettingsDTO) {
+        NotificationSettings notificationSettings = retrieveNotificationSettings();
 
-        if (pDto.getDays() != null) {
-            notificationSettings.setDays(pDto.getDays());
+        if (notificationSettingsDTO.getDays() != null) {
+            notificationSettings.setDays(notificationSettingsDTO.getDays());
         }
-        if (pDto.getHours() != null) {
-            notificationSettings.setHours(pDto.getHours());
+        if (notificationSettingsDTO.getHours() != null) {
+            notificationSettings.setHours(notificationSettingsDTO.getHours());
         }
-        if (pDto.getFrequency() != null) {
-            notificationSettings.setFrequency(pDto.getFrequency());
+        if (notificationSettingsDTO.getFrequency() != null) {
+            notificationSettings.setFrequency(notificationSettingsDTO.getFrequency());
         }
 
         return notificationSettingsRepository.save(notificationSettings);
-    }
-
-    /**
-     * Create notification settings for project user
-     *
-     * @param pProjectUser The target project user
-     * @return The created notification settings
-     */
-    private NotificationSettings createNotificationSettings(final String pProjectUser) {
-        final NotificationSettings settings = new NotificationSettings();
-        settings.setProjectUserEmail(pProjectUser);
-        settings.setFrequency(NotificationFrequency.WEEKLY);
-        return notificationSettingsRepository.save(settings);
     }
 
 }

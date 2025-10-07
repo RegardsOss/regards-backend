@@ -46,19 +46,19 @@ import java.util.Set;
 public abstract class AbstractNotification implements IIdentifiable<Long> {
 
     /**
-     * The date of the notification
-     */
-    @Column(name = "date")
-    @Convert(converter = OffsetDateTimeAttributeConverter.class)
-    private OffsetDateTime date;
-
-    /**
      * Unique Identifier
      */
     @Id
     @SequenceGenerator(name = "notificationSequence", initialValue = 1, sequenceName = "seq_notification")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "notificationSequence")
     private Long id;
+
+    /**
+     * The date of the notification
+     */
+    @Column(name = "date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime date;
 
     /**
      * The role recipients represented by their name

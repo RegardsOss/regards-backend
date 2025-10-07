@@ -19,11 +19,12 @@
 package fr.cnes.regards.modules.notification.domain;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.Objects;
 
 /**
  * Wraps the different project projectUserEmail's settings available for notifications configuration.
@@ -38,6 +39,11 @@ public class NotificationSettings implements IIdentifiable<Long> {
      * Self expl
      */
     private static final int HOURS_IN_A_DAY = 24;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "notificationSettingsSequence")
+    @Column(name = "id")
+    private Long id;
 
     /**
      * The days frequency of notification<br>
@@ -64,19 +70,20 @@ public class NotificationSettings implements IIdentifiable<Long> {
     private Integer hours;
 
     /**
-     * The settings unique id
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "notificationSettingsSequence")
-    @Column(name = "id")
-    private Long id;
-
-    /**
      * The settings are specific to a project user represented by its email
      */
     @NotNull
-    @Column(name = "user_email")
+    @Column(name = "user_email", unique = true, nullable = false)
     private String projectUserEmail;
+
+    public NotificationSettings() {
+    }
+
+    public NotificationSettings(String projectUserEmail, NotificationFrequency frequency) {
+        this();
+        this.projectUserEmail = projectUserEmail;
+        this.frequency = frequency;
+    }
 
     /**
      * @return the days
@@ -149,5 +156,33 @@ public class NotificationSettings implements IIdentifiable<Long> {
      */
     public void setProjectUserEmail(final String pUser) {
         projectUserEmail = pUser;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        NotificationSettings that = (NotificationSettings) o;
+        return Objects.equals(projectUserEmail, that.projectUserEmail);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(projectUserEmail);
+    }
+
+    @Override
+    public String toString() {
+        return "NotificationSettings{"
+               + "days="
+               + days
+               + ", frequency="
+               + frequency
+               + ", hours="
+               + hours
+               + ", projectUserEmail="
+               + projectUserEmail
+               + '}';
     }
 }

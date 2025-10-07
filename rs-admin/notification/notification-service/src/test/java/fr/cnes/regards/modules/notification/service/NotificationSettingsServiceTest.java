@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.notification.service;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
@@ -72,67 +71,71 @@ public class NotificationSettingsServiceTest {
 
     /**
      * Check that the system allows to retrieve the notification settings of currently logged user.
-     *
-     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to retrieve the notification settings of currently logged user.")
-    public void retrieveNotificationsAlreadyExists() throws EntityNotFoundException {
-        // Define expected
+    public void retrieveNotificationsAlreadyExists() {
+        // Given: Define expected
         final NotificationSettings expected = new NotificationSettings();
 
-        // Mock methods
-        Mockito.when(authenticationResolver.getUser()).thenReturn("");
-        Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
+        String projectUserEmail = "user@test.com";
 
-        // Call tested method
+        // Mock methods
+        Mockito.when(authenticationResolver.getUser()).thenReturn(projectUserEmail);
+        Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail(projectUserEmail)).thenReturn(expected);
+
+        // When: Call tested method
         final NotificationSettings actual = notificationSettingsService.retrieveNotificationSettings();
 
-        // Check that expected is equel to acutal
+        // Then
+        // Check that expected is equel to actual
         Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(expected)));
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(notificationSettingsRepository).findOneByProjectUserEmail("");
+        Mockito.verify(notificationSettingsRepository).findOneByProjectUserEmail(projectUserEmail);
+
+        Mockito.verify(notificationSettingsRepository, Mockito.times(1))
+               .insertNotificationSettingsIfNotExistsWeekly(projectUserEmail);
     }
 
     /**
      * Check that the system creates empty settings when trying to retrieve not existing settings.
-     *
-     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system creates empty settings when trying to retrieve not existing settings.")
-    public void retrieveNotificationsNotExists() throws EntityNotFoundException {
-        // Defined expected
+    public void retrieveNotificationsNotExists() {
+        // Given:  Defined expected
         final NotificationSettings expected = new NotificationSettings();
 
-        // Mock methods
-        Mockito.when(authenticationResolver.getUser()).thenReturn("");
-        Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(null);
-        Mockito.when(notificationSettingsRepository.save(Mockito.any(NotificationSettings.class))).thenReturn(expected);
+        String projectUserEmail = "user@test.com";
 
-        // Call tested method
-        final NotificationSettings actual = notificationSettingsService.retrieveNotificationSettings();
+        // Mock method
+        Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail(projectUserEmail)).thenReturn(expected);
 
-        // Check that expected is equel to acutal
+        // When: Call tested method
+        final NotificationSettings actual = notificationSettingsService.retrieveNotificationSettings(projectUserEmail);
+
+        // Then
+        // Check that expected is equal to actual
         Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(expected)));
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(notificationSettingsRepository).findOneByProjectUserEmail("");
+        Mockito.verify(notificationSettingsRepository, Mockito.times(1)).findOneByProjectUserEmail(projectUserEmail);
+
+        Mockito.verify(notificationSettingsRepository, Mockito.times(1))
+               .insertNotificationSettingsIfNotExistsWeekly(projectUserEmail);
     }
 
     /**
      * Check that the system allows to update notification settings.
-     *
-     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to update notification settings.")
-    public void updateNotificationSettings() throws EntityNotFoundException {
-
+    public void updateNotificationSettings() {
+        // Given
         // Define initial
         final Long id = 0L;
         final NotificationSettings initial = new NotificationSettings();
@@ -158,23 +161,22 @@ public class NotificationSettingsServiceTest {
         Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
         Mockito.when(authenticationResolver.getUser()).thenReturn("");
 
-        // Perform the update
+        // When: Perform the update
         notificationSettingsService.updateNotificationSettings(dto);
 
+        // Then
         // Check that the repository's method was called with right arguments
         Mockito.verify(notificationSettingsRepository).save(Mockito.refEq(expected));
     }
 
     /**
      * Check that the system allows to update notification settings.
-     *
-     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to update notification settings.")
-    public void updateNotificationSettingsNullDays() throws EntityNotFoundException {
-
+    public void updateNotificationSettingsNullDays() {
+        // Given
         // Define initial
         final Long id = 0L;
         final NotificationSettings initial = new NotificationSettings();
@@ -200,23 +202,22 @@ public class NotificationSettingsServiceTest {
         Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
         Mockito.when(authenticationResolver.getUser()).thenReturn("");
 
-        // Perform the update
+        // When: Perform the update
         notificationSettingsService.updateNotificationSettings(dto);
 
+        // Then
         // Check that the repository's method was called with right arguments
         Mockito.verify(notificationSettingsRepository).save(Mockito.refEq(expected));
     }
 
     /**
      * Check that the system allows to update notification settings.
-     *
-     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to update notification settings.")
-    public void updateNotificationSettingsNullHours() throws EntityNotFoundException {
-
+    public void updateNotificationSettingsNullHours() {
+        // Given
         // Define initial
         final Long id = 0L;
         final NotificationSettings initial = new NotificationSettings();
@@ -242,23 +243,22 @@ public class NotificationSettingsServiceTest {
         Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
         Mockito.when(authenticationResolver.getUser()).thenReturn("");
 
-        // Perform the update
+        // When: Perform the update
         notificationSettingsService.updateNotificationSettings(dto);
 
+        // Then
         // Check that the repository's method was called with right arguments
         Mockito.verify(notificationSettingsRepository).save(Mockito.refEq(expected));
     }
 
     /**
      * Check that the system allows to update notification settings.
-     *
-     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
     @Purpose("Check that the system allows to update notification settings.")
-    public void updateNotificationSettingsNullFrequency() throws EntityNotFoundException {
-
+    public void updateNotificationSettingsNullFrequency() {
+        // Given
         // Define initial
         final Long id = 0L;
         final NotificationSettings initial = new NotificationSettings();
@@ -284,9 +284,10 @@ public class NotificationSettingsServiceTest {
         Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
         Mockito.when(authenticationResolver.getUser()).thenReturn("");
 
-        // Perform the update
+        // When: Perform the update
         notificationSettingsService.updateNotificationSettings(dto);
 
+        // Then
         // Check that the repository's method was called with right arguments
         Mockito.verify(notificationSettingsRepository).save(Mockito.refEq(expected));
     }

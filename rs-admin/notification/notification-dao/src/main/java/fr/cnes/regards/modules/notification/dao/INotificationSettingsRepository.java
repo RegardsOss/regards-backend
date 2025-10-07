@@ -22,7 +22,10 @@ import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.stream.Stream;
 
@@ -38,10 +41,10 @@ public interface INotificationSettingsRepository extends JpaRepository<Notificat
     /**
      * Find the notification settings for the passed project user.
      *
-     * @param userEmail The project user represented by its email
+     * @param projectUserEmail The project user represented by its email
      * @return The found notification settings
      */
-    NotificationSettings findOneByProjectUserEmail(String userEmail);
+    NotificationSettings findOneByProjectUserEmail(String projectUserEmail);
 
     /**
      * Retrieve all notification configuration parameters with passed frequency
@@ -50,4 +53,12 @@ public interface INotificationSettingsRepository extends JpaRepository<Notificat
      * @return The {@link NotificationSettings}
      */
     Stream<NotificationSettings> findByFrequency(NotificationFrequency pFrequency);
+
+    @Modifying
+    @Query(value = """
+        INSERT INTO t_notification_settings (id, user_email, frequency)
+        VALUES (nextval('seq_notification_settings'),:user_email, 'WEEKLY')
+        ON CONFLICT (user_email) DO NOTHING
+        """, nativeQuery = true)
+    void insertNotificationSettingsIfNotExistsWeekly(@Param("user_email") String user_email);
 }
