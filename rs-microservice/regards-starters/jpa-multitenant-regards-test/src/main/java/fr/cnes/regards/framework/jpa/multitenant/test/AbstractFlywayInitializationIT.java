@@ -21,6 +21,9 @@ package fr.cnes.regards.framework.jpa.multitenant.test;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
 
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assume.assumeThat;
+
 /**
  * Initialize database with Flyway scripts on public schema.
  *
@@ -32,5 +35,6 @@ public abstract class AbstractFlywayInitializationIT extends AbstractDaoIT {
     @Test
     public void initFlywayDependencies() {
         // Nothing to do
+        assumeThat(entityManager, notNullValue());
     }
 }

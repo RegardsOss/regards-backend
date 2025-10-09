@@ -24,8 +24,8 @@ import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.amqp.event.notifier.NotificationRequestEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.actuate.health.Health.Builder;
@@ -255,7 +255,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
         String currentTenant = resolveTenant();
         if (currentTenant == null) {
-            String errorMessage = String.format(NO_TENANT_MESSAGE_FORMAT, message.getClass(), currentTenant);
+            String errorMessage = String.format(NO_TENANT_MESSAGE_FORMAT, message.getClass());
             LOGGER.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
@@ -517,12 +517,12 @@ public abstract class AbstractPublisher implements IPublisherContract {
      * @param priority     the event priority
      * @param headers      additional headers
      */
-    private final <T extends IEvent> void publishMessageByTenant(String tenant,
-                                                                 String exchangeName,
-                                                                 String routingKey,
-                                                                 T event,
-                                                                 int priority,
-                                                                 Map<String, Object> headers) {
+    private <T extends IEvent> void publishMessageByTenant(String tenant,
+                                                           String exchangeName,
+                                                           String routingKey,
+                                                           T event,
+                                                           int priority,
+                                                           Map<String, Object> headers) {
 
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
         rabbitTemplate.convertAndSend(exchangeName, routingKey, event, message -> {
@@ -556,7 +556,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
         });
     }
 
-    private static class ExchangeAndRoutingKey {
+    private static final class ExchangeAndRoutingKey {
 
         public final String exchange;
 

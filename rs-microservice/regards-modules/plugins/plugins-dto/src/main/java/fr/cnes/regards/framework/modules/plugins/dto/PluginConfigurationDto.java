@@ -63,7 +63,7 @@ public class PluginConfigurationDto {
     /**
      * Priority order of the plugin.
      */
-    private Integer priorityOrder = 0;
+    private Integer priorityOrder;
 
     /**
      * The plugin configuration is active.
@@ -73,12 +73,35 @@ public class PluginConfigurationDto {
     /**
      * Configuration parameters of the plugin
      */
-    private Set<IPluginParam> parameters = new HashSet<IPluginParam>();
+    private Set<IPluginParam> parameters = new HashSet<>();
 
     /**
      * Icon of the plugin. It must be an URL to a svg file.
      */
     private URL iconUrl;
+
+    public PluginConfigurationDto(String pluginId,
+                                  String label,
+                                  String businessId,
+                                  String version,
+                                  Integer priorityOrder,
+                                  Boolean active,
+                                  URL iconUrl,
+                                  Set<IPluginParam> parameters,
+                                  PluginMetaData metaData) {
+        this.metaData = metaData;
+        this.pluginId = pluginId;
+        this.label = label;
+        this.businessId = businessId;
+        this.version = version;
+        this.priorityOrder = priorityOrder;
+        this.active = active;
+        if (parameters != null) {
+            this.parameters.addAll(parameters);
+        }
+
+        this.iconUrl = iconUrl;
+    }
 
     public String getPluginId() {
         return pluginId;
@@ -106,29 +129,6 @@ public class PluginConfigurationDto {
 
     public URL getIconUrl() {
         return iconUrl;
-    }
-
-    public PluginConfigurationDto(String pluginId,
-                                  String label,
-                                  String businessId,
-                                  String version,
-                                  Integer priorityOrder,
-                                  Boolean active,
-                                  URL iconUrl,
-                                  Set<IPluginParam> parameters,
-                                  PluginMetaData metaData) {
-        this.metaData = metaData;
-        this.pluginId = pluginId;
-        this.label = label;
-        this.businessId = businessId;
-        this.version = version;
-        this.priorityOrder = priorityOrder;
-        this.active = active;
-        if (parameters != null) {
-            this.parameters.addAll(parameters);
-        }
-
-        this.iconUrl = iconUrl;
     }
 
     public PluginMetaData getMetaData() {

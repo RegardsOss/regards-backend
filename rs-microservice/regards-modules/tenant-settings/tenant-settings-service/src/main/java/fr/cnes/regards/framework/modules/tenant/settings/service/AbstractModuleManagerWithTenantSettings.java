@@ -43,6 +43,8 @@ public abstract class AbstractModuleManagerWithTenantSettings<S> extends Abstrac
     @Qualifier("dynamicTenantSettingServiceWithMask")
     private IDynamicTenantSettingService dynamicTenantSettingService;
 
+    abstract protected Logger getLogger();
+
     @Override
     public ModuleConfiguration exportConfiguration() {
         List<ModuleConfigurationItem<?>> configuration = new ArrayList<>();
@@ -129,7 +131,4 @@ public abstract class AbstractModuleManagerWithTenantSettings<S> extends Abstrac
     protected Set<String> resetConfiguration(Set<String> errors) {
         return errors;
     }
-
-    abstract protected Logger getLogger();
-
 }

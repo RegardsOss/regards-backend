@@ -48,6 +48,16 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AgentCleanSessionStepScheduler.class);
 
+    public static final Long MAX_TASK_DELAY = 60L; // In second
+
+    public static final String DEFAULT_INITIAL_DELAY = "10000";
+
+    public static final String DEFAULT_SCHEDULING_DELAY = "86400000"; // once a day
+
+    public static final String CLEAN_SESSION_STEPS = "Clean session steps";
+
+    public static final String CLEAN_SESSION_STEPS_TITLE = "Clean session steps scheduling";
+
     @Autowired
     private ITenantResolver tenantResolver;
 
@@ -62,16 +72,6 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
 
     @Value("${spring.application.name}")
     private String microserviceName;
-
-    public static final Long MAX_TASK_DELAY = 60L; // In second
-
-    public static final String DEFAULT_INITIAL_DELAY = "10000";
-
-    public static final String DEFAULT_SCHEDULING_DELAY = "86400000"; // once a day
-
-    public static final String CLEAN_SESSION_STEPS = "Clean session steps";
-
-    public static final String CLEAN_SESSION_STEPS_TITLE = "Clean session steps scheduling";
 
     /**
      * Snapshot task
@@ -95,7 +95,7 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, CLEAN_SESSION_STEPS);
-                
+
                 lockingTaskExecutors.executeWithLock(cleanProcessTask,
                                                      new LockConfiguration(Instant.now(),
                                                                            microserviceName + "_clean-session-steps",

@@ -44,21 +44,6 @@ public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AgentCleanSnapshotProcessScheduler.class);
 
-    @Autowired
-    private ITenantResolver tenantResolver;
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    @Autowired
-    private AgentCleanSnapshotProcessJobService agentCleanSnapshotProcessJobService;
-
-    @Autowired
-    private ILockingTaskExecutors lockingTaskExecutors;
-
-    @Value("${spring.application.name}")
-    private String microserviceName;
-
     public static final Long MAX_TASK_DELAY = 60L; // In second
 
     public static final String DEFAULT_INITIAL_DELAY = "10000";
@@ -74,6 +59,21 @@ public class AgentCleanSnapshotProcessScheduler extends AbstractTaskScheduler {
     public static final String CLEAN_DEAD_JOBS_PROCESS_TITLE = "Clean dead jobs process scheduling";
 
     public static final String CLEAN_DEAD_JOBS_PROCESS = "Clean snapshot process";
+
+    @Autowired
+    private ITenantResolver tenantResolver;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private AgentCleanSnapshotProcessJobService agentCleanSnapshotProcessJobService;
+
+    @Autowired
+    private ILockingTaskExecutors lockingTaskExecutors;
+
+    @Value("${spring.application.name}")
+    private String microserviceName;
 
     /**
      * Snapshot task

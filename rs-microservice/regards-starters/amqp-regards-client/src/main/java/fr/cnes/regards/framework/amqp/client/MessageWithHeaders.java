@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.amqp.event.IEvent;
 import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import org.springframework.amqp.core.MessageProperties;
 
+import java.io.Serial;
 import java.util.HashMap;
 
 /**
@@ -32,6 +33,7 @@ import java.util.HashMap;
  */
 public class MessageWithHeaders<K, V> extends HashMap<K, V> implements IMessagePropertiesAware, IEvent {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     // Prevent GSON converter from serializing or deserializing this field

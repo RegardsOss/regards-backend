@@ -41,6 +41,8 @@ import java.util.List;
 public class SourceDeleteEventHandler
     implements ApplicationListener<ApplicationReadyEvent>, IHandler<SourceDeleteEvent> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SourceDeleteEventHandler.class);
+
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -49,8 +51,6 @@ public class SourceDeleteEventHandler
 
     @Autowired
     private List<ISourceDeleteService> sourceDeleteServices;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SourceDeleteEventHandler.class);
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -76,7 +76,6 @@ public class SourceDeleteEventHandler
                          start - System.currentTimeMillis());
         } finally {
             runtimeTenantResolver.clearTenant();
-
         }
     }
 }

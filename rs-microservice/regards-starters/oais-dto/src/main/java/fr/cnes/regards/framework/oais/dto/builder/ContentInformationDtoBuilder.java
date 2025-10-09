@@ -61,6 +61,7 @@ import java.util.HashSet;
  * @author Marc Sordi
  * @deprecated Use {@link InformationPackageProperties} fluent API
  */
+@Deprecated(forRemoval = true)
 public class ContentInformationDtoBuilder implements IOAISBuilder<ContentInformationDto> {
 
     private final ContentInformationDto ci = new ContentInformationDto();

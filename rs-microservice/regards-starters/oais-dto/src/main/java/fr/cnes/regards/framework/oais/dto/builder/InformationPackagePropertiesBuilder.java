@@ -22,10 +22,10 @@ package fr.cnes.regards.framework.oais.dto.builder;
 import com.google.common.collect.Maps;
 import fr.cnes.regards.framework.oais.dto.*;
 import fr.cnes.regards.framework.urn.DataType;
+import jakarta.annotation.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
-import jakarta.annotation.Nullable;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -38,6 +38,7 @@ import java.util.Map;
  * @author Marc Sordi
  * @deprecated {@link InformationPackageProperties} fluent API
  */
+@Deprecated(forRemoval = true)
 public class InformationPackagePropertiesBuilder implements IOAISBuilder<InformationPackageProperties> {
 
     /**

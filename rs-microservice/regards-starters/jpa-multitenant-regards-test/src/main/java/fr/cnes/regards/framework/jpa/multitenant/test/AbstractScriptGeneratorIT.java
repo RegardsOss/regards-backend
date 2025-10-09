@@ -21,6 +21,9 @@ package fr.cnes.regards.framework.jpa.multitenant.test;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
 
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assume.assumeThat;
+
 /**
  * Generate the diff between already existing SQL migration scripts and content of your model.<br/>
  * Extends this test class in dao layer and ensure the <b>public schema is empty (or not existing)</b> on the target database.
@@ -46,5 +49,6 @@ public abstract class AbstractScriptGeneratorIT extends AbstractDaoIT {
     @Test
     public void generate() {
         // Nothing to do
+        assumeThat(entityManager, notNullValue());
     }
 }

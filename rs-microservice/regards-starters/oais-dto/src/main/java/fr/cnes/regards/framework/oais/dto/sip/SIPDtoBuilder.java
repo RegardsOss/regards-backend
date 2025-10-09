@@ -41,6 +41,7 @@ import java.security.MessageDigest;
  * @author Marc Sordi
  * @deprecated {@link SIPDto} fluent API instead
  */
+@Deprecated(forRemoval = true)
 public class SIPDtoBuilder extends IPBuilder<SIPDto> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPDtoBuilder.class);

@@ -47,34 +47,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class JobThreadPoolExecutor extends ThreadPoolExecutor {
 
-    /**
-     * The default thread factory
-     */
-    private static final class DefaultJobThreadFactory implements ThreadFactory {
-
-        private static final AtomicInteger poolNumber = new AtomicInteger(1);
-
-        private final AtomicInteger threadNumber = new AtomicInteger(1);
-
-        private final String namePrefix;
-
-        private DefaultJobThreadFactory() {
-            namePrefix = "job-pool-" + poolNumber.getAndIncrement() + "-thread-";
-        }
-
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(r, namePrefix + threadNumber.getAndIncrement());
-            if (t.isDaemon()) {
-                t.setDaemon(false);
-            }
-            if (t.getPriority() != Thread.NORM_PRIORITY) {
-                t.setPriority(Thread.NORM_PRIORITY);
-            }
-            return t;
-        }
-    }
-
     private static final Logger LOGGER = LoggerFactory.getLogger(JobThreadPoolExecutor.class);
 
     /**
@@ -236,4 +208,31 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
         }
     }
 
+    /**
+     * The default thread factory
+     */
+    private static final class DefaultJobThreadFactory implements ThreadFactory {
+
+        private static final AtomicInteger poolNumber = new AtomicInteger(1);
+
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+
+        private final String namePrefix;
+
+        private DefaultJobThreadFactory() {
+            namePrefix = "job-pool-" + poolNumber.getAndIncrement() + "-thread-";
+        }
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r, namePrefix + threadNumber.getAndIncrement());
+            if (t.isDaemon()) {
+                t.setDaemon(false);
+            }
+            if (t.getPriority() != Thread.NORM_PRIORITY) {
+                t.setPriority(Thread.NORM_PRIORITY);
+            }
+            return t;
+        }
+    }
 }

@@ -36,9 +36,11 @@ import java.util.Base64;
 
 /**
  * Check that "Basic" Authorization header is valid for authentication endpoint (i.e. ".../oauth/token...")
+ *
  * @author Olivier Rousselot
  */
-public class BasicAuthenticationFilter  extends OncePerRequestFilter {
+public class BasicAuthenticationFilter extends OncePerRequestFilter {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicAuthenticationFilter.class);
 
     private String clientUser;
@@ -65,7 +67,7 @@ public class BasicAuthenticationFilter  extends OncePerRequestFilter {
             authHeader = authHeader.trim();
             // Check that it is a "Basic" authentication...
             if (!StringUtils.startsWithIgnoreCase(authHeader,
-                                                 BasicAuthenticationConverter.AUTHENTICATION_SCHEME_BASIC)) {
+                                                  BasicAuthenticationConverter.AUTHENTICATION_SCHEME_BASIC)) {
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), "Basic Authorization required");
                 return;
             }
@@ -92,6 +94,7 @@ public class BasicAuthenticationFilter  extends OncePerRequestFilter {
                     return;
                 }
             } catch (IllegalArgumentException ex) {
+                LOGGER.error("Failed to decode basic authentication token", ex);
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), "Failed to decode basic authentication token");
                 return;
             }

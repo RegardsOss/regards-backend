@@ -55,7 +55,8 @@ public class PluginInstantiationService {
 
     private final IEncryptionService encryptionService;
 
-    public PluginInstantiationService(PluginConfigurationService pluginDaoService, IEncryptionService encryptionService) {
+    public PluginInstantiationService(PluginConfigurationService pluginDaoService,
+                                      IEncryptionService encryptionService) {
         this.pluginDaoService = pluginDaoService;
         this.encryptionService = encryptionService;
     }
@@ -71,8 +72,7 @@ public class PluginInstantiationService {
     @MultitenantTransactional(noRollbackFor = { ModuleException.class })
     public <T> T instantiatePlugin(PluginConfiguration pluginConf,
                                    ConcurrentMap<String, Object> tenantPluginCache,
-                                   IPluginParam... dynamicParameters)
-        throws ModuleException {
+                                   IPluginParam... dynamicParameters) throws ModuleException {
         // Check if all parameters are really dynamic
         for (IPluginParam dynamicParameter : dynamicParameters) {
             if (!dynamicParameter.isDynamic()) {
@@ -156,9 +156,9 @@ public class PluginInstantiationService {
     /**
      * Retrieve plugin {@link PluginMetaData}
      *
-     * @throws PluginMetadataNotFoundRuntimeException if {@link PluginMetaData} not found.
      * @param pluginId Plugin identifier to load
      * @return PluginMetaData
+     * @throws PluginMetadataNotFoundRuntimeException if {@link PluginMetaData} not found.
      */
     private PluginMetaData getPluginMetadata(String pluginId) {
         PluginMetaData pluginMetadata = PluginUtils.getPluginMetadata(pluginId);
@@ -208,7 +208,7 @@ public class PluginInstantiationService {
             // only decrypt STRING plugin parameter for now.
             if (paramType.getType() == PluginParamType.STRING) {
                 StringPluginParam pluginParam = (StringPluginParam) conf.getParameter(paramType.getName());
-                if (Boolean.TRUE.equals((pluginParam != null) && paramType.isSensible()) && pluginParam.hasValue()) {
+                if (pluginParam != null && paramType.isSensible() && pluginParam.hasValue()) {
                     conf.getParameters().remove(pluginParam);
                     StringPluginParam decryptedParam = pluginParam.clone();
                     decryptedParam.setValue(encryptionService.decrypt(decryptedParam.getValue()));

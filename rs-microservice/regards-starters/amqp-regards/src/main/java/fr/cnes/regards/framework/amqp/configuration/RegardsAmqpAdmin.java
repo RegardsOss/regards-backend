@@ -97,11 +97,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
      */
     private String microserviceInstanceId;
 
-    /**
-     * Whether above instance identifier is generated or not. If so, queues using instance identifier will be auto delete queues.
-     */
-    private boolean instanceIdGenerated = false;
-
     public RegardsAmqpAdmin(String namespace, String microserviceTypeId, String microserviceInstanceId) {
         this.namespace = namespace;
         this.microserviceTypeId = microserviceTypeId;
@@ -115,7 +110,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
             microserviceTypeId = microserviceName;
         }
         if (microserviceInstanceId == null) {
-            this.instanceIdGenerated = true;
             this.microserviceInstanceId = UUID.randomUUID().toString();
         }
     }
@@ -271,7 +265,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
             default -> throw new EnumConstantNotPresentException(WorkerMode.class, channel.getWorkerMode().name());
         }
         if (channel.isAutoDeleteQueue()) {
-            builder = builder.autoDelete();
+            builder.autoDelete();
         }
 
         Queue queue = builder.build();
@@ -411,7 +405,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin, InitializingBean {
         QueueInformation queueInfo = rabbitAdmin.getQueueInfo(queueName);
         // method getQueueInfo is annotated @Nullable, but the package is annotated @NonNullApi.
         // noinspection ConstantConditions — Intellij assumes that queueInfo cannot be null, but it actually can be
-        if (queueInfo == null) {
+        if (queueInfo == null) { //NOSONAR
             throw new AmqpException("Failed to retrieve queue information for: " + queueName);
         }
         return queueInfo.getMessageCount() == 0;

@@ -27,8 +27,10 @@ import java.util.Random;
 
 /**
  * Remove this SWOT specific builder
+ *
+ * @deprecated
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class RandomCridBuilder implements RandomGeneratorBuilder<RandomCridBuilder.RandomCrid> {
 
     private static final Random RANDOM_GEN = new Random();

@@ -43,15 +43,15 @@ import java.util.stream.Stream;
 @SuppressWarnings("unchecked")
 public class AmqpClientPublisher {
 
-    private final static String TEMPLATE_REGEXP = "^.*-template.json";
+    private static final Logger LOGGER = LoggerFactory.getLogger(AmqpClientPublisher.class);
 
-    private final static Pattern TEMPLATE_PATTERN = Pattern.compile(TEMPLATE_REGEXP);
+    private static final String TEMPLATE_REGEXP = "^.*-template.json";
 
-    private final static String HEADERS_NS = "$headers";
+    private static final Pattern TEMPLATE_PATTERN = Pattern.compile(TEMPLATE_REGEXP);
 
-    private final static Integer BATCH_SIZE = 1000;
+    private static final String HEADERS_NS = "$headers";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AmqpClientApplication.class);
+    private static final Integer BATCH_SIZE = 1000;
 
     private final ObjectMapper mapper = new ObjectMapper();
 

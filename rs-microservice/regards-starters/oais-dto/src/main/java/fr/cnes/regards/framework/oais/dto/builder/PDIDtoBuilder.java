@@ -23,9 +23,9 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.dto.EventDto;
 import fr.cnes.regards.framework.oais.dto.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.dto.PreservationDescriptionInformationDto;
+import jakarta.annotation.Nullable;
 import org.springframework.util.Assert;
 
-import jakarta.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 
@@ -90,7 +90,7 @@ import java.util.Collection;
  * @author Marc Sordi
  * @deprecated {@link InformationPackageProperties} fluent API
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class PDIDtoBuilder implements IOAISBuilder<PreservationDescriptionInformationDto> {
 
     private static final String CONTEXT_INFO_TAGS_KEY = "tags";

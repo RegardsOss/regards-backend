@@ -285,33 +285,4 @@ public class PluginParamDescriptor {
     public void setPluginType(String pluginType) {
         this.pluginType = pluginType;
     }
-
-    //    /**
-    //     * An enumeration with PRIMITIVE and PLUGIN defaultValue
-    //     * @author Christophe Mertz
-    //     */
-    //    public enum ParamType {
-    //
-    //        /**
-    //         * Parameter type {@link Map}
-    //         */
-    //        MAP,
-    //        /**
-    //         * Parameter type {@link java.util.Collection}
-    //         */
-    //        COLLECTION,
-    //        /**
-    //         * Object type (not parameterized)
-    //         */
-    //        OBJECT,
-    //        /**
-    //         * Parameter type primitif
-    //         */
-    //        PRIMITIVE,
-    //        /**
-    //         * Parameter type plugin
-    //         */
-    //        PLUGIN
-    //
-    //    }
 }

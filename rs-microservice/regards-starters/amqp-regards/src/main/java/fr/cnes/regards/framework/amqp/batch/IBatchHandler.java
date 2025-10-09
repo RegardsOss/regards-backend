@@ -40,9 +40,6 @@ import java.util.Optional;
  */
 public interface IBatchHandler<M> extends IHandler<M> {
 
-    /**
-     * Logger instance
-     */
     Logger LOGGER = LoggerFactory.getLogger(IBatchHandler.class);
 
     default void handleBatchAndLog(List<M> messages, List<Message> rawMessages) {
@@ -122,7 +119,7 @@ public interface IBatchHandler<M> extends IHandler<M> {
 
     /**
      * <b>CAUTION</b> : This method is not transactional. If you need a transaction, create it in your method
-     * * implementation.
+     * implementation.
      */
     void handleBatch(List<M> messages);
 

@@ -490,7 +490,7 @@ public class PluginService implements IPluginService, InitializingBean {
             getPlugin(businessId);
             return true;
         } catch (PluginUtilsRuntimeException e) {
-            LOGGER.warn(String.format("Plugin with configuration %s couldn't be instantiated", businessId), e);
+            LOGGER.error("Plugin with configuration {} couldn't be instantiated", businessId, e);
             return false;
         }
     }
@@ -534,7 +534,7 @@ public class PluginService implements IPluginService, InitializingBean {
     public <T> PluginAndPluginId<T> getPluginAndId(String businessId, IPluginParam... dynamicParameters)
         throws ModuleException {
         PluginConfiguration plgConf = getConfiguration(businessId);
-        return new PluginAndPluginId<T>(getPlugin(plgConf, dynamicParameters), plgConf.getPluginId());
+        return new PluginAndPluginId<>(getPlugin(plgConf, dynamicParameters), plgConf.getPluginId());
     }
 
     private PluginConfiguration getConfiguration(String businessId) throws EntityNotFoundException {
@@ -547,10 +547,9 @@ public class PluginService implements IPluginService, InitializingBean {
         }
         return plgConf;
     }
-    
+
     @Override
-    public <T> Optional<T> getOptionalPlugin(String businessId, IPluginParam... dynamicPluginParameters)
-        throws NotAvailablePluginConfigurationException {
+    public <T> Optional<T> getOptionalPlugin(String businessId, IPluginParam... dynamicPluginParameters) {
         Optional<T> plugin;
         try {
             plugin = Optional.of(getPlugin(businessId, dynamicPluginParameters));

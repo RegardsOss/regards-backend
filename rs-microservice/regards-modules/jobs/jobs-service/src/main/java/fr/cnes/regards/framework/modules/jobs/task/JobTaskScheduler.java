@@ -70,7 +70,7 @@ public class JobTaskScheduler extends AbstractTaskScheduler {
     @Autowired
     private ILockingTaskExecutors lockingTaskExecutors;
 
-    private final Task clean_task = () -> {
+    private final Task cleanTask = () -> {
         lockingTaskExecutors.assertLocked();
         jobInfoService.cleanDeadJobs();
     };
@@ -87,7 +87,7 @@ public class JobTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, DEAD_JOB_CLEANING);
-                lockingTaskExecutors.executeWithLock(clean_task,
+                lockingTaskExecutors.executeWithLock(cleanTask,
                                                      new LockConfiguration(Instant.now(),
                                                                            JOB_CLEAN_LOCK,
                                                                            Duration.ofSeconds(60),

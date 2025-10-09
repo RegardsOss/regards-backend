@@ -23,12 +23,12 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.oais.dto.*;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
-import jakarta.annotation.Nullable;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -61,6 +61,7 @@ import java.util.Collection;
  * @author Marc Sordi
  * @deprecated {@link InformationPackageProperties} fluent API instead
  */
+@Deprecated(forRemoval = true)
 public class IPBuilder<T extends AbstractInformationPackage<?>> implements IOAISBuilder<T> {
 
     public static final String MD5_ALGORITHM = "MD5";

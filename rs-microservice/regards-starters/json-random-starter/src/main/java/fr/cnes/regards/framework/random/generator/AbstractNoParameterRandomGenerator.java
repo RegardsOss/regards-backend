@@ -27,7 +27,7 @@ public abstract class AbstractNoParameterRandomGenerator<T> extends AbstractRand
     }
 
     @Override
-    public void parseParameters() {
+    public void parseParameters() { //NOSONAR An empty method in an abstract class should be abstract instead
         // Nothing to do
     }
 }

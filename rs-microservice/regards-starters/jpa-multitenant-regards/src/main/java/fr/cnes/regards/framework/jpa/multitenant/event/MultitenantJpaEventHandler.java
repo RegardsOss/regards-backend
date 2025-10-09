@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.lock.ILockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockService;
@@ -40,6 +41,8 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 
 import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Optional;
@@ -183,10 +186,11 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 lockService.registerLockRegistry(tenant, dataSource);
                 // Broadcast connection ready with a Spring event
                 localPublisher.publishConnectionReady(tenant);
-            } catch (Exception ex) {
-                LOGGER.error(String.format("Cannot handle tenant connection for project %s and microservice %s",
-                                           tenant,
-                                           eventMicroserviceName), ex);
+            } catch (RuntimeException | EncryptionException | PropertyVetoException | SQLException | IOException ex) {
+                LOGGER.error("Cannot handle tenant connection for project {} and microservice {}",
+                             tenant,
+                             eventMicroserviceName,
+                             ex);
                 updateConnectionState(tenant, TenantConnectionState.ERROR, Optional.ofNullable(ex.getMessage()));
             }
         }
@@ -196,9 +200,10 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
         try {
             multitenantResolver.updateState(databaseConnectionName, tenant, state, errorCause);
         } catch (JpaMultitenantException ex) {
-            LOGGER.error(String.format("Cannot update datasource for tenant %s and microservice %s. Update fails.",
-                                       tenant,
-                                       databaseConnectionName), ex);
+            LOGGER.error("Cannot update datasource for tenant {} and microservice {}. Update fails.",
+                         tenant,
+                         databaseConnectionName,
+                         ex);
         }
     }
 

@@ -25,6 +25,9 @@ package fr.cnes.regards.framework.amqp.utils;
  **/
 public class RoutingKeyUtils {
 
+    private RoutingKeyUtils() {
+    }
+
     /**
      * Build routing key from the application name and the request id
      */

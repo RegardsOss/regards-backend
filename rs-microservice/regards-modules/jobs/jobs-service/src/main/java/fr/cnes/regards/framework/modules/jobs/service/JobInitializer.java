@@ -30,19 +30,19 @@ public class JobInitializer {
      * During tests, {@link ApplicationReadyEvent} is received several times by this listener.
      * Avoid re-running initialization as it is not re-entering.
      */
-    private static AtomicReference<Future<Void>> jobManager = new AtomicReference<>();
+    private static AtomicReference<Future<Void>> JOB_MANAGER = new AtomicReference<>();
 
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent event) {
         // Ensure only one daemon is running at the same time
-        jobManager.getAndUpdate(this::createOrReplaceJobManager);
+        JOB_MANAGER.getAndUpdate(this::createOrReplaceJobManager);
     }
 
     /**
      * Designed to be used during test, kills the job manager task that pulls runnable jobs
      */
     public void killJobManager() {
-        jobManager.getAndUpdate(this::killJobManager);
+        JOB_MANAGER.getAndUpdate(this::killJobManager);
     }
 
     private Future<Void> killJobManager(Future<Void> existingJobManagerFuture) {

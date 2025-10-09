@@ -29,6 +29,7 @@ import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -81,8 +82,8 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S>, Ini
     ModuleInformation loadInformation() throws ModuleException {
         ModuleInformation info = new ModuleInformation();
         Properties properties = new Properties();
-        try {
-            properties.load(this.getClass().getResourceAsStream(PROPERTY_FILE));
+        try (InputStream is = this.getClass().getResourceAsStream(PROPERTY_FILE)) {
+            properties.load(is);
             info.setId(properties.getProperty("module.id"));
             info.setName(properties.getProperty("module.name"));
             info.setDescription(properties.getProperty("module.description"));
