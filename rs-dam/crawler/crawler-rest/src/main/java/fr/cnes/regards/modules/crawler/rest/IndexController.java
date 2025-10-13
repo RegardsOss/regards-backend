@@ -122,8 +122,7 @@ public class IndexController {
     @Operation(summary = "Check if a building index exists",
                description = "Returns true if a building index exists for the current tenant, false otherwise.")
     @GetMapping(INDEX_BUILDING)
-    @ResourceAccess(description = "Endpoint to indicate whether a building index exists",
-                    role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Endpoint to indicate whether a building index exists", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Boolean> hasBuilding() {
         String tenant = runtimeTenantResolver.getTenant();
         return ResponseEntity.ok(indexAliasResolver.resolveBuildingIndex(tenant).isPresent());
