@@ -30,9 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -175,22 +175,22 @@ public class V2_2_0__UnverifiedEmailsMigration extends BaseJavaMigration impleme
     @SuppressWarnings("java:S2221") // Difficult to catch a specific exception when calling feign
     private void resetAccount(UserAndToken user) {
         LOGGER.info("Resetting account {} to EMAIL_VERIFICATION", user.email());
-        String error = "Unable to update status on account " + user.email();
         try {
             FeignSecurityManager.asSystem();
             ResponseEntity<Void> linkResponse = accountsClient.resetEmailVerificationStatus(user.email(), user.token());
             if (linkResponse == null) {
                 throw new FlywayException("No response from resetEmailVerificationStatus endPoint");
             }
-            HttpStatusCode statusCode = linkResponse.getStatusCode();
-            if (!statusCode.is2xxSuccessful() && !statusCode.isSameCodeAs(HttpStatus.CONFLICT)) {
-                // Conflict (409) is OK. It just means that at least two projects have the same user in
-                // WAITING_EMAIL_VERIFICATION state. This has to be translated to the corresponding account only once.
+            // Don't bother checking the status code because feign throws an exception if it is not 2xx
+        } catch (HttpClientErrorException e) {
+            // Conflict (409) is OK. It just means that at least two projects have the same user in
+            // WAITING_EMAIL_VERIFICATION state. This has to be translated to the corresponding account only once.
+            if (!e.getStatusCode().isSameCodeAs(HttpStatus.CONFLICT)) {
                 throw new FlywayException(String.format("Unexpected response %s from resetEmailVerificationStatus "
-                                                        + "endPoint", statusCode));
+                                                        + "endPoint for user %s", e.getStatusCode(), user.email));
             }
         } catch (Exception e) {
-            throw new FlywayException(error, e);
+            throw new FlywayException("Unable to update status on account " + user.email(), e);
         } finally {
             FeignSecurityManager.reset();
         }
