@@ -15,6 +15,7 @@ This repository contains all sources for the following components:
 * JDK Eclipse Temurin v17.0.3+
 
 #### For docker images generations
+
 * Docker engine v27+ (https://docs.docker.com/engine/install/rhel/)
 
 ### Prerequisite tools
@@ -25,32 +26,43 @@ This repository contains all sources for the following components:
 
 ### Environment prerequisites
 
-#### For compilation, generation and unit testing 
-To compile, generate, and perform unit testing, a computer or virtual machine with the following specifications is required:
-* CPU : 64-bit with at least 4 threads, clocked at 2.5 GHz or higher (e.g., Intel Core i5 8th generation or equivalent) 
+#### For compilation, generation and unit testing
+
+To compile, generate, and perform unit testing, a computer or virtual machine with the following specifications is
+required:
+
+* CPU : 64-bit with at least 4 threads, clocked at 2.5 GHz or higher (e.g., Intel Core i5 8th generation or equivalent)
 * RAM : 12 GB or more
 * Disk space : 50 GB available
 * Operating System : Red Hat Enterprise Linux 8.x (64-bit)
 
 #### For integration testing
+
 For integration tests a computer or virtual machine with the following specifications is required:
-* CPU : 64-bit with at least 4 threads, clocked at 2.5 GHz or higher (e.g., Intel Core i5 8th generation or equivalent) 
+
+* CPU : 64-bit with at least 4 threads, clocked at 2.5 GHz or higher (e.g., Intel Core i5 8th generation or equivalent)
 * RAM : 16 GB or more
 * Disk space : 50 GB available
 * Operating System : Red Hat Enterprise Linux 8.x (64-bit)
 
 ### Maven Configuration
+
 #### Environment variables
+
 The following environment variables are required
- - `REGARDS_HOME`: Used by the compilation process to locate the source files.
- - `MAVEN_HOME`: Defines the Maven home directory for configuration and dependencies repository.
- - `REGARDS_DOCKER_IMAGE_TAG`: Tag used to generate the REGARDS Docker image (default: latest).
+
+- `REGARDS_HOME`: Used by the compilation process to locate the source files.
+- `MAVEN_HOME`: Defines the Maven home directory for configuration and dependencies repository.
+- `REGARDS_DOCKER_IMAGE_TAG`: Tag used to generate the REGARDS Docker image (default: latest).
 
 #### settings.xml
+
 The dependencies repository has to be configured in the .m2/settings.xml
+
 ```xml
+
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
     <localRepository>${MAVEN_HOME}/repository</localRepository>
     <interactiveMode>true</interactiveMode>
     <offline>false</offline>
@@ -58,20 +70,28 @@ The dependencies repository has to be configured in the .m2/settings.xml
 ``` 
 
 #### Profiles
+
 The Maven compilation profiles are:
- - `LT` : (LocalTest) Used to run maven integration tests with locally installed COTS. Access to COTS are configured in the LT.properties file
- - `RT` : (RemoteTest) Used to run maven integration tests with remote installed COTS. Access to COTS are configured in the RT.properties file
- - `CI` : (ContinuousIntegration) Used to run maven integration tests in Jenkins CI environement. Access to COTS are configured in the ${env.MAVEN_HOME}/conf/CI.properties file
- - `docker` : Used to generate microservice Docker images
- - `delivery` : Used to generate microservices executables JAR
+
+- `LT` : (LocalTest) Used to run maven integration tests with locally installed COTS. Access to COTS are configured in
+  the LT.properties file
+- `RT` : (RemoteTest) Used to run maven integration tests with remote installed COTS. Access to COTS are configured in
+  the RT.properties file
+- `CI` : (ContinuousIntegration) Used to run maven integration tests in Jenkins CI environement. Access to COTS are
+  configured in the ${env.MAVEN_HOME}/conf/CI.properties file
+- `docker` : Used to generate microservice Docker images
+- `delivery` : Used to generate microservices executables JAR
 
 #### Non central repository
-Some dependencies won't be found in the Maven central repository. You need to ensure that the depenencies are present in the used repository or to add the official external repositories. 
- - [GeoTools](https://docs.geotools.org/latest/userguide/tutorial/quickstart/maven.html)
- 
+
+Some dependencies won't be found in the Maven central repository. You need to ensure that the depenencies are present in
+the used repository or to add the official external repositories.
+
+- [GeoTools](https://docs.geotools.org/latest/userguide/tutorial/quickstart/maven.html)
+
 ## How to
 
-### Build the app locally 
+### Build the app locally
 
 ```bash
 cd <build_directory>
@@ -82,13 +102,21 @@ export MAVEN_HOME=<buil_directory>/maven
 mvn clean install -DskipTests -P delivery
 ```
 
-Compilation may take some time but can be shortened by using multithreaded compilation if your CPU supports it: 
+Compilation may take some time but can be shortened by using multithreaded compilation if your CPU supports it:
+
 ```bash
 mvn clean package -DskipTests delivery -T 4
 ```
 
+If you encounter memory issue during compilation, you may add the following option to the MAVEN_OPTS environment
+variable before launching the build:
+
+```bash
+MAVEN_OPTS="-Xmx3g"
+```
 
 #### Expected results
+
 Expected jars for version X.Y.Z are:
 
 - <build_directory>/regards-backend/rs-access/bootstrap-access-instance-light/target/bootstrap-access-instance-light-X.Y.Z.jar
@@ -124,13 +152,15 @@ Expected jars for version X.Y.Z are:
 All REGARDS microservices Docker images are based on the `regards-java-alpine` image.  
 This image is accessible through the REGARDS github docker registry: `ghcr.io/regardsoss`.
 
-If you want to use an alternate docker registry, you need to edit the root pom.xml to change the registry (the default being the regards official github package repository):
- - `docker.registry.host` : ghcr.io/regardsoss
+If you want to use an alternate docker registry, you need to edit the root pom.xml to change the registry (the default
+being the regards official github package repository):
 
+- `docker.registry.host` : ghcr.io/regardsoss
 
 #### Generation
 
-To generate the docker images, REGARDS uses the [maven jib plugin](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin).
+To generate the docker images, REGARDS uses
+the [maven jib plugin](https://github.com/GoogleContainerTools/jib/tree/master/jib-maven-plugin).
 
 ```bash
 cd <build_directory>
@@ -141,19 +171,22 @@ cd regards-backend
 mvn clean package jib:dockerBuild -P delivery,docker -B -Dfile.encoding=UTF-8 -Dmaven.test.skip -DimageTag=${REGARDS_DOCKER_IMAGE_TAG:=latest}
 ```
 
-Compilation may take some time but can be shortened by using multithreaded compilation if your CPU supports it: 
+Compilation may take some time but can be shortened by using multithreaded compilation if your CPU supports it:
+
 ```bash
 mvn clean package jib:dockerBuild -P delivery,docker -B -Dfile.encoding=UTF-8 -Dmaven.test.skip -DimageTag=${REGARDS_DOCKER_IMAGE_TAG:=latest} -T 4
 ```
 
-#### Expected results 
+#### Expected results
 
-You can list locally generated docker images with the following  commands:
+You can list locally generated docker images with the following commands:
+
 ```bash
 docker images --format "{{.Repository}}:{{.Tag}}" | egrep ".*/rs-.*:${REGARDS_DOCKER_IMAGE_TAG:=latest}$" | sort
 ```
 
-Expected results with `tag` = `REGARDS_DOCKER_IMAGE_TAG` or `latest` if no one is specified: 
+Expected results with `tag` = `REGARDS_DOCKER_IMAGE_TAG` or `latest` if no one is specified:
+
 - <docker.registry.host>/rs-access-instance:<tag>
 - <docker.registry.host>/rs-access-instance-light:<tag>
 - <docker.registry.host>/rs-access-project:<tag>
@@ -180,7 +213,6 @@ Expected results with `tag` = `REGARDS_DOCKER_IMAGE_TAG` or `latest` if no one i
 - <docker.registry.host>/rs-storage:<tag>
 - <docker.registry.host>/rs-worker-manager:<tag>
 
-
 #### Push image to your docker repository
 
 ```bash
@@ -193,7 +225,8 @@ docker push <your own docker registry host>:${REGARDS_DOCKER_IMAGE_TAG:=latest}
 
 ### Unit test
 
-There are no prerequisites to run REGARDS unit tests. Once compiled you can run the tests with the command: 
+There are no prerequisites to run REGARDS unit tests. Once compiled you can run the tests with the command:
+
 ```bash
 cd <build_directory>/regards-backend
 mvn test
@@ -202,15 +235,17 @@ mvn test
 ### Integration tests
 
 The 4 following COTS are required to run REGARDS Integration tests:
- - Postgres
- - Elasticsearch
- - Rabbitmq
- - MinIO
+
+- Postgres
+- Elasticsearch
+- Rabbitmq
+- MinIO
 
 Depending on the tests you want to run, all cots may not be required.
-Access to these 4 COTS are configured in LT.properties, RT.properties or CI.properties files depending on which profile is used (LT, RT or CI).
+Access to these 4 COTS are configured in LT.properties, RT.properties or CI.properties files depending on which profile
+is used (LT, RT or CI).
 
-This file should contain: 
+This file should contain:
 
 ```properties
 # Variables for REGARDS Integration test
@@ -238,14 +273,20 @@ regards.IT.minio.port=<MinIO server port>
 regards.IT.minio.protocol=http
 ```
 
-**Note :** The `regards.IT.postgres.database` variable is set `to rs_testdb_tux` for local tests as the local docker container initializes this database at startup in `regards-ci/docker/postgres.init.ql`. This variable should be changed if you're using shared remote COTS as defined in the RT.properties file.
+**Note :** The `regards.IT.postgres.database` variable is set `to rs_testdb_tux` for local tests as the local docker
+container initializes this database at startup in `regards-ci/docker/postgres.init.ql`. This variable should be changed
+if you're using shared remote COTS as defined in the RT.properties file.
 
-To use the LT profile and deploy those 4 COTS on a local environement you can use the local docker compose file with the command: 
+To use the LT profile and deploy those 4 COTS on a local environement you can use the local docker compose file with the
+command:
+
 ```bash
 cd <build_directory>
 docker compose -f regards-ci/docker-compose-cots-local.yml up -d
 ```
-Expected results: 
+
+Expected results:
+
 ```bash
  ✔ Network regards_IT_network           Created
  ✔ Container docker-rs-elasticsearch-1  Started
@@ -255,17 +296,20 @@ Expected results:
 ```
 
 Then you can run maven integration test with the here under command:
+
 ```bash
 mvn -P LT integration-test
 ```
 
-To stop the running COTS you can use the following command: 
+To stop the running COTS you can use the following command:
 
 ```bash
 cd <build_directory>
 docker compose -f regards-ci/docker-compose-cots-local.yml down
 ```
-Expected results: 
+
+Expected results:
+
 ```bash
  ✔ Container docker-rs-rabbitmq-1       Removed
  ✔ Container docker-rs-postgres-1       Removed
@@ -274,49 +318,54 @@ Expected results:
  ✔ Network regards_IT_network           Removed
 ```
 
-
 # Sources
 
 *Classified by alphabetical order*
 
 - regards-ci: This module contains all configuration files and scripts for Jenkins CI/CD.
-- rs-access: This module contains all sources for access-project and access-instance microservices. Those microservices handle the UI access to projects and the project management instance.
- [Check out the doc of access-project](https://regardsoss.github.io/docs/development/services/access-project/overview) and [access-instance](https://regardsoss.github.io/docs/development/services/access-instance/overview).
-- rs-admin: This module contains all sources for administration and instance administration microservices. Those microservices handle mainly users and access rights.
- [Check out the doc!](https://regardsoss.github.io/docs/development/services/admin/overview).
+- rs-access: This module contains all sources for access-project and access-instance microservices. Those microservices
+  handle the UI access to projects and the project management instance.
+  [Check out the doc of access-project](https://regardsoss.github.io/docs/development/services/access-project/overview)
+  and [access-instance](https://regardsoss.github.io/docs/development/services/access-instance/overview).
+- rs-admin: This module contains all sources for administration and instance administration microservices. Those
+  microservices handle mainly users and access rights.
+  [Check out the doc!](https://regardsoss.github.io/docs/development/services/admin/overview).
 - rs-bom: This module contains Maven build of materials.
 - rs-catalog: The Catalog microservice handles the search engine to consult REGARDS catalog.
- [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/catalog/overview).
-- rs-cloud: This module contains REGARDS microservices that handle cloud communication between microservices (Config, Authentication, and Registry).
- [Check out the doc of config](https://regardsoss.github.io/docs/development/backend/services/config/overview), [authentication](https://regardsoss.github.io/docs/development/backend/services/authentication/overview), and [Registry](https://regardsoss.github.io/docs/development/backend/services/registry/overview).
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/catalog/overview).
+- rs-cloud: This module contains REGARDS microservices that handle cloud communication between microservices (Config,
+  Authentication, and Registry).
+  [Check out the doc of config](https://regardsoss.github.io/docs/development/backend/services/config/overview), [authentication](https://regardsoss.github.io/docs/development/backend/services/authentication/overview),
+  and [Registry](https://regardsoss.github.io/docs/development/backend/services/registry/overview).
 - rs-dam: The Data Management microservice handles REGARDS catalog construction with data models and data crawlers.
- [Check out the doc!](https://regardsoss.github.io/docs/development/services/dam/overview).
+  [Check out the doc!](https://regardsoss.github.io/docs/development/services/dam/overview).
 - rs-dataprovider: The Data provider microservice generates products from scanned files on the file system.
- [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/dataprovider/overview).
-- rs-delivery: The Delivery microservice allows users to order products and retrieve these ordered files on a provided storage location.
- [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/delivery/overview).
-- rs-file-access: The File Access microservice handle the physical storage and access of files. 
-[Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/file-access/overview)
-- rs-file-catalog: The File Catalog microservice catalog all the stored and referenced files. 
-[Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/file-catalog/overview)
-- rs-file-packager: The File Packager microservice package files into archives before they are stored. 
-[Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/file-packager/overview)
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/dataprovider/overview).
+- rs-delivery: The Delivery microservice allows users to order products and retrieve these ordered files on a provided
+  storage location.
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/delivery/overview).
+- rs-file-access: The File Access microservice handle the physical storage and access of files.
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/file-access/overview)
+- rs-file-catalog: The File Catalog microservice catalog all the stored and referenced files.
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/file-catalog/overview)
+- rs-file-packager: The File Packager microservice package files into archives before they are stored.
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/file-packager/overview)
 - rs-fem: The Feature manager microservice allows generating products from standard GeoJson features.
- [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/fem/overview).
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/fem/overview).
 - rs-ingest: The Ingest microservice generates products with OAIS recommendation.
- [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/ingest/overview).
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/ingest/overview).
 - rs-lta-manager: The LTA Manager microservice is an interface to generate products for long-term archival.
- [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/lta-manager/overview).
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/lta-manager/overview).
 - rs-microservice: This module contains all sources for REGARDS framework used by the different microservices.
- [Check out the doc!](https://regardsoss.github.io/docs/development/backend/framework/getting-started).
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/framework/getting-started).
 - rs-notifier: The Notifier microservice is responsible for broadcasting messages to configured recipients.
- [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/notifier/overview).
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/notifier/overview).
 - rs-order: The Order microservice prepares orders of files and allows users to download them.
- [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/order/overview).
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/order/overview).
 - rs-processing: The Processing microservice applies treatments to ordered files before they are served to the user.
- [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/processing/overview).
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/processing/overview).
 - rs-storage: The Storage microservice handles storage and access to all files associated with a catalog of products.
- [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/storage/overview).
+  [Check out the doc!](https://regardsoss.github.io/docs/development/backend/services/storage/overview).
 - rs-vendors: This module contains external code needed by the different microservices.
 - rs-worker-manager: The Worker Manager is an interface between the REGARDS microservices and the REGARDS workers.
- [Check out the doc!](https://regardsoss.github.io/docs/development/services/worker-manager/overview).
+  [Check out the doc!](https://regardsoss.github.io/docs/development/services/worker-manager/overview).
