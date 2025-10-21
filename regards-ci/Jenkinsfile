@@ -49,6 +49,7 @@ pipeline {
         booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip tests')
         booleanParam(name: 'SONAR_ANALYSE', defaultValue: false, description: 'Run sonar analyse')
         booleanParam(name: 'STOP_BUILD_ON_TEST_ERROR', defaultValue: true, description: 'Stop the build when some microservice test fails')
+        string(name: 'RETRY_COUNT', defaultValue: '2', description: 'Number of tries on test error')
     }
     agent { label 'unix-integration' }
     stages {
@@ -377,10 +378,14 @@ def runMavenDockerImgWithoutCoTS(taskMainLabel, mode) {
 def runMavenDockerImg(mode, regardsMs, failOnError, useParallelOne) {
     def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and first RabbitMQ?=[" + useParallelOne + "]"
     if(failOnError){
-        runMavenDockerImg(label, mode, regardsMs, regardsMs, 2, true, useParallelOne)
+        retry(params.RETRY_COUNT as Integer) {
+            runMavenDockerImg(label, mode, regardsMs, regardsMs, 2, true, useParallelOne)
+        }
     } else {
         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-            runMavenDockerImg(label, mode, regardsMs, regardsMs, 2, true, useParallelOne)
+            retry(params.RETRY_COUNT as Integer) {
+                runMavenDockerImg(label, mode, regardsMs, regardsMs, 2, true, useParallelOne)
+            }
         }
     }
 }

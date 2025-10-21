@@ -279,12 +279,13 @@ pipeline {
 // @params isRabbitMqIdFirst should use the first rabbitMQ
 @NonCPS
 def runMavenDockerImg(label, mode, containerName, regardsMs, nbMaxCpu, isRequiringCots, isRabbitMqIdFirst) {
-    // Transform PROJECT_NAME to what Docker will use for CoTS names
-    // regards-oss-backend/feature%2Fimprove_jenkins_stages-31
-    // become
-    // regardsossbackendfeature2fimprovejenkinsstages31
-    def dockerProject = PROJECT_NAME.replaceAll("[^a-zA-Z0-9]", "").toLowerCase()
-    def dockerCommand = 'docker run --rm -i  --cpus=' + nbMaxCpu + '                                           \
+    retry(2) {
+        // Transform PROJECT_NAME to what Docker will use for CoTS names
+        // regards-oss-backend/feature%2Fimprove_jenkins_stages-31
+        // become
+        // regardsossbackendfeature2fimprovejenkinsstages31
+        def dockerProject = PROJECT_NAME.replaceAll("[^a-zA-Z0-9]", "").toLowerCase()
+        def dockerCommand = 'docker run --rm -i  --cpus=' + nbMaxCpu + '                                           \
                         --name ' + dockerProject + '_maven_' + regardsMs + '                                   \
                         -v ${WORKSPACE}:/app_to_build                                                          \
                         -v /DATA/maven-multibranch-repository:/localRepository                                 \
@@ -298,17 +299,18 @@ def runMavenDockerImg(label, mode, containerName, regardsMs, nbMaxCpu, isRequiri
                         -e MODE="' + mode + '"                                                                 \
                         -e REGARDS_HOME="${REGARDS_HOME}"                                                      \
                         -e REGARDS_MS="' + regardsMs + '"                                                      '
-    if (isRequiringCots) {
-        def rabbitMqId = isRabbitMqIdFirst ? 'first' : 'second'
-        dockerCommand += '-e COTS="rs-elasticsearch:9300 rs-rabbitmq:5672 rs-postgres:5432 rs-minio:9000"   \
+        if (isRequiringCots) {
+            def rabbitMqId = isRabbitMqIdFirst ? 'first' : 'second'
+            dockerCommand += '-e COTS="rs-elasticsearch:9300 rs-rabbitmq:5672 rs-postgres:5432 rs-minio:9000"   \
                          --link ' + dockerProject + '_rs-rabbitmq-' + rabbitMqId + '_1:rs-rabbitmq             \
                          --link ' + dockerProject + '_rs-elasticsearch_1:rs-elasticsearch                      \
                          --link ' + dockerProject + '_rs-minio_1:rs-minio                                \
                          --link ' + dockerProject + '_rs-postgres_1:rs-postgres                                '
-    }
-    dockerCommand += ' --network="regards_IT_network"                                                       \
+        }
+        dockerCommand += ' --network="regards_IT_network"                                                       \
                         ' + MVN_IMAGE
-    sh script: dockerCommand, label: label
+        sh script: dockerCommand, label: label
+    }
 }
 
 // Use it when you don't need any COTS
