@@ -69,6 +69,8 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
 
     public static final String SLICE_PATH = "/slice";
 
+    public static final String SLICE_LIGHT_PATH = SLICE_PATH + "/light";
+
     public static final String NOTIFY_PATH = "/notify";
 
     public static final String DELETE_PATH = "/delete";
@@ -104,12 +106,9 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
                                     HttpStatus.OK);
     }
 
-    /**
-     * Get a {@link Slice} of {@link FeatureEntityRawDto} matching provided {@link SearchFeatureSimpleEntityParameters}
-     * filters
-     */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, path = SLICE_PATH)
-    @Operation(summary = "Get features", description = "Return a slice of features matching criteria.")
+    @Operation(summary = "Get features",
+               description = "Return a slice of features matching criteria. Optionally exclude dissemination info.")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All features were retrieved.") })
     @ResourceAccess(description = "Endpoint to retrieve features matching criteria", role = DefaultRole.EXPLOIT)
     public ResponseEntity<SlicedModel<EntityModel<FeatureEntityRawDto>>> searchFeaturesSlice(
@@ -118,9 +117,14 @@ public class FeatureEntityController implements IResourceController<FeatureEntit
         @Parameter(description = "Filter criteria for features") @RequestBody
         SearchFeatureSimpleEntityParameters filters,
         @PageableQueryParam @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        @Parameter(hidden = true) SlicedResourcesAssembler<FeatureEntityRawDto> assembler) {
-        return new ResponseEntity<>(toSlicedResources(featureService.findAllSlice(filters, pageable), assembler),
-                                    HttpStatus.OK);
+        @Parameter(hidden = true) SlicedResourcesAssembler<FeatureEntityRawDto> assembler,
+        @RequestParam(name = "includeDisseminationInfo", defaultValue = "true") boolean includeDisseminationInfo) {
+
+        Slice<FeatureEntityRawDto> slice = includeDisseminationInfo ?
+            featureService.findAllSlice(filters, pageable) :
+            featureService.findAllSliceWithoutDisseminationInfo(filters, pageable);
+
+        return new ResponseEntity<>(toSlicedResources(slice, assembler), HttpStatus.OK);
     }
 
     @Operation(summary = "Retrieve one feature by its urn", description = "Retrieve one feature by its urn")

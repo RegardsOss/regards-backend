@@ -149,6 +149,7 @@ public class IFeatureEntityClientIT extends AbstractRegardsWebIT {
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         List<FeatureEntityDto> body = HateoasUtils.unwrapCollection(Objects.requireNonNull(response.getBody())
                                                                            .getContent());
+        Assert.assertEquals(body.size(), 2);
         Assert.assertEquals("first should be featureEntity1, actual is " + body.get(0).getProviderId(),
                             toDto(featureEntity1),
                             body.get(0));
@@ -231,6 +232,7 @@ public class IFeatureEntityClientIT extends AbstractRegardsWebIT {
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         List<FeatureEntityDto> body = HateoasUtils.unwrapCollection(Objects.requireNonNull(response.getBody())
                                                                            .getContent());
+        Assert.assertEquals(body.size(), 2);
         Assert.assertEquals("first should be featureEntity1, actual is " + body.get(0).getProviderId(),
                             toDto(featureEntity1),
                             body.get(0));
@@ -282,23 +284,100 @@ public class IFeatureEntityClientIT extends AbstractRegardsWebIT {
                                                                                                   0,
                                                                                                   1,
                                                                                                   Sort.by("sessionOwner",
-                                                                                                          "model"));
+                                                                                                          "model"),
+                                                                                                  true);
+
+        // THEN the first created features are returned, and has next link exists
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        List<FeatureEntityDto> body = HateoasUtils.unwrapCollection(Objects.requireNonNull(response.getBody())
+                                                                           .getContent());
+        Assert.assertEquals(1, body.size());
+        FeatureEntityDto actualFeature1 = body.get(0);
+        Assert.assertEquals("first should be featureEntity1, actual is " + actualFeature1.getProviderId(),
+                            toDto(featureEntity1),
+                            actualFeature1);
+        Assert.assertTrue(response.getBody().getNextLink().isPresent());
+
+        // WHEN find all slice for 2 element is called
+        response = client.findAllSlice("model", OffsetDateTime.now().minusDays(2), null,
+                                       //to get what was just created
+                                       0, 2, Sort.by("sessionOwner", "model"), true);
+
+        // THEN the second created feature is returned, and has next link does not exist
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        body = HateoasUtils.unwrapCollection(Objects.requireNonNull(response.getBody()).getContent());
+        // slice
+        Assert.assertEquals(2, body.size());
+        FeatureEntityDto actualFeature2 = body.get(1);
+        Assert.assertEquals("Second should be featureEntity2, actual is " + actualFeature2.getProviderId(),
+                            toDto(featureEntity2),
+                            actualFeature2);
+
+        Assert.assertFalse(response.getBody().getNextLink().isPresent());
+    }
+
+    @Test
+    public void test_find_all_slice_light() {
+        // GIVEN 2 features stored in bd
+        FeatureUniformResourceName urn = FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                                          EntityType.DATA,
+                                                                          getDefaultTenant(),
+                                                                          UUID.randomUUID(),
+                                                                          1);
+        Feature feature = Feature.build("featureEntity1",
+                                        "owner",
+                                        urn,
+                                        IGeometry.unlocated(),
+                                        EntityType.DATA,
+                                        "model");
+        FeatureEntity featureEntity1 = FeatureEntity.build("sessionOwner", "session", feature, null, "model");
+        featureEntity1.getDisseminationsInfo()
+                      .add(new FeatureDisseminationInfo(new FeatureUpdateDisseminationRequest(urn,
+                                                                                              "recipient",
+                                                                                              FeatureUpdateDisseminationInfoType.ACK,
+                                                                                              OffsetDateTime.now())));
+        featureEntity1 = featureEntityRepository.save(featureEntity1);
+
+        urn = FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                               EntityType.DATA,
+                                               getDefaultTenant(),
+                                               UUID.randomUUID(),
+                                               1);
+        feature = Feature.build("featureEntity2", "owner2", urn, IGeometry.unlocated(), EntityType.DATA, "model");
+        FeatureEntity featureEntity2 = featureEntityRepository.save(FeatureEntity.build("sessionOwner2",
+                                                                                        "session2",
+                                                                                        feature,
+                                                                                        null,
+                                                                                        "model"));
+        // WHEN find all slice for 1 element is called
+        ResponseEntity<SlicedModel<EntityModel<FeatureEntityDto>>> response = client.findAllSlice("model",
+                                                                                                  OffsetDateTime.now()
+                                                                                                                .minusDays(
+                                                                                                                    2),
+                                                                                                  null,
+                                                                                                  //to get what was just created
+                                                                                                  0,
+                                                                                                  1,
+                                                                                                  Sort.by("sessionOwner",
+                                                                                                          "model"),
+                                                                                                  false);
 
         // THEN the first created features are returned, and has next link exists
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         List<FeatureEntityDto> body = HateoasUtils.unwrapCollection(Objects.requireNonNull(response.getBody())
                                                                            .getContent());
         featureEntity1.setDisseminationsInfo(Set.of()); // Simulate that the dissemination info are not returned in slice
-        Assert.assertEquals("first should be featureEntity1, actual is " + body.get(0).getProviderId(),
-                            toDto(featureEntity1),
-                            body.get(0));
         Assert.assertEquals(1, body.size());
+        FeatureEntityDto actualFeature = body.get(0);
+        Assert.assertEquals("first should be featureEntity1, actual is " + actualFeature.getProviderId(),
+                            toDto(featureEntity1),
+                            actualFeature);
         Assert.assertTrue(response.getBody().getNextLink().isPresent());
 
         // WHEN find all slice for 2 element is called
         response = client.findAllSlice("model", OffsetDateTime.now().minusDays(2), null,
                                        //to get what was just created
-                                       0, 2, Sort.by("sessionOwner", "model"));
+                                       0, 2, Sort.by("sessionOwner", "model"), false);
 
         // THEN the second created feature is returned, and has next link does not exist
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());

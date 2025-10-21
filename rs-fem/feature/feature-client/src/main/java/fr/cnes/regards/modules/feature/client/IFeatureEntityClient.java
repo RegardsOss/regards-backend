@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.feature.client;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityRawDto;
 import jakarta.annotation.Nullable;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +33,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.OffsetDateTime;
 
@@ -71,11 +71,12 @@ public interface IFeatureEntityClient {
 
     @PostMapping(path = PATH_DATA_FEATURE_SLICE, consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<SlicedModel<EntityModel<FeatureEntityDto>>> findAllSlice(
-        @RequestBody SearchFeatureSimpleEntityParameters filters, @SpringQueryMap Pageable pageable);
+        @RequestBody SearchFeatureSimpleEntityParameters filters,
+        @SpringQueryMap Pageable pageable,
+        @RequestParam(name = "includeDisseminationInfo", defaultValue = "true") boolean includeDisseminationInfo);
 
     /**
-     * Return a Slice of FeatureEntityDto without dissemination information, without deserialize the feature.
-     * {@link FeatureEntityDto} and {@link FeatureEntityRawDto} are the same object at client level
+     * Return a Slice of FeatureEntityDto with an option to include or exclude dissemination information.
      */
     default ResponseEntity<SlicedModel<EntityModel<FeatureEntityDto>>> findAllSlice(String model,
                                                                                     @org.springframework.lang.Nullable
@@ -84,12 +85,13 @@ public interface IFeatureEntityClient {
                                                                                     OffsetDateTime lastUpdateDateBefore,
                                                                                     int page,
                                                                                     int size,
-                                                                                    Sort sort) {
+                                                                                    Sort sort,
+                                                                                    boolean includeDisseminationInfo) {
         SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withModel(model)
                                                                                                .withLastUpdateAfter(
                                                                                                    lastUpdateDateAfter)
                                                                                                .withLastUpdateBefore(
                                                                                                    lastUpdateDateBefore);
-        return findAllSlice(filters, PageRequest.of(page, size, sort));
+        return findAllSlice(filters, PageRequest.of(page, size, sort), includeDisseminationInfo);
     }
 }

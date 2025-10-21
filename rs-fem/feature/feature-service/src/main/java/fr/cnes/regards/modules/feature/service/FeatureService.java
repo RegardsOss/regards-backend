@@ -149,8 +149,24 @@ public class FeatureService implements IFeatureService {
     public Slice<FeatureEntityRawDto> findAllSlice(SearchFeatureSimpleEntityParameters filters, Pageable pageable) {
         Slice<FeatureSimpleRawEntity> response = featureSliceRepository.findMore(new FeatureSimpleRawEntitySpecificationBuilder().withParameters(
             filters).build(), pageable);
+        Set<Long> ids = response.stream().map(FeatureSimpleRawEntity::getId).collect(Collectors.toSet());
+        List<FeatureRawEntity> featureEntities = featureRawEntityRepository.findByIdInWithDisseminationsInfo(ids,
+                                                                                                             response.getSort());
+        List<FeatureEntityRawDto> dtos = featureEntities.stream().map(FeatureRawEntity::toDto).toList();
+        return new SliceImpl<>(dtos,
+                               PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()),
+                               response.hasNext());
+    }
+
+    @Override
+    public Slice<FeatureEntityRawDto> findAllSliceWithoutDisseminationInfo(SearchFeatureSimpleEntityParameters filters,
+                                                                           Pageable pageable) {
+        Slice<FeatureSimpleRawEntity> response = featureSliceRepository.findMore(new FeatureSimpleRawEntitySpecificationBuilder().withParameters(
+            filters).build(), pageable);
         List<FeatureEntityRawDto> dtos = response.getContent().stream().map(FeatureSimpleRawEntity::toDto).toList();
-        return new SliceImpl<>(dtos, PageRequest.of(0, pageable.getPageSize()), response.hasNext());
+        return new SliceImpl<>(dtos,
+                               PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()),
+                               response.hasNext());
     }
 
     @Override

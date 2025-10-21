@@ -217,7 +217,7 @@ public class AIPService implements IAIPService {
         Page<AIPEntityLight> response = aipLigthRepository.findAll(new AIPLightSpecificationsBuilder().withParameters(
             filters).build(), pageable);
         List<AIPEntityLightRawDto> dtos = response.getContent().stream().map(AIPEntityLight::toRawDto).toList();
-        LOGGER.debug("{} AIPS found in  {}ms", response.getSize(), System.currentTimeMillis() - start);
+        LOGGER.debug("{} light AIPS found in  {}ms", response.getSize(), System.currentTimeMillis() - start);
         return new PageImpl<>(dtos, pageable, response.getTotalElements());
     }
 
@@ -229,7 +229,7 @@ public class AIPService implements IAIPService {
             filters).build(), pageable);
         List<AIPEntityLightRawDto> dtos = response.getContent().stream().map(AIPEntityLight::toRawDto).toList();
         LOGGER.debug("{} AIPS found in  {}ms", response.getSize(), System.currentTimeMillis() - start);
-        return new SliceImpl<>(dtos, PageRequest.of(0, pageable.getPageSize()), response.hasNext());
+        return new SliceImpl<>(dtos, pageable, response.hasNext());
     }
 
     @Override

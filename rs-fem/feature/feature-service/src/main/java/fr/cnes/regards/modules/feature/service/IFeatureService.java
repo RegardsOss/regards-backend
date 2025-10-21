@@ -63,6 +63,14 @@ public interface IFeatureService {
     Slice<FeatureEntityRawDto> findAllSlice(SearchFeatureSimpleEntityParameters filters, Pageable pageable);
 
     /**
+     * Retrieve a slice of {@link FeatureEntityRawDto}s matching filters with no dissemination info.
+     *
+     * @return slice of light AIPs
+     */
+    Slice<FeatureEntityRawDto> findAllSliceWithoutDisseminationInfo(SearchFeatureSimpleEntityParameters filters,
+                                                                    Pageable pageable);
+
+    /**
      * Get a {@link FeatureEntityRawDto} by its urn
      *
      * @param urn {@link FeatureUniformResourceName}
