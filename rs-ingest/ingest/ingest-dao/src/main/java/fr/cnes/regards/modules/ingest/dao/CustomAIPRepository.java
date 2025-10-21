@@ -25,6 +25,7 @@ import jakarta.persistence.Query;
 import jakarta.persistence.TemporalType;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,10 @@ public class CustomAIPRepository implements ICustomAIPRepository {
             q.setParameter(paramKey, dateParams.get(paramKey), TemporalType.TIMESTAMP);
         }
         @SuppressWarnings("unchecked") List<String> resultList = q.getResultList();
+
+        // Remove null from the list
+        resultList.removeAll(Collections.singleton(null));
+
         return resultList;
     }
 }

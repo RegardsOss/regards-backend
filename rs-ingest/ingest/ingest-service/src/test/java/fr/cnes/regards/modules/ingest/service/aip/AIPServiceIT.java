@@ -45,7 +45,10 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
@@ -53,6 +56,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sipflow",
                                    "spring.jpa.show-sql=false",
@@ -131,7 +136,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         aipService.downloadAIP(aip.getAipIdUrn(), response);
         response.getOutputStream().flush();
 
-        OutputStreamWriter fstream = new OutputStreamWriter(new FileOutputStream(new File("target/aip.json")),
+        OutputStreamWriter fstream = new OutputStreamWriter(new FileOutputStream("target/aip.json"),
                                                             StandardCharsets.UTF_8);
 
         String aipFileContent = response.getContentAsString();
@@ -140,7 +145,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         fstream.close();
 
         String cs = aipService.calculateChecksum(aip.getAip());
-        String calculatedCs = ChecksumUtils.computeHexChecksum(new FileInputStream(new File("target/aip.json")), "MD5");
+        String calculatedCs = ChecksumUtils.computeHexChecksum(new FileInputStream("target/aip.json"), "MD5");
 
         Assert.assertNotNull(cs);
         Assert.assertNotNull(calculatedCs);
@@ -158,7 +163,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
                     @Requirement("REGARDS_DSL_STO_AIP_120"),
                     @Requirement("REGARDS_DSL_STO_AIP_560") })
     @Purpose("Check that ingested AIPs are retrievable")
-    public void testSearchAIPEntity() throws InterruptedException {
+    public void testSearchAIPEntity() {
         // Given
         storageClient.setBehavior(true, true);
         long nbSIP = 7;
@@ -272,7 +277,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
     }
 
     @Test
-    public void testOtherSearchEndpoints() throws InterruptedException {
+    public void testOtherSearchEndpoints() {
         storageClient.setBehavior(true, true);
         long nbSIP = 7;
         publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
@@ -355,7 +360,28 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
     }
 
     @Test
-    public void testSearchAIPEntityWithDisseminationInfos() throws InterruptedException {
+    public void testSearchAIPEntityWithNullCategory() {
+        // Given
+        storageClient.setBehavior(true, true);
+        long nbSIP = 6;
+        publishSIPEvent(create("provider 1", TAG_1), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORY_0);
+        publishSIPEvent(create("provider 2", TAG_1), STORAGE_0, SESSION_0, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create("provider 3", TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0, null);
+        publishSIPEvent(create("provider 4", TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1, CATEGORY_1);
+        publishSIPEvent(create("provider 5", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1, CATEGORY_2);
+        publishSIPEvent(create("provider 6", TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_0, null);
+        // Wait for ingestion to finish
+        ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED, getDefaultTenant());
+
+        // When
+        List<String> results = aipService.findCategories(new SearchAIPsParameters());
+
+        // Then the search returns 3 different categories among aips, null is not returned
+        assertThat(results).containsExactlyInAnyOrder(CATEGORY_0, CATEGORY_1, CATEGORY_2);
+    }
+
+    @Test
+    public void testSearchAIPEntityWithDisseminationInfos() {
         // Given
         storageClient.setBehavior(true, true);
         long nbSIP = 7;
