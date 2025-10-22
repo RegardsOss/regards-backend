@@ -250,7 +250,7 @@ public class FileRestoreServiceTest {
         dataFile.setOnline(false);
         dataFile.setUri("file:///test/" + file);
         dataFile.setFilename(file);
-        dataFile.setFilesize(10L);
+        dataFile.setFilesizeAsLong(10L);
         dataFile.setReference(false);
         try {
             dataFile.setChecksum(ChecksumUtils.computeHexChecksum(file, "MD5"));

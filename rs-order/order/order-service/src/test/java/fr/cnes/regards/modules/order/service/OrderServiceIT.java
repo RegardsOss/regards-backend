@@ -428,7 +428,7 @@ public class OrderServiceIT {
         dataFile1.setDataType(DataType.RAWDATA);
         dataFile1.setMimeType(MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM.toString()));
         dataFile1.setOnline(true);
-        dataFile1.setFilesize(1_000_000L);
+        dataFile1.setFilesizeAsLong(1_000_000L);
         dataFile1.setFilename("tutu");
         dataFile1.setReference(false);
         OrderDataFile df1 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId(), PRODUCT_ID, 1);
@@ -441,7 +441,7 @@ public class OrderServiceIT {
         DataFile dataFile2 = new DataFile();
         dataFile2.setUri(new URI("staff://toto2/titi2/tutu2").toString());
         dataFile2.setOnline(false);
-        dataFile2.setFilesize(1L);
+        dataFile2.setFilesizeAsLong(1L);
         dataFile2.setFilename("tutu2");
         dataFile2.setReference(false);
         dataFile2.setMimeType(MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM.toString()));

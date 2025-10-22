@@ -155,8 +155,8 @@ public class AttachmentController {
         }
         // NOTE : Do not set content type after download. It can be ignored.
         response.setContentType(dataFile.getMimeType().toString());
-        if (dataFile.getFilesize() != null) {
-            response.setContentLengthLong(dataFile.getFilesize());
+        if (dataFile.getFilesizeAsLong() != null) {
+            response.setContentLengthLong(dataFile.getFilesizeAsLong());
         }
         try {
             getEntityService(urn).downloadFile(urn, checksum, response.getOutputStream());

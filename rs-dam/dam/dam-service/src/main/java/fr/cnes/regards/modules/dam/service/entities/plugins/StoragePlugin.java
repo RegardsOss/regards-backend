@@ -192,7 +192,7 @@ public class StoragePlugin implements IStorageService {
                                            new FileReferenceMetaInfoDto(file.getChecksum(),
                                                                         file.getDigestAlgorithm(),
                                                                         file.getFilename(),
-                                                                        file.getFilesize(),
+                                                                        file.getFilesizeAsLong(),
                                                                         null,
                                                                         null,
                                                                         file.getMimeType().toString(),

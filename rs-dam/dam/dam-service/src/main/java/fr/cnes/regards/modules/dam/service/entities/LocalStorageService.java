@@ -113,7 +113,7 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
                                                            MimeType.valueOf(file.getContentType()),
                                                            Boolean.TRUE,
                                                            Boolean.FALSE);
-                        dataFile.setFilesize(file.getSize());
+                        dataFile.setFilesizeAsLong(file.getSize());
                         dataFile.setDigestAlgorithm(DIGEST_ALGORITHM);
                         dataFile.setChecksum(checksum);
                         dataFile.setFilename(file.getOriginalFilename());
@@ -250,7 +250,7 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
                     // Build data file
                     dataFile.setReference(Boolean.FALSE);
                     // update file uri
-                    dataFile.setFilesize(Files.size(file.toPath()));
+                    dataFile.setFilesizeAsLong(Files.size(file.toPath()));
                     dataFile.setDigestAlgorithm(DIGEST_ALGORITHM);
                     dataFile.setChecksum(ChecksumUtils.computeHexChecksum(file.toPath(), DIGEST_ALGORITHM));
                     docFiles.add(dataFile);

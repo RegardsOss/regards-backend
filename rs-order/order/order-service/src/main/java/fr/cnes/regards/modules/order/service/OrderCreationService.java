@@ -464,7 +464,7 @@ public class OrderCreationService implements IOrderCreationService {
                                                 Set<OrderDataFile> storageBucketFiles,
                                                 DataFile dataFile,
                                                 EntityFeature feature) {
-        if (dataFile.getFilesize() != null) {
+        if (dataFile.getFilesizeAsLong() != null) {
             OrderDataFile orderDataFile = new OrderDataFile(dataFile,
                                                             feature.getId(),
                                                             order.getId(),
@@ -472,7 +472,7 @@ public class OrderCreationService implements IOrderCreationService {
                                                             feature.getVersion());
             storageBucketFiles.add(orderDataFile);
             // Send a very useful notification if file is bigger than bucket size
-            if (orderDataFile.getFilesize() > suborderSizeCounter.getStorageBucketSize()) {
+            if (orderDataFile.getFilesizeAsLong() > suborderSizeCounter.getStorageBucketSize()) {
                 // To send a notification, NotificationClient needs it
                 notificationClient.notify(String.format("File \"%s\" is bigger than sub-order size",
                                                         orderDataFile.getFilename()),

@@ -322,8 +322,8 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             dataFile.getFilename() :
             dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
         headers.setContentDisposition(ContentDisposition.builder("attachment").filename(filename).build());
-        if (dataFile.getFilesize() != null) {
-            headers.setContentLength(dataFile.getFilesize());
+        if (dataFile.getFilesizeAsLong() != null) {
+            headers.setContentLength(dataFile.getFilesizeAsLong());
         }
         if (dataFile.getMimeType() != null) {
             headers.setContentType(asMediaType(dataFile.getMimeType()));
@@ -388,7 +388,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                         String message = "Cannot completely retrieve data file from storage, only "
                                          + stream.getStreamReadCount()
                                          + "/"
-                                         + dataFile.getFilesize()
+                                         + dataFile.getFilesizeAsLong()
                                          + " bytes";
                         dataFile.setState(FileState.DOWNLOAD_ERROR);
                         dataFile.setDownloadError(message);

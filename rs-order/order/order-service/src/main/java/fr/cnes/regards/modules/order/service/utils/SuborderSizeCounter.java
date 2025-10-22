@@ -61,7 +61,7 @@ public class SuborderSizeCounter implements InitializingBean {
     }
 
     public boolean storageBucketTooBig(Set<OrderDataFile> storageBucketFiles) {
-        return storageBucketFiles.stream().mapToLong(DataFile::getFilesize).sum() >= storageBucketSize;
+        return storageBucketFiles.stream().mapToLong(DataFile::getFilesizeAsLong).sum() >= storageBucketSize;
     }
 
     public boolean externalBucketTooBig(Set<OrderDataFile> externalBucketFiles) {

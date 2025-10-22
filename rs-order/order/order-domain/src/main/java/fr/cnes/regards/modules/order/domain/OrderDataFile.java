@@ -25,11 +25,9 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.converters.UrnConverter;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.order.dto.dto.OrderDataFileDTO;
-import org.hibernate.annotations.Type;
-import org.springframework.util.MimeType;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import org.springframework.util.MimeType;
 
 import java.util.Objects;
 
@@ -149,7 +147,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     public OrderDataFile(DataFile dataFile, UniformResourceName ipId, Long orderId, String productId, Integer version) {
         super.setFilename(dataFile.getFilename());
-        super.setFilesize(dataFile.getFilesize());
+        super.setFilesizeAsLong(dataFile.getFilesizeAsLong());
         super.setUri(dataFile.getUri());
         super.setChecksum(dataFile.getChecksum());
         super.setDigestAlgorithm(dataFile.getDigestAlgorithm());
@@ -221,8 +219,8 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     @Override
     @Column(name = "size")
-    public Long getFilesize() {
-        return super.getFilesize();
+    public Long getFilesizeAsLong() {
+        return super.getFilesizeAsLong();
     }
 
     @Override
@@ -370,7 +368,7 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
                                     this.getUri(),
                                     this.getMimeType(),
                                     this.getChecksum(),
-                                    this.getFilesize(),
+                                    this.getFilesizeAsLong(),
                                     this.getFilename());
     }
 }

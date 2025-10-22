@@ -90,7 +90,7 @@ public class DataFile {
     /**
      * Optional file size
      */
-    private Long filesize;
+    private Double filesize;
 
     /**
      * Required filename
@@ -120,7 +120,7 @@ public class DataFile {
      * Additional file properties can be supplied using :
      *
      * <ul>
-     * <li>{@link #setFilesize(Long)}</li>
+     * <li>{@link #setFilesizeAsLong(Long)}</li>
      * <li>{@link #setChecksum(String)}</li>
      * <li>{@link #setDigestAlgorithm(String)}</li>
      * </ul>
@@ -153,7 +153,7 @@ public class DataFile {
      * Additional file properties can be supplied using :
      *
      * <ul>
-     * <li>{@link #setFilesize(Long)}</li>
+     * <li>{@link #setFilesizeAsLong(Long)}</li>
      * <li>{@link #setChecksum(String)}</li>
      * <li>{@link #setDigestAlgorithm(String)}</li>
      * </ul>
@@ -249,11 +249,26 @@ public class DataFile {
         this.digestAlgorithm = digestAlgorithm;
     }
 
-    public Long getFilesize() {
+    public Long getFilesizeAsLong() {
+        if (filesize == null || filesize.isNaN()) {
+            return null;
+        }
+        return filesize.longValue();
+    }
+
+    public Double getFilesize() {
         return filesize;
     }
 
-    public void setFilesize(Long filesize) {
+    public void setFilesizeAsLong(Long filesize) {
+        if (filesize == null) {
+            this.filesize = null;
+            return;
+        }
+        this.filesize = Double.valueOf(filesize);
+    }
+
+    public void setFilesize(Double filesize) {
         this.filesize = filesize;
     }
 
