@@ -142,7 +142,7 @@ public class OrderPerformanceIT extends AbstractMultitenantServiceIT {
                         dataFile.setOnline(false);
                         dataFile.setUri(new URI("file:///test/" + id).toString());
                         dataFile.setFilename(id);
-                        dataFile.setFilesizeAsLong(10L);
+                        dataFile.setFilesize(10L);
                         dataFile.setReference(false);
                         dataFile.setChecksum(UUID.randomUUID().toString());
                         dataFile.setDigestAlgorithm("MD5");

@@ -121,7 +121,7 @@ public class OrderTestUtilsService {
         dataFile1.setUrl("file:///test/files/" + filename);
         dataFile1.setFilename(filename);
         File file = new File("src/test/resources/files/" + filename);
-        dataFile1.setFilesizeAsLong(file.length());
+        dataFile1.setFilesize(file.length());
         dataFile1.setReference(false);
         dataFile1.setIpId(aipId);
         dataFile1.setOnline(true);

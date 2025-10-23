@@ -228,7 +228,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     protected FileSetStatistics createBatchStats(String datasetIpid) {
         Long totalInputSizes = List.ofAll(processInputDataFiles.getFilesPerFeature().values())
                                    .flatMap(Function.identity())
-                                   .map(OrderDataFile::getFilesizeAsLong)
+                                   .map(OrderDataFile::getFilesize)
                                    .fold(0L, Long::sum);
         return new FileSetStatistics(datasetIpid, 1, totalInputSizes);
     }
@@ -250,7 +250,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
                               featureIpId + "/" + df.getFilename(),
                               df.getMimeType().toString(),
                               fileUrl,
-                              df.getFilesizeAsLong(),
+                              df.getFilesize(),
                               df.getChecksum(),
                               df.getFilename(),
                               metadataMap,

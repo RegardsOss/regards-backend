@@ -370,7 +370,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                                        fileNamesInZip,
                                        currentFileIterator,
                                        dataFile,
-                                       Optional.ofNullable(dataFile.getFilesizeAsLong()),
+                                       Optional.ofNullable(dataFile.getFilesize()),
                                        dataObjectIpId,
                                        is);
             downloadOk = true;
@@ -459,7 +459,7 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         }
 
         // We can only check copied bytes if we know expected size (ie if file is internal)
-        Long fileSize = realContentLength.orElse(dataFile.getFilesizeAsLong());
+        Long fileSize = realContentLength.orElse(dataFile.getFilesize());
         if (fileSize != null && copiedBytes != fileSize) {
             // Check that file has been completely been copied
             i.remove();
@@ -511,8 +511,8 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                 file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1);
             xmlFile.setIdentity(filename);
             xmlFile.setName(filename);
-            if (file.getFilesizeAsLong() != null) {
-                xmlFile.setSize(BigInteger.valueOf(file.getFilesizeAsLong()));
+            if (file.getFilesize() != null) {
+                xmlFile.setSize(BigInteger.valueOf(file.getFilesize()));
             }
             if (file.getMimeType() != null) {
                 xmlFile.setMimetype(file.getMimeType().toString());

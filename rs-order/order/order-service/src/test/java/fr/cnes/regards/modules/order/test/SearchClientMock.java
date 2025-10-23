@@ -683,7 +683,7 @@ public class SearchClientMock implements IComplexSearchClient {
                 dataFile.setOnline(false);
                 dataFile.setUri(new URI("file:///test/" + file.getName()).toString());
                 dataFile.setFilename(file.getName());
-                dataFile.setFilesizeAsLong(file.length());
+                dataFile.setFilesize(file.length());
                 dataFile.setReference(false);
                 dataFile.setChecksum(file.getName());
                 dataFile.setDigestAlgorithm("MD5");

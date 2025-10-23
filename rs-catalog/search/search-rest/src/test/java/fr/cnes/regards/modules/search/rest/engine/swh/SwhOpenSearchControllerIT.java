@@ -349,7 +349,7 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         if (imageWidth != null) {
             dataFile.setImageWidth(imageWidth.getAsDouble());
         }
-        dataFile.setFilesizeAsLong(fileAsObj.get("filesize").getAsLong());
+        dataFile.setFilesize(fileAsObj.get("filesize").getAsLong());
         return dataFile;
     }
 

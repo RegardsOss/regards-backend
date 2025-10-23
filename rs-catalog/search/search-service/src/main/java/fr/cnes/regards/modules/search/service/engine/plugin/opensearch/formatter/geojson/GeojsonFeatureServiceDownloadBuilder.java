@@ -42,7 +42,7 @@ public final class GeojsonFeatureServiceDownloadBuilder {
         Map<String, Object> downloadService = new HashMap();
         downloadService.put("url", DataFileHrefBuilder.getDataFileHref(firstRawData, scope));
         downloadService.put("mimeType", firstRawData.getMimeType());
-        downloadService.put("size", firstRawData.getFilesizeAsLong());
+        downloadService.put("size", firstRawData.getFilesize());
         downloadService.put("checksum", firstRawData.getChecksum());
         downloadService.put("fileName", firstRawData.getFilename());
         return downloadService;

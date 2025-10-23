@@ -146,7 +146,7 @@ public final class OrderCounts {
 
     public OrderCounts addTotalFileSizeOf(Set<OrderDataFile> dataFiles) {
         long sum = dataFiles.stream()
-                            .map(OrderDataFile::getFilesizeAsLong)
+                            .map(OrderDataFile::getFilesize)
                             .filter(Objects::nonNull)
                             .mapToLong(Long::longValue)
                             .sum();

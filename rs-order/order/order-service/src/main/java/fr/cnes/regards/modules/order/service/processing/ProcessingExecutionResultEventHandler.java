@@ -213,7 +213,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             odf.setState(FileState.AVAILABLE);
             odf.setChecksum(outputFile.getChecksumValue());
             odf.setFilename(fileName(outputFile));
-            odf.setFilesizeAsLong(outputFile.getSize());
+            odf.setFilesize(outputFile.getSize());
             updatedDataFiles.add(odf);
         }
 
@@ -267,7 +267,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
                 odf.setState(FileState.AVAILABLE);
                 odf.setChecksum(outputFile.getChecksumValue());
                 odf.setFilename(fileName(outputFile));
-                odf.setFilesizeAsLong(outputFile.getSize());
+                odf.setFilesize(outputFile.getSize());
                 updatedDataFiles.add(odf);
             }).onEmpty(() -> {
                 LOGGER.error(
@@ -345,7 +345,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             odf.setState(FileState.AVAILABLE);
             odf.setChecksum(outputFile.getChecksumValue());
             odf.setFilename(fileName(outputFile));
-            odf.setFilesizeAsLong(outputFile.getSize());
+            odf.setFilesize(outputFile.getSize());
         }
         return orderDataFiles;
     }

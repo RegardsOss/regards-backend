@@ -407,7 +407,7 @@ public class FileAvailabilityServiceTest {
             throw new RuntimeException(e);
         }
         dataFile.setFilename(urn.toString());
-        dataFile.setFilesizeAsLong(10L);
+        dataFile.setFilesize(10L);
         dataFile.setReference(false);
         dataFile.setChecksum(urn.toString());
         dataFile.setDigestAlgorithm("MD5");

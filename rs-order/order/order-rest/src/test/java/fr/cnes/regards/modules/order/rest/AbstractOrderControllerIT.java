@@ -247,7 +247,7 @@ public abstract class AbstractOrderControllerIT extends AbstractRegardsIT {
         feat1File1.setOnline(true);
         feat1File1.setUri(new URI("file:///test/feat1_file1.txt").toString());
         feat1File1.setFilename("feat1_file1");
-        feat1File1.setFilesizeAsLong(42000L);
+        feat1File1.setFilesize(42000L);
         feat1File1.setReference(false);
         feat1File1.setChecksum("feat1_file1");
         feat1File1.setDigestAlgorithm("MD5");
@@ -265,7 +265,7 @@ public abstract class AbstractOrderControllerIT extends AbstractRegardsIT {
         feat2File2.setOnline(true);
         feat2File2.setUri(new URI("file:///test/feat2_file2.txt").toString());
         feat2File2.setFilename("feat2_file2");
-        feat2File2.setFilesizeAsLong(3050L);
+        feat2File2.setFilesize(3050L);
         feat2File2.setReference(false);
         feat2File2.setChecksum("feat2_file2");
         feat2File2.setDigestAlgorithm("MD5");
@@ -390,7 +390,7 @@ public abstract class AbstractOrderControllerIT extends AbstractRegardsIT {
         dataFile1.setUrl("file:///test/files/" + filename);
         dataFile1.setFilename(filename);
         File file = new File("src/test/resources/files/" + filename);
-        dataFile1.setFilesizeAsLong(file.length());
+        dataFile1.setFilesize(file.length());
         dataFile1.setReference(false);
         dataFile1.setIpId(aipId);
         dataFile1.setOnline(online);

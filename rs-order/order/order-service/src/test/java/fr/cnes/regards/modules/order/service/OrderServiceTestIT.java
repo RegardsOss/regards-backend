@@ -719,7 +719,7 @@ public class OrderServiceTestIT extends AbstractOrderServiceIT {
         dataFile.setOnline(false);
         dataFile.setUri(orderDataFileUri);
         dataFile.setReference(false);
-        dataFile.setFilesizeAsLong(67170L);
+        dataFile.setFilesize(67170L);
         datasetFeature.getFiles().put(DataType.RAWDATA, dataFile);
         ResponseEntity<Dataset> datasetResponseEntity = new ResponseEntity<>(dataset, HttpStatus.OK);
         Mockito.when(datasetClient.retrieveDataset(Mockito.anyString())).thenReturn(datasetResponseEntity);

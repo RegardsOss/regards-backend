@@ -402,7 +402,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                                                                dataFile,
                                                                dsSel.getFileSelectionDescription()));
 
-            long expectedSize = sizeForecast.expectedResultSizeInBytes(applicableDataFilesIn.map(DataFile::getFilesizeAsLong)
+            long expectedSize = sizeForecast.expectedResultSizeInBytes(applicableDataFilesIn.map(DataFile::getFilesize)
                                                                                             .reduceOption(Long::sum)
                                                                                             .getOrElse(0L));
 
@@ -414,7 +414,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                                                   true);
             // This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
             dataFileOut.setChecksum(UUID.randomUUID().toString());
-            dataFileOut.setFilesizeAsLong(expectedSize);
+            dataFileOut.setFilesize(expectedSize);
             // create a datafile without productId because it is associated to many products (cardinality
             // ONE_PER_EXECUTION)
             OrderDataFile orderDataFile = new OrderDataFile(dataFileOut, dsSelIpId, orderId);
@@ -425,7 +425,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                 if (cardinality == Cardinality.ONE_PER_EXECUTION || cardinality == Cardinality.ONE_PER_FEATURE) {
                     List<DataFile> applicableDataFilesIn = List.ofAll(feature.getFiles().values())
                                                                .filter(f -> requiredDataTypes.contains(f.getDataType()));
-                    long expectedSize = sizeForecast.expectedResultSizeInBytes(applicableDataFilesIn.map(DataFile::getFilesizeAsLong)
+                    long expectedSize = sizeForecast.expectedResultSizeInBytes(applicableDataFilesIn.map(DataFile::getFilesize)
                                                                                                     .reduceOption(Long::sum)
                                                                                                     .getOrElse(0L));
                     DataFile dataFileOut = DataFile.build(DataType.OTHER,
@@ -437,7 +437,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                                                           true);
                     dataFileOut.setChecksum(UUID.randomUUID().toString());
                     // ^- This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
-                    dataFileOut.setFilesizeAsLong(expectedSize);
+                    dataFileOut.setFilesize(expectedSize);
                     return List.of(new OrderDataFile(dataFileOut,
                                                      feature.getId(),
                                                      orderId,
@@ -445,7 +445,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                                                      feature.getVersion()));
                 } else if (cardinality == Cardinality.ONE_PER_INPUT_FILE) {
                     return featureRequiredDatafiles(feature, requiredDataTypes).map(dataFile -> {
-                        long expectedSize = sizeForecast.expectedResultSizeInBytes(dataFile.getFilesizeAsLong());
+                        long expectedSize = sizeForecast.expectedResultSizeInBytes(dataFile.getFilesize());
 
                         DataFile dataFileOut = DataFile.build(DataType.OTHER,
                                                               dataFile.getFilename(),
@@ -458,7 +458,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                                                               true);
                         dataFileOut.setChecksum(UUID.randomUUID().toString());
                         // ^- This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
-                        dataFileOut.setFilesizeAsLong(expectedSize);
+                        dataFileOut.setFilesize(expectedSize);
                         return new OrderDataFile(dataFileOut,
                                                  feature.getId(),
                                                  orderId,
@@ -684,7 +684,7 @@ public class OrderProcessingService implements IOrderProcessingService {
             List<DataFile> files = featureRequiredDatafiles(feature, orderProcessInfo.getRequiredDatatypes()).collect(
                 List.collector());
             int deltaCount = files.size();
-            long deltaSize = files.map(DataFile::getFilesizeAsLong).sum().longValue();
+            long deltaSize = files.map(DataFile::getFilesize).sum().longValue();
             FeatureAccumulator newAcc = new FeatureAccumulator(orderId,
                                                                processBusinessId,
                                                                fileCount + deltaCount,

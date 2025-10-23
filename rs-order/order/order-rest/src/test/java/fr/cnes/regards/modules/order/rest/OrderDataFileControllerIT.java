@@ -142,7 +142,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         // Use filename as checksum (same as OrderControllerIT)
         dataFile1.setChecksum(StorageClientMock.TEST_FILE_CHECKSUM);
         dataFile1.setOrderId(order.getId());
-        dataFile1.setFilesizeAsLong(testFile.length());
+        dataFile1.setFilesize(testFile.length());
         dataFile1.setMimeType(StorageClientMock.TEST_MEDIA_TYPE);
         dataFile1.setDataType(DataType.RAWDATA);
         dataFile1.setState(FileState.AVAILABLE);
@@ -222,7 +222,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         // Use filename as checksum (same as OrderControllerIT)
         dataFile1.setChecksum(StorageClientMock.TEST_FILE_CHECKSUM);
         dataFile1.setOrderId(order.getId());
-        dataFile1.setFilesizeAsLong(testFile.length());
+        dataFile1.setFilesize(testFile.length());
         dataFile1.setMimeType(StorageClientMock.TEST_MEDIA_TYPE);
         dataFile1.setDataType(DataType.RAWDATA);
         dataFile1.setState(FileState.AVAILABLE);

@@ -645,7 +645,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                                           MediaType.APPLICATION_OCTET_STREAM,
                                           Boolean.TRUE,
                                           Boolean.FALSE);
-        rawdata.setFilesizeAsLong(10L);
+        rawdata.setFilesize(10L);
         planet.getFiles().put(rawdata.getDataType(), rawdata);
 
         Polygon geo = IGeometry.polygon(IGeometry.toPolygonCoordinates(IGeometry.toLinearRingCoordinates(IGeometry.position(
