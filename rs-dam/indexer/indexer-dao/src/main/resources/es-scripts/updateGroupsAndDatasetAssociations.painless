@@ -41,7 +41,6 @@ boolean removeExistingGroupOfDataset(def dataObject, def datasetIpId) {
             }
         }
     }
-    dataObject.groupToRemove = groupsRemoved;
     // If a group in metadata is now empty (no other dataset associated with this group), we remove it from the 'groups' attribute
     for (groupName in groupsRemoved) {
         if (dataObject.metadata.groups[groupName].isEmpty()) {
