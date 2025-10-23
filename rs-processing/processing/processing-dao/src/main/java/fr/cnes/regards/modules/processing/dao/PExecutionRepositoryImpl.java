@@ -91,10 +91,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     @Override
     public Mono<PExecution> create(PExecution exec) {
-        return entityExecRepo.save(mapper.toEntity(exec))
-                             .map(ExecutionEntity::persisted)
-                             .map(mapper::toDomain)
-                             .doOnNext(e -> cache.put(e.getId(), e));
+        return entityExecRepo.save(mapper.toEntity(exec)).map(mapper::toDomain).doOnNext(e -> cache.put(e.getId(), e));
     }
 
     @Override
@@ -114,10 +111,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     @Override
     public Mono<PExecution> update(PExecution exec) {
-        return entityExecRepo.save(mapper.toEntity(exec))
-                             .map(ExecutionEntity::persisted)
-                             .map(mapper::toDomain)
-                             .doOnNext(e -> cache.put(e.getId(), e));
+        return entityExecRepo.save(mapper.toEntity(exec)).map(mapper::toDomain).doOnNext(e -> cache.put(e.getId(), e));
     }
 
     @Override
@@ -125,7 +119,6 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         return Option.of(cache.getIfPresent(id))
                      .map(Mono::just)
                      .getOrElse(() -> entityExecRepo.findById(id)
-                                                    .map(ExecutionEntity::persisted)
                                                     .map(mapper::toDomain)
                                                     .doOnNext(e -> cache.put(e.getId(), e)))
                      .switchIfEmpty(Mono.defer(() -> Mono.error(new ExecutionNotFoundException(id))));
@@ -169,9 +162,11 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
         execute = execute.bind("limit", page.getPageSize());
         execute = execute.bind("offset", page.getOffset());
 
-        return execute.map((row, metadata) -> converter.read(ExecutionEntity.class, row, metadata))
+        // Need to manually call persisted() on the ExecutionEntity because ExecutionEntityCallback is not
+        // automically called when directly using the MappingR2dbcConverter. Check out ExecutionEntityCallback to
+        // see why it's important to call persisted().
+        return execute.map((row, metadata) -> converter.read(ExecutionEntity.class, row, metadata).persisted())
                       .all()
-                      .map(ExecutionEntity::persisted)
                       .map(mapper::toDomain)
                       .doOnNext(exec -> cache.put(exec.getId(), exec));
     }

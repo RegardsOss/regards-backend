@@ -55,7 +55,7 @@ public class StorageClientMock implements IStorageRestClient {
     public static MediaType TEST_MEDIA_TYPE = MediaType.TEXT_PLAIN;
 
     @Override
-    public Response downloadFile(String checksum, Boolean isContentInline) {
+    public Response downloadFile(String checksum, boolean isContentInline) {
 
         Map<String, Collection<String>> map = new HashMap<>();
         Request request = Request.create(Request.HttpMethod.GET, "test", map, Request.Body.empty(), null);
@@ -104,7 +104,8 @@ public class StorageClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(@Valid FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
+    public ResponseEntity<List<FileAvailabilityStatusDto>> checkFileAvailability(
+        @Valid FilesAvailabilityRequestDto filesAvailabilityRequestDto) {
         return null;
     }
 

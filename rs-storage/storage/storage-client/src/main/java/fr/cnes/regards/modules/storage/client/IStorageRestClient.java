@@ -71,7 +71,8 @@ public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
                     path = FILE_PATH + DOWNLOAD_PATH,
                     produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     Response downloadFile(@PathVariable("checksum") String checksum,
-                          @RequestParam(name = "isContentInline", required = false) Boolean isContentInline);
+                          @RequestParam(name = "isContentInline", required = false, defaultValue = "false")
+                          boolean isContentInline);
 
     @RequestMapping(method = RequestMethod.GET, path = STORAGES_PATH, produces = MediaType.ALL_VALUE)
     ResponseEntity<List<EntityModel<StorageLocationDto>>> retrieve();

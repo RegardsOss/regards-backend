@@ -68,7 +68,7 @@ public class StorageDownloaderClient {
 
     }
 
-    public Response downloadFile(String checksum, Boolean isContentInline) {
+    public Response downloadFile(String checksum, boolean isContentInline) {
         if (storageDownloaderEnabled && storageDownloaderRestClient != null) {
             return storageDownloaderRestClient.downloadFile(checksum, isContentInline);
         }

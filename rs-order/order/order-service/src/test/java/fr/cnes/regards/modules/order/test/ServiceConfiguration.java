@@ -74,7 +74,7 @@ public class ServiceConfiguration {
     public IStorageRestClient storageRestClient() {
         IStorageRestClient mock = mock(IStorageRestClient.class);
 
-        Mockito.when(mock.downloadFile(Mockito.any(), Mockito.any())).thenAnswer(i -> {
+        Mockito.when(mock.downloadFile(Mockito.any(), Mockito.anyBoolean())).thenAnswer(i -> {
             File testFile = new File("src/test/resources/download/test.dat");
             InputStream is = new FileInputStream(testFile);
             int fileSize = (int) testFile.length();

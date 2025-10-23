@@ -62,7 +62,6 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -71,7 +70,6 @@ import static org.springframework.http.MediaType.ALL_VALUE;
 
 /**
  * REST Controller handling operations on downloads.
- *
  * <b>Note : </b> See {@link CustomCacheControlHeadersWriter} to know more about cache control handling for download resources.
  *
  * @author Kevin Marchois
@@ -125,24 +123,27 @@ public class CatalogDownloadController {
                                                                @PathVariable(CHECKSUM_PATH_PARAM) String checksum,
                                                                @RequestParam(name = "origin", required = false)
                                                                String origin,
-                                                               @RequestParam(name = "isContentInline", required = false)
-                                                               Boolean isContentInline,
+                                                               @RequestParam(name = "isContentInline",
+                                                                             required = false,
+                                                                             defaultValue = "false")
+                                                               boolean isContentInline,
                                                                HttpServletResponse response) throws IOException {
         FeignSecurityManager.asSystem();
+        ResponseEntity<InputStreamResource> downloadResponse;
         try {
             Response damResp = attachmentClient.getFile(aipId, checksum, origin, isContentInline);
             if (damResp.status() != HttpStatus.OK.value()) {
                 LOGGER.error("Error downloading file {} from storage", checksum);
             }
             addHeaders(damResp, null, response, isContentInline);
-            return formatDamResponse(damResp);
+            downloadResponse = formatDamResponse(damResp);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            LOGGER.error(String.format("Error downloading file through storage microservice. Cause : %s",
-                                       e.getMessage()), e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            LOGGER.error("Error downloading file through storage microservice. Cause : {}", e.getMessage(), e);
+            downloadResponse = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         } finally {
             FeignSecurityManager.reset();
         }
+        return downloadResponse;
     }
 
     private ResponseEntity<InputStreamResource> formatDamResponse(Response fromDamResponse) throws IOException {
@@ -172,16 +173,14 @@ public class CatalogDownloadController {
     public ResponseEntity<Void> testProductAccess(@PathVariable(AIP_ID_PATH_PARAM) String productUrn,
                                                   @PathVariable(CHECKSUM_PATH_PARAM) String fileChecksum) {
         // Same Status than GET endpoint but without storage download part
-        HttpStatus status = HttpStatus.OK;
+        HttpStatus status;
         try {
             AbstractEntity<?> entity = searchService.get(UniformResourceName.fromString(productUrn));
-            switch (dataAccessRightService.checkFileAccess(entity, fileChecksum)) {
-                case FORBIDDEN -> status = HttpStatus.FORBIDDEN;
-                case LOCKED -> status = HttpStatus.LOCKED;
-                default -> {
-                    // do nothing
-                }
-            }
+            status = switch (dataAccessRightService.checkFileAccess(entity, fileChecksum)) {
+                case FORBIDDEN -> HttpStatus.FORBIDDEN;
+                case LOCKED -> HttpStatus.LOCKED;
+                default -> HttpStatus.OK;
+            };
         } catch (EntityOperationForbiddenException e) { // NOSONAR
             status = HttpStatus.FORBIDDEN;
         } catch (EntityNotFoundException e) { // NOSONAR286
@@ -212,6 +211,7 @@ public class CatalogDownloadController {
     public ResponseEntity<Download> downloadFile(@PathVariable(AIP_ID_PATH_PARAM) String aipId,
                                                  @PathVariable(CHECKSUM_PATH_PARAM) String checksum,
                                                  @RequestParam(name = "isContentInline", required = false)
+                                                 // Use Boolean to distinguish absent/true/false
                                                  Boolean isContentInline,
                                                  @RequestParam(name = "acceptLicense",
                                                                required = false,
@@ -232,53 +232,50 @@ public class CatalogDownloadController {
         licenseAccessor.acceptLicense(authResolver.getUser(), runtimeTenantResolver.getTenant());
     }
 
-    private ResponseEntity<Download> downloadFile(String aipId,
-                                                  String checksum,
-                                                  Boolean isContentInline,
-                                                  HttpServletResponse response) throws ModuleException, IOException {
+    private ResponseEntity<Download> downloadFile(String aipId, String checksum,
+                                                  // Use Boolean to distinguish absent/true/false
+                                                  Boolean isContentInline, HttpServletResponse response)
+        throws ModuleException, IOException {
+        ResponseEntity<Download> downloadResponse;
         try {
-            AbstractEntity<?> entity = searchService.get(UniformResourceName.fromString(aipId));
-            AccessStatus fileAccessStatus = dataAccessRightService.checkFileAccess(entity, checksum);
-            switch (fileAccessStatus) {
+            final AbstractEntity<?> entity = searchService.get(UniformResourceName.fromString(aipId));
+            final AccessStatus fileAccessStatus = dataAccessRightService.checkFileAccess(entity, checksum);
+            downloadResponse = switch (fileAccessStatus) {
                 case FORBIDDEN, NOT_FOUND -> CatalogDownloadResponse.unauthorizedAccess();
                 case LOCKED -> {
                     String linkToAcceptAndDownload = linkToDownloadWithLicense(aipId,
                                                                                checksum,
                                                                                isContentInline,
                                                                                response);
-                    return CatalogDownloadResponse.acceptLicenceBeforeDownload(linkToLicense(),
-                                                                               linkToAcceptAndDownload);
+                    yield CatalogDownloadResponse.acceptLicenceBeforeDownload(linkToLicense(), linkToAcceptAndDownload);
                 }
                 default -> {
-                    // do nothing
+                    final String fileName = entity.getFiles()
+                                                  .values()
+                                                  .stream()
+                                                  .filter(df -> df.getChecksum().equals(checksum))
+                                                  .map(DataFile::getFilename)
+                                                  .filter(Objects::nonNull)
+                                                  .findFirst()
+                                                  .orElse(null);
+                    // To download through storage client we must be authenticated as user in order to
+                    // impact the download quotas, but we upgrade the privileges so that the request passes.
+                    FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
+                    yield doDownloadFile(checksum, fileName, Boolean.TRUE.equals(isContentInline), response);
                 }
-            }
-            Optional<String> fileName = entity.getFiles()
-                                              .values()
-                                              .stream()
-                                              .filter(df -> df.getChecksum().equals(checksum))
-                                              .map(DataFile::getFilename)
-                                              .filter(Objects::nonNull)
-                                              .findFirst();
-            // To download through storage client we must be authenticated as user in order to
-            // impact the download quotas, but we upgrade the privileges so that the request passes.
-            FeignSecurityManager.asUser(authResolver.getUser(), DefaultRole.PROJECT_ADMIN.name());
-            return doDownloadFile(checksum, fileName.orElse(null), isContentInline, response);
+            };
         } catch (EntityOperationForbiddenException e) { // NOSONAR
-            return CatalogDownloadResponse.unauthorizedAccess();
+            downloadResponse = CatalogDownloadResponse.unauthorizedAccess();
         } catch (HttpClientErrorException | HttpServerErrorException | ExecutionException e) {
-            return CatalogDownloadResponse.internalError(checksum, e);
+            downloadResponse = CatalogDownloadResponse.internalError(checksum, e);
         } finally {
             FeignSecurityManager.reset();
         }
+        return downloadResponse;
     }
 
     private LicenseDTO retrieveLicense() throws ExecutionException {
         return licenseAccessor.retrieveLicense(authResolver.getUser(), runtimeTenantResolver.getTenant());
-    }
-
-    private boolean isLicenseUnaccepted() throws ExecutionException {
-        return !retrieveLicense().isAccepted();
     }
 
     private String linkToLicense() throws ExecutionException {
@@ -297,7 +294,7 @@ public class CatalogDownloadController {
 
     private ResponseEntity<Download> doDownloadFile(String checksum,
                                                     @Nullable String fileName,
-                                                    Boolean isContentInline,
+                                                    boolean isContentInline,
                                                     HttpServletResponse response) throws IOException {
         Response storageResponse = storageDownloaderClient.downloadFile(checksum, isContentInline);
         addHeaders(storageResponse, fileName, response, isContentInline);
@@ -309,7 +306,7 @@ public class CatalogDownloadController {
     private void addHeaders(Response fromStorageResponse,
                             @Nullable String fileName,
                             HttpServletResponse inResponse,
-                            Boolean isContentInline) {
+                            boolean isContentInline) {
         // Add storage headers in the response
         // CacheControl headers are filtered because This download endpoints must not activate cache control.
         // Headers are not added in ResponseEntity but in HttpServletResponse
@@ -321,10 +318,9 @@ public class CatalogDownloadController {
                            .filter(header -> !CustomCacheControlHeadersWriter.isCacheControlHeader(header.getKey()))
                            .forEach(header -> addHeaders(header, inResponse));
         if (fileName != null) {
+            final String dispositionType = isContentInline ? "inline" : "attachment";
             inResponse.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                                 ContentDisposition.builder((isContentInline == null || !isContentInline) ?
-                                                                "attachment" :
-                                                                "inline").filename(fileName).build().toString());
+                                 ContentDisposition.builder(dispositionType).filename(fileName).build().toString());
         }
     }
 

@@ -91,13 +91,10 @@ public abstract class AbstractProcessingIT implements InitializingBean {
 
     protected static final String PGSQL_URL = "jdbc:postgresql://rs-postgres:5432/postgres";
 
-    protected static PostgreSQLContainer<?> postgreSQLContainer =
-        new PostgreSQLContainer<>("postgres:11.5").withDatabaseName(
+    protected static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:11.5").withDatabaseName(
         "postgres").withUsername(PGSQL_USER).withPassword(PGSQL_SECRET);
 
-    protected static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.6.5-management").withUser(
-        "guest",
-        "guest");
+    protected static RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3.11.0-management");
 
     protected static boolean onCi = onCi();
 
