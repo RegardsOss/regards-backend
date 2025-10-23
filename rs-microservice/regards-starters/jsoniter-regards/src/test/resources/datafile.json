@@ -1,0 +1,21 @@
+{
+  "dataType": "THUMBNAIL",
+  "reference": false,
+  "uri": "http://vm-perf.cloud-espace.si.c-s.fr:80/api/v1/rs-catalog/downloads/URN:AIP:DATA:perf:35a8b1aa-7d90-3f34-bc94-646424f8cee3:V1/files/7074d502c18f4a0f9e595442ef040d3a",
+  "mimeType": "image/png",
+  "imageWidth": 170.0,
+  "imageHeight": 297,
+  "online": true,
+  "checksum": "7074d502c18f4a0f9e595442ef040d3a",
+  "digestAlgorithm": "MD5",
+  "filesize": 10021,
+  "filename": "Haut-Rhin.png",
+  "crc32": "d87f7e0c",
+  "types": [
+    "type1"
+  ],
+  "additionalFields": {
+    "key": 1,
+    "value": "value1"
+  }
+}
