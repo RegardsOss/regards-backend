@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.indexer.dao.spatial.builders.PolygonBuilder;
 import fr.cnes.regards.modules.indexer.domain.criterion.*;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
 import org.apache.commons.lang3.ArrayUtils;
-import org.elasticsearch.common.geo.builders.ShapeBuilder.Orientation;
+import org.elasticsearch.common.geo.Orientation;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.GeodeticCalculator;

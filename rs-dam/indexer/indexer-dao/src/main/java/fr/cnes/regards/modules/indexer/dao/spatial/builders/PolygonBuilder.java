@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.indexer.dao.spatial.builders;
 
-import org.elasticsearch.common.collect.Tuple;
-import org.elasticsearch.common.geo.builders.ShapeBuilder.Orientation;
+import org.elasticsearch.common.geo.Orientation;
 import org.elasticsearch.common.util.set.Sets;
+import org.elasticsearch.core.Tuple;
 import org.locationtech.jts.geom.*;
 import org.locationtech.spatial4j.exception.InvalidShapeException;
 import org.locationtech.spatial4j.shape.jts.JtsGeometry;
