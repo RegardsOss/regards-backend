@@ -103,6 +103,10 @@ public class ExecutionEntity implements Persistable<UUID> {
     public ExecutionEntity() {
     }
 
+    /**
+     * All args constructor.
+     */
+    @SuppressWarnings("java:S107") // Methods should not have too many parameters
     public ExecutionEntity(UUID id,
                            UUID batchId,
                            FileParameters fileParameters,
@@ -145,6 +149,7 @@ public class ExecutionEntity implements Persistable<UUID> {
         this.persisted = persisted;
     }
 
+    @SuppressWarnings("java:S107") // Methods should not have too many parameters
     public ExecutionEntity(UUID id,
                            UUID batchId,
                            FileParameters fileParameters,
@@ -433,6 +438,9 @@ public class ExecutionEntity implements Persistable<UUID> {
     }
 
     public int hashCode() {
+        // build hash code with all the field.
+        // cannot tell why {@link Objects#hash} is not used
+        // and neither why the two prime number 59 and 43 are used vs 31 and 0 in {@link Objects#hash}
         int result = 1;
         result = result * 59 + (this.timeoutAfterMillis == null ? 43 : this.timeoutAfterMillis.hashCode());
         result = result * 59 + (this.getVersion() == null ? 43 : this.getVersion().hashCode());
@@ -453,54 +461,47 @@ public class ExecutionEntity implements Persistable<UUID> {
 
     @Override
     public boolean equals(Object o) {
+
+        // same object ?
         if (this == o) {
             return true;
         }
+        // not same type ?
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
 
+        // test equality field by field.
         ExecutionEntity that = (ExecutionEntity) o;
-
-        if (!id.equals(that.id)) {
-            return false;
-        }
-        if (!batchId.equals(that.batchId)) {
-            return false;
-        }
-        if (!fileParameters.equals(that.fileParameters)) {
-            return false;
-        }
-        if (!timeoutAfterMillis.equals(that.timeoutAfterMillis)) {
-            return false;
-        }
-        if (!steps.equals(that.steps)) {
-            return false;
-        }
-        if (currentStatus != that.currentStatus) {
-            return false;
-        }
-        if (!tenant.equals(that.tenant)) {
-            return false;
-        }
-        if (!userEmail.equals(that.userEmail)) {
-            return false;
-        }
-        if (!processBusinessId.equals(that.processBusinessId)) {
-            return false;
-        }
-        if (!correlationId.equals(that.correlationId)) {
-            return false;
-        }
-        if (!batchCorrelationId.equals(that.batchCorrelationId)) {
-            return false;
-        }
-        if (!Objects.equals(created, that.created)) {
-            return false;
-        }
-        if (!Objects.equals(lastUpdated, that.lastUpdated)) {
-            return false;
-        }
-        return Objects.equals(version, that.version);
+        // not much purpose of the comments but added for sonar.
+        return
+            // id
+            Objects.equals(id, that.id)
+            // batch id 
+            && Objects.equals(batchId, that.batchId)
+            // file parameters
+            && Objects.equals(fileParameters, that.fileParameters)
+            // timeout
+            && Objects.equals(timeoutAfterMillis, that.timeoutAfterMillis)
+            // steps
+            && Objects.equals(steps, that.steps)
+            // current status
+            && Objects.equals(currentStatus, that.currentStatus)
+            // tenant
+            && Objects.equals(tenant, that.tenant)
+            // email
+            && Objects.equals(userEmail, that.userEmail)
+            // process business id
+            && Objects.equals(processBusinessId, that.processBusinessId)
+            // correlation id
+            && Objects.equals(correlationId, that.correlationId)
+            // batch correlation id
+            && Objects.equals(batchCorrelationId, that.batchCorrelationId)
+            // created
+            && Objects.equals(created, that.created)
+            // last updated
+            && Objects.equals(lastUpdated, that.lastUpdated)
+            // version
+            && Objects.equals(version, that.version);
     }
 }

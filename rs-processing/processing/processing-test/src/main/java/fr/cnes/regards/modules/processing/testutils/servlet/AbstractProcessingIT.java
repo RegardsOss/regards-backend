@@ -150,33 +150,40 @@ public abstract class AbstractProcessingIT implements InitializingBean {
         public void initialize(ConfigurableApplicationContext applicationContext) {
             if (onLocal) {
                 Try.run(() -> {
+                    // Creating database for 1st tenant
                     LOGGER.info("################## Creating DB for tenant {}", TENANT_PROJECTA);
                     Container.ExecResult resultA = postgreSQLContainer.execInContainer(CREATE_DB,
                                                                                        "-U",
                                                                                        PGSQL_USER,
                                                                                        TENANT_PROJECTA);
+                    // Created database for 1st tenant
                     LOGGER.info("################## Created DB for tenant {}: {}\n{}\n{}",
                                 TENANT_PROJECTA,
                                 resultA.getExitCode(),
                                 resultA.getStdout(),
                                 resultA.getStderr());
 
+                    // Creating database for 2nd tenant
                     LOGGER.info("################## Creating DB for tenant " + TENANT_PROJECTB);
                     Container.ExecResult resultB = postgreSQLContainer.execInContainer(CREATE_DB,
                                                                                        "-U",
                                                                                        PGSQL_USER,
                                                                                        TENANT_PROJECTB);
+                    // Created database for 2nd tenant
                     LOGGER.info("################## Created DB for tenant {}: {}\n{}\n{}",
                                 TENANT_PROJECTB,
                                 resultB.getExitCode(),
                                 resultB.getStdout(),
                                 resultB.getStderr());
 
+                    // Creating database for r2dbc
                     LOGGER.info("################## Creating DB for r2dbc");
                     Container.ExecResult r2dbc = postgreSQLContainer.execInContainer(CREATE_DB,
                                                                                      "-U",
                                                                                      PGSQL_USER,
                                                                                      R2DBCDB_NAME);
+
+                    // created database for r2dbc
                     LOGGER.info("################## Created DB for r2dbc: {}\n{}\n{}",
                                 r2dbc.getExitCode(),
                                 r2dbc.getStdout(),
@@ -186,6 +193,7 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                 Try.run(() -> {
                     Connection connection = DriverManager.getConnection(PGSQL_URL, PGSQL_USER, PGSQL_SECRET); // NOSONAR
 
+                    // drop all the database for both tenant and r2dbc
                     Stream.of(TENANT_PROJECTA, TENANT_PROJECTB, R2DBCDB_NAME).forEach(dbName -> {
                         try {
                             LOGGER.info("################## Creating DB {}", dbName);
@@ -204,18 +212,28 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                 }).onFailure(t -> LOGGER.error(t.getMessage(), t));
             }
 
+            //
+            // define the properties values of the application
+            //
+
+            // create the key file
             Path keyPath = Try.of(() -> Files.createTempFile("testKey_", ".tmp")).get();
             Try.run(() -> Files.write(keyPath, "746f746f746f746f".getBytes()));
 
+            // create temporary storage directory and work directory
             Path sharedStorage = Try.of(() -> Files.createTempDirectory("sharedStorage")).get();
             Path execWorkdir = Try.of(() -> Files.createTempDirectory("execWorkdir")).get();
 
+            // postgres microservice
             String pgHost = onCi ? "rs-postgres" : postgreSQLContainer.getContainerIpAddress();
             int pgPort = onCi ? 5432 : postgreSQLContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT);
+
+            // rabbitMQ microservice
             String rabbitHost = onCi ? "rs-rabbitmq" : rabbitMQContainer.getContainerIpAddress();
             int rabbitPort = onCi ? 5672 : rabbitMQContainer.getMappedPort(5672);
             int rabbitManagementPort = onCi ? 15672 : rabbitMQContainer.getMappedPort(15672);
 
+            // setup the properties
             testPropertyValues(applicationContext,
                                keyPath,
                                sharedStorage,
@@ -227,6 +245,9 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                                rabbitManagementPort);
         }
 
+        /**
+         * Setup the application properties.
+         */
         private void testPropertyValues(ConfigurableApplicationContext applicationContext,
                                         Path keyPath,
                                         Path sharedStorage,
@@ -236,8 +257,10 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                                         String rabbitHost,
                                         int rabbitPort,
                                         int rabbitManagementPort) {
-            TestPropertyValues.of("regards.microservices.maintenance.enabled=false",
-
+            // setup the properties
+            TestPropertyValues.of(
+                                  // test configuration of the multitenancy
+                                  "regards.microservices.maintenance.enabled=false",
                                   "regards.jpa.multitenant.enabled=true",
                                   "regards.jpa.multitenant.embedded=false",
                                   "regards.amqp.enabled=true",
@@ -245,23 +268,25 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                                   "debug=true",
                                   //"spring.main.allow-bean-definition-overriding=true",
 
+                                  // default user and tenant
                                   "regards.test.role=USER_ROLE",
                                   "regards.test.user=user@regards.fr",
                                   "regards.test.tenant=" + TENANT_PROJECTA,
 
-                                  "regards.processing.sharedStorage.basePath=" + sharedStorage.toFile()
-                                                                                              .getAbsolutePath(),
-                                  "regards.processing.executionWorkdir.basePath=" + execWorkdir.toFile()
-                                                                                               .getAbsolutePath(),
+                                  // storage path and work directory path
+                                  "regards.processing.sharedStorage.basePath=" + sharedStorage.toFile().getAbsolutePath(),
+                                  "regards.processing.executionWorkdir.basePath=" + execWorkdir.toFile().getAbsolutePath(),
 
+                                  // ciphering
                                   "regards.cipher.keyLocation=" + keyPath.toFile().getAbsolutePath(),
                                   "regards.cipher.iv=1234567812345678",
 
-                                  "regards.test.tenant=" + TENANT_PROJECTA,
                                   "spring.jpa.properties.hibernate.default_schema=" + R2DBCDB_NAME,
 
+                                  // available tenants
                                   "regards.tenants=" + TENANT_PROJECTA + "," + TENANT_PROJECTB,
 
+                                  // jpa properties of 1st tenant
                                   "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://"
                                   + pgHost
                                   + ":"
@@ -273,6 +298,7 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                                   "regards.jpa.multitenant.tenants[0].userName=" + PGSQL_USER,
                                   "regards.jpa.multitenant.tenants[0].password=" + PGSQL_SECRET,
 
+                                  // jpa properties of 2nd tenant
                                   "regards.jpa.multitenant.tenants[1].url=jdbc:postgresql://"
                                   + pgHost
                                   + ":"
@@ -284,6 +310,7 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                                   "regards.jpa.multitenant.tenants[1].userName=" + PGSQL_USER,
                                   "regards.jpa.multitenant.tenants[1].password=" + PGSQL_SECRET,
 
+                                  // r2bc properties
                                   "regards.processing.r2dbc.host=" + pgHost,
                                   "regards.processing.r2dbc.port=" + pgPort,
                                   "regards.processing.r2dbc.username=" + PGSQL_USER,
@@ -291,6 +318,7 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                                   "regards.processing.r2dbc.dbname=" + R2DBCDB_NAME,
                                   "regards.processing.r2dbc.schema=public",
 
+                                  // rabbitmq properties
                                   "spring.rabbitmq.host=" + rabbitHost,
                                   "spring.rabbitmq.port=" + rabbitPort,
                                   "spring.rabbitmq.username=guest",
@@ -298,20 +326,24 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                                   "regards.amqp.management.host=" + rabbitHost,
                                   "regards.amqp.management.port=" + rabbitManagementPort,
                                   "regards.amqp.microservice.typeIdentifier=rs-procesing",
-                                  "regards.amqp.microservice.instanceIdentifier=rs-processing-" + new Random().nextInt(
-                                      100_000_000),
+                                  "regards.amqp.microservice.instanceIdentifier=rs-processing-" + new Random().nextInt(100_000_000),
+                                  // client authentication properties
                                   "regards.authentication.client.user=client",
                                   "regards.authentication.client.secret=secret",
                                   "regards.authentication.granttype=password",
+                                  // login credentials of root user
                                   "regards.accounts.root.user.login=regards.root@c-s.fr",
                                   "regards.accounts.root.user.password=root_admin",
 
                                   "jwt.secret=!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!",
+                                  // cloud properties
                                   "cloud.config.address=localhost",
                                   "cloud.config.port=9031",
                                   "cloud.config.searchLocations=classpath:/regards",
                                   "cloud.registry.host=localhost",
-                                  "cloud.registry.port=9032").applyTo(applicationContext);
+                                  "cloud.registry.port=9032")
+                              //...to the application context
+                              .applyTo(applicationContext);
         }
     }
 

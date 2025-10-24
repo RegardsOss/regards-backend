@@ -63,8 +63,6 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     private static final String PROCESS_BID_COLUMN = "processBid";
 
-    private static final String USER_EMAIL_COLUMN = "userEmail";
-
     private static Cache<UUID, PExecution> cache = Caffeine.newBuilder()
                                                            .expireAfterAccess(30, TimeUnit.MINUTES)
                                                            .maximumSize(10000)
@@ -133,16 +131,24 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
     public Flux<PExecution> findAllForMonitoringSearch(String tenant,
                                                        SearchExecutionEntityParameters filters,
                                                        Pageable page) {
+
+        // build the "order by" sql expression from the given Pageable.
         String orderBy = "";
-        if ((page.getSort() != null) && !page.getSort().isEmpty()) {
+        if (!page.getSort().isEmpty()) {
             StringJoiner sj = new StringJoiner(",", "ORDER BY ", "");
-            int count = 0;
             for (Order o : page.getSort().toList()) {
-                count++;
                 sj.add(o.getProperty() + " " + o.getDirection());
             }
             orderBy = sj.toString();
         }
+
+        // Build the sql expression to select all the executions of the given tenant and matching the given filters
+        // - the tenant is either ignored or equal to the given one.
+        // - processBid is either ignored or equal to the given one of the filters
+        // - current status is in the one given by the filters
+        // - the last updated is between the creation date before and after of the filters
+        // - user email from the restriction of the filters
+        // include the sorting "order by" and paging "limit" and "offset"
         DatabaseClient.GenericExecuteSpec execute = databaseClient.sql(String.format(""" 
                                                                                          SELECT E.*
                                                                                          FROM t_execution AS E
@@ -157,8 +163,14 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
                                                                                      getUserExpression(filters),
                                                                                      orderBy));
 
+        // bind the parameters
+        // - "ignoreTenant", "tenant" ,
+        // - "ignoreProcessBid", "processBid",
+        // - "status",
+        // - "lastUpdatedFrom" "lastUpdatedTo"
         execute = bindParametersInWhere(execute, tenant, filters);
 
+        // bind the page parameters "limit" and "offset" from the given Pageble
         execute = execute.bind("limit", page.getPageSize());
         execute = execute.bind("offset", page.getOffset());
 
@@ -173,6 +185,12 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
 
     @Override
     public Mono<Integer> countAllForMonitoringSearch(String tenant, SearchExecutionEntityParameters filters) {
+        // build the sql expression to count all the executions of the given tenant and matching the given filters
+        // - the tenant is either ignored or equal to the given one.
+        // - processBid is either ignored or equal to the given one of the filters
+        // - current status is in the one given by the filters
+        // - the last updated is between the creation date before and after of the filters
+        // - user email from the restriction of the filters
         String sqlExpression = String.format("""
                                                  SELECT COUNT(*)
                                                  FROM t_execution AS E
@@ -184,40 +202,69 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
                                                  AND  E.last_updated <= :lastUpdatedTo;""", getUserExpression(filters));
 
         DatabaseClient.GenericExecuteSpec execute = databaseClient.sql(sqlExpression);
+        // bind the GenericExecuteSpec with the values of the filters.
         execute = bindParametersInWhere(execute, tenant, filters);
+        // execute the sql query for getting the count.
         return execute.map((row, metadata) -> converter.read(Integer.class, row, metadata)).one();
     }
 
+    /**
+     * Bind the parameters "ignoreTenant", "tenant" from the given tenant.<br/>
+     * Bind the parameters "ignoreProcessBid", "processBid", "status", "lastUpdatedFrom" and
+     * "lastUpdatedTo" from the given filters.<br/>
+     * Parameters are bound into the given {@link DatabaseClient.GenericExecuteSpec}.
+     *
+     * @param execute the GenericExecuteSpec to be bound with parameters
+     * @param tenant  the tenant filter
+     * @param filters the other filters for the other parameters.
+     * @return {@link DatabaseClient.GenericExecuteSpec} with added bound parameters.
+     */
     private DatabaseClient.GenericExecuteSpec bindParametersInWhere(DatabaseClient.GenericExecuteSpec execute,
                                                                     String tenant,
                                                                     SearchExecutionEntityParameters filters) {
 
+        // bind "ignoreTenant" and "tenant" from given tenant
         execute = execute.bind("ignoreTenant", tenant == null);
         execute = tenant == null ? execute.bindNull(TENANT_COLUMN, String.class) : execute.bind(TENANT_COLUMN, tenant);
 
+        // bind "ignoreProcessBid" and "processBid" from filters.getProcessBusinessId()
         execute = execute.bind("ignoreProcessBid", filters.getProcessBusinessId() == null);
         execute = filters.getProcessBusinessId() == null ?
             execute.bindNull(PROCESS_BID_COLUMN, UUID.class) :
             execute.bind(PROCESS_BID_COLUMN, UUID.fromString(filters.getProcessBusinessId()));
 
+        // bind "status" from filters.getStatus()
         execute = (filters.getStatus() == null || filters.getStatus().getValues().isEmpty()) ?
             execute.bind("status", Stream.of(ExecutionStatus.values()).map(Enum::name).toList()) :
             execute.bind("status", filters.getStatus().getValues().stream().map(Enum::toString).toList());
 
+        // bind "lastUpdatedFrom" from filters.getCreationDate().getAfter()
         execute = filters.getCreationDate().getAfter() == null ?
+            // default OffsetDateTime is 2000-01-01
             execute.bind("lastUpdatedFrom", OffsetDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)) :
             execute.bind("lastUpdatedFrom", filters.getCreationDate().getAfter());
 
+        // bind "lastUpdatedTo" from filters.getCreationDate().getBefore()
         execute = filters.getCreationDate().getBefore() == null ?
+            // default OffsetDateTime is 2100-01-01
             execute.bind("lastUpdatedTo", OffsetDateTime.of(2100, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)) :
             execute.bind("lastUpdatedTo", filters.getCreationDate().getBefore());
 
         return execute;
     }
 
+    /**
+     * Build the user email expression from the restriction found in the given filters.
+     *
+     * @param filters the filtres providing the user email restrictions.
+     * @return a String representing the expression on the user email or "true" if no restriction on the user email.
+     * @see SearchExecutionEntityParameters#getUserEmail()
+     */
     private String getUserExpression(SearchExecutionEntityParameters filters) {
         String userExpression;
+        // any user email filter?
         boolean emptyUsers = filters.getUserEmail() == null || filters.getUserEmail().getValues().isEmpty();
+        // no user email filter?
         if (emptyUsers) {
             userExpression = "true";
         } else {
