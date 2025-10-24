@@ -21,7 +21,6 @@ package fr.cnes.regards.framework.utils.plugins.bean;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.dto.parameter.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -40,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { TestConfiguration.class })
-public final class PluginInterfaceBeanFactoryIT extends PluginUtilsTestConstants {
+public final class PluginInterfaceBeanFactoryIT {
 
     /**
      * Class logger

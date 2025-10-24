@@ -28,22 +28,12 @@ public class PluginUtilsTestConstants {
     /**
      * Starting constant {@link String}
      */
-    public static final String STARTING = "Starting ";
+    public static final String STARTING = "Starting {}";
 
     /**
      * Ending constant {@link String}
      */
-    public static final String ENDING = "Ending ";
-
-    /**
-     * TRUE constant {@link String}
-     */
-    public static final Boolean TRUE = Boolean.TRUE;
-
-    /**
-     * FALSE constant {@link String}
-     */
-    public static final Boolean FALSE = Boolean.FALSE;
+    public static final String ENDING = "Ending {}";
 
     /**
      * "5" constant {@link String}
@@ -90,10 +80,9 @@ public class PluginUtilsTestConstants {
      */
     public static final String HELLO = "hello";
 
-    /*
-     * Constructor protected
+    /**
+     * constructor is private since class is static.
      */
-    protected PluginUtilsTestConstants() {
-        super();
+    private PluginUtilsTestConstants() {
     }
 }

@@ -45,6 +45,12 @@ public final class S3ServerUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(S3ServerUtils.class);
 
     /**
+     * Constructor is private since class is static.
+     */
+    private S3ServerUtils() {
+    }
+
+    /**
      * Return the S3 server {@link S3Server} the URL belong to or null if there is no corresponding server
      *
      * @param url       the url to check
@@ -204,7 +210,7 @@ public final class S3ServerUtils {
      */
     public record KeyAndStorage(String key,
                                 StorageConfigDto storageConfig) {
-        //NOSONAR
+        //NOSONAR record can have an empty body.
     }
 
 }

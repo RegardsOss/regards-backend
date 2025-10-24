@@ -32,6 +32,8 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -88,9 +90,9 @@ public class RequestBuilderCustomizer {
     private final HttpHeaders headers = new HttpHeaders();
 
     /**
-     * Request parameter builder
+     * Request parameters
      */
-    private final RequestParamBuilder requestParamBuilder = new RequestParamBuilder();
+    private final MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
 
     /**
      * Documentation snippets
@@ -282,8 +284,16 @@ public class RequestBuilderCustomizer {
      * Add name/values request parameter to the request
      */
     public RequestBuilderCustomizer addParameter(String name, String... values) {
-        requestParamBuilder.param(name, values);
+        org.springframework.util.Assert.hasLength(name, "'name' must not be empty");
+        org.springframework.util.Assert.notEmpty(values, "'values' must not be empty");
+        for (String value : values) {
+            parameters.add(name, value);
+        }
         return this;
+    }
+
+    public MultiValueMap<String, String> getParameters() {
+        return parameters;
     }
 
     /**
@@ -495,16 +505,8 @@ public class RequestBuilderCustomizer {
     }
 
     public RequestBuilderCustomizer documentRequestParameters(ParameterDescriptor... descriptors) {
-        Optional<Snippet> optionalExistingSnippet = docSnippets.stream()
-                                                               .filter(docSnippet -> docSnippet instanceof QueryParametersSnippet)
-                                                               .findFirst();
-        // Check if an existing request params exists
-        if (optionalExistingSnippet.isPresent()) {
-            throw new RuntimeException("You cannot call this method several time.");
-        } else {
-            // Create another
-            docSnippets.add(RequestDocumentation.queryParameters(descriptors));
-        }
+        assertNoSnippetOfType(QueryParametersSnippet.class);
+        docSnippets.add(RequestDocumentation.queryParameters(descriptors));
         return this;
     }
 
@@ -513,17 +515,16 @@ public class RequestBuilderCustomizer {
     }
 
     public RequestBuilderCustomizer documentRequestBody(FieldDescriptor... descriptors) {
-        Optional<Snippet> optionalExistingSnippet = docSnippets.stream()
-                                                               .filter(docSnippet -> docSnippet instanceof RequestFieldsSnippet)
-                                                               .findFirst();
-        // Check if an existing request params exists
-        if (optionalExistingSnippet.isPresent()) {
-            throw new RuntimeException("You cannot call this method several time.");
-        } else {
-            // Create another
-            docSnippets.add(PayloadDocumentation.relaxedRequestFields(descriptors));
-        }
+        assertNoSnippetOfType(RequestFieldsSnippet.class);
+        docSnippets.add(PayloadDocumentation.relaxedRequestFields(descriptors));
         return this;
+    }
+
+    private <T extends Snippet> void assertNoSnippetOfType(Class<T> snippetType) {
+        final boolean found = docSnippets.stream().anyMatch(snippetType::isInstance);
+        if (found) {
+            throw new IllegalStateException("You cannot call this method several time.");
+        }
     }
 
     public RequestBuilderCustomizer documentPathParameters(List<ParameterDescriptor> descriptors) {
@@ -573,7 +574,7 @@ public class RequestBuilderCustomizer {
         Assert.assertFalse("At least one expectation is required", expectations.isEmpty());
         try {
             // lets create the attributes and description for the documentation snippet
-            requestBuilder.params(requestParamBuilder.getParameters());
+            requestBuilder.params(parameters);
             ResultActions request = mvc.perform(requestBuilder);
             for (ResultMatcher matcher : expectations) {
                 request = request.andExpect(matcher);
@@ -654,7 +655,7 @@ public class RequestBuilderCustomizer {
     protected void checkCustomizationCoherence(HttpMethod httpMethod) {
         // constraints are only on DELETE and PUT, for now, as they cannot have request parameters
         if (httpMethod.equals(HttpMethod.DELETE) || httpMethod.equals(HttpMethod.PUT)) {
-            if (!requestParamBuilder.getParameters().isEmpty()) {
+            if (!parameters.isEmpty()) {
                 throw new IllegalStateException(String.format("Method %s cannot have request parameters", httpMethod));
             }
         }

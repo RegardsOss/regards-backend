@@ -64,7 +64,7 @@ public final class PluginParameterUtils {
 
     private static final String EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN = "Exception while processing param <%s> in plugin class <%s> with param <%s>.";
 
-    private static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
 
     /**
      * Retrieve List of {@link PluginParamDescriptor} by reflection on class fields
@@ -506,35 +506,31 @@ public final class PluginParameterUtils {
      */
     @SuppressWarnings({ "unchecked" })
     public static IPluginParam forType(PluginParamType paramType, String paramName, String value, boolean isDynamic) {
-        AbstractPluginParam<?> param;
-        switch (paramType) {
-            case STRING -> param = IPluginParam.build(paramName, value);
-            case BYTE -> param = IPluginParam.build(paramName, Byte.valueOf(value));
-            case SHORT -> param = IPluginParam.build(paramName, Short.valueOf(value));
-            case INTEGER -> param = IPluginParam.build(paramName, Integer.valueOf(value));
-            case LONG -> param = IPluginParam.build(paramName, Long.valueOf(value));
-            case FLOAT -> param = IPluginParam.build(paramName, Float.valueOf(value));
-            case DOUBLE -> param = IPluginParam.build(paramName, Double.valueOf(value));
-            case BOOLEAN -> param = IPluginParam.build(paramName, Boolean.valueOf(value));
-            case POJO -> param = IPluginParam.build(paramName, new JsonParser().parse(value).getAsJsonObject());
+        AbstractPluginParam<?> param = switch (paramType) {
+            case STRING -> IPluginParam.build(paramName, value);
+            case BYTE -> IPluginParam.build(paramName, Byte.valueOf(value));
+            case SHORT -> IPluginParam.build(paramName, Short.valueOf(value));
+            case INTEGER -> IPluginParam.build(paramName, Integer.valueOf(value));
+            case LONG -> IPluginParam.build(paramName, Long.valueOf(value));
+            case FLOAT -> IPluginParam.build(paramName, Float.valueOf(value));
+            case DOUBLE -> IPluginParam.build(paramName, Double.valueOf(value));
+            case BOOLEAN -> IPluginParam.build(paramName, Boolean.valueOf(value));
+            case POJO -> IPluginParam.build(paramName, new JsonParser().parse(value).getAsJsonObject());
             case COLLECTION -> {
                 Type type = new TypeToken<Collection<JsonElement>>() {
 
                 }.getType();
-                param = IPluginParam.build(paramName, (Collection<JsonElement>) gson.fromJson(value, type));
+                yield IPluginParam.build(paramName, (Collection<JsonElement>) gson.fromJson(value, type));
             }
             case MAP -> {
                 Type typeMap = new TypeToken<Map<String, JsonElement>>() {
 
                 }.getType();
-                param = IPluginParam.build(paramName, (Map<String, JsonElement>) gson.fromJson(value, typeMap));
+                yield IPluginParam.build(paramName, (Map<String, JsonElement>) gson.fromJson(value, typeMap));
             }
-            case PLUGIN -> param = IPluginParam.plugin(paramName, value);
-            case REGARDS_ENTITY_MODEL -> param = IPluginParam.model(paramName, value);
-            default -> throw new PluginUtilsRuntimeException(String.format(
-                "Type parameter <%s> cannot be handled. Complex types are not supported yet.",
-                paramType));
-        }
+            case PLUGIN -> IPluginParam.plugin(paramName, value);
+            case REGARDS_ENTITY_MODEL -> IPluginParam.model(paramName, value);
+        };
         param.setDynamic(isDynamic);
         return param;
     }

@@ -28,12 +28,18 @@ import java.net.URLConnection;
 /**
  * @author Stephane Cortine
  */
-public class FileTestUtils {
+public final class FileTestUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileTestUtils.class);
 
+    /**
+     * Constructor is private since class is static.
+     */
+    private FileTestUtils() {
+    }
+
     public static long getFileSize(URL sourceUrl) {
-        long fileSize = 0l;
+        long fileSize = 0L;
         URLConnection urlConnection = null;
         try {
             try {

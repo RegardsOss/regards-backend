@@ -25,18 +25,25 @@ import java.util.Random;
  *
  * @author Thibaud Michaudel
  **/
-public class RandomChecksumUtils {
+public final class RandomChecksumUtils {
+
+    /**
+     * Constructor is private since class is static.
+     */
+    private RandomChecksumUtils() {
+    }
 
     /**
      * Generate a well formatted MD5 checksum
      */
     public static String generateRandomChecksum() {
         Random r = new Random();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while (sb.length() < 32) {
             sb.append(Integer.toHexString(r.nextInt()));
         }
 
         return sb.substring(0, 32);
     }
+
 }

@@ -61,7 +61,11 @@
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
         </dependency>
-
+        
+        <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>exception-utils</artifactId>
+        </dependency>
         <!-- External dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

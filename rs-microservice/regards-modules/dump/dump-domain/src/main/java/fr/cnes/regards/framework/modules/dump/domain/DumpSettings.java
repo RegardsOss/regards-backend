@@ -29,9 +29,6 @@ import java.util.List;
 
 public final class DumpSettings {
 
-    private DumpSettings() {
-    }
-
     public static final String DUMP_PARAMETERS = "dump_parameters";
 
     public static final String LAST_DUMP_REQ_DATE = "last_dump_req_date";
@@ -61,4 +58,9 @@ public final class DumpSettings {
     public static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(DUMP_PARAMETERS_SETTING,
                                                                                 LAST_DUMP_REQ_DATE_SETTING);
 
+    /**
+     * private constructor since static class.
+     */
+    private DumpSettings() {
+    }
 }

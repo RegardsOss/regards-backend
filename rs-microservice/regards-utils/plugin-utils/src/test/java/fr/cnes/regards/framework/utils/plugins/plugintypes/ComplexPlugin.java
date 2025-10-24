@@ -85,9 +85,9 @@ public class ComplexPlugin implements ISamplePlugin {
     @Override
     public int add(final int pFirst, final int pSecond) {
         final float f = complexInterfacePlugin.mult(4, 8);
-        LOGGER.info("float=" + f);
+        LOGGER.info("float={}", f);
         final int res = coef * (pFirst + pSecond);
-        LOGGER.info("add result : " + res);
+        LOGGER.info("add result : {}", res);
         return res;
     }
 
@@ -100,7 +100,7 @@ public class ComplexPlugin implements ISamplePlugin {
      */
     @PluginInit
     private void aInit() {
-        LOGGER.info("Init method call : " + this.getClass().getName() + "|active:" + isActive + "|coeff:" + coef);
+        LOGGER.info("Init method call: {} |active: {} |coeff: {}", this.getClass().getName(), isActive, coef);
         // + "|plg_conf:" + this.pluginConfiguration.getId()+ "|plg_int:" + this.complexInterfacePlugin.toString()
     }
 }

@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.utils.cycle.detection.valid.SamplePluginWithPoj
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTest;
 import fr.cnes.regards.framework.utils.plugins.basic.SamplePlugin;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import org.junit.Assert;
@@ -74,7 +73,7 @@ public class CycleDetectionIT {
         pojoParam.addIntValues(4);
 
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
-                                                                           PluginUtilsTest.TRUE),
+                                                                           Boolean.TRUE),
                                                         IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
                                                         IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
                                                                            PluginParameterTransformer.toJson(pojoParam)),
@@ -118,7 +117,7 @@ public class CycleDetectionIT {
         pojoChild.addPojo(pojoParam);
 
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_ACTIVE,
-                                                                           PluginUtilsTest.TRUE),
+                                                                           Boolean.TRUE),
                                                         IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_COEF,
                                                                            12345),
                                                         IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_POJO,

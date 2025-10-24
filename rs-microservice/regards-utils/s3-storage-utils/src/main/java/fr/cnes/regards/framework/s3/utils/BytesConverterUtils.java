@@ -23,7 +23,13 @@ package fr.cnes.regards.framework.s3.utils;
  *
  * @author Thibaud Michaudel
  **/
-public class BytesConverterUtils {
+public final class BytesConverterUtils {
+
+    /**
+     * Constructor is private since class is static.
+     */
+    private BytesConverterUtils() {
+    }
 
     /**
      * Convert bytes to hexadecimal

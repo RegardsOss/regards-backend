@@ -53,7 +53,7 @@ public class S3ClientReloader<S extends SdkClient> implements AutoCloseable {
     private S s3;
 
     /* All uses of consecutiveSdkErrors must be in a synchronized method */
-    private short consecutiveSdkErrors;
+    private int consecutiveSdkErrors;
 
     public S3ClientReloader(int maxConsecutiveErrors,
                             StorageConfigDto config,

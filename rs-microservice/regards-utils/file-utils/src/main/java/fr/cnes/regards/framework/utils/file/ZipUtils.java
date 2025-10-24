@@ -39,9 +39,15 @@ import java.util.zip.ZipOutputStream;
  *
  * @author Thibaud Michaudel
  **/
-public class ZipUtils {
+public final class ZipUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZipUtils.class);
+
+    /**
+     * constructor is private since class is static.
+     */
+    private ZipUtils() {
+    }
 
     /**
      * Create a flat zip archive containing the listed files.
@@ -69,7 +75,7 @@ public class ZipUtils {
             } catch (IOException ex) {
                 LOGGER.error("Error while attempting to delete partially created archive {} following error",
                              archive.getName(),
-                             e);
+                             ex);
             }
             return false;
         }
@@ -90,15 +96,13 @@ public class ZipUtils {
             while (zipEntry != null) {
                 File newFile = newFile(destination.toFile(), zipEntry);
                 if (zipEntry.isDirectory()) {
-                    if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                        LOGGER.error("Failed to create directory  {}", newFile);
+                    if (!mkdirs(newFile)) {
                         return false;
                     }
                 } else {
                     // fix for Windows-created archives
                     File parent = newFile.getParentFile();
-                    if (!parent.isDirectory() && !parent.mkdirs()) {
-                        LOGGER.error("Failed to create directory  {}", parent);
+                    if (!mkdirs(parent)) {
                         return false;
                     }
 
@@ -119,6 +123,14 @@ public class ZipUtils {
             return false;
         }
         return true;
+    }
+
+    private static boolean mkdirs(File file) {
+        boolean success = file.isDirectory() || file.mkdirs();
+        if (!success) {
+            LOGGER.error("Failed to create directory  {}", file);
+        }
+        return success;
     }
 
     /**

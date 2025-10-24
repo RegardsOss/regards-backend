@@ -31,7 +31,7 @@ import java.util.function.Function;
  *
  * @author Thibaud Michaudel
  **/
-public class StorageConfigUtils {
+public final class StorageConfigUtils {
 
     public static String entryKey(StorageConfigDto storageConfig, String suffix) {
         return normalizedRootPath(storageConfig) + suffix;

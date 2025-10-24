@@ -37,7 +37,7 @@ import java.time.temporal.TemporalAccessor;
  *
  * @author tguillou
  **/
-public class JsonSerializationUtils {
+public final class JsonSerializationUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonSerializationUtils.class);
 
@@ -51,6 +51,10 @@ public class JsonSerializationUtils {
                                                                                             .optionalStart()
                                                                                             .appendOffset("+HH:MM", "Z")
                                                                                             .toFormatter();
+
+    // static class so private constructor
+    private JsonSerializationUtils() {
+    }
 
     public static String format(ZonedDateTime zonedDateTime) {
         return zonedDateTime.format(ISO_DATE_TIME_UTC);

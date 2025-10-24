@@ -49,6 +49,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 /**
  * Utils method to manage bucket in a S3 server
@@ -69,52 +70,41 @@ public final class S3BucketTestUtils {
 
     private static final int MULTIPART_UPLOAD_PREFETCH = 1;
 
+    /**
+     * Constructor is private since class is static.
+     */
     private S3BucketTestUtils() {
     }
 
     public static void createBucket(S3Server s3Server) {
-        AwsBasicCredentials credentials = AwsBasicCredentials.create(s3Server.getKey(), s3Server.getSecret());
-        S3Client s3Client = S3Client.builder()
-                                    .endpointOverride(URI.create(s3Server.getEndpoint()))
-                                    .region(Region.of(s3Server.getRegion()))
-                                    .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                                    .serviceConfiguration(S3Configuration.builder()
-                                                                         .pathStyleAccessEnabled(true)
-                                                                         .build())
-                                    .build();
+        try (S3Client s3Client = newS3Client(s3Server)) {
 
-        if (s3Client.listBuckets().buckets().stream().noneMatch(bucket -> bucket.name().equals(s3Server.getBucket()))) {
-            s3Client.createBucket(CreateBucketRequest.builder().bucket(s3Server.getBucket()).build());
+            if (s3Client.listBuckets().buckets().stream().noneMatch(isBucketName(s3Server))) {
+                s3Client.createBucket(CreateBucketRequest.builder().bucket(s3Server.getBucket()).build());
+            }
         }
     }
 
     public static void deleteBucket(S3Server s3Server) {
-        AwsBasicCredentials credentials = AwsBasicCredentials.create(s3Server.getKey(), s3Server.getSecret());
-        S3Client s3Client = S3Client.builder()
-                                    .endpointOverride(URI.create(s3Server.getEndpoint()))
-                                    .region(Region.of(s3Server.getRegion()))
-                                    .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                                    .serviceConfiguration(S3Configuration.builder()
-                                                                         .pathStyleAccessEnabled(true)
-                                                                         .build())
-                                    .build();
+        try (S3Client s3Client = newS3Client(s3Server)) {
 
-        if (s3Client.listBuckets().buckets().stream().anyMatch(bucket -> bucket.name().equals(s3Server.getBucket()))) {
-            ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
-                                                                            .bucket(s3Server.getBucket())
-                                                                            .build();
-            ListObjectsV2Response listObjectsV2Response;
-            do {
-                listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
-                for (S3Object s3Object : listObjectsV2Response.contents()) {
-                    DeleteObjectRequest request = DeleteObjectRequest.builder()
-                                                                     .bucket(s3Server.getBucket())
-                                                                     .key(s3Object.key())
-                                                                     .build();
-                    s3Client.deleteObject(request);
-                }
-            } while (listObjectsV2Response.isTruncated());
-            s3Client.deleteBucket(DeleteBucketRequest.builder().bucket(s3Server.getBucket()).build());
+            if (s3Client.listBuckets().buckets().stream().anyMatch(isBucketName(s3Server))) {
+                ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
+                                                                                .bucket(s3Server.getBucket())
+                                                                                .build();
+                ListObjectsV2Response listObjectsV2Response;
+                do {
+                    listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
+                    for (S3Object s3Object : listObjectsV2Response.contents()) {
+                        DeleteObjectRequest request = DeleteObjectRequest.builder()
+                                                                         .bucket(s3Server.getBucket())
+                                                                         .key(s3Object.key())
+                                                                         .build();
+                        s3Client.deleteObject(request);
+                    }
+                } while (listObjectsV2Response.isTruncated());
+                s3Client.deleteBucket(DeleteBucketRequest.builder().bucket(s3Server.getBucket()).build());
+            }
         }
     }
 
@@ -208,4 +198,18 @@ public final class S3BucketTestUtils {
         return new StorageConfigBuilder(s3Server).rootPath(rootPath).build();
     }
 
+    private static S3Client newS3Client(S3Server s3Server) {
+        final AwsBasicCredentials credentials = AwsBasicCredentials.create(s3Server.getKey(), s3Server.getSecret());
+
+        return S3Client.builder()
+                       .endpointOverride(URI.create(s3Server.getEndpoint()))
+                       .region(Region.of(s3Server.getRegion()))
+                       .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                       .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
+                       .build();
+    }
+
+    private static Predicate<Bucket> isBucketName(S3Server s3Server) {
+        return bucket -> bucket.name().equals(s3Server.getBucket());
+    }
 }

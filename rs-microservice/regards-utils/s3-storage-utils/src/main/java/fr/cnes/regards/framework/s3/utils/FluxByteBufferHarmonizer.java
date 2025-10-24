@@ -14,8 +14,11 @@ import java.util.function.Function;
 
 import static reactor.core.publisher.SignalType.*;
 
-public class FluxByteBufferHarmonizer {
+public final class FluxByteBufferHarmonizer {
 
+    /**
+     * Constructor is private since class is static.
+     */
     private FluxByteBufferHarmonizer() {
     }
 

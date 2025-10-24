@@ -57,6 +57,9 @@ public final class XlsxHelper {
      */
     private static final String MISSING_SHEET_NAME = "Missing sheet name";
 
+    /**
+     * Constructor is private since class is static.
+     */
     private XlsxHelper() {
     }
 
@@ -74,75 +77,73 @@ public final class XlsxHelper {
         assertNotNull(requirements, NO_REQUIREMENT_FOUND);
         assertNotNull(sheetName, MISSING_SHEET_NAME);
 
-        if (requirements.getRequirements() != null) {
+        if (requirements.getRequirements() == null) {
+            return;
+        }
 
-            try (Workbook wb = Files.exists(filePath) ? readFile(filePath) : new HSSFWorkbook()) {
-                try (OutputStream out = Files.newOutputStream(filePath)) {
+        try (Workbook wb = readOrCreateWorkbook(filePath); OutputStream out = Files.newOutputStream(filePath)) {
 
-                    final CreationHelper createHelper = wb.getCreationHelper();
+            final CreationHelper createHelper = wb.getCreationHelper();
 
-                    // Create sheet
-                    final String safeName = WorkbookUtil.createSafeSheetName(sheetName);
-                    final Sheet sheet = wb.createSheet(safeName);
+            // Create sheet
+            final String safeName = WorkbookUtil.createSafeSheetName(sheetName);
+            final Sheet sheet = wb.createSheet(safeName);
 
-                    // Init requirement style
-                    final CellStyle style = wb.createCellStyle();
-                    style.setFillBackgroundColor(IndexedColors.AQUA.getIndex());
-                    style.setFillPattern(FillPatternType.BIG_SPOTS);
+            // Init requirement style
+            final CellStyle style = wb.createCellStyle();
+            style.setFillBackgroundColor(IndexedColors.AQUA.getIndex());
+            style.setFillPattern(FillPatternType.BIG_SPOTS);
 
-                    int rownum = 0;
-                    for (XmlRequirement req : requirements.getRequirements()) {
-                        // Write requirement row
-                        final Row row = sheet.createRow(rownum);
-                        final Cell cell = row.createCell(0);
-                        cell.setCellValue(createHelper.createRichTextString(req.getRequirement()));
-                        cell.setCellStyle(style);
-                        sheet.addMergedRegion(new CellRangeAddress(rownum, rownum, 0, 2));
+            int rownum = 0;
+            for (XmlRequirement req : requirements.getRequirements()) {
+                // Write requirement row
+                final Row row = sheet.createRow(rownum);
+                final Cell cell = row.createCell(0);
+                cell.setCellValue(createHelper.createRichTextString(req.getRequirement()));
+                cell.setCellStyle(style);
+                sheet.addMergedRegion(new CellRangeAddress(rownum, rownum, 0, 2));
+                rownum++;
+
+                // Write tests
+                if (req.getTests() != null) {
+                    for (XmlTest test : req.getTests()) {
+                        final Row testRow = sheet.createRow(rownum);
                         rownum++;
-
-                        // Write tests
-                        if (req.getTests() != null) {
-                            for (XmlTest test : req.getTests()) {
-                                final Row testRow = sheet.createRow(rownum);
-                                rownum++;
-                                testRow.createCell(0)
-                                       .setCellValue(createHelper.createRichTextString(test.getPurpose()));
-                                testRow.createCell(1)
-                                       .setCellValue(createHelper.createRichTextString(test.getTestClass()));
-                                testRow.createCell(2)
-                                       .setCellValue(createHelper.createRichTextString(test.getTestMethodName()));
-                            }
-                        } else {
-                            LOG.error("No test found for requirement " + req.getRequirement());
-                        }
+                        testRow.createCell(0).setCellValue(createHelper.createRichTextString(test.getPurpose()));
+                        testRow.createCell(1).setCellValue(createHelper.createRichTextString(test.getTestClass()));
+                        testRow.createCell(2).setCellValue(createHelper.createRichTextString(test.getTestMethodName()));
                     }
-
-                    // Write file
-                    wb.write(out);
-                } catch (IOException e) {
-                    final String message = "Error while writing XLSX file";
-                    LOG.error(message, e);
-                    throw new ReportException(message);
+                } else {
+                    LOG.error("No test found for requirement {}", req.getRequirement());
                 }
-            } catch (IOException e) {
-                final String message = "Error while reading XLSX file";
-                LOG.error(message, e);
-                throw new ReportException(message);
             }
+            // Write file
+            wb.write(out);
+
+        } catch (IOException e) {
+            final String message = "Error while reading XLSX file";
+            LOG.error(message, e);
+            throw new ReportException(message);
         }
     }
 
     /**
-     * Read an existing file
+     * Read the given workbook file or create a new empty workbook if the file does not yet exists.
      *
      * @param filePath the file to read
-     * @return an {@link HSSFWorkbook} representing the file
+     * @return an {@link HSSFWorkbook} representing the file or new workbook
      * @throws IOException if problem occurs
      */
-    private static HSSFWorkbook readFile(Path filePath) throws IOException {
-        try (InputStream in = Files.newInputStream(filePath)) {
-            return new HSSFWorkbook(in);
+    private static HSSFWorkbook readOrCreateWorkbook(Path filePath) throws IOException {
+        HSSFWorkbook workbook;
+        if (Files.exists(filePath)) {
+            try (InputStream in = Files.newInputStream(filePath)) {
+                workbook = new HSSFWorkbook(in);
+            }
+        } else {
+            workbook = new HSSFWorkbook();
         }
+        return workbook;
     }
 
     /**

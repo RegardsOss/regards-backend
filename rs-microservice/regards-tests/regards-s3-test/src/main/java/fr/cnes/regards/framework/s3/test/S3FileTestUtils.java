@@ -62,6 +62,12 @@ public final class S3FileTestUtils {
     private static final int MULTIPART_UPLOAD_PREFETCH = 1;
 
     /**
+     * Constructor is private since class is static.
+     */
+    private S3FileTestUtils() {
+    }
+
+    /**
      * Store files on a s3 server
      *
      * @param workingSet         the files to be stored
@@ -88,19 +94,12 @@ public final class S3FileTestUtils {
 
             StorageCommandID cmdId = new StorageCommandID(request.getJobId(), UUID.randomUUID());
 
-            String entryKey = null;
-            switch (fileIdentification) {
-                case CHECKSUM:
-                    entryKey = request.getMetaInfo().getChecksum();
-                    break;
-                case FILENAME:
-                    entryKey = Paths.get(StorageConfigUtils.entryKey(storageConfig, request.getOriginUrl()))
-                                    .getFileName()
-                                    .toString();
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown file identification");
-            }
+            String entryKey = switch (fileIdentification) {
+                case CHECKSUM -> request.getMetaInfo().getChecksum();
+                case FILENAME -> Paths.get(StorageConfigUtils.entryKey(storageConfig, request.getOriginUrl()))
+                                      .getFileName()
+                                      .toString();
+            };
 
             StorageEntry storageEntry = StorageEntry.builder()
                                                     .config(storageConfig)
@@ -129,12 +128,8 @@ public final class S3FileTestUtils {
                                                                                       "Unreachable endpoint")),
                                                                                   failure -> Mono.error(new RuntimeException(
                                                                                       "Write failure in S3 storage"))))
-                             .doOnError(t -> {
-                                 LOGGER.error("End storing {}", request.getOriginUrl(), t);
-                             })
-                             .doOnSuccess(success -> {
-                                 LOGGER.info("End storing {}", request.getOriginUrl());
-                             })
+                             .doOnError(t -> LOGGER.error("End storing {}", request.getOriginUrl(), t))
+                             .doOnSuccess(success -> LOGGER.info("End storing {}", request.getOriginUrl()))
                              .block();
             }
         }));
@@ -177,13 +172,10 @@ public final class S3FileTestUtils {
         return Option.some(Tuple.of(request.getMetaInfo().getAlgorithm(), request.getMetaInfo().getChecksum()));
     }
 
-    private S3FileTestUtils() {
-    }
-
     private static S3HighLevelReactiveClient getS3HighLevelReactiveClient() {
         Scheduler scheduler = Schedulers.newParallel("s3-reactive-client", 10);
         int maxBytesPerPart = 5 * 1024 * 1024;
-        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10);
-        return client;
+        return new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10);
     }
+
 }

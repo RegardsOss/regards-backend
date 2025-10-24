@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,10 +37,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants.*;
+
 /**
  * @author Christophe Mertz
  */
-public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
+public final class PluginInterfaceUtilsTest {
 
     /**
      * Class logger
@@ -77,14 +78,14 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
      */
     @Test
     public void loadPluginsInterface() {
-        LOGGER.debug(STARTING + this);
+        LOGGER.debug(STARTING, this);
         // Get all the plugin interfaces
         PluginUtils.setup(PLUGIN_PACKAGES);
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.forEach(LOGGER::info);
         Assert.assertTrue(pluginInterfaces.size() > 0);
-        LOGGER.debug(ENDING + this);
+        LOGGER.debug(ENDING, this);
     }
 
     /**
@@ -92,13 +93,13 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
      */
     @Test
     public void loadPluginsInterfaceEmpty() {
-        LOGGER.debug(STARTING + this);
+        LOGGER.debug(STARTING, this);
         // Get all the plugin interfaces
         PluginUtils.setup(PLUGIN_EMPTY_PACKAGE);
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
         Assert.assertTrue(pluginInterfaces.isEmpty());
-        LOGGER.debug(ENDING + this);
+        LOGGER.debug(ENDING, this);
     }
 
     /**
@@ -106,14 +107,14 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
      */
     @Test
     public void loadPluginsInterfaceSeveralPrefix() {
-        LOGGER.debug(STARTING + this);
+        LOGGER.debug(STARTING, this);
         // Get all the plugin interfaces
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.forEach(LOGGER::info);
         Assert.assertTrue(pluginInterfaces.size() > 0);
-        LOGGER.debug(ENDING + this);
+        LOGGER.debug(ENDING, this);
     }
 
     /**
@@ -121,13 +122,13 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
      */
     @Test
     public void loadNoPluginsInterfaceSeveralPrefix() {
-        LOGGER.debug(STARTING + this);
+        LOGGER.debug(STARTING, this);
         // Get all the plugin interfaces
         PluginUtils.setup(PLUGIN_EMPTY_PACKAGES);
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
         Assert.assertTrue(pluginInterfaces.isEmpty());
-        LOGGER.debug(ENDING + this);
+        LOGGER.debug(ENDING, this);
     }
 
     @Test
@@ -135,11 +136,11 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     @Purpose("Load a plugin with a plugin type interface parameter.")
     public void getComplexPlugin() throws NotAvailablePluginConfigurationException {
         final ComplexPlugin complexPlugin;
-        LOGGER.debug(STARTING + this);
+        LOGGER.debug(STARTING, this);
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
 
         Set<IPluginParam> interfaceParameters = IPluginParam.set(IPluginParam.build(AParameterPluginImplementation.FIELD_NAME,
-                                                                                    PluginInterfaceUtilsTest.LONG_STR_VALUE));
+                                                                                    LONG_STR_VALUE));
         PluginConfiguration pluginConfigurationInterface = PluginConfiguration.build(AParameterPluginImplementation.class,
                                                                                      "",
                                                                                      interfaceParameters);
@@ -152,9 +153,9 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         final Set<IPluginParam> complexParameters = IPluginParam.set(IPluginParam.plugin(ComplexPlugin.FIELD_NAME_PLUGIN,
                                                                                          pluginConfigurationInterface.getBusinessId()),
                                                                      IPluginParam.build(ComplexPlugin.FIELD_NAME_ACTIVE,
-                                                                                        TRUE),
+                                                                                        Boolean.TRUE),
                                                                      IPluginParam.build(ComplexPlugin.FIELD_NAME_COEF,
-                                                                                        PluginInterfaceUtilsTest.CINQ));
+                                                                                        CINQ));
 
         ConcurrentMap<String, Object> instantiatedPluginMap = new ConcurrentHashMap<>();
         instantiatedPluginMap.put(pluginConfigurationInterface.getBusinessId(),
@@ -168,22 +169,21 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                                               instantiatedPluginMap);
         Assert.assertNotNull(complexPlugin);
 
-        Assert.assertTrue(complexPlugin.add(PluginInterfaceUtilsTest.CINQ, PluginInterfaceUtilsTest.QUATRE) > 0);
-        Assert.assertTrue(complexPlugin.echo(PluginInterfaceUtilsTest.HELLO_WORLD)
-                                       .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
+        Assert.assertTrue(complexPlugin.add(CINQ, QUATRE) > 0);
+        Assert.assertTrue(complexPlugin.echo(HELLO_WORLD).contains(HELLO_WORLD));
 
         LOGGER.info("plugin parameter:" + complexPlugin.echoPluginParameter());
 
-        LOGGER.debug(ENDING + this);
+        LOGGER.debug(ENDING, this);
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
     @Requirement("REGARDS_DSL_SYS_PLG_020")
     @Purpose("Error to load a plugin from with an incompatible interface parameter.")
     public void incompatibleInterfaceError() throws NotAvailablePluginConfigurationException {
-        LOGGER.debug(STARTING + this);
+        LOGGER.debug(STARTING, this);
         Set<IPluginParam> complexParameters = IPluginParam.set(IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_COEF,
-                                                                                  PluginInterfaceUtilsTest.CINQ),
+                                                                                  CINQ),
                                                                IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_PLUGIN,
                                                                                   "coucou"));
 
@@ -197,7 +197,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     @Requirement("REGARDS_DSL_SYS_PLG_020")
     @Purpose("Error to load a plugin from with an incompatible interface parameter.")
     public void incompatibleParameterError() throws NotAvailablePluginConfigurationException {
-        LOGGER.debug(STARTING + this);
+        LOGGER.debug(STARTING, this);
         Set<IPluginParam> complexParameters = IPluginParam.set(IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_COEF,
                                                                                   "allo"),
                                                                IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_PLUGIN,
@@ -212,7 +212,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     @Test(expected = PluginUtilsRuntimeException.class)
     public void catchingPluginInitExceptionIntoPluginUtilsRuntimeException()
         throws NotAvailablePluginConfigurationException {
-        LOGGER.debug(STARTING + this);
+        LOGGER.debug(STARTING, this);
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);

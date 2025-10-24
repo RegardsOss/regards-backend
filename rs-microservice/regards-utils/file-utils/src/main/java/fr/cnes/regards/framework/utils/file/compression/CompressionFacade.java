@@ -43,6 +43,11 @@ import java.util.Vector;
 public class CompressionFacade {
 
     /**
+     * Logger of the class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompressionFacade.class);
+
+    /**
      * Nombre d'octets dans un Ko.
      */
     private static final int BYTES_IN_KILOBYTE = 1024;
@@ -56,11 +61,6 @@ public class CompressionFacade {
      * Le contexte de compression qui pilote la compression proprement dite
      */
     private final CompressionContext strategy;
-
-    /**
-     * Attribut permettant la journalisation.
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(CompressionFacade.class);
 
     /**
      * Taille max des fichiers compresses en ko : 2Go valeur par défaut
@@ -341,7 +341,7 @@ public class CompressionFacade {
     /**
      * Permet de factoriser l'initialisation de la strategie concrete de compression
      *
-     * @param pMode le type de compression (ZIP, GZIP, TAR, ...)
+     * @param type le type de compression (ZIP, GZIP, TAR, ...)
      * @throws CompressionException si l'un des paramètres n'est pas correct
      */
     private void initCompression(CompressionTypeEnum type) throws CompressionException {
@@ -467,8 +467,8 @@ public class CompressionFacade {
         return pfile.length() / BYTES_IN_KILOBYTE > maxArchiveSize;
     }
 
-    public void setMaxArchiveSize(long pMaxArchiveSize_) {
-        this.maxArchiveSize = pMaxArchiveSize_;
+    public void setMaxArchiveSize(long pMaxArchiveSize) {
+        this.maxArchiveSize = pMaxArchiveSize;
     }
 
 }

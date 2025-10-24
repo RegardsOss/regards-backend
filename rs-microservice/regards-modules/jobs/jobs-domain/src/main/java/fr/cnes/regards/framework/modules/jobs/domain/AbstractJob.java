@@ -43,9 +43,10 @@ import java.util.UUID;
  */
 public abstract class AbstractJob<R> extends Observable implements IJob<R> {
 
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     protected static final String INFO_TAB = " >>>>> ";
+
+    @SuppressWarnings("java:S1312") // static LOGGER refactoring impact lots of inheritors.
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected UUID jobInfoId;
 
@@ -91,7 +92,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
 
     @Override
     public void advanceCompletion() {
-        this.completion++;
+        ++this.completion;
         super.setChanged();
         super.notifyObservers(this.completion * 100 / getCompletionCount());
     }

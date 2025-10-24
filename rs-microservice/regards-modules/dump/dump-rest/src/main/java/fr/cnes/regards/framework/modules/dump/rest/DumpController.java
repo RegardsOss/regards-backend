@@ -39,13 +39,13 @@ public class DumpController {
 
     public static final String TYPE_MAPPING = "/dumps";
 
-    @Autowired
-    IDumpSettingsService dumpSettingsService;
-
     /**
      * Controller path to reset lastDumpDate
      */
     public static final String RESET_LAST_DUMP_DATE = "/reset";
+
+    @Autowired
+    private IDumpSettingsService dumpSettingsService;
 
     @RequestMapping(path = RESET_LAST_DUMP_DATE, method = RequestMethod.PATCH)
     @ResourceAccess(description = "Reset last dump date", role = DefaultRole.ADMIN)
