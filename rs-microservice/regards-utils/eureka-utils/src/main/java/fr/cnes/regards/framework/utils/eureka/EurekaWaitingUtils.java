@@ -31,10 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Utility class used to block execution while waiting for Eureka Instances to be registered and running
@@ -155,11 +152,9 @@ public final class EurekaWaitingUtils {
             //Nothing to wait
             return;
         }
-        servicesToWait = Arrays.asList(servicesToWaitString.split(","));
-        if (servicesToWait.contains("rs-registry")) {
-            // rs-registry presence will be tested when attempting to reach eureka
-            servicesToWait.remove("rs-registry");
-        }
+        servicesToWait = new ArrayList<>(Arrays.asList(servicesToWaitString.split(",")));
+        // rs-registry presence will be tested when attempting to reach eureka
+        servicesToWait.remove("rs-registry");
         while (!canBeStarted(eurekaApiUrl, servicesToWait)) {
             try {
                 Thread.sleep(delayBeforeTries * 1000L);
