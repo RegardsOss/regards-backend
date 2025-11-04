@@ -495,7 +495,18 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
                                                                 ingestionStart), dsi);
         } finally {
             // Store datasourceIngestion state after crawling (essentially cursor position) whether it succeeds or fails
-            dsIngestionRepos.save(dsi);
+            Optional<DatasourceIngestion> lastStateOfDatasourceIngestion = dsIngestionRepos.findById(
+                datasourceIngestionId);
+            // only save status if datasourceIngestion still exists
+            if (lastStateOfDatasourceIngestion.isPresent()) {
+                // stacktrace has been updated asynchronously during ingestion (see EsBulkParallelSaver)
+                // and it is the only attribute updated asynchronously
+                dsi.setStackTrace(lastStateOfDatasourceIngestion.get().getStackTrace());
+                dsIngestionRepos.save(dsi);
+            } else {
+                LOGGER.warn("DatasourceIngestion with id {} has been deleted during its ingestion. "
+                            + "Its state won't be saved.", datasourceIngestionId);
+            }
         }
         // Only update dataset if new docs are indexed
         if (saveResult.getSavedDocsCount() > 0) {
