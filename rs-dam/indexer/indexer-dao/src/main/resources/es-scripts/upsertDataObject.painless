@@ -1,11 +1,18 @@
 def preservedTags = [];
+// On create, initialize the source with the provided body
+if (ctx._source == null || ctx._source == "{}" || ctx.op == "create") {
+    ctx._source = params;
+    return;
+}
 for (key in params.keySet()) {
-  if (key == "tags") {
-    for (tag in ctx._source.tags) {
-      // Preserve existing tags that start with "URN:AIP:DATASET"
-      if (tag != null && tag.startsWith("URN:AIP:DATASET")) {
-        preservedTags.add(tag);
-      }
+  if (key == "tags" ) {
+    if (ctx._source.containsKey("tags") && ctx._source.tags != null) {
+        for (tag in ctx._source.tags) {
+          // Preserve existing tags that start with "URN:AIP:DATASET"
+          if (tag != null && tag.startsWith("URN:AIP:DATASET")) {
+            preservedTags.add(tag);
+          }
+        }
     }
     // And add all tags presents in new dataobject value
     for (tag in params[key]) {
@@ -14,7 +21,10 @@ for (key in params.keySet()) {
       }
     }
   }
-  else if (key != "creationDate" && key != "metadata" && key != "groups" && key != "datasetModelNames") {
+  else if (key != "creationDate" &&
+           key != "metadata" &&
+           key != "groups" &&
+           key != "datasetModelNames") {
     // Simple replacement for all fields except calculated fields, which keep their previous values
     // If dataset or group is updated, these fields will be updated in another way
     ctx._source[key] = params[key];

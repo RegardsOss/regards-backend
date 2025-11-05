@@ -17,12 +17,15 @@ import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.multitenant.test.SingleRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.dto.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.dto.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
 import fr.cnes.regards.modules.indexer.dao.deser.GsonDeserializeIIndexableStrategy;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
+import fr.cnes.regards.modules.indexer.dao.scripts.ESScriptInitializer;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
@@ -32,6 +35,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.model.domain.Model;
+import org.awaitility.Awaitility;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.index.IndexNotFoundException;
@@ -39,6 +43,7 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.metrics.ParsedGeoBounds;
 import org.elasticsearch.search.aggregations.metrics.ParsedStats;
 import org.junit.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
@@ -52,6 +57,7 @@ import java.lang.reflect.Type;
 import java.net.UnknownHostException;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -362,7 +368,6 @@ public class EsRepositoryIT {
         public ItemGeo(Model model, String tenant, String providerId, String label) {
             super(model, tenant, providerId, label);
         }
-
     }
 
     private static final String TYPE = "item";
@@ -766,4 +771,64 @@ public class EsRepositoryIT {
         Assert.assertEquals(newIndex, repository.getSingleIndexPointedByAlias(alias));
     }
 
+    @Test
+    @Ignore("Ignored because it requires a lot of memory and time to run. "
+            + "ElasticSearch deployed on jenkins slave cannot handle it. "
+            + "To be run manually when needed.")
+    public void testHugeDataObject() {
+        int numberOfHugeObjects = 2000;
+        Set<DataObject> hugeObjects = new HashSet<>();
+        String indexName = "huge_data_object_index";
+        if (repository.indexExists(indexName)) {
+            repository.deleteIndex(indexName);
+        }
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> !repository.indexExists(indexName));
+        repository.createIndex(indexName);
+        // force store painless script in es
+        new ESScriptInitializer(repository).onApplicationEvent(null);
+
+        // GIVEN some huge DataObjects
+        for (int i = 0; i < numberOfHugeObjects; i++) {
+            OaisUniformResourceName urn = OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
+                                                                                  EntityType.DATA,
+                                                                                  "tenant",
+                                                                                  1);
+            DataObject dataObject = new ItemGeo(new Model(), "tenant", "providerId", "label");
+            dataObject.setId((long) i);
+            dataObject.setLabel("Huge DataObject " + i);
+            dataObject.setFeature(new DataObjectFeature(urn, "providerId", "label Huge DataObject " + i));
+            dataObject.setLastUpdate(OffsetDateTime.now());
+            dataObject.setIpId(urn);
+            Point point = IGeometry.point(-0.0369283, 43.7695852);
+            dataObject.setWgs84(GeoHelper.normalize(point));
+            dataObject.setNormalizedGeometry(GeoHelper.normalize(point));
+            dataObject.getFeature().setGeometry(GeoHelper.normalize(point));
+            dataObject.getFeature().setNormalizedGeometry(GeoHelper.normalize(point));
+            // Add a large number of tags to simulate a huge object
+            Set<String> tags = new HashSet<>();
+            for (int j = 0; j < 2000; j++) {
+                tags.add("tag_" + j);
+            }
+            dataObject.setTags(tags);
+            hugeObjects.add(dataObject);
+        }
+
+        // WHEN upsert them into Elasticsearch (~75Mo of data)
+        long startTime = System.currentTimeMillis();
+        System.out.println("starting indexing of " + numberOfHugeObjects + " huge DataObjects...");
+        // new method upsert (since 2.3.0)
+        repository.upsert(indexName, null, hugeObjects, new StringBuilder());
+        // old method saveBulk (2.2.0)
+        //        repository.saveBulk(indexName, null, hugeObjects, new StringBuilder());
+        System.out.println("Indexed " + numberOfHugeObjects + " huge DataObjects in " + (System.currentTimeMillis()
+                                                                                         - startTime) + " ms");
+        SearchKey<DataObject, DataObject> dataObjectObjectSearchKey = new SearchKey<>(TYPEDATAOBJECT, DataObject.class);
+        dataObjectObjectSearchKey.setSearchIndex(indexName);
+        // THEN 2000 objects are well inserted, despite their size (no ES exception "Request size exceeded the limit of 10485760 bytes")
+        Assertions.assertEquals(2000,
+                                repository.search(dataObjectObjectSearchKey, 2001, ICriterion.all())
+                                          .getTotalElements());
+        // THEN Clean up
+        repository.deleteIndex(indexName);
+    }
 }

@@ -29,7 +29,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
@@ -52,6 +51,7 @@ import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonConverter;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonMerger;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.ObjectToMap;
 import fr.cnes.regards.modules.indexer.dao.scripts.UpsertDataObjectEsScript;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
 import fr.cnes.regards.modules.indexer.domain.*;
@@ -921,17 +921,15 @@ public class EsRepository implements IEsRepository {
             BulkRequest bulkRequest = new BulkRequest();
             Map<String, T> map = new HashMap<>();
             for (T doc : documents) {
-                String json = gson.toJson(doc);
                 // convert all attributes of the current dataobject (document) in a map of attribute/value
                 // this map will be the params of the script
-                Map<String, Object> params = gson.fromJson(json, new TypeToken<Map<String, Object>>() {
-
-                }.getType());
+                Map<String, Object> params = ObjectToMap.toMap(gson, doc);
                 Script script = new Script(ScriptType.STORED, null, UpsertDataObjectEsScript.ID, params);
                 // upsert content (the complete json) is used if docId does not exist yet.
                 // if exist, the script with params is called
                 UpdateRequest updateRequest = new UpdateRequest(index, doc.getDocId()).script(script)
-                                                                                      .upsert(json, XContentType.JSON);
+                                                                                      .upsert("{}", XContentType.JSON);
+                updateRequest.scriptedUpsert(true); // use script even if doc does not exist
                 bulkRequest.add(updateRequest);
                 map.put(doc.getDocId(), doc);
             }
