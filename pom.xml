@@ -2109,6 +2109,11 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Force spring-boot-starter to match the bom version -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter</artifactId>
+            </dependency>
 
             <!-- bcpkix-jdk18on dependency must be used with spring-security-jwt excluding embedded one (bcpkix-jdk15on) which have some security
             vulnerabilities so, please add this into spring-security-jwt dependency block
