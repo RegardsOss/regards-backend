@@ -831,7 +831,7 @@ public class EsRepository implements IEsRepository {
         UpdateByQueryRequest updateByQueryRequest = new UpdateByQueryRequest(searchKey.getSearchIndex());
         updateByQueryRequest.setQuery(queryBuilder);
         updateByQueryRequest.setScript(script);
-        updateByQueryRequest.setRefresh(true); // refresh when the update is done because elastic is near-real-time, documents are indexed within 1 sec
+        updateByQueryRequest.setRefresh(true); // refresh when the update is done because elastic is near-real-time, documents are indexed periodically (default within 1 sec)
         try {
             client.updateByQuery(updateByQueryRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {

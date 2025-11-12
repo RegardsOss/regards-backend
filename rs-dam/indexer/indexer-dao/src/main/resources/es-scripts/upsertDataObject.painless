@@ -4,6 +4,7 @@ if (ctx._source == null || ctx._source == "{}" || ctx.op == "create") {
     ctx._source = params;
     return;
 }
+// On update, merge the existing source with the provided body, only for non-calculated fields
 for (key in params.keySet()) {
   if (key == "tags" ) {
     if (ctx._source.containsKey("tags") && ctx._source.tags != null) {

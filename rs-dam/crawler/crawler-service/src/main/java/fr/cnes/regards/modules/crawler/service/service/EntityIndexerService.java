@@ -116,9 +116,11 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -138,6 +140,11 @@ public class EntityIndexerService implements IEntityIndexerService {
     private static final Type GROUPS_TYPE_GSON = new TypeToken<List<Map<String, Object>>>() {
 
     }.getType();
+
+    /**
+     * Locks for entity indexing (to avoid concurrent updates on the same entity)
+     */
+    private static final ConcurrentHashMap<String, ReentrantLock> entityUpdateLocks = new ConcurrentHashMap<>();
 
     /**
      * Current tenant resolver
@@ -262,7 +269,8 @@ public class EntityIndexerService implements IEntityIndexerService {
     }
 
     /**
-     * Load given entity from database and update Elasticsearch
+     * Load given entity from database and update Elasticsearch.
+     * Acquires a lock on the datasource ingestion and wait if it's already locked.
      *
      * @param tenant                        concerned tenant (also index intoES)
      * @param ipId                          concerned entity IpId
@@ -283,22 +291,56 @@ public class EntityIndexerService implements IEntityIndexerService {
                                    DatasourceIngestion datasourceIngestion,
                                    boolean buildingIndex,
                                    boolean skipDissociationStep) throws ModuleException {
-        LOGGER.info("Updating {}", ipId.toString());
+        String key = ipId + ":" + buildingIndex;
+        ReentrantLock lock = entityUpdateLocks.computeIfAbsent(key, k -> new ReentrantLock(true));
+        // ReentrantLock with option fair=true to keep the order of lock requests
+        LOGGER.info("Try acquiring lock for entity {} (buildingIndex={})", ipId, buildingIndex);
+        lock.lock(); // blocks until the lock is available
+        LOGGER.info("Acquired lock for entity {} (buildingIndex={})", ipId, buildingIndex);
+        // This lock is required to avoid concurrent updates on the same dataset which may lead to inconsistent states into ES
+        // This update may be triggered by crawling job, but also when access rights are updated. This lock avoid double modification.
+        // NOTE: rs-dam is not scaled horizontally, so this lock is sufficient. In a scaled environment, a distributed lock (like ILockingTaskExecutors) should be used.
+        try {
+            updateEntityIntoEsWrapped(tenant,
+                                      ipId,
+                                      minLastUpdateCriteria,
+                                      updateDate,
+                                      forceAssociatedEntitiesUpdate,
+                                      datasourceIngestion,
+                                      buildingIndex,
+                                      skipDissociationStep);
+        } finally {
+            lock.unlock();
+            LOGGER.info("Released lock for entity {} (buildingIndex={})", ipId, buildingIndex);
+        }
+    }
+
+    private void updateEntityIntoEsWrapped(String tenant,
+                                           UniformResourceName ipId,
+                                           OffsetDateTime minLastUpdateCriteria,
+                                           OffsetDateTime updateDate,
+                                           boolean forceAssociatedEntitiesUpdate,
+                                           DatasourceIngestion datasourceIngestion,
+                                           boolean buildingIndex,
+                                           boolean skipDissociationStep) throws ModuleException {
+        LOGGER.info("Updating {} in Elasticsearch", ipId.toString());
         String indexOrAlias = getIndexOrAliasName(tenant, buildingIndex);
 
         String realIndex = buildingIndex ? indexOrAlias : indexAliasResolver.resolveCurrentIndex(tenant);
         runtimeTenantResolver.forceTenant(tenant);
+        // Load entity from database
         AbstractEntity<?> entity = entitiesService.loadWithRelations(ipId);
         // If entity does no more exist in database, it must be deleted from ES
         if (entity == null) {
-            LOGGER.debug("Entity is null !!");
+            LOGGER.debug("Entity does not exist in database !!");
             if (ipId.getEntityType() == EntityType.DATASET) {
                 sendDataSourceMessage(String.format("    Dataset with IP_ID %s no more exists...", ipId),
                                       datasourceIngestion);
                 manageDatasetDelete(realIndex, ipId.toString(), datasourceIngestion);
             }
             esRepoFacade.deleteFromIndexOrAlias(realIndex, ipId.getEntityType().toString(), ipId.toString());
-            sendDataSourceMessage(String.format("    ...Dataset with IP_ID %s de-indexed.", ipId), datasourceIngestion);
+            sendDataSourceMessage(String.format("    ...Dataset or collection with IP_ID %s de-indexed.", ipId),
+                                  datasourceIngestion);
         } else { // entity has been created or updated, it must be saved into ES
             indexService.createIndexAndAliasIfNeeded(realIndex, buildingIndex);
             indexService.configureMappings(realIndex, entity.getModel().getName());
@@ -324,7 +366,7 @@ public class EntityIndexerService implements IEntityIndexerService {
                 entity.removeVirtualId();
             }
             // Then save entity
-            LOGGER.debug("Saving entity {}", entity);
+            LOGGER.debug("Saving entity {} in Elasticsearch", entity);
             // If minLastUpdateCriteria is provided, this means that update comes from an ingestion, in this case all data
             // objects must be updated.
             // If lastUpdatedDate isn't provided it means update come from a change into dataset
