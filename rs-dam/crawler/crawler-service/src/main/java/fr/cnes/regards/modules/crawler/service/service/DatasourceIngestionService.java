@@ -523,11 +523,14 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             if (!datasetsToUpdate.isEmpty()) {
                 sendMessage("Start updating datasets associated to datasource...", datasourceIngestionId);
                 try {
-                    // Update entities associated to dataset for each entity updated previously,
-                    // So search for entities with last_update > (ingestionStart - 1s)
+                    // Update entities associated to dataset for each entity updated previously (since last successful crawling).
+                    // So search for entities with last_update > (last_successful_ingest_date - 1s)
                     // And for each updated entity set last_update = OffsetDateTime.now()
                     // criteria used to detect which products have been recently updated in current crawling
-                    OffsetDateTime minLastUpdateCriteria = ingestionStart.withNano(0).minusSeconds(1);
+                    OffsetDateTime minLastUpdateCriteria = dsi.getLastSuccessfulIngestDate() != null ?
+                        dsi.getLastSuccessfulIngestDate().withNano(0).minusSeconds(1) :
+                        // if no last successful ingest date, start since the crawling start date
+                        null;
                     entityIndexerService.updateDatasets(tenant,
                                                         datasetsToUpdate,
                                                         minLastUpdateCriteria,
@@ -548,6 +551,9 @@ public class DatasourceIngestionService implements IDatasourceIngesterService {
             sendMessage("No new data indexed. Dataset update skipped.", datasourceIngestionId);
         }
 
+        // no error occurred, ingestion is finished successfully
+        dsi.setLastSuccessfulIngestDate(OffsetDateTime.now());
+        dsIngestionRepos.save(dsi);
         return Optional.of(new IngestionResult(ingestionStart,
                                                saveResult.getSavedDocsCount(),
                                                saveResult.getInErrorDocsCount(),

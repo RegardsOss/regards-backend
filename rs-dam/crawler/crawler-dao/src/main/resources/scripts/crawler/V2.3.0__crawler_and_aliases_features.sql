@@ -6,3 +6,6 @@ ALTER TABLE t_datasource_ingestion
 
 ALTER TABLE t_datasource_ingestion
     ALTER COLUMN ds_id TYPE varchar(50);
+
+ALTER TABLE t_datasource_ingestion
+    ADD COLUMN IF NOT EXISTS last_successful_ingest_date timestamp;

@@ -40,6 +40,13 @@ public class DatasourceIngestion {
     private OffsetDateTime lastIngestDate;
 
     /**
+     * Date of last ingestion (null if none yet)
+     */
+    @Column(name = "last_successful_ingest_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    private OffsetDateTime lastSuccessfulIngestDate;
+
+    /**
      * Date of next planned ingest date (= last ingest date + refresh rate of datasource plugin)
      */
     @Column(name = "next_planned_ingest_date")
@@ -237,6 +244,7 @@ public class DatasourceIngestion {
         datasourceIngestionClone.stackTrace = this.stackTrace;
         datasourceIngestionClone.jobId = this.jobId;
         datasourceIngestionClone.cursor = (this.cursor == null) ? null : this.cursor.clone();
+        datasourceIngestionClone.lastSuccessfulIngestDate = this.lastSuccessfulIngestDate;
         return datasourceIngestionClone;
     }
 
@@ -300,5 +308,13 @@ public class DatasourceIngestion {
 
     public void setJobId(UUID jobId) {
         this.jobId = jobId;
+    }
+
+    public OffsetDateTime getLastSuccessfulIngestDate() {
+        return lastSuccessfulIngestDate;
+    }
+
+    public void setLastSuccessfulIngestDate(OffsetDateTime lastSuccessfulIngestDate) {
+        this.lastSuccessfulIngestDate = lastSuccessfulIngestDate;
     }
 }

@@ -111,6 +111,8 @@ public class EsBulkParallelSaver {
     public void saveDataObjectAsync(List<DataObject> dataObjects) {
         CrawlingCursor currentCursor = datasourceIngestion.getCursor().clone();
         Future<BulkSaveResult> bulkSaveResultFuture = esBulkSaveService.submitToSaveThreadPool(() -> {
+            LOGGER.info("Start async save to ElasticSearch for datasource ingestion {}",
+                        datasourceIngestion.getLabel());
             if (hasErrors()) {
                 if (currentCursor.isAfter(failureContext.get().cursor(),
                                           ingestionParameters.dsPlugin().getCrawlingCursorMode())) {
