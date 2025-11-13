@@ -295,9 +295,9 @@ public class EntityIndexerService implements IEntityIndexerService {
             if (ipId.getEntityType() == EntityType.DATASET) {
                 sendDataSourceMessage(String.format("    Dataset with IP_ID %s no more exists...", ipId),
                                       datasourceIngestion);
-                manageDatasetDelete(indexOrAlias, ipId.toString(), datasourceIngestion);
+                manageDatasetDelete(realIndex, ipId.toString(), datasourceIngestion);
             }
-            esRepoFacade.deleteFromIndexOrAlias(indexOrAlias, ipId.getEntityType().toString(), ipId.toString());
+            esRepoFacade.deleteFromIndexOrAlias(realIndex, ipId.getEntityType().toString(), ipId.toString());
             sendDataSourceMessage(String.format("    ...Dataset with IP_ID %s de-indexed.", ipId), datasourceIngestion);
         } else { // entity has been created or updated, it must be saved into ES
             indexService.createIndexAndAliasIfNeeded(realIndex, buildingIndex);
@@ -934,7 +934,11 @@ public class EntityIndexerService implements IEntityIndexerService {
         indexAliasService.setBuilding(aliasName, newIndexName);
 
         OffsetDateTime updateDate = OffsetDateTime.now();
-        updateAllDatasets(tenant, updateDate, isNewIndex);
+
+        if (indexAliasResolver.resolveBuildingIndex(tenant).isPresent()) {
+            self.updateDatasets(tenant, datasetService.findAll(), null, updateDate, true, null, true, isNewIndex);
+        }
+
         updateAllCollections(tenant, updateDate);
     }
 
