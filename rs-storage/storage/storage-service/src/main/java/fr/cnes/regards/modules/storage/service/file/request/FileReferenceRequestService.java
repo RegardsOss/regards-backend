@@ -225,27 +225,16 @@ public class FileReferenceRequestService {
                                                                                                          groupId,
                                                                                                          sessionOwner,
                                                                                                          session);
-        final FileRequestStatus newStatus = requestStatusService.getNewStatus(fileReferenceRequest);
-        fileReferenceRequest.setStatus(newStatus);
+        fileReferenceRequest.setStatus(requestStatusService.getNewStatus(fileReferenceRequest));
 
-        // Should always return a value or throw an exception.
-        // But since it depends on the implementation version, to be safe nullity is still checked.
-        final FileReferenceRequestAggregation saved = fileRefRequestRepository.save(fileReferenceRequest);
-        if (saved == null) {
-            LOGGER.warn("[REFERENCE REQUESTS] New file reference request for file <{}>"
-                        + " to be stored in {} with status {} failed to be created. Elapsed time: {} ms",
-                        fileReferenceRequest.getMetaInfo().getFileName(),
-                        fileReferenceRequest.getStorage(),
-                        fileReferenceRequest.getStatus(),
-                        elapsedMillisecondsFrom(startTime));
-        } else {
-            LOGGER.trace("[REFERENCE REQUESTS] New file reference request for file <{}>"
-                         + " to be stored in {} with status {} has been successfully created in {} ms",
-                         fileReferenceRequest.getMetaInfo().getFileName(),
-                         fileReferenceRequest.getStorage(),
-                         fileReferenceRequest.getStatus(),
-                         elapsedMillisecondsFrom(startTime));
-        }
+        fileRefRequestRepository.save(fileReferenceRequest);
+
+        LOGGER.debug("[FILE REFERENCE REQUESTS] New file reference request for file <{}>"
+                     + " to be stored in {} with status {} has been successfully created in {} ms",
+                     fileReferenceRequest.getMetaInfo().getFileName(),
+                     fileReferenceRequest.getStorage(),
+                     fileReferenceRequest.getStatus(),
+                     elapsedMillisecondsFrom(startTime));
     }
 
     public boolean handleJobCrash(JobInfo jobInfo) {
