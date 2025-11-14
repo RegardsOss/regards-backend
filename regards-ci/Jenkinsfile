@@ -30,7 +30,13 @@
 
 pipeline {
     options {
-        buildDiscarder(logRotator(numToKeepStr: '5', artifactNumToKeepStr: '2'))
+        // Configures the Jenkins build discard policy:
+        // - numToKeepStr           : maximum number of builds to keep for this branch
+        // - artifactNumToKeepStr   : maximum number of builds for which artifacts are kept
+        // - daysToKeepStr          : maximum age (in days) of builds to retain
+        // - artifactDaysToKeepStr  : maximum age (in days) of artifacts to retain
+        // This build produces a single artifact: all logs concatenated into one file.
+        buildDiscarder(logRotator(numToKeepStr: '5', artifactNumToKeepStr: '2', daysToKeepStr: '15', artifactDaysToKeepStr: '10'))
         disableConcurrentBuilds()
         parallelsAlwaysFailFast()
     }
