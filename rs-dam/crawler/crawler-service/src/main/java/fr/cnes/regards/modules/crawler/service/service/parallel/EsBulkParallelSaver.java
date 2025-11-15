@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.crawler.service.service.parallel;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionResult;
 import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
@@ -105,14 +106,12 @@ public class EsBulkParallelSaver {
     }
 
     /**
-     * This method saves a list of DataObjects asynchronously.
+     * This method saves a list of DataObjects asynchronously, until the threshold of waiting threads is reached, and them waits for some to complete.
      */
     @SuppressWarnings("java:S2221")  // catch all to ensure set error status
     public void saveDataObjectAsync(List<DataObject> dataObjects) {
         CrawlingCursor currentCursor = datasourceIngestion.getCursor().clone();
         Future<BulkSaveResult> bulkSaveResultFuture = esBulkSaveService.submitToSaveThreadPool(() -> {
-            LOGGER.info("Start async save to ElasticSearch for datasource ingestion {}",
-                        datasourceIngestion.getLabel());
             if (hasErrors()) {
                 if (currentCursor.isAfter(failureContext.get().cursor(),
                                           ingestionParameters.dsPlugin().getCrawlingCursorMode())) {
@@ -141,7 +140,28 @@ public class EsBulkParallelSaver {
         allAsyncTasks.add(esBulkTaskInformation);
         if (firstBulk == null) {
             firstBulk = esBulkTaskInformation;
-        } else if (allAsyncTasks.size() >= 10) {
+        } else if (allAsyncTasks.size() >= esBulkSaveService.getThreadWaitingThreshold()) {
+            // If more than "threadWaitingThreshold" tasks are running or waiting, wait for some to complete before adding more
+            // This is to avoid too many threads waiting at the same time (RAM exhaustion risk)
+            // If any error, stop waiting for tasks to complete
+            while (allAsyncTasks.size() > esBulkSaveService.getThreadThrottleAfterThreshold() && !hasErrors()) {
+                // complete some tasks before adding more
+                calculateIntermediateResults();
+                LOGGER.warn("Waiting for other tasks to complete for datasource {}, {} remaining/waiting",
+                            datasourceIngestion.getLabel(),
+                            allAsyncTasks.size());
+                try {
+                    Thread.sleep(1000); // wait a bit for other tasks to complete
+                } catch (InterruptedException e) {
+                    throw new RsRuntimeException(e);
+                }
+            }
+        } else if (allAsyncTasks.size() >= esBulkSaveService.getIntermediateCalculationFrequency()) {
+            // regularly calculate intermediate results to clean up done tasks.
+            // Since FEM or INGEST search is very fast (new indexes) since version 2.3.0,
+            // asynchronous tasks for adding/updating to elasticsearch are slower than the search
+            // This means the list of async tasks can grow quickly.
+            // A better algorithm should be considered to manage intermediate results, because number of tasks is very often upper than 10.
             calculateIntermediateResults();
         }
     }

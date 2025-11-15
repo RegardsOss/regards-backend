@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.crawler.service.service.DatasourceIngestionStatus
 import fr.cnes.regards.modules.crawler.service.service.IngestionParameters;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.Callable;
@@ -44,6 +45,15 @@ public class EsBulkSaveService {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     private final DatasourceIngestionStatusService datasourceIngestionStatusService;
+
+    @Value("${regards.elasticsearch.thread.waiting.threshold:50}")
+    private Integer threadWaitingThreshold;
+
+    @Value("${regards.elasticsearch.thread.throttle.after.threshold:4}")
+    private Integer threadThrottleAfterThreshold;
+
+    @Value("${regards.elasticsearch.thread.intermediate.calculation.frequency:10}")
+    private Integer intermediateCalculationFrequency;
 
     public EsBulkSaveService(@Qualifier("esThreadPool") ExecutorService saveThreadPoolExecutor,
                              IRuntimeTenantResolver runtimeTenantResolver,
@@ -71,4 +81,26 @@ public class EsBulkSaveService {
                                        datasourceIngestionStatusService);
     }
 
+    /**
+     * Number of done batches/thread/task after which an intermediate calculation of the crawling progress.
+     */
+    public Integer getIntermediateCalculationFrequency() {
+        return intermediateCalculationFrequency;
+    }
+
+    /**
+     * Number of waiting threads before waiting for some to finish.
+     * If number of waiting threads is above this threshold, the EsBulkParallelSaver will wait for some threads to finish
+     * This is to avoid too many threads waiting, which would lead to resource starvation.
+     */
+    public Integer getThreadWaitingThreshold() {
+        return threadWaitingThreshold;
+    }
+
+    /**
+     * Maximum number of threads/batches remaining after the threshold reached.
+     */
+    public Integer getThreadThrottleAfterThreshold() {
+        return threadThrottleAfterThreshold;
+    }
 }

@@ -232,7 +232,7 @@ class CrawlerIT extends AbstractCrawlerIT {
         // WHEN launch the ingestion
         crawlerCreatorService.manageCrawlingForAllTenants();
         // THEN the ingestion should be marked as error (first save failed)
-        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(20);
+        DatasourceIngestion datasourceIngestion = waitForCrawlingTermination(60);
         assertEquals(50, datasourceIngestion.getSavedObjectsCount());
         assertEquals(IngestionStatus.NOT_FINISHED, datasourceIngestion.getStatus());
         // THEN cursor position must be set to error cursor position, to restart ingestion from it the next ingestion
